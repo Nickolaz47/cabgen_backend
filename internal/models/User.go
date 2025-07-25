@@ -6,6 +6,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserRole string
+
+const (
+	Collaborator UserRole = "Collaborator"
+	Admin        UserRole = "Admin"
+)
+
 type User struct {
 	ID          uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
 	Name        string     `gorm:"not null" json:"name"`
@@ -14,8 +21,8 @@ type User struct {
 	Password    string     `gorm:"not null" json:"-"`
 	CountryCode string     `gorm:"type:uuid;not null" json:"country_code"`
 	Country     Country    `gorm:"foreignKey:CountryCode;references:Code"`
-	UserState   string     `gorm:"not null" json:"user_state"`
-	UserRole    string     `gorm:"not null" json:"user_role"`
+	IsActive    bool       `gorm:"not null" json:"is_active"`
+	UserRole    UserRole   `gorm:"not null" json:"user_role"`
 	Interest    *string    `gorm:"default:null" json:"interest,omitempty"`
 	Role        *string    `gorm:"default:null" json:"role,omitempty"`
 	Institution *string    `gorm:"default:null" json:"institution,omitempty"`
@@ -24,6 +31,19 @@ type User struct {
 	ActivatedOn *time.Time `json:"activated_on"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
+func (u User) ToResponse() UserResponse {
+	return UserResponse{
+		ID:          u.ID,
+		Name:        u.Name,
+		Username:    u.Username,
+		Email:       u.Email,
+		CountryCode: u.CountryCode,
+		Interest:    u.Interest,
+		Role:        u.Role,
+		Institution: u.Institution,
+	}
 }
 
 type RegisterInput struct {
@@ -39,13 +59,13 @@ type RegisterInput struct {
 }
 
 type UserResponse struct {
-	ID          uuid.UUID  `json:"id"`
-	Name        string     `json:"name"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email"`
-	CountryCode string     `json:"country_code"`
-	UserRole    string     `json:"user_role"`
-	Interest    *string    `json:"interest,omitempty"`
-	Role        *string    `json:"role,omitempty"`
-	Institution *string    `json:"institution,omitempty"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	CountryCode string    `json:"country_code"`
+	UserRole    string    `json:"user_role"`
+	Interest    *string   `json:"interest,omitempty"`
+	Role        *string   `json:"role,omitempty"`
+	Institution *string   `json:"institution,omitempty"`
 }
