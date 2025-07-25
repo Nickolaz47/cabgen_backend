@@ -5,26 +5,41 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
 )
 
 func Register(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
 	var newUser models.RegisterInput
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var existing models.User
-	if err := db.DB.Where("email = ? OR username = ?", newUser.Email, newUser.Username).First(&existing).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email or username already in use."})
+	var existingByEmail, existingByUsername models.User
+	if err := db.DB.Where("email = ?", newUser.Email, newUser.Username).First(&existingByEmail).Error; err == nil {
+		c.JSON(http.StatusConflict,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterEmailAlreadyExistsError)},
+		)
+		return
+	}
+
+	if err := db.DB.Where("username = ?", newUser.Email, newUser.Username).First(&existingByUsername).Error; err == nil {
+		c.JSON(http.StatusConflict,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterUsernameAlreadyExistsError)},
+		)
 		return
 	}
 
 	hashedPassword, err := security.Hash(newUser.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Some error occurrs. Try again later."})
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterHashPasswordError)},
+		)
 		return
 	}
 
@@ -43,12 +58,18 @@ func Register(c *gin.Context) {
 	}
 
 	if err := db.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user. Try again later."})
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
+		)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": user.ToResponse(),
-		"message": "User created successfully. Wait for an administrator to activate it."})
+	c.JSON(http.StatusCreated,
+		responses.APIResponse{
+			Data:    user.ToResponse(),
+			Message: responses.GetResponse(localizer, responses.RegisterMessage),
+		},
+	)
 }
 
 func Login(c *gin.Context) {}

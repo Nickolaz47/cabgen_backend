@@ -1,0 +1,17 @@
+[public.health.message]
+other="Api ok."
+
+[public.auth.register.usernameAlreadyExists.error]
+other="Nome de usuário já existe."
+
+[public.auth.register.emailAlreadyExists.error]
+other="Email já está em uso."
+
+[public.auth.register.hashPassword.error]
+other="Houve um erro no servidor. Por favor, tente novamente."
+
+[public.auth.register.createUser.error]
+other="Erro ao criar usuário. Por favor, tente novamente."
+
+[public.auth.register.success.message]
+other="Usuário criado com sucesso. Aguarde a ativação por um administrador."

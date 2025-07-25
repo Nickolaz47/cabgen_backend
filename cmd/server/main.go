@@ -5,7 +5,9 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
+	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,10 +19,12 @@ func init() {
 
 	db.Connect()
 	db.Migrate()
+	translation.LoadTranslation()
 }
 
 func main() {
 	r := gin.Default()
+	r.Use(middlewares.I18nMiddleware())
 	routes.Router(r)
 
 	r.Run()
