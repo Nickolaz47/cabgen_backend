@@ -23,6 +23,7 @@ func Connect() {
 }
 
 func Migrate() {
+	DB.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 	err := DB.AutoMigrate(&models.User{}, &models.Country{})
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)

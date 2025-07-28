@@ -30,6 +30,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			PORT=8080
 			ACCESS_SECRET_KEY=access_secret
 			REFRESH_SECRET_KEY=refresh_secret
+			ADMIN_PASSWORD=adminpass
 		`
 		expectedUser := "user"
 		expectedPassword := "password"
@@ -38,6 +39,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedPort := 8080
 		expectedAccessSecret := "access_secret"
 		expectedRefreshSecret := "refresh_secret"
+		expectedAdminPassword := "adminpass"
 
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
@@ -53,6 +55,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedFrontendUrl, os.Getenv("FRONTEND_URL"), "expected URLs to be equal")
 		assert.Equal(t, expectedAccessSecret, os.Getenv("ACCESS_SECRET_KEY"), "expected secrets to be equal")
 		assert.Equal(t, expectedRefreshSecret, os.Getenv("REFRESH_SECRET_KEY"), "expected secrets to be equal")
+		assert.Equal(t, expectedAdminPassword, os.Getenv("ADMIN_PASSWORD"), "expected passwords to be equal")
 
 		SMTPPort, err := strconv.Atoi(os.Getenv("PORT"))
 
@@ -85,6 +88,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			PORT=:8080
 			ACCESS_SECRET_KEY=access_secret
 			REFRESH_SECRET_KEY=refresh_secret
+			ADMIN_PASSWORD=adminpass
 		`
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
