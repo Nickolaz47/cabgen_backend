@@ -7,7 +7,7 @@ other="El nombre de usuario ya existe."
 [public.auth.register.emailAlreadyExists.error]
 other="El correo electrónico ya está en uso."
 
-[public.auth.register.hashPassword.error]
+[generic.internalServer.error]
 other="Hubo un error en el servidor. Por favor, inténtelo de nuevo."
 
 [public.auth.register.createUser.error]
@@ -15,3 +15,63 @@ other="Error al crear el usuario. Por favor, inténtelo de nuevo."
 
 [public.auth.register.success.message]
 other="Usuario creado con éxito. Espere la activación por un administrador."
+
+[public.auth.register.validation.Name.required]
+other = "El nombre es obligatorio."
+
+[public.auth.register.validation.Name.min]
+other = "El nombre debe tener al menos {{.Param}} caracteres."
+
+[public.auth.register.validation.Name.max]
+other = "El nombre debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.Username.required]
+other = "El nombre de usuario es obligatorio."
+
+[public.auth.register.validation.Username.min]
+other = "El nombre de usuario debe tener al menos {{.Param}} caracteres."
+
+[public.auth.register.validation.Username.max]
+other = "El nombre de usuario debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.Email.required]
+other = "El correo electrónico es obligatorio."
+
+[public.auth.register.validation.Email.email]
+other = "Formato de correo electrónico no válido."
+
+[public.auth.register.validation.ConfirmEmail.required]  
+other = "La confirmación de correo electrónico es obligatoria." 
+
+[public.auth.register.validation.emailMismatch]  
+other = "Los correos electrónicos deben coincidir."
+
+[public.auth.register.validation.Password.required]
+other = "La contraseña es obligatoria."
+
+[public.auth.register.validation.Password.min]
+other = "La contraseña debe tener al menos {{.Param}} caracteres."
+
+[public.auth.register.validation.Password.max]
+other = "La contraseña debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.ConfirmPassword.required]  
+other = "La confirmación de contraseña es obligatoria."  
+
+[public.auth.register.validation.passwordMismatch]  
+other = "Las contraseñas deben coincidir."
+
+[public.auth.register.validation.CountryCode.required]
+other = "El código de país es obligatorio."
+
+[public.auth.register.validation.Interest.max]
+other = "El campo de interés debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.Role.max]
+other = "El campo de rol debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.Institution.max]
+other = "El campo de institución debe tener como máximo {{.Param}} caracteres."
+
+[public.auth.register.validation.generic]
+other = "Entrada inválida. Verifique los campos e intente nuevamente."

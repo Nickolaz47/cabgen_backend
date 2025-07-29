@@ -22,7 +22,7 @@ type User struct {
 	CountryCode string     `gorm:"type:uuid;not null" json:"country_code"`
 	Country     Country    `gorm:"foreignKey:CountryCode;references:Code"`
 	IsActive    bool       `gorm:"not null" json:"is_active"`
-	UserRole    UserRole   `gorm:"not null" json:"user_role"`
+	UserRole    UserRole   `gorm:"type:varchar(20);not null" json:"user_role"`
 	Interest    *string    `gorm:"default:null" json:"interest,omitempty"`
 	Role        *string    `gorm:"default:null" json:"role,omitempty"`
 	Institution *string    `gorm:"default:null" json:"institution,omitempty"`
@@ -47,11 +47,13 @@ func (u User) ToResponse() UserResponse {
 }
 
 type RegisterInput struct {
-	Name        string `json:"name" binding:"required,min=3,max=100"`
-	Username    string `json:"username" binding:"required,min=4,max=100"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8,max=32"`
-	CountryCode string `json:"country_code" binding:"required"`
+	Name            string `json:"name" binding:"required,min=3,max=100"`
+	Username        string `json:"username" binding:"required,min=4,max=100"`
+	Email           string `json:"email" binding:"required,email"`
+	ConfirmEmail    string `json:"confirm_email" binding:"required"`
+	Password        string `json:"password" binding:"required,min=8,max=32"`
+	ConfirmPassword string `json:"confirm_password" binding:"required"`
+	CountryCode     string `json:"country_code" binding:"required"`
 
 	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
 	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`

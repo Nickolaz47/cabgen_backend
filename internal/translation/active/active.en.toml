@@ -7,7 +7,7 @@ other="Username already exists."
 [public.auth.register.emailAlreadyExists.error]
 other="Email is already in use."
 
-[public.auth.register.hashPassword.error]
+[generic.internalServer.error]
 other="There was a server error. Please try again."
 
 [public.auth.register.createUser.error]
@@ -15,3 +15,63 @@ other="Error creating user. Please try again."
 
 [public.auth.register.success.message]
 other="User created successfully. Please wait for activation by an administrator."
+
+[public.auth.register.validation.Name.required]
+other = "Name is required."
+
+[public.auth.register.validation.Name.min]
+other = "Name must be at least {{.Param}} characters long."
+
+[public.auth.register.validation.Name.max]
+other = "Name must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.Username.required]
+other = "Username is required."
+
+[public.auth.register.validation.Username.min]
+other = "Username must be at least {{.Param}} characters long."
+
+[public.auth.register.validation.Username.max]
+other = "Username must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.Email.required]
+other = "Email is required."
+
+[public.auth.register.validation.Email.email]
+other = "Invalid email format."
+
+[public.auth.register.validation.ConfirmEmail.required]  
+other = "Email confirmation is required."  
+
+[public.auth.register.validation.emailMismatch]  
+other = "Emails must match."
+
+[public.auth.register.validation.Password.required]
+other = "Password is required."
+
+[public.auth.register.validation.Password.min]
+other = "Password must be at least {{.Param}} characters long."
+
+[public.auth.register.validation.Password.max]
+other = "Password must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.ConfirmPassword.required]  
+other = "Password confirmation is required." 
+
+[public.auth.register.validation.passwordMismatch]  
+other = "Passwords must match."
+
+[public.auth.register.validation.CountryCode.required]
+other = "Country code is required."
+
+[public.auth.register.validation.Interest.max]
+other = "Interest must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.Role.max]
+other = "Role must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.Institution.max]
+other = "Institution must be at most {{.Param}} characters long."
+
+[public.auth.register.validation.generic]
+other = "Invalid input. Please check the fields and try again."

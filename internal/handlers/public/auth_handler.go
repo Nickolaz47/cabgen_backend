@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,22 +16,54 @@ func Register(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	var newUser models.RegisterInput
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if errMsg, valid := validations.ValidateRegisterInput(c, localizer, &newUser); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
-	var existingByEmail, existingByUsername models.User
-	if err := db.DB.Where("email = ?", newUser.Email, newUser.Username).First(&existingByEmail).Error; err == nil {
-		c.JSON(http.StatusConflict,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterEmailAlreadyExistsError)},
+	var count int64
+	if err := db.DB.Model(&models.User{}).
+		Where("email = ? OR username = ?", newUser.Email, newUser.Username).
+		Count(&count).Error; err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
 		return
 	}
 
-	if err := db.DB.Where("username = ?", newUser.Email, newUser.Username).First(&existingByUsername).Error; err == nil {
+	if count > 0 {
+		var existingUser models.User
+		if err := db.DB.Where(`email = ? OR username = ?`, newUser.Email, newUser.Username).
+			First(&existingUser).Error; err != nil {
+			c.JSON(http.StatusInternalServerError,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+			)
+			return
+		}
+		
+		var errMsg string
+		if existingUser.Email == newUser.Email {
+			errMsg = responses.RegisterEmailAlreadyExistsError
+		} else if existingUser.Username == newUser.Username {
+			errMsg = responses.RegisterUsernameAlreadyExistsError
+		}
+
 		c.JSON(http.StatusConflict,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterUsernameAlreadyExistsError)},
+			responses.APIResponse{Error: responses.GetResponse(localizer, errMsg)},
+		)
+		return
+	}
+
+	if newUser.Email != newUser.ConfirmEmail {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterValidationEmailMismatch)},
+		)
+		return
+	}
+
+	if newUser.Password != newUser.ConfirmPassword {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterValidationPasswordMismatch)},
 		)
 		return
 	}
@@ -38,7 +71,7 @@ func Register(c *gin.Context) {
 	hashedPassword, err := security.Hash(newUser.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterHashPasswordError)},
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
 		return
 	}
