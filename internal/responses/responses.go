@@ -12,6 +12,7 @@ const (
 	RegisterValidationGeneric          = "public.auth.register.validation.generic"
 	RegisterValidationEmailMismatch    = "public.auth.register.validation.emailMismatch"
 	RegisterValidationPasswordMismatch = "public.auth.register.validation.passwordMismatch"
+	CountryNotFoundError               = "country.notFound.error"
 )
 
 type APIResponse struct {

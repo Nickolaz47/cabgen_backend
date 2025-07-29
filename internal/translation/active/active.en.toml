@@ -75,3 +75,6 @@ other = "Institution must be at most {{.Param}} characters long."
 
 [public.auth.register.validation.generic]
 other = "Invalid input. Please check the fields and try again."
+
+[country.notFound.error]
+other = "No country was found with this code."

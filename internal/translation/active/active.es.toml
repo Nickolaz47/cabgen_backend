@@ -75,3 +75,6 @@ other = "El campo de institución debe tener como máximo {{.Param}} caracteres.
 
 [public.auth.register.validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
+
+[country.notFound.error]
+other = "No se encontró el país con este código."

@@ -5,5 +5,5 @@ type Country struct {
 	Pt    string `gorm:"not null" json:"pt"`
 	En    string `gorm:"not null" json:"en"`
 	Es    string `gorm:"not null" json:"es"`
-	Users []User `gorm:"foreignKey:CountryCode;references:Code"`
+	Users []User `gorm:"foreignKey:CountryCode;references:Code" json:"-"`
 }

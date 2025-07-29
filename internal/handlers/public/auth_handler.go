@@ -1,6 +1,7 @@
 package public
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
@@ -10,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func Register(c *gin.Context) {
@@ -21,26 +23,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	var count int64
-	if err := db.DB.Model(&models.User{}).
-		Where("email = ? OR username = ?", newUser.Email, newUser.Username).
-		Count(&count).Error; err != nil {
+	var existingUser models.User
+	err := db.DB.Where("email = ? OR username = ?", newUser.Email, newUser.Username).
+		First(&existingUser).Error
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
 		return
 	}
 
-	if count > 0 {
-		var existingUser models.User
-		if err := db.DB.Where(`email = ? OR username = ?`, newUser.Email, newUser.Username).
-			First(&existingUser).Error; err != nil {
-			c.JSON(http.StatusInternalServerError,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
-			)
-			return
-		}
-		
+	if err == nil {
 		var errMsg string
 		if existingUser.Email == newUser.Email {
 			errMsg = responses.RegisterEmailAlreadyExistsError
