@@ -29,7 +29,9 @@ func init() {
 func main() {
 	r := gin.Default()
 	r.Use(middlewares.I18nMiddleware())
-	routes.Router(r)
+
+	api := r.Group("/api")
+	routes.Router(api)
 
 	r.Run()
 }

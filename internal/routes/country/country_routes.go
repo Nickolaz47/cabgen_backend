@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CountryRoutes(r *gin.Engine) {
+func CountryRoutes(r *gin.RouterGroup) {
 	r.GET("/country", country.GetCountries)
 	r.GET("/country/:code", country.GetCountryByID)
 }

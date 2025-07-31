@@ -78,3 +78,15 @@ other = "Entrada inválida. Verifique os campos e tente novamente."
 
 [country.notFound.error]
 other = "O país com esse código não foi encontrado."
+
+[public.auth.login.validation.Username.required]
+other = "O nome de usuário é obrigatório."
+
+[public.auth.login.validation.Password.required]
+other = "A senha é obrigatória."
+
+[public.auth.login.invalidCredentials]
+other = "Credenciais inválidas."
+
+[public.auth.login.success]
+other = "Login efetuado com sucesso."

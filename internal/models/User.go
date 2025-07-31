@@ -46,6 +46,14 @@ func (u User) ToResponse() UserResponse {
 	}
 }
 
+func (u User) ToToken() UserToken {
+	return UserToken{
+		ID:       u.ID,
+		Username: u.Username,
+		UserRole: u.UserRole,
+	}
+}
+
 type RegisterInput struct {
 	Name            string `json:"name" binding:"required,min=3,max=100"`
 	Username        string `json:"username" binding:"required,min=4,max=100"`
@@ -66,7 +74,7 @@ type UserResponse struct {
 	Username    string    `json:"username"`
 	Email       string    `json:"email"`
 	CountryCode string    `json:"country_code"`
-	UserRole    string    `json:"user_role"`
+	UserRole    UserRole  `json:"user_role"`
 	Interest    *string   `json:"interest,omitempty"`
 	Role        *string   `json:"role,omitempty"`
 	Institution *string   `json:"institution,omitempty"`

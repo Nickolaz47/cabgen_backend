@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Router(router *gin.Engine) {
+func Router(router *gin.RouterGroup) {
 	public.PublicRoutes(router)
 	country.CountryRoutes(router)
 }

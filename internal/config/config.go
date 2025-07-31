@@ -14,6 +14,8 @@ var (
 	RefreshKey               = []byte{}
 	Port                     = 0
 	AdminPassword            = ""
+	Environment              = ""
+	APIHost                  = ""
 )
 
 /*
@@ -51,6 +53,8 @@ func LoadEnvVariables(envFile string) error {
 	AccessKey = []byte(os.Getenv("SECRET_ACCESS_KEY"))
 	RefreshKey = []byte(os.Getenv("SECRET_REFRESH_KEY"))
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")
+	Environment = os.Getenv("ENVIRONMENT")
+	APIHost = os.Getenv("API_HOST")
 
 	return nil
 }

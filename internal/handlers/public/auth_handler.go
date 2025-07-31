@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -99,7 +100,74 @@ func Register(c *gin.Context) {
 	)
 }
 
-func Login(c *gin.Context) {}
+func Login(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	var login models.LoginInput
+	if errMsg, valid := validations.ValidateLoginInput(c, localizer, &login); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	var existingUser models.User
+	err := db.DB.Where("username = ?", login.Username).First(&existingUser).Error
+
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInvalidCredentialsError)})
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err = security.CheckPassword(existingUser.Password, login.Password); err != nil {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInvalidCredentialsError)})
+		return
+	}
+
+	accessKey, err := auth.GetSecretKey(auth.Access)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	refreshKey, err := auth.GetSecretKey(auth.Refresh)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	accessToken, err := auth.GenerateToken(existingUser.ToToken(), accessKey, auth.AccessTokenExpiration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	refreshToken, err := auth.GenerateToken(existingUser.ToToken(), refreshKey, auth.RefreshTokenExpiration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	accessCookie := auth.CreateCookie(auth.Access, accessToken, "/", auth.AccessTokenExpiration)
+	refreshCookie := auth.CreateCookie(auth.Refresh, refreshToken, "/api/auth/refresh", auth.RefreshTokenExpiration)
+
+	http.SetCookie(c.Writer, accessCookie)
+	http.SetCookie(c.Writer, refreshCookie)
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{Message: responses.GetResponse(localizer, responses.LoginSuccess)})
+}
 
 func Logout(c *gin.Context) {}
 

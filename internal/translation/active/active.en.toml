@@ -78,3 +78,15 @@ other = "Invalid input. Please check the fields and try again."
 
 [country.notFound.error]
 other = "No country was found with this code."
+
+[public.auth.login.validation.Username.required]
+other = "Username is required."
+
+[public.auth.login.validation.Password.required]
+other = "Password is required."
+
+[public.auth.login.invalidCredentials]
+other = "Invalid credentials."
+
+[public.auth.login.success]
+other = "Login successful."

@@ -31,6 +31,8 @@ func TestLoadEnvVariables(t *testing.T) {
 			ACCESS_SECRET_KEY=access_secret
 			REFRESH_SECRET_KEY=refresh_secret
 			ADMIN_PASSWORD=adminpass
+			ENVIRONMENT=dev
+			API_HOST=localhost
 		`
 		expectedUser := "user"
 		expectedPassword := "password"
@@ -40,6 +42,8 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedAccessSecret := "access_secret"
 		expectedRefreshSecret := "refresh_secret"
 		expectedAdminPassword := "adminpass"
+		expectedEnvironment := "dev"
+		expectedAPIHost := "localhost"
 
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
@@ -56,6 +60,8 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedAccessSecret, os.Getenv("ACCESS_SECRET_KEY"), "expected secrets to be equal")
 		assert.Equal(t, expectedRefreshSecret, os.Getenv("REFRESH_SECRET_KEY"), "expected secrets to be equal")
 		assert.Equal(t, expectedAdminPassword, os.Getenv("ADMIN_PASSWORD"), "expected passwords to be equal")
+		assert.Equal(t, expectedEnvironment, os.Getenv("ENVIRONMENT"), "expected environments to be equal")
+		assert.Equal(t, expectedAPIHost, os.Getenv("API_HOST"), "expected hosts to be equal")
 
 		SMTPPort, err := strconv.Atoi(os.Getenv("PORT"))
 
@@ -89,6 +95,8 @@ func TestLoadEnvVariables(t *testing.T) {
 			ACCESS_SECRET_KEY=access_secret
 			REFRESH_SECRET_KEY=refresh_secret
 			ADMIN_PASSWORD=adminpass
+			ENVIRONMENT=dev
+			API_HOST=localhost
 		`
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")

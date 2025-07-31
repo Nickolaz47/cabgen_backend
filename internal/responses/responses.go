@@ -13,6 +13,8 @@ const (
 	RegisterValidationEmailMismatch    = "public.auth.register.validation.emailMismatch"
 	RegisterValidationPasswordMismatch = "public.auth.register.validation.passwordMismatch"
 	CountryNotFoundError               = "country.notFound.error"
+	LoginInvalidCredentialsError       = "public.auth.login.invalidCredentials"
+	LoginSuccess                       = "public.auth.login.success"
 )
 
 type APIResponse struct {
