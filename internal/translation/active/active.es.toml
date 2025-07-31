@@ -99,3 +99,6 @@ other = "Token de acceso expirado. Use su refresh token para renovarlo."
 
 [public.auth.logout.success]
 other = "Cierre de sesión exitoso."
+
+[public.auth.refresh.success]
+other = "Token de acceso renovado con éxito."

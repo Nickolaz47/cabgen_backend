@@ -12,5 +12,5 @@ func PublicRoutes(r *gin.RouterGroup) {
 	authRouter.POST("/register", public.Register)
 	authRouter.POST("/login", public.Login)
 	authRouter.POST("/logout", public.Logout)
-	authRouter.GET("/refresh", public.Refresh)
+	authRouter.POST("/refresh", public.Refresh)
 }

@@ -183,4 +183,40 @@ func Logout(c *gin.Context) {
 	)
 }
 
-func Refresh(c *gin.Context) {}
+func Refresh(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	refreshSecret, err := auth.GetSecretKey(auth.Refresh)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	userToken, err := auth.ValidateToken(c, auth.Refresh, refreshSecret)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UnauthorizedError)})
+		return
+	}
+
+	accessSecret, err := auth.GetSecretKey(auth.Access)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	accessToken, err := auth.GenerateToken(*userToken, accessSecret, auth.AccessTokenExpiration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+		return
+	}
+
+	accessCookie := auth.CreateCookie(auth.Access, accessToken, "/", auth.AccessTokenExpiration)
+	http.SetCookie(c.Writer, accessCookie)
+
+	c.JSON(http.StatusOK, 
+	responses.APIResponse{Message: responses.GetResponse(localizer, responses.TokenRenewed)},)
+}
