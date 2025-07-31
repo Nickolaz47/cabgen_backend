@@ -74,6 +74,7 @@ func ValidateToken(c *gin.Context, cookieName Cookie, secret []byte) (*models.Us
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, fmt.Errorf("token expired: %v", err)
 		}
+		
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
 

@@ -15,6 +15,8 @@ const (
 	CountryNotFoundError               = "country.notFound.error"
 	LoginInvalidCredentialsError       = "public.auth.login.invalidCredentials"
 	LoginSuccess                       = "public.auth.login.success"
+	UnauthorizedError                  = "auth.unauthorized"
+	TokenExpiredError                  = "auth.tokenExpired"
 )
 
 type APIResponse struct {

@@ -90,3 +90,9 @@ other = "Credenciais inválidas."
 
 [public.auth.login.success]
 other = "Login efetuado com sucesso."
+
+[auth.unauthorized]
+other = "Você não tem autorização. Por favor, autentique-se para continuar."
+
+[auth.tokenExpired]
+other = "O token de acesso expirou. Por favor, tente renová-lo com o refresh token."
