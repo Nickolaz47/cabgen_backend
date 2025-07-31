@@ -96,3 +96,6 @@ other = "Você não tem autorização. Por favor, autentique-se para continuar."
 
 [auth.tokenExpired]
 other = "O token de acesso expirou. Por favor, tente renová-lo com o refresh token."
+
+[public.auth.logout.success]
+other = "Logout efetuado com sucesso."

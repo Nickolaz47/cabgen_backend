@@ -17,6 +17,7 @@ const (
 	LoginSuccess                       = "public.auth.login.success"
 	UnauthorizedError                  = "auth.unauthorized"
 	TokenExpiredError                  = "auth.tokenExpired"
+	LogoutSuccess                      = "public.auth.logout.success"
 )
 
 type APIResponse struct {

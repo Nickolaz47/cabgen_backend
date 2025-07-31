@@ -26,13 +26,15 @@ func (c Cookie) String() string {
 	return string(c)
 }
 
-func CreateCookie(cookieName Cookie, cookieContent, path string, expiration time.Duration) *http.Cookie {
-	host := "localhost"
-	var secure bool
+func resolveCookieSecurity() (host string, secure bool) {
 	if config.Environment == "prod" {
-		secure = true
-		host = config.APIHost
+		return config.APIHost, true
 	}
+	return "localhost", false
+}
+
+func CreateCookie(cookieName Cookie, cookieContent, path string, expiration time.Duration) *http.Cookie {
+	host, secure := resolveCookieSecurity()
 
 	return &http.Cookie{
 		Name:     cookieName.String(),
@@ -40,6 +42,21 @@ func CreateCookie(cookieName Cookie, cookieContent, path string, expiration time
 		Path:     path,
 		Domain:   host,
 		Expires:  time.Now().Add(expiration),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+	}
+}
+
+func DeleteCookie(cookieName Cookie, path string) *http.Cookie {
+	host, secure := resolveCookieSecurity()
+
+	return &http.Cookie{
+		Name:     cookieName.String(),
+		Value:    "",
+		Path:     path,
+		Domain:   host,
+		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
@@ -74,7 +91,7 @@ func ValidateToken(c *gin.Context, cookieName Cookie, secret []byte) (*models.Us
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, fmt.Errorf("token expired: %v", err)
 		}
-		
+
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
 

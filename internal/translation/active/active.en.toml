@@ -96,3 +96,6 @@ other = "Unauthorized. Please log in to continue."
 
 [auth.tokenExpired]
 other = "Access token expired. Please use your refresh token to renew it."
+
+[public.auth.logout.success]
+other = "Logout successful."
