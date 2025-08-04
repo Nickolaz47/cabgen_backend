@@ -18,6 +18,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+			c.Abort()
 			return
 		}
 
@@ -25,12 +26,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		if err != nil && strings.Contains(err.Error(), "token expired:") {
 			c.JSON(http.StatusForbidden,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.TokenExpiredError)})
+			c.Abort()
 			return
 		}
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.UnauthorizedError)})
+			c.Abort()
 			return
 		}
 

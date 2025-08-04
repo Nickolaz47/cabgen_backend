@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -33,15 +34,32 @@ type User struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-func (u User) ToResponse() UserResponse {
+func (u User) ToResponse(c *gin.Context) UserResponse {
+	language := c.GetHeader("Accept-Language")
+	if language == "" {
+		language = "en"
+	}
+
+	var country string
+	switch language {
+	case "pt":
+		country = u.Country.Pt
+	case "es":
+		country = u.Country.Es
+	default:
+		country = u.Country.En
+	}
+
 	return UserResponse{
 		ID:          u.ID,
 		Name:        u.Name,
 		Username:    u.Username,
 		Email:       u.Email,
 		CountryCode: u.CountryCode,
-		Interest:    u.Interest,
+		Country:     country,
+		UserRole:    u.UserRole,
 		Role:        u.Role,
+		Interest:    u.Interest,
 		Institution: u.Institution,
 	}
 }
@@ -74,6 +92,7 @@ type UserResponse struct {
 	Username    string    `json:"username"`
 	Email       string    `json:"email"`
 	CountryCode string    `json:"country_code"`
+	Country     string    `json:"country"`
 	UserRole    UserRole  `json:"user_role"`
 	Interest    *string   `json:"interest,omitempty"`
 	Role        *string   `json:"role,omitempty"`

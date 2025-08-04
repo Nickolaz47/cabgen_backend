@@ -71,6 +71,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	var country models.Country
+	if err := db.DB.Where("code = ?", newUser.CountryCode).First(&country).Error; err != nil {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.CountryNotFoundError)})
+		return
+	}
+
 	user := models.User{
 		Name:        newUser.Name,
 		Username:    newUser.Username,
@@ -85,7 +92,7 @@ func Register(c *gin.Context) {
 		CreatedBy:   newUser.Username,
 	}
 
-	if err := db.DB.Create(&user).Error; err != nil {
+	if err := db.DB.Preload("Country").Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
@@ -94,7 +101,7 @@ func Register(c *gin.Context) {
 
 	c.JSON(http.StatusCreated,
 		responses.APIResponse{
-			Data:    user.ToResponse(),
+			Data:    user.ToResponse(c),
 			Message: responses.GetResponse(localizer, responses.RegisterMessage),
 		},
 	)
@@ -217,6 +224,6 @@ func Refresh(c *gin.Context) {
 	accessCookie := auth.CreateCookie(auth.Access, accessToken, "/", auth.AccessTokenExpiration)
 	http.SetCookie(c.Writer, accessCookie)
 
-	c.JSON(http.StatusOK, 
-	responses.APIResponse{Message: responses.GetResponse(localizer, responses.TokenRenewed)},)
+	c.JSON(http.StatusOK,
+		responses.APIResponse{Message: responses.GetResponse(localizer, responses.TokenRenewed)})
 }
