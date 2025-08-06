@@ -108,3 +108,6 @@ other = "Usuário não encontrado."
 
 [user.update.error]
 other = "Não foi possível atualizar o usuário."
+
+[public.auth.login.inactiveUser]
+other = "Seu usuário não está ativado."

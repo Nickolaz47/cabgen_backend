@@ -131,6 +131,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	if !existingUser.IsActive {
+		c.JSON(http.StatusForbidden,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInactiveUser)},
+		)
+		return
+	}
+
 	if err = security.CheckPassword(existingUser.Password, login.Password); err != nil {
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInvalidCredentialsError)})

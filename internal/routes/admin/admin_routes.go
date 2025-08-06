@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +10,7 @@ func AdminRoutes(r *gin.RouterGroup) {
 	adminRouter := r.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
 
 	userGroup := adminRouter.Group("/user")
-	userGroup.GET("")
+	userGroup.GET("", admin.GetAllUsers)
 	userGroup.GET("/:id")
 	userGroup.POST("")
 	userGroup.PUT("/:id")

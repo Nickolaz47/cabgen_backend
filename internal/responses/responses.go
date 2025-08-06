@@ -15,6 +15,7 @@ const (
 	CountryNotFoundError               = "country.notFound.error"
 	LoginInvalidCredentialsError       = "public.auth.login.invalidCredentials"
 	LoginSuccess                       = "public.auth.login.success"
+	LoginInactiveUser                  = "public.auth.login.inactiveUser"
 	UnauthorizedError                  = "auth.unauthorized"
 	TokenExpiredError                  = "auth.tokenExpired"
 	LogoutSuccess                      = "public.auth.logout.success"
