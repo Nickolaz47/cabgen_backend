@@ -10,8 +10,8 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func ValidateRegisterInput(c *gin.Context, localizer *i18n.Localizer, newUser *models.RegisterInput) (string, bool) {
-	if err := c.ShouldBindJSON(newUser); err != nil {
+func ValidateUpdateInput(c *gin.Context, localizer *i18n.Localizer, input *models.UpdateUserInput) (string, bool) {
+	if err := c.ShouldBindJSON(input); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) && len(ve) > 0 {
 			validationErr := ve[0]
@@ -22,4 +22,22 @@ func ValidateRegisterInput(c *gin.Context, localizer *i18n.Localizer, newUser *m
 		return responses.GetResponse(localizer, responses.RegisterValidationGeneric), false
 	}
 	return "", true
+}
+
+func ApplyUpdateToUser(user *models.User, input *models.UpdateUserInput) {
+	if input.Name != nil {
+		user.Name = *input.Name
+	}
+	if input.Username != nil {
+		user.Username = *input.Username
+	}
+	if input.Interest != nil {
+		user.Interest = input.Interest
+	}
+	if input.Role != nil {
+		user.Role = input.Role
+	}
+	if input.Institution != nil {
+		user.Institution = input.Institution
+	}
 }

@@ -102,3 +102,9 @@ other = "Cierre de sesión exitoso."
 
 [public.auth.refresh.success]
 other = "Token de acceso renovado con éxito."
+
+[user.notFound.error]
+other = "Usuario no encontrado."
+
+[user.update.error]
+other = "No se pudo actualizar el usuario."

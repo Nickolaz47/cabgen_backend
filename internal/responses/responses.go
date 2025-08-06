@@ -19,6 +19,8 @@ const (
 	TokenExpiredError                  = "auth.tokenExpired"
 	LogoutSuccess                      = "public.auth.logout.success"
 	TokenRenewed                       = "public.auth.refresh.success"
+	UserNotFoundError                  = "user.notFound.error"
+	UpdateUserError                    = "user.update.error"
 )
 
 type APIResponse struct {

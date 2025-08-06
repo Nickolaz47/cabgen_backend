@@ -7,6 +7,7 @@ import (
 )
 
 func UserRoutes(r *gin.RouterGroup) {
-	r.GET("/user/me", middlewares.AuthMiddleware(), user.GetOwnUser)
-	r.PATCH("/user/me", middlewares.AuthMiddleware(), user.UpdateUser)
+	userRouter := r.Group("/user", middlewares.AuthMiddleware())
+	userRouter.GET("/me", user.GetOwnUser)
+	userRouter.PUT("/me", user.UpdateUser)
 }

@@ -71,8 +71,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	var country models.Country
-	if err := db.DB.Where("code = ?", newUser.CountryCode).First(&country).Error; err != nil {
+	if _, valid := validations.ValidateCountryCode(newUser.CountryCode); !valid {
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.CountryNotFoundError)})
 		return

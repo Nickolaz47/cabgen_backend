@@ -98,3 +98,12 @@ type UserResponse struct {
 	Role        *string   `json:"role,omitempty"`
 	Institution *string   `json:"institution,omitempty"`
 }
+
+type UpdateUserInput struct {
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
+	Username    *string `json:"username,omitempty" binding:"omitempty,min=4,max=100"`
+	CountryCode *string `json:"country_code,omitempty"`
+	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
+	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`
+	Institution *string `json:"institution,omitempty" binding:"omitempty,max=255"`
+}
