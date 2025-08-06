@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
@@ -9,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetOwnUser(c *gin.Context) {
@@ -55,6 +57,22 @@ func UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UserNotFoundError)})
+		return
+	}
+
+	var existingUser models.User
+	err := db.DB.Where("username = ?", updateUser.Username).First(&existingUser).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err == nil {
+		c.JSON(http.StatusConflict,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterUsernameAlreadyExistsError)},
+		)
 		return
 	}
 
