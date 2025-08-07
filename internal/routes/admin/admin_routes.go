@@ -12,7 +12,7 @@ func AdminRoutes(r *gin.RouterGroup) {
 	userGroup := adminRouter.Group("/user")
 	userGroup.GET("", admin.GetAllUsers)
 	userGroup.GET("/:username", admin.GetUserByUsername)
-	userGroup.POST("")
-	userGroup.PUT("/:id")
-	userGroup.DELETE("/:id")
+	userGroup.POST("", admin.CreateUser)
+	userGroup.PUT("/:username")
+	userGroup.DELETE("/:username")
 }

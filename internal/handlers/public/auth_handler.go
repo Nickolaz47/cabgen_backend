@@ -71,7 +71,8 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	if _, valid := validations.ValidateCountryCode(newUser.CountryCode); !valid {
+	country, valid := validations.ValidateCountryCode(newUser.CountryCode)
+	if !valid {
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.CountryNotFoundError)})
 		return
@@ -83,6 +84,7 @@ func Register(c *gin.Context) {
 		Email:       newUser.Email,
 		Password:    hashedPassword,
 		CountryCode: newUser.CountryCode,
+		Country:     *country,
 		IsActive:    false,
 		UserRole:    models.Collaborator,
 		Interest:    newUser.Interest,
@@ -91,7 +93,7 @@ func Register(c *gin.Context) {
 		CreatedBy:   newUser.Username,
 	}
 
-	if err := db.DB.Preload("Country").Create(&user).Error; err != nil {
+	if err := db.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)

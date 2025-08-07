@@ -111,3 +111,12 @@ other = "Could not update user."
 
 [public.auth.login.inactiveUser]
 other = "Your account is not activated."
+
+[admin.user.register.validation.UserRole.required]
+other = "User role is required."
+
+[admin.user.register.invalidUserRole]
+other = "The user role is invalid."
+
+[admin.user.register.success]
+other = "User created successfully."

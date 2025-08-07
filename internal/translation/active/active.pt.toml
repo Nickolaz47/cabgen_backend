@@ -111,3 +111,12 @@ other = "Não foi possível atualizar o usuário."
 
 [public.auth.login.inactiveUser]
 other = "Seu usuário não está ativado."
+
+[admin.user.register.validation.UserRole.required]
+other = "O cargo do usuário é obrigatório."
+
+[admin.user.register.invalidUserRole]
+other = "O cargo do usuário não é válido."
+
+[admin.user.register.success]
+other = "Usuário criado com sucesso."

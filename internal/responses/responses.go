@@ -22,6 +22,8 @@ const (
 	TokenRenewed                       = "public.auth.refresh.success"
 	UserNotFoundError                  = "user.notFound.error"
 	UpdateUserError                    = "user.update.error"
+	InvalidUserRoleError               = "admin.user.register.invalidUserRole"
+	AdminRegisterSuccess               = "admin.user.register.success"
 )
 
 type APIResponse struct {
