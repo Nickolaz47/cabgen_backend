@@ -47,7 +47,7 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	var updateUser models.UpdateUserInput
-	if errMsg, valid := validations.ValidateUpdateInput(c, localizer, &updateUser); !valid {
+	if errMsg, valid := validations.Validate(c, localizer, &updateUser); !valid {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}

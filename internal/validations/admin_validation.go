@@ -1,31 +1,24 @@
 package validations
 
-import (
-	"errors"
+import "github.com/CABGenOrg/cabgen_backend/internal/models"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/responses"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-)
-
-func ValidateAdminRegisterInput(c *gin.Context, localizer *i18n.Localizer, newUser *models.AdminRegisterInput) (string, bool) {
-	if err := c.ShouldBindJSON(newUser); err != nil {
-		var ve validator.ValidationErrors
-		var prefix string
-		if errors.As(err, &ve) && len(ve) > 0 {
-			validationErr := ve[0]
-			if validationErr.Field() == "UserRole" {
-				prefix = "admin.user.register.validation."
-			} else {
-				prefix = "public.auth.register.validation."
-			}
-			key := prefix + validationErr.Field() + "." + validationErr.Tag()
-			data := map[string]any{"Param": validationErr.Param()}
-			return responses.GetResponseWithData(localizer, key, data), false
-		}
-		return responses.GetResponse(localizer, responses.RegisterValidationGeneric), false
+func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUpdateInput) {
+	if input.Name != nil {
+		user.Name = *input.Name
 	}
-	return "", true
+	if input.Username != nil {
+		user.Username = *input.Username
+	}
+	if input.Email != nil {
+		user.Email = *input.Email
+	}
+	if input.Interest != nil {
+		user.Interest = input.Interest
+	}
+	if input.Role != nil {
+		user.Role = input.Role
+	}
+	if input.Institution != nil {
+		user.Institution = input.Institution
+	}
 }

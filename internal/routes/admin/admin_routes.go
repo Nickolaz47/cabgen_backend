@@ -13,6 +13,6 @@ func AdminRoutes(r *gin.RouterGroup) {
 	userGroup.GET("", admin.GetAllUsers)
 	userGroup.GET("/:username", admin.GetUserByUsername)
 	userGroup.POST("", admin.CreateUser)
-	userGroup.PUT("/:username")
+	userGroup.PUT("/:username", admin.UpdateUser)
 	userGroup.DELETE("/:username")
 }

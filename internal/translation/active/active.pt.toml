@@ -16,76 +16,70 @@ other="Erro ao criar usuário. Por favor, tente novamente."
 [public.auth.register.success.message]
 other="Usuário criado com sucesso. Aguarde a ativação por um administrador."
 
-[public.auth.register.validation.Name.required]
+[validation.Name.required]
 other = "O nome é obrigatório."
 
-[public.auth.register.validation.Name.min]
+[validation.Name.min]
 other = "O nome deve ter pelo menos {{.Param}} caracteres."
 
-[public.auth.register.validation.Name.max]
+[validation.Name.max]
 other = "O nome deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.Username.required]
+[validation.Username.required]
 other = "O nome de usuário é obrigatório."
 
-[public.auth.register.validation.Username.min]
+[validation.Username.min]
 other = "O nome de usuário deve ter pelo menos {{.Param}} caracteres."
 
-[public.auth.register.validation.Username.max]
+[validation.Username.max]
 other = "O nome de usuário deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.Email.required]
+[validation.Email.required]
 other = "O email é obrigatório."
 
-[public.auth.register.validation.Email.email]
+[validation.Email.email]
 other = "Formato de email inválido."
 
-[public.auth.register.validation.ConfirmEmail.required]
+[validation.ConfirmEmail.required]
 other = "A confirmação de email é obrigatória."
 
-[public.auth.register.validation.emailMismatch]
+[validation.emailMismatch]
 other = "Os emails devem ser iguais."
 
-[public.auth.register.validation.Password.required]
+[validation.Password.required]
 other = "A senha é obrigatória."
 
-[public.auth.register.validation.Password.min]
+[validation.Password.min]
 other = "A senha deve ter pelo menos {{.Param}} caracteres."
 
-[public.auth.register.validation.Password.max]
+[validation.Password.max]
 other = "A senha deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.ConfirmPassword.required]
+[validation.ConfirmPassword.required]
 other = "A confirmação de senha é obrigatória."
 
-[public.auth.register.validation.passwordMismatch]
+[validation.passwordMismatch]
 other = "As senhas devem ser iguais."
 
-[public.auth.register.validation.CountryCode.required]
+[validation.CountryCode.required]
 other = "O código do país é obrigatório."
 
-[public.auth.register.validation.Interest.max]
+[validation.Interest.max]
 other = "O campo de interesse deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.Role.max]
+[validation.Role.max]
 other = "O campo de papel deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.Institution.max]
+[validation.Institution.max]
 other = "O campo de instituição deve ter no máximo {{.Param}} caracteres."
 
-[public.auth.register.validation.generic]
+[validation.generic]
 other = "Entrada inválida. Verifique os campos e tente novamente."
 
 [country.notFound.error]
 other = "O país com esse código não foi encontrado."
 
-[public.auth.login.validation.Username.required]
-other = "O nome de usuário é obrigatório."
-
-[public.auth.login.validation.Password.required]
-other = "A senha é obrigatória."
-
-[public.auth.login.invalidCredentials]
+[validation.invalidCredentials]
 other = "Credenciais inválidas."
 
 [public.auth.login.success]
@@ -112,7 +106,7 @@ other = "Não foi possível atualizar o usuário."
 [public.auth.login.inactiveUser]
 other = "Seu usuário não está ativado."
 
-[admin.user.register.validation.UserRole.required]
+[validation.UserRole.required]
 other = "O cargo do usuário é obrigatório."
 
 [admin.user.register.invalidUserRole]

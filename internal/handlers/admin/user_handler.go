@@ -63,7 +63,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	var newUser models.AdminRegisterInput
-	if errMsg, valid := validations.ValidateAdminRegisterInput(c, localizer, &newUser); !valid {
+	if errMsg, valid := validations.Validate(c, localizer, &newUser); !valid {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
@@ -160,4 +160,102 @@ func CreateUser(c *gin.Context) {
 			Message: responses.GetResponse(localizer, responses.AdminRegisterSuccess),
 		},
 	)
+}
+
+func UpdateUser(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	username := c.Param("username")
+
+	var userToUpdate models.AdminUpdateInput
+	if errMsg, valid := validations.Validate(c, localizer, &userToUpdate); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	var user models.User
+	err := db.DB.Preload("Country").Where("username = ?", username).First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusNotFound,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UserNotFoundError)})
+		return
+	}
+
+	if userToUpdate.UserRole != nil {
+		if !slices.Contains(models.UserRoles, *userToUpdate.UserRole) {
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.InvalidUserRoleError)},
+			)
+			return
+		}
+		user.UserRole = *userToUpdate.UserRole
+	}
+
+	if userToUpdate.Email != nil || userToUpdate.Password != nil {
+		var existingUser models.User
+		err := db.DB.Where("email = ? OR username = ?", userToUpdate.Email, userToUpdate.Username).
+			First(&existingUser).Error
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+			)
+			return
+		}
+
+		if err == nil {
+			var errMsg string
+			if existingUser.Email == *userToUpdate.Email {
+				errMsg = responses.RegisterEmailAlreadyExistsError
+			} else if existingUser.Username == *userToUpdate.Username {
+				errMsg = responses.RegisterUsernameAlreadyExistsError
+			}
+
+			c.JSON(http.StatusConflict,
+				responses.APIResponse{Error: responses.GetResponse(localizer, errMsg)},
+			)
+			return
+		}
+	}
+
+	if userToUpdate.CountryCode != nil {
+		country, valid := validations.ValidateCountryCode(*userToUpdate.CountryCode)
+		if !valid {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer, responses.CountryNotFoundError),
+			})
+			return
+		}
+		user.Country = *country
+	}
+
+	if userToUpdate.Password != nil {
+		hashedPassword, err := security.Hash(*userToUpdate.Password)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+			)
+			return
+		}
+		user.Password = hashedPassword
+	}
+
+	validations.ApplyAdminUpdateToUser(&user, &userToUpdate)
+
+	if err := db.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.UpdateUserError),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: user.ToResponse(c),
+	})
 }

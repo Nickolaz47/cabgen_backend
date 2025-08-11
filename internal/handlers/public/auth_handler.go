@@ -19,7 +19,7 @@ func Register(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	var newUser models.RegisterInput
-	if errMsg, valid := validations.ValidateRegisterInput(c, localizer, &newUser); !valid {
+	if errMsg, valid := validations.Validate(c, localizer, &newUser); !valid {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
@@ -112,7 +112,7 @@ func Login(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	var login models.LoginInput
-	if errMsg, valid := validations.ValidateLoginInput(c, localizer, &login); !valid {
+	if errMsg, valid := validations.Validate(c, localizer, &login); !valid {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}

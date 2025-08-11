@@ -16,76 +16,70 @@ other="Error creating user. Please try again."
 [public.auth.register.success.message]
 other="User created successfully. Please wait for activation by an administrator."
 
-[public.auth.register.validation.Name.required]
+[validation.Name.required]
 other = "Name is required."
 
-[public.auth.register.validation.Name.min]
+[validation.Name.min]
 other = "Name must be at least {{.Param}} characters long."
 
-[public.auth.register.validation.Name.max]
+[validation.Name.max]
 other = "Name must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.Username.required]
+[validation.Username.required]
 other = "Username is required."
 
-[public.auth.register.validation.Username.min]
+[validation.Username.min]
 other = "Username must be at least {{.Param}} characters long."
 
-[public.auth.register.validation.Username.max]
+[validation.Username.max]
 other = "Username must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.Email.required]
+[validation.Email.required]
 other = "Email is required."
 
-[public.auth.register.validation.Email.email]
+[validation.Email.email]
 other = "Invalid email format."
 
-[public.auth.register.validation.ConfirmEmail.required]  
+[validation.ConfirmEmail.required]  
 other = "Email confirmation is required."  
 
-[public.auth.register.validation.emailMismatch]  
+[validation.emailMismatch]  
 other = "Emails must match."
 
-[public.auth.register.validation.Password.required]
+[validation.Password.required]
 other = "Password is required."
 
-[public.auth.register.validation.Password.min]
+[validation.Password.min]
 other = "Password must be at least {{.Param}} characters long."
 
-[public.auth.register.validation.Password.max]
+[validation.Password.max]
 other = "Password must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.ConfirmPassword.required]  
+[validation.ConfirmPassword.required]  
 other = "Password confirmation is required." 
 
-[public.auth.register.validation.passwordMismatch]  
+[validation.passwordMismatch]  
 other = "Passwords must match."
 
-[public.auth.register.validation.CountryCode.required]
+[validation.CountryCode.required]
 other = "Country code is required."
 
-[public.auth.register.validation.Interest.max]
+[validation.Interest.max]
 other = "Interest must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.Role.max]
+[validation.Role.max]
 other = "Role must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.Institution.max]
+[validation.Institution.max]
 other = "Institution must be at most {{.Param}} characters long."
 
-[public.auth.register.validation.generic]
+[validation.generic]
 other = "Invalid input. Please check the fields and try again."
 
 [country.notFound.error]
 other = "No country was found with this code."
 
-[public.auth.login.validation.Username.required]
-other = "Username is required."
-
-[public.auth.login.validation.Password.required]
-other = "Password is required."
-
-[public.auth.login.invalidCredentials]
+[validation.invalidCredentials]
 other = "Invalid credentials."
 
 [public.auth.login.success]
@@ -112,7 +106,7 @@ other = "Could not update user."
 [public.auth.login.inactiveUser]
 other = "Your account is not activated."
 
-[admin.user.register.validation.UserRole.required]
+[validation.UserRole.required]
 other = "User role is required."
 
 [admin.user.register.invalidUserRole]
