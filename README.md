@@ -155,15 +155,16 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 | Método | Endpoint               | Descrição                          |
 |--------|------------------------|-----------------------------------|
 | GET    | `/api/user/me`    | Retorna dados do usuário logado   |
-| PUT    | `/api/user/me`    | Atualiza dados do usuário         |
+| PUT    | `/api/user/me`    | Atualiza dados do usuário logado         |
 
 ### Admin
 
 | Método | Endpoint                 | Descrição                              |
 |--------|--------------------------|---------------------------------------|
 | GET    | `/api/admin/user`       | Lista todos os usuários                |
-| GET    | `/api/admin/user/:username`       | Retorna o usuário específico       |
+| GET    | `/api/admin/user/:username`       | Retorna um usuário específico       |
 | POST | `/api/admin/user`   | Cria um usuário já ativado                 |
+| PUT | `/api/admin/user/:username`   | Atualiza um usuário                |
 
 ## Internacionalização (i18n)
 
