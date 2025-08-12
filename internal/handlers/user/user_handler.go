@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
@@ -24,8 +24,8 @@ func GetOwnUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := db.DB.Preload("Country").Where("id = ?", userToken.ID).First(&user).Error; err != nil {
+	user, err := repository.GetUserRepo().GetUserByID(userToken.ID)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -52,31 +52,32 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := db.DB.Preload("Country").First(&user, "id = ?", userToken.ID).Error; err != nil {
+	user, err := repository.GetUserRepo().GetUserByID(userToken.ID)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UserNotFoundError)})
 		return
 	}
 
-	var existingUser models.User
-	err := db.DB.Where("username = ?", updateUser.Username).First(&existingUser).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusInternalServerError,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
-		)
-		return
+	if updateUser.Username != nil {
+		_, err = repository.GetUserRepo().GetUserByUsername(*updateUser.Username)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+			)
+			return
+		}
+
+		if err == nil {
+			c.JSON(http.StatusConflict,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterUsernameAlreadyExistsError)},
+			)
+			return
+		}
 	}
 
-	if err == nil {
-		c.JSON(http.StatusConflict,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterUsernameAlreadyExistsError)},
-		)
-		return
-	}
-
-	validations.ApplyUpdateToUser(&user, &updateUser)
+	validations.ApplyUpdateToUser(user, &updateUser)
 
 	if updateUser.CountryCode != nil {
 		country, valid := validations.ValidateCountryCode(*updateUser.CountryCode)
@@ -89,7 +90,7 @@ func UpdateUser(c *gin.Context) {
 		user.Country = *country
 	}
 
-	if err := db.DB.Save(&user).Error; err != nil {
+	if err := repository.GetUserRepo().UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UpdateUserError),
 		})

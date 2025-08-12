@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -43,10 +43,18 @@ func (r *UserRepository) GetUsers() ([]models.User, error) {
 	return users, nil
 }
 
+func (r *UserRepository) GetUserByID(ID uuid.UUID) (*models.User, error) {
+	var user models.User
+	if err := r.DB.Preload("Country").Where("id = ?", ID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
 	if err := r.DB.Preload("Country").Where("username = ?", username).First(&user).Error; err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
