@@ -4,8 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
-	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
@@ -15,8 +14,8 @@ import (
 func GetCountries(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	var countries []models.Country
-	if err := db.DB.Find(&countries).Error; err != nil {
+	countries, err := repository.GetCountryRepo().GetCountries()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
@@ -30,9 +29,7 @@ func GetCountryByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	code := c.Param("code")
 
-	var country models.Country
-	err := db.DB.Where("code = ?", code).First(&country).Error
-
+	country, err := repository.GetCountryRepo().GetCountry(code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.CountryNotFoundError)},
