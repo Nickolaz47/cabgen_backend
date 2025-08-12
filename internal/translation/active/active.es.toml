@@ -114,3 +114,6 @@ other = "El rol de usuario no es válido."
 
 [admin.user.register.success]
 other = "Usuario creado con éxito."
+
+[admin.user.delete.success]
+other = "Usuario eliminado con éxito."

@@ -114,3 +114,6 @@ other = "The user role is invalid."
 
 [admin.user.register.success]
 other = "User created successfully."
+
+[admin.user.delete.success]
+other = "User deleted successfully."

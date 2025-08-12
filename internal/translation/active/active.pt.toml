@@ -114,3 +114,6 @@ other = "O cargo do usuário não é válido."
 
 [admin.user.register.success]
 other = "Usuário criado com sucesso."
+
+[admin.user.delete.success]
+other = "Usuário deletado com sucesso."

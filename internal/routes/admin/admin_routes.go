@@ -14,5 +14,5 @@ func AdminRoutes(r *gin.RouterGroup) {
 	userGroup.GET("/:username", admin.GetUserByUsername)
 	userGroup.POST("", admin.CreateUser)
 	userGroup.PUT("/:username", admin.UpdateUser)
-	userGroup.DELETE("/:username")
+	userGroup.DELETE("/:username", admin.DeleteUser)
 }

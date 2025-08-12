@@ -259,3 +259,34 @@ func UpdateUser(c *gin.Context) {
 		Data: user.ToResponse(c),
 	})
 }
+
+func DeleteUser(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	username := c.Param("username")
+
+	var user models.User
+	err := db.DB.Where("username = ?", username).First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusNotFound,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UserNotFoundError)})
+		return
+	}
+
+	if err := db.DB.Where("username = ?", username).Delete(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{Message: responses.GetResponse(localizer, responses.UserDeleted)},
+	)
+}
