@@ -8,6 +8,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -19,8 +20,8 @@ import (
 func GetAllUsers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	var users []models.User
-	if err := db.DB.Preload("Country").Find(&users).Error; err != nil {
+	users, err := repository.GetUserRepo().GetUsers()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
 		return
@@ -33,8 +34,7 @@ func GetUserByUsername(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	username := c.Param("username")
 
-	var user models.User
-	err := db.DB.Preload("Country").Where("username = ?", username).First(&user).Error
+	user, err := repository.GetUserRepo().GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -75,10 +75,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	var existingUser models.User
-	err := db.DB.Where("email = ? OR username = ?", newUser.Email, newUser.Username).
-		First(&existingUser).Error
-
+	existingUser, err := repository.GetUserRepo().GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -147,7 +144,7 @@ func CreateUser(c *gin.Context) {
 		ActivatedOn: &activatedOn,
 	}
 
-	if err := db.DB.Create(&user).Error; err != nil {
+	if err := repository.GetUserRepo().CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
@@ -172,8 +169,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	err := db.DB.Preload("Country").Where("username = ?", username).First(&user).Error
+	user, err := repository.GetUserRepo().GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -197,28 +193,39 @@ func UpdateUser(c *gin.Context) {
 		user.UserRole = *userToUpdate.UserRole
 	}
 
-	if userToUpdate.Email != nil || userToUpdate.Password != nil {
-		var existingUser models.User
-		err := db.DB.Where("email = ? OR username = ?", userToUpdate.Email, userToUpdate.Username).
-			First(&existingUser).Error
-
+	if userToUpdate.Username != nil {
+		_, err := repository.GetUserRepo().GetUserByUsername(*userToUpdate.Username)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusInternalServerError,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.GenericInternalServerError)},
 			)
 			return
 		}
 
 		if err == nil {
-			var errMsg string
-			if existingUser.Email == *userToUpdate.Email {
-				errMsg = responses.RegisterEmailAlreadyExistsError
-			} else if existingUser.Username == *userToUpdate.Username {
-				errMsg = responses.RegisterUsernameAlreadyExistsError
-			}
-
 			c.JSON(http.StatusConflict,
-				responses.APIResponse{Error: responses.GetResponse(localizer, errMsg)},
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.RegisterUsernameAlreadyExistsError)},
+			)
+			return
+		}
+	}
+
+	if userToUpdate.Email != nil {
+		_, err := repository.GetUserRepo().GetUserByEmail(*userToUpdate.Email)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError,
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.GenericInternalServerError)},
+			)
+			return
+		}
+
+		if err == nil {
+			c.JSON(http.StatusConflict,
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.RegisterEmailAlreadyExistsError)},
 			)
 			return
 		}
@@ -246,9 +253,9 @@ func UpdateUser(c *gin.Context) {
 		user.Password = hashedPassword
 	}
 
-	validations.ApplyAdminUpdateToUser(&user, &userToUpdate)
+	validations.ApplyAdminUpdateToUser(user, &userToUpdate)
 
-	if err := db.DB.Save(&user).Error; err != nil {
+	if err := repository.GetUserRepo().UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UpdateUserError),
 		})
@@ -264,8 +271,7 @@ func DeleteUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	username := c.Param("username")
 
-	var user models.User
-	err := db.DB.Where("username = ?", username).First(&user).Error
+	user, err := repository.GetUserRepo().GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -279,7 +285,7 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.Where("username = ?", username).Delete(&user).Error; err != nil {
+	if err := db.DB.Delete(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
