@@ -117,3 +117,9 @@ other = "Usuario creado con éxito."
 
 [admin.user.delete.success]
 other = "Usuario eliminado con éxito."
+
+[admin.user.activate.success]
+other = "Usuario activado con éxito."
+
+[admin.user.deactivate.success]
+other = "Usuario desactivado con éxito."

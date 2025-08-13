@@ -296,3 +296,50 @@ func DeleteUser(c *gin.Context) {
 		responses.APIResponse{Message: responses.GetResponse(localizer, responses.UserDeleted)},
 	)
 }
+
+func UpdateUserActivation(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	username := c.Param("username")
+
+	userToken, ok := validations.GetUserTokenFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer,
+				responses.UnauthorizedError)})
+		return
+	}
+
+	user, err := repository.GetUserRepo().GetUserByUsername(username)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusNotFound,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UserNotFoundError)})
+		return
+	}
+
+	if user.ActivatedBy == nil && user.ActivatedOn == nil {
+		date := time.Now()
+		user.ActivatedBy = &userToken.Username
+		user.ActivatedOn = &date
+	}
+	user.IsActive = !user.IsActive
+
+	if err := repository.GetUserRepo().UpdateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UpdateUserError)})
+		return
+	}
+
+	message := responses.UserActivated
+	if !user.IsActive {
+		message = responses.UserDeactivated
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{Message: responses.GetResponse(localizer, message)})
+}

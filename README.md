@@ -165,6 +165,8 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 | GET    | `/api/admin/user/:username`       | Retorna um usuário específico       |
 | POST | `/api/admin/user`   | Cria um usuário já ativado                 |
 | PUT | `/api/admin/user/:username`   | Atualiza um usuário                |
+| PUT | `/api/admin/user/activation/:username`   | Ativa/desativa um usuário                |
+| DELETE | `/api/admin/user/:username`   | Deleta um usuário                |
 
 ## Internacionalização (i18n)
 

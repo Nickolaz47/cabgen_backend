@@ -25,6 +25,8 @@ const (
 	InvalidUserRoleError               = "admin.user.register.invalidUserRole"
 	AdminRegisterSuccess               = "admin.user.register.success"
 	UserDeleted                        = "admin.user.delete.success"
+	UserActivated                      = "admin.user.activate.success"
+	UserDeactivated                    = "admin.user.deactivate.success"
 )
 
 type APIResponse struct {
