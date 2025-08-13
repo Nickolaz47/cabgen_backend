@@ -2,3 +2,4 @@
 ./cabgen_backend
 .air.toml
 /tmp
+/logs

@@ -5,6 +5,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -24,11 +25,22 @@ func init() {
 	if err := utils.Setup(); err != nil {
 		log.Fatal(err)
 	}
+
+	logging.SetupLoggers()
 }
 
 func main() {
-	r := gin.Default()
-	r.Use(middlewares.I18nMiddleware())
+	gin.SetMode(gin.DebugMode)
+	if config.Environment != "dev" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	r := gin.New()
+	r.Use(
+		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
+		middlewares.I18nMiddleware(),
+		gin.Recovery(),
+	)
 
 	api := r.Group("/api")
 	routes.Router(api)
