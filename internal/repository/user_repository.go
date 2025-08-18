@@ -1,17 +1,9 @@
 package repository
 
 import (
-	"sync"
-
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-)
-
-var (
-	userRepo     *UserRepository
-	userRepoOnce sync.Once
 )
 
 type UserRepository struct {
@@ -20,18 +12,6 @@ type UserRepository struct {
 
 func NewUserRepo(db *gorm.DB) *UserRepository {
 	return &UserRepository{DB: db}
-}
-
-func GetUserRepo() *UserRepository {
-	userRepoOnce.Do(func() {
-		userRepo = NewUserRepo(db.DB)
-	})
-	return userRepo
-}
-
-// Test only
-func SetUserRepo(r *UserRepository) {
-	userRepo = r
 }
 
 func (r *UserRepository) GetUsers() ([]models.User, error) {

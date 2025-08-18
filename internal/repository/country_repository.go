@@ -1,16 +1,8 @@
 package repository
 
 import (
-	"sync"
-
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"gorm.io/gorm"
-)
-
-var (
-	countryRepo     *CountryRepository
-	countryRepoOnce sync.Once
 )
 
 type CountryRepository struct {
@@ -19,18 +11,6 @@ type CountryRepository struct {
 
 func NewCountryRepo(db *gorm.DB) *CountryRepository {
 	return &CountryRepository{DB: db}
-}
-
-func GetCountryRepo() *CountryRepository {
-	countryRepoOnce.Do(func() {
-		countryRepo = NewCountryRepo(db.DB)
-	})
-	return countryRepo
-}
-
-// Test only
-func SetCountryRepo(r *CountryRepository) {
-	countryRepo = r
 }
 
 func (r *CountryRepository) GetCountries() ([]models.Country, error) {

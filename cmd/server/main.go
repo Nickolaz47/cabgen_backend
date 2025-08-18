@@ -5,6 +5,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes"
@@ -20,6 +21,7 @@ func init() {
 
 	db.Connect()
 	db.Migrate()
+	handlers.InitRepositories(db.DB)
 	translation.LoadTranslation()
 
 	if err := utils.Setup(); err != nil {

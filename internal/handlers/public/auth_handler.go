@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -14,6 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+var UserRepo *repository.UserRepository
 
 func Register(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
@@ -24,10 +26,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	var existingUser models.User
-	err := db.DB.Where("email = ? OR username = ?", newUser.Email, newUser.Username).
-		First(&existingUser).Error
-
+	existingUser, err := UserRepo.GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -93,7 +92,7 @@ func Register(c *gin.Context) {
 		CreatedBy:   newUser.Username,
 	}
 
-	if err := db.DB.Create(&user).Error; err != nil {
+	if err := UserRepo.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
@@ -117,9 +116,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var existingUser models.User
-	err := db.DB.Where("username = ?", login.Username).First(&existingUser).Error
-
+	existingUser, err := UserRepo.GetUserByUsername(login.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInvalidCredentialsError)})

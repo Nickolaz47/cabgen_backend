@@ -11,10 +11,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var CountryRepo *repository.CountryRepository
+
 func GetCountries(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	countries, err := repository.GetCountryRepo().GetCountries()
+	countries, err := CountryRepo.GetCountries()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -29,7 +31,7 @@ func GetCountryByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	code := c.Param("code")
 
-	country, err := repository.GetCountryRepo().GetCountry(code)
+	country, err := CountryRepo.GetCountry(code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.CountryNotFoundError)},

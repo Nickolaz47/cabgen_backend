@@ -17,10 +17,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var UserRepo = repository.NewUserRepo(db.DB)
+
 func GetAllUsers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	users, err := repository.GetUserRepo().GetUsers()
+	users, err := UserRepo.GetUsers()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
@@ -34,7 +36,7 @@ func GetUserByUsername(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	username := c.Param("username")
 
-	user, err := repository.GetUserRepo().GetUserByUsername(username)
+	user, err := UserRepo.GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -75,7 +77,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	existingUser, err := repository.GetUserRepo().GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
+	existingUser, err := UserRepo.GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -144,7 +146,7 @@ func CreateUser(c *gin.Context) {
 		ActivatedOn: &activatedOn,
 	}
 
-	if err := repository.GetUserRepo().CreateUser(&user); err != nil {
+	if err := UserRepo.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
@@ -169,7 +171,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := repository.GetUserRepo().GetUserByUsername(username)
+	user, err := UserRepo.GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -194,7 +196,7 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	if userToUpdate.Username != nil {
-		_, err := repository.GetUserRepo().GetUserByUsername(*userToUpdate.Username)
+		_, err := UserRepo.GetUserByUsername(*userToUpdate.Username)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusInternalServerError,
 				responses.APIResponse{Error: responses.GetResponse(localizer,
@@ -213,7 +215,7 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	if userToUpdate.Email != nil {
-		_, err := repository.GetUserRepo().GetUserByEmail(*userToUpdate.Email)
+		_, err := UserRepo.GetUserByEmail(*userToUpdate.Email)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusInternalServerError,
 				responses.APIResponse{Error: responses.GetResponse(localizer,
@@ -255,7 +257,7 @@ func UpdateUser(c *gin.Context) {
 
 	validations.ApplyAdminUpdateToUser(user, &userToUpdate)
 
-	if err := repository.GetUserRepo().UpdateUser(user); err != nil {
+	if err := UserRepo.UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UpdateUserError),
 		})
@@ -271,7 +273,7 @@ func DeleteUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	username := c.Param("username")
 
-	user, err := repository.GetUserRepo().GetUserByUsername(username)
+	user, err := UserRepo.GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -309,7 +311,7 @@ func UpdateUserActivation(c *gin.Context) {
 		return
 	}
 
-	user, err := repository.GetUserRepo().GetUserByUsername(username)
+	user, err := UserRepo.GetUserByUsername(username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -330,7 +332,7 @@ func UpdateUserActivation(c *gin.Context) {
 	}
 	user.IsActive = !user.IsActive
 
-	if err := repository.GetUserRepo().UpdateUser(user); err != nil {
+	if err := UserRepo.UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.UpdateUserError)})
 		return
