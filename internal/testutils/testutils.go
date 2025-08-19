@@ -62,7 +62,7 @@ func CopyMap(original map[string]string) map[string]string {
 	return copy
 }
 
-func ToJSON(body map[string]string) string {
+func ToJSON(body any) string {
 	jsonBytes, err := json.Marshal(body)
 	if err != nil {
 		log.Fatalf("Failed to convert body to JSON: %v", err)
