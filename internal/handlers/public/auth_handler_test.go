@@ -114,6 +114,7 @@ func TestRegister(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 }
+
 func TestLogin(t *testing.T) {
 	testutils.SetupTestContext()
 
@@ -175,6 +176,7 @@ func TestLogin(t *testing.T) {
 		assert.JSONEq(t, data.LoginUserDeactivatedTest.Expected, w.Body.String())
 	})
 }
+
 func TestLogout(t *testing.T) {
 	db := testutils.SetupTestRepos()
 
@@ -216,7 +218,7 @@ func TestLogout(t *testing.T) {
 	w = httptest.NewRecorder()
 	c, _ = gin.CreateTestContext(w)
 	c.Request = req
-	
+
 	public.Logout(c)
 
 	cookies = w.Result().Cookies()
@@ -236,4 +238,93 @@ func TestLogout(t *testing.T) {
 	assert.Empty(t, accessCookie)
 	assert.Empty(t, refreshCookie)
 }
-func TestRefresh(t *testing.T) {}
+
+func TestRefresh(t *testing.T) {
+	db := testutils.SetupTestRepos()
+
+	db.Create(&MockLoginUser)
+	db.Model(&models.User{}).
+		Where("username = ?", MockLoginUser.Username).
+		Update("is_active", true)
+	t.Run("Success", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodPost,
+			"/api/auth/login",
+			testutils.ToJSON(models.LoginInput{
+				Username: MockLoginUser.Username,
+				Password: MockRegisterUser.Password},
+			),
+		)
+
+		public.Login(c)
+		var accessCookie, refreshCookie string
+
+		cookies := w.Result().Cookies()
+		for _, cookie := range cookies {
+			if cookie.Name == auth.Refresh {
+				refreshCookie = cookie.Value
+			}
+		}
+
+		body := bytes.NewBuffer(nil)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", body)
+		req.AddCookie(&http.Cookie{Name: auth.Access, Value: ""})
+		req.AddCookie(&http.Cookie{Name: auth.Refresh, Value: refreshCookie})
+
+		w = httptest.NewRecorder()
+		c, _ = gin.CreateTestContext(w)
+		c.Request = req
+
+		public.Refresh(c)
+
+		cookies = w.Result().Cookies()
+		for _, cookie := range cookies {
+			if cookie.Name == auth.Access {
+				accessCookie = cookie.Value
+			}
+		}
+
+		expected := `{"message": "Access token renewed successfully."}`
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+		assert.NotEmpty(t, accessCookie)
+	})
+
+	t.Run("Invalid token", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodPost,
+			"/api/auth/login",
+			testutils.ToJSON(models.LoginInput{
+				Username: MockLoginUser.Username,
+				Password: MockRegisterUser.Password},
+			),
+		)
+
+		public.Login(c)
+
+		var refreshCookie string
+
+		cookies := w.Result().Cookies()
+		for _, cookie := range cookies {
+			if cookie.Name == auth.Refresh {
+				refreshCookie = cookie.Value
+			}
+		}
+
+		body := bytes.NewBuffer(nil)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", body)
+		req.AddCookie(&http.Cookie{Name: auth.Refresh, Value: refreshCookie[:len(refreshCookie)-5]})
+
+		w = httptest.NewRecorder()
+		c, _ = gin.CreateTestContext(w)
+		c.Request = req
+
+		public.Refresh(c)
+
+		expected := `{"error": "Unauthorized. Please log in to continue."}`
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+}
