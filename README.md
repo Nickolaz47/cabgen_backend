@@ -1,6 +1,6 @@
 # Cabgen Backend
 
-API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o framework [Gin](https://gin-gonic.com/en/docs/). Esta API é utilizada como backend do site do [CABGen](https://cabgen.fiocruz.br/pt).
+API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o framework [Gin](https://gin-gonic.com/en/docs/). Esta API é uma nova versão do backend do site do [CABGen](https://cabgen.fiocruz.br/pt).
 
 ## Índice
 
@@ -35,9 +35,11 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 │   ├── handlers/             # Controladores Gin
 │   ├── middlewares/          # Middlewares
 │   ├── models/               # Estruturas de dados e mapeamento do banco
+│   ├── repository            # Queries do banco de dados
 │   ├── responses/            # Padronização de respostas
 │   ├── routes/               # Definição de endpoints
 │   ├── security/             # Criptografia de senhas
+│   ├── testutils/            # Funções auxiliares para os testes
 │   ├── translation/          # Arquivos e lógica de i18n
 │   ├── utils/                # Funções auxiliares
 │   └── validations/          # Validação de entrada e regras de negócio
@@ -50,6 +52,7 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 
 1. Instale o [Go](https://go.dev/dl/) (versão 1.23.0 ou superior recomendada).
 2. Instale o [PostgreSQL](https://www.postgresql.org/download/) e configure seu banco de dados.
+3. Instale o [SQLite](https://sqlite.org/) para os testes.
 
 Em seguida, clone este repositório e baixe as dependências:
 
