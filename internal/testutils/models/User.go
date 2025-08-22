@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -24,4 +25,43 @@ type User struct {
 	ActivatedOn *time.Time      `json:"activated_on"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
+}
+
+var MockRegisterUser = models.RegisterInput{
+	Name:            "Nicolas",
+	Username:        "nmfaraujo",
+	Password:        "12345678",
+	ConfirmPassword: "12345678",
+	Email:           "nicolas@mail.com",
+	ConfirmEmail:    "nicolas@mail.com",
+	CountryCode:     "BRA",
+}
+
+var MockLoginUser = models.User{
+	ID:          uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76c"),
+	Name:        "Nicolas",
+	Username:    "nick",
+	Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
+	Email:       "nick@mail.com",
+	CountryCode: "BRA",
+	Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
+	IsActive:    true,
+}
+
+var (
+	name        = "Nicolas"
+	username    = "nickol"
+	countryCode = "BRA"
+	interest    = "Bacterial resistance"
+	role        = "Researcher"
+	institution = "NCBI"
+)
+
+var MockUpdateUser = models.UpdateUserInput{
+	Name:        &name,
+	Username:    &username,
+	CountryCode: &countryCode,
+	Interest:    &interest,
+	Role:        &role,
+	Institution: &institution,
 }

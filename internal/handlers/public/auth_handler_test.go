@@ -12,30 +12,11 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 
 	"github.com/stretchr/testify/assert"
 )
-
-var MockRegisterUser = models.RegisterInput{
-	Name:            "Nicolas",
-	Username:        "nmfaraujo",
-	Password:        "12345678",
-	ConfirmPassword: "12345678",
-	Email:           "nicolas@mail.com",
-	ConfirmEmail:    "nicolas@mail.com",
-	CountryCode:     "BRA",
-}
-
-var MockLoginUser = models.User{
-	Name:        "Nicolas",
-	Username:    "nick",
-	Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
-	Email:       "nick@mail.com",
-	CountryCode: "BRA",
-	Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
-	IsActive:    true,
-}
 
 func TestRegister(t *testing.T) {
 	testutils.SetupTestContext()
@@ -49,14 +30,14 @@ func TestRegister(t *testing.T) {
 		Es:   "Brazil",
 	})
 	t.Run("Success", func(t *testing.T) {
-		body := testutils.ToJSON(MockRegisterUser)
+		body := testutils.ToJSON(testmodels.MockRegisterUser)
 		expected := map[string]any{
 			"message": "User created successfully. Please wait for activation by an administrator.",
 			"data": map[string]any{
-				"name":         MockRegisterUser.Name,
-				"username":     MockRegisterUser.Username,
-				"email":        MockRegisterUser.Email,
-				"country_code": MockRegisterUser.CountryCode,
+				"name":         testmodels.MockRegisterUser.Name,
+				"username":     testmodels.MockRegisterUser.Username,
+				"email":        testmodels.MockRegisterUser.Email,
+				"country_code": testmodels.MockRegisterUser.CountryCode,
 				"country":      "Brazil",
 				"user_role":    "Collaborator",
 			},
@@ -89,8 +70,8 @@ func TestRegister(t *testing.T) {
 	}
 
 	t.Run("Email already exists", func(t *testing.T) {
-		MockRegisterUser.Username = "nick"
-		body := testutils.ToJSON(MockRegisterUser)
+		testmodels.MockRegisterUser.Username = "nick"
+		body := testutils.ToJSON(testmodels.MockRegisterUser)
 		expected := `{"error": "Email is already in use."}`
 
 		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", body)
@@ -101,10 +82,10 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("Username already exists", func(t *testing.T) {
-		MockRegisterUser.Email = "nick@mail.com"
-		MockRegisterUser.ConfirmEmail = "nick@mail.com"
-		MockRegisterUser.Username = "nmfaraujo"
-		body := testutils.ToJSON(MockRegisterUser)
+		testmodels.MockRegisterUser.Email = "nick@mail.com"
+		testmodels.MockRegisterUser.ConfirmEmail = "nick@mail.com"
+		testmodels.MockRegisterUser.Username = "nmfaraujo"
+		body := testutils.ToJSON(testmodels.MockRegisterUser)
 		expected := `{"error": "Username already exists."}`
 
 		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", body)
@@ -120,7 +101,7 @@ func TestLogin(t *testing.T) {
 
 	db := testutils.SetupTestRepos()
 
-	db.Create(&MockLoginUser)
+	db.Create(&testmodels.MockLoginUser)
 
 	t.Run(data.LoginSuccess.Name, func(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/login", data.LoginSuccess.Body)
@@ -165,7 +146,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	db.Model(&models.User{}).
-		Where("username = ?", MockLoginUser.Username).
+		Where("username = ?", testmodels.MockLoginUser.Username).
 		Update("is_active", false)
 
 	t.Run(data.LoginUserDeactivatedTest.Name, func(t *testing.T) {
@@ -180,17 +161,17 @@ func TestLogin(t *testing.T) {
 func TestLogout(t *testing.T) {
 	db := testutils.SetupTestRepos()
 
-	db.Create(&MockLoginUser)
+	db.Create(&testmodels.MockLoginUser)
 	db.Model(&models.User{}).
-		Where("username = ?", MockLoginUser.Username).
+		Where("username = ?", testmodels.MockLoginUser.Username).
 		Update("is_active", true)
 
 	c, w := testutils.SetupGinContext(
 		http.MethodPost,
 		"/api/auth/login",
 		testutils.ToJSON(models.LoginInput{
-			Username: MockLoginUser.Username,
-			Password: MockRegisterUser.Password},
+			Username: testmodels.MockLoginUser.Username,
+			Password: testmodels.MockRegisterUser.Password},
 		),
 	)
 
@@ -210,8 +191,7 @@ func TestLogout(t *testing.T) {
 	assert.NotEmpty(t, accessCookie)
 	assert.NotEmpty(t, refreshCookie)
 
-	body := bytes.NewBuffer(nil)
-	req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", body)
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", bytes.NewBuffer(nil))
 	req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
 	req.AddCookie(&http.Cookie{Name: auth.Refresh, Value: refreshCookie})
 
@@ -242,17 +222,17 @@ func TestLogout(t *testing.T) {
 func TestRefresh(t *testing.T) {
 	db := testutils.SetupTestRepos()
 
-	db.Create(&MockLoginUser)
+	db.Create(&testmodels.MockLoginUser)
 	db.Model(&models.User{}).
-		Where("username = ?", MockLoginUser.Username).
+		Where("username = ?", testmodels.MockLoginUser.Username).
 		Update("is_active", true)
 	t.Run("Success", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
 			"/api/auth/login",
 			testutils.ToJSON(models.LoginInput{
-				Username: MockLoginUser.Username,
-				Password: MockRegisterUser.Password},
+				Username: testmodels.MockLoginUser.Username,
+				Password: testmodels.MockRegisterUser.Password},
 			),
 		)
 
@@ -266,8 +246,7 @@ func TestRefresh(t *testing.T) {
 			}
 		}
 
-		body := bytes.NewBuffer(nil)
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", body)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewBuffer(nil))
 		req.AddCookie(&http.Cookie{Name: auth.Access, Value: ""})
 		req.AddCookie(&http.Cookie{Name: auth.Refresh, Value: refreshCookie})
 
@@ -296,8 +275,8 @@ func TestRefresh(t *testing.T) {
 			http.MethodPost,
 			"/api/auth/login",
 			testutils.ToJSON(models.LoginInput{
-				Username: MockLoginUser.Username,
-				Password: MockRegisterUser.Password},
+				Username: testmodels.MockLoginUser.Username,
+				Password: testmodels.MockRegisterUser.Password},
 			),
 		)
 
@@ -312,8 +291,7 @@ func TestRefresh(t *testing.T) {
 			}
 		}
 
-		body := bytes.NewBuffer(nil)
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", body)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewBuffer(nil))
 		req.AddCookie(&http.Cookie{Name: auth.Refresh, Value: refreshCookie[:len(refreshCookie)-5]})
 
 		w = httptest.NewRecorder()

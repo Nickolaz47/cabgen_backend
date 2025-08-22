@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -13,8 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
-
-var UserRepo = repository.NewUserRepo(db.DB)
 
 func GetOwnUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
@@ -27,7 +24,7 @@ func GetOwnUser(c *gin.Context) {
 		return
 	}
 
-	user, err := UserRepo.GetUserByID(userToken.ID)
+	user, err := repository.UserRepo.GetUserByID(userToken.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
@@ -55,16 +52,16 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := UserRepo.GetUserByID(userToken.ID)
+	user, err := repository.UserRepo.GetUserByID(userToken.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError,
+		c.JSON(http.StatusNotFound,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UserNotFoundError)})
 		return
 	}
 
 	if updateUser.Username != nil {
-		_, err = UserRepo.GetUserByUsername(*updateUser.Username)
+		_, err = repository.UserRepo.GetUserByUsername(*updateUser.Username)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusInternalServerError,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -85,7 +82,7 @@ func UpdateUser(c *gin.Context) {
 	if updateUser.CountryCode != nil {
 		country, valid := validations.ValidateCountryCode(*updateUser.CountryCode)
 		if !valid {
-			c.JSON(http.StatusBadRequest, responses.APIResponse{
+			c.JSON(http.StatusNotFound, responses.APIResponse{
 				Error: responses.GetResponse(localizer, responses.CountryNotFoundError),
 			})
 			return
@@ -93,7 +90,7 @@ func UpdateUser(c *gin.Context) {
 		user.Country = *country
 	}
 
-	if err := UserRepo.UpdateUser(user); err != nil {
+	if err := repository.UserRepo.UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UpdateUserError),
 		})

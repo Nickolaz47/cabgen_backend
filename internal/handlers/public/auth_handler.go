@@ -15,8 +15,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var UserRepo *repository.UserRepository
-
 func Register(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
@@ -26,7 +24,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	existingUser, err := UserRepo.GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
+	existingUser, err := repository.UserRepo.GetUserByUsernameOrEmail(newUser.Username, newUser.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
@@ -92,7 +90,7 @@ func Register(c *gin.Context) {
 		CreatedBy:   newUser.Username,
 	}
 
-	if err := UserRepo.CreateUser(&user); err != nil {
+	if err := repository.UserRepo.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
@@ -116,7 +114,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	existingUser, err := UserRepo.GetUserByUsername(login.Username)
+	existingUser, err := repository.UserRepo.GetUserByUsername(login.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.LoginInvalidCredentialsError)})

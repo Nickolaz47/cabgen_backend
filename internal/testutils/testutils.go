@@ -7,8 +7,8 @@ import (
 	"maps"
 	"net/http/httptest"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
@@ -32,7 +32,7 @@ func NewMockDB() *gorm.DB {
 
 func SetupTestRepos() *gorm.DB {
 	db := NewMockDB()
-	handlers.InitRepositories(db)
+	repository.InitRepositories(db)
 	return db
 }
 
