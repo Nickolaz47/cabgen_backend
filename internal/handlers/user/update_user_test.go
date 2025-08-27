@@ -11,7 +11,6 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
@@ -20,115 +19,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetOwnUser(t *testing.T) {
-	testutils.SetupTestContext()
-	db := testutils.SetupTestRepos()
-
-	db.Create(&models.Country{
-		Code: "BRA",
-		Pt:   "Brasil",
-		En:   "Brazil",
-		Es:   "Brazil",
-	})
-	db.Create(&testmodels.MockLoginUser)
-
-	t.Run("Success", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(
-			http.MethodPost,
-			"/api/auth/login",
-			testutils.ToJSON(models.LoginInput{
-				Username: testmodels.MockLoginUser.Username,
-				Password: testmodels.MockRegisterUser.Password},
-			),
-		)
-
-		public.Login(c)
-		var accessCookie string
-
-		cookies := w.Result().Cookies()
-		for _, cookie := range cookies {
-			if cookie.Name == auth.Access {
-				accessCookie = cookie.Value
-			}
-		}
-
-		req := httptest.NewRequest(http.MethodGet, "/api/user/me", bytes.NewBuffer(nil))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
-
-		w = httptest.NewRecorder()
-		c, _ = gin.CreateTestContext(w)
-		c.Request = req
-
-		c.Set("user", &models.UserToken{
-			ID:       testmodels.MockLoginUser.ID,
-			Username: testmodels.MockLoginUser.Username,
-			UserRole: testmodels.MockLoginUser.UserRole,
-		})
-
-		user.GetOwnUser(c)
-
-		expected := testutils.ToJSON(responses.APIResponse{Data: testmodels.MockLoginUser.ToResponse(c)})
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-
-	t.Run("Missing user in context", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(
-			http.MethodGet,
-			"/api/user/me",
-			"",
-		)
-
-		user.GetOwnUser(c)
-
-		expected := `{"error": "Unauthorized. Please log in to continue."}`
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-
-	t.Run("User not found", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(
-			http.MethodGet,
-			"/api/user/me",
-			"",
-		)
-
-		mockUserToken := &models.UserToken{
-			ID:       uuid.UUID{},
-			Username: "nick",
-			UserRole: "Collaborator",
-		}
-		c.Set("user", mockUserToken)
-
-		user.GetOwnUser(c)
-
-		expected := `{"error": "Unauthorized. Please log in to continue."}`
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-}
-
 func TestUpdateUser(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	db.Create(&models.Country{
-		Code: "BRA",
-		Pt:   "Brasil",
-		En:   "Brazil",
-		Es:   "Brazil",
-	})
-	db.Create(&testmodels.MockLoginUser)
+	mockCountry := testmodels.NewCountry("", "", "", "")
+	db.Create(&mockCountry)
+
+	mockLoginUser := testmodels.NewLoginUser()
+	db.Create(&mockLoginUser)
+
+	mockUserToken := testmodels.NewUserToken(
+		mockLoginUser.ID, mockLoginUser.Username, mockLoginUser.UserRole,
+	)
 
 	gc, gw := testutils.SetupGinContext(
 		http.MethodPost,
 		"/api/auth/login",
 		testutils.ToJSON(models.LoginInput{
-			Username: testmodels.MockLoginUser.Username,
-			Password: testmodels.MockRegisterUser.Password},
+			Username: mockLoginUser.Username,
+			Password: "12345678"},
 		),
 	)
 
@@ -143,7 +53,8 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	t.Run("Missing user in context", func(t *testing.T) {
-		body := testutils.ToJSON(testmodels.MockUpdateUser)
+		mockUpdateUserInput := testmodels.NewUpdateUserInput()
+		body := testutils.ToJSON(mockUpdateUserInput)
 		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
 		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
 
@@ -168,11 +79,7 @@ func TestUpdateUser(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = req
 
-			c.Set("user", &models.UserToken{
-				ID:       testmodels.MockLoginUser.ID,
-				Username: testmodels.MockLoginUser.Username,
-				UserRole: testmodels.MockLoginUser.UserRole,
-			})
+			c.Set("user", &mockUserToken)
 
 			user.UpdateUser(c)
 
@@ -189,11 +96,7 @@ func TestUpdateUser(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
 
-		c.Set("user", &models.UserToken{
-			ID:       testmodels.MockLoginUser.ID,
-			Username: testmodels.MockLoginUser.Username,
-			UserRole: testmodels.MockLoginUser.UserRole,
-		})
+		c.Set("user", &mockUserToken)
 
 		user.UpdateUser(c)
 
@@ -210,11 +113,7 @@ func TestUpdateUser(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = req
 
-			c.Set("user", &models.UserToken{
-				ID:       testmodels.MockLoginUser.ID,
-				Username: testmodels.MockLoginUser.Username,
-				UserRole: testmodels.MockLoginUser.UserRole,
-			})
+			c.Set("user", &mockUserToken)
 
 			user.UpdateUser(c)
 
@@ -224,7 +123,8 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	t.Run("User not found", func(t *testing.T) {
-		body := testutils.ToJSON(testmodels.MockUpdateUser)
+		mockUpdateUserInput := testmodels.NewUpdateUserInput()
+		body := testutils.ToJSON(mockUpdateUserInput)
 		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
 		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
 
@@ -234,8 +134,8 @@ func TestUpdateUser(t *testing.T) {
 
 		c.Set("user", &models.UserToken{
 			ID:       uuid.UUID{},
-			Username: testmodels.MockLoginUser.Username,
-			UserRole: testmodels.MockLoginUser.UserRole,
+			Username: mockLoginUser.Username,
+			UserRole: mockLoginUser.UserRole,
 		})
 
 		user.UpdateUser(c)
@@ -247,7 +147,8 @@ func TestUpdateUser(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		body := testutils.ToJSON(testmodels.MockUpdateUser)
+		mockUpdateUserInput := testmodels.NewUpdateUserInput()
+		body := testutils.ToJSON(mockUpdateUserInput)
 		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
 		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
 
@@ -255,25 +156,21 @@ func TestUpdateUser(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
 
-		c.Set("user", &models.UserToken{
-			ID:       testmodels.MockLoginUser.ID,
-			Username: testmodels.MockLoginUser.Username,
-			UserRole: testmodels.MockLoginUser.UserRole,
-		})
+		c.Set("user", &mockUserToken)
 
 		user.UpdateUser(c)
 
 		expected := map[string]any{
 			"data": map[string]any{
-				"name":         *testmodels.MockUpdateUser.Name,
-				"username":     *testmodels.MockUpdateUser.Username,
-				"email":        testmodels.MockLoginUser.Email,
-				"country_code": *testmodels.MockUpdateUser.CountryCode,
+				"name":         *mockUpdateUserInput.Name,
+				"username":     *mockUpdateUserInput.Username,
+				"email":        mockLoginUser.Email,
+				"country_code": *mockUpdateUserInput.CountryCode,
 				"country":      "Brazil",
 				"user_role":    "",
-				"role":         *testmodels.MockUpdateUser.Role,
-				"interest":     *testmodels.MockUpdateUser.Interest,
-				"institution":  *testmodels.MockUpdateUser.Institution,
+				"role":         *mockUpdateUserInput.Role,
+				"interest":     *mockUpdateUserInput.Interest,
+				"institution":  *mockUpdateUserInput.Institution,
 			},
 		}
 
