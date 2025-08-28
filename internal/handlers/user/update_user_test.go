@@ -39,7 +39,7 @@ func TestUpdateUser(t *testing.T) {
 		testutils.ToJSON(models.LoginInput{
 			Username: mockLoginUser.Username,
 			Password: "12345678"},
-		),
+		), nil, nil,
 	)
 
 	public.Login(gc)

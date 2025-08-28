@@ -36,17 +36,23 @@ func SetupTestRepos() *gorm.DB {
 	return db
 }
 
-func SetupGinContext(method, URL, body string) (*gin.Context, *httptest.ResponseRecorder) {
+func SetupGinContext(method, URL, body string, headers map[string]string, params gin.Params) (*gin.Context, *httptest.ResponseRecorder) {
 	req := httptest.NewRequest(
 		method,
 		URL,
 		bytes.NewBufferString(body),
 	)
+
 	req.Header.Set("Content-Type", "application/json")
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
+	c.Params = params
 
 	return c, w
 }

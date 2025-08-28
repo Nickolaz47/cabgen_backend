@@ -35,7 +35,7 @@ func TestGetOwnUser(t *testing.T) {
 			testutils.ToJSON(models.LoginInput{
 				Username: mockLoginUser.Username,
 				Password: "12345678"},
-			),
+			), nil, nil,
 		)
 
 		public.Login(c)
@@ -73,7 +73,7 @@ func TestGetOwnUser(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
 			"/api/user/me",
-			"",
+			"", nil, nil,
 		)
 
 		user.GetOwnUser(c)
@@ -88,7 +88,7 @@ func TestGetOwnUser(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
 			"/api/user/me",
-			"",
+			"", nil, nil,
 		)
 
 		mockUserToken := &models.UserToken{

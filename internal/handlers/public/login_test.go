@@ -21,7 +21,10 @@ func TestLogin(t *testing.T) {
 	db.Create(&mockLoginUser)
 
 	t.Run(data.LoginSuccess.Name, func(t *testing.T) {
-		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/login", data.LoginSuccess.Body)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/login", data.LoginSuccess.Body,
+			nil, nil,
+		)
 		public.Login(c)
 
 		cookies := w.Result().Cookies()
@@ -44,7 +47,10 @@ func TestLogin(t *testing.T) {
 
 	for _, tt := range data.LoginBadRequestTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/login", tt.Body)
+			c, w := testutils.SetupGinContext(
+				http.MethodPost, "/api/auth/login", tt.Body,
+				nil, nil,
+			)
 			public.Login(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -54,7 +60,10 @@ func TestLogin(t *testing.T) {
 
 	for _, tt := range data.LoginUnauthorizedTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/login", tt.Body)
+			c, w := testutils.SetupGinContext(
+				http.MethodPost, "/api/auth/login", tt.Body,
+				nil, nil,
+			)
 			public.Login(c)
 
 			assert.Equal(t, http.StatusUnauthorized, w.Code)
@@ -67,7 +76,10 @@ func TestLogin(t *testing.T) {
 		Update("is_active", false)
 
 	t.Run(data.LoginUserDeactivatedTest.Name, func(t *testing.T) {
-		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/login", data.LoginUserDeactivatedTest.Body)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/login",
+			data.LoginUserDeactivatedTest.Body, nil, nil,
+		)
 		public.Login(c)
 
 		assert.Equal(t, http.StatusForbidden, w.Code)

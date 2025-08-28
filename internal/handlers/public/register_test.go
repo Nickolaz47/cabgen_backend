@@ -35,7 +35,10 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
-		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", body)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/register", body,
+			nil, nil,
+		)
 		public.Register(c)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
@@ -53,7 +56,10 @@ func TestRegister(t *testing.T) {
 
 	for _, tt := range data.RegisterTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", tt.Body)
+			c, w := testutils.SetupGinContext(
+				http.MethodPost, "/api/auth/register", tt.Body,
+				nil, nil,
+			)
 			public.Register(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -66,7 +72,10 @@ func TestRegister(t *testing.T) {
 		body := testutils.ToJSON(mockRegisterUser)
 		expected := `{"error": "Email is already in use."}`
 
-		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", body)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/register", body,
+			nil, nil,
+		)
 		public.Register(c)
 
 		assert.Equal(t, http.StatusConflict, w.Code)
@@ -78,7 +87,10 @@ func TestRegister(t *testing.T) {
 		body := testutils.ToJSON(mockRegisterUser)
 		expected := `{"error": "Username already exists."}`
 
-		c, w := testutils.SetupGinContext(http.MethodPost, "/api/auth/register", body)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/register", body,
+			nil, nil,
+		)
 		public.Register(c)
 
 		assert.Equal(t, http.StatusConflict, w.Code)

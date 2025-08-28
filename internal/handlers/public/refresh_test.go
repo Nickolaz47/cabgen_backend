@@ -31,6 +31,7 @@ func TestRefresh(t *testing.T) {
 			http.MethodPost,
 			"/api/auth/login",
 			testutils.ToJSON(mockLoginInput),
+			nil, nil,
 		)
 
 		public.Login(c)
@@ -72,6 +73,7 @@ func TestRefresh(t *testing.T) {
 			http.MethodPost,
 			"/api/auth/login",
 			testutils.ToJSON(mockLoginInput),
+			nil, nil,
 		)
 
 		public.Login(c)
