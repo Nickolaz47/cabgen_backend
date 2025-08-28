@@ -47,6 +47,19 @@ func NewLoginUser() models.User {
 	}
 }
 
+func NewAdminLoginUser() models.User {
+	return models.User{
+		ID:          uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76d"),
+		Name:        "Cabgen Admin",
+		Username:    "admin",
+		Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
+		Email:       "cadmin@mail.com",
+		CountryCode: "BRA",
+		Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
+		IsActive:    true,
+	}
+}
+
 func NewRegisterUser(username, inputEmail string) models.RegisterInput {
 	if username == "" {
 		username = "nmfaraujo"
