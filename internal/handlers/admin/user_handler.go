@@ -6,7 +6,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -285,7 +284,7 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.Delete(&user).Error; err != nil {
+	if err := repository.UserRepo.DeleteUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
 		)
