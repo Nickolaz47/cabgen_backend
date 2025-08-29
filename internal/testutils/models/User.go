@@ -103,3 +103,26 @@ func NewUserToken(id uuid.UUID, username string, userRole models.UserRole) model
 		UserRole: userRole,
 	}
 }
+
+func NewAdminCreateUserInput(inputEmail, username string) models.AdminRegisterInput {
+	if inputEmail == "" {
+		inputEmail = "eddy@mail.com"
+	}
+
+	if username == "" {
+		username = "eddy"
+	}
+
+	return models.AdminRegisterInput{
+		RegisterInput: models.RegisterInput{
+			Name:            "Eddie",
+			Username:        username,
+			Email:           inputEmail,
+			ConfirmEmail:    inputEmail,
+			Password:        "12345678",
+			ConfirmPassword: "12345678",
+			CountryCode:     "BRA",
+		},
+		UserRole: models.Collaborator,
+	}
+}
