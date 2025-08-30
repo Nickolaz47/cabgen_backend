@@ -233,7 +233,7 @@ func UpdateUser(c *gin.Context) {
 	if userToUpdate.CountryCode != nil {
 		country, valid := validations.ValidateCountryCode(*userToUpdate.CountryCode)
 		if !valid {
-			c.JSON(http.StatusBadRequest, responses.APIResponse{
+			c.JSON(http.StatusNotFound, responses.APIResponse{
 				Error: responses.GetResponse(localizer, responses.CountryNotFoundError),
 			})
 			return

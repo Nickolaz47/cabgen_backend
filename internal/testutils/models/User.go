@@ -29,9 +29,13 @@ type User struct {
 
 var (
 	name        = "Nicolas"
+	username    = "nickol"
 	password    = "12345678"
 	email       = "nicolas@mail.com"
 	countryCode = "BRA"
+	interest    = "Bacterial resistance"
+	role        = "Researcher"
+	institution = "NCBI"
 )
 
 func NewLoginUser() models.User {
@@ -81,11 +85,6 @@ func NewRegisterUser(username, inputEmail string) models.RegisterInput {
 }
 
 func NewUpdateUserInput() models.UpdateUserInput {
-	username := "nickol"
-	interest := "Bacterial resistance"
-	role := "Researcher"
-	institution := "NCBI"
-
 	return models.UpdateUserInput{
 		Name:        &name,
 		Username:    &username,
@@ -124,5 +123,23 @@ func NewAdminCreateUserInput(inputEmail, username string) models.AdminRegisterIn
 			CountryCode:     "BRA",
 		},
 		UserRole: models.Collaborator,
+	}
+}
+
+func NewAdminUpdateUserInput() models.AdminUpdateInput {
+	userRole := models.Collaborator
+
+	return models.AdminUpdateInput{
+		UpdateUserInput: models.UpdateUserInput{
+			Name:        &name,
+			Username:    &username,
+			CountryCode: &countryCode,
+			Interest:    &interest,
+			Role:        &role,
+			Institution: &institution,
+		},
+		Email:    &email,
+		Password: &password,
+		UserRole: &userRole,
 	}
 }
