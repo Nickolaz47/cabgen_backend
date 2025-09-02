@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"maps"
+	"net/http"
 	"net/http/httptest"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -74,4 +75,25 @@ func ToJSON(body any) string {
 		log.Fatalf("Failed to convert body to JSON: %v", err)
 	}
 	return string(jsonBytes)
+}
+
+func SetupMiddlewareContext() (*httptest.ResponseRecorder, *gin.Engine) {
+	return httptest.NewRecorder(), gin.New()
+}
+
+func AddMiddlewares(engine *gin.Engine, middlewares ...gin.HandlerFunc) {
+	for _, m := range middlewares {
+		engine.Use(m)
+	}
+}
+
+func AddTestGetRoute(engine *gin.Engine) {
+	engine.GET("/", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+}
+
+func DoGetRequest(r *gin.Engine, w *httptest.ResponseRecorder) {
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	r.ServeHTTP(w, req)
 }
