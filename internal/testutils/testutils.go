@@ -87,9 +87,13 @@ func AddMiddlewares(engine *gin.Engine, middlewares ...gin.HandlerFunc) {
 	}
 }
 
-func AddTestGetRoute(engine *gin.Engine) {
+func AddTestGetRoute(engine *gin.Engine, statusCode int) {
 	engine.GET("/", func(c *gin.Context) {
-		c.Status(http.StatusOK)
+		if statusCode <= 0 {
+			c.Status(http.StatusOK)
+		} else {
+			c.Status(statusCode)
+		}
 	})
 }
 

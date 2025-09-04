@@ -29,7 +29,7 @@ func TestAdminMiddleware(t *testing.T) {
 		}
 
 		testutils.AddMiddlewares(r, mockAuthMiddleware, middlewares.AdminMiddleware())
-		testutils.AddTestGetRoute(r)
+		testutils.AddTestGetRoute(r, http.StatusOK)
 		testutils.DoGetRequest(r, w)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -40,7 +40,7 @@ func TestAdminMiddleware(t *testing.T) {
 		r := gin.New()
 
 		testutils.AddMiddlewares(r, middlewares.AdminMiddleware())
-		testutils.AddTestGetRoute(r)
+		testutils.AddTestGetRoute(r, http.StatusOK)
 		testutils.DoGetRequest(r, w)
 
 		expected := `{"error":"Unauthorized. Please log in to continue."}`
@@ -61,7 +61,7 @@ func TestAdminMiddleware(t *testing.T) {
 		}
 
 		testutils.AddMiddlewares(r, mockAuthMiddleware, middlewares.AdminMiddleware())
-		testutils.AddTestGetRoute(r)
+		testutils.AddTestGetRoute(r, http.StatusOK)
 		testutils.DoGetRequest(r, w)
 
 		expected := `{"error":"Unauthorized. Please log in to continue."}`
