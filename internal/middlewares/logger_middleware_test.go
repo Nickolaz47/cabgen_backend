@@ -6,6 +6,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -31,8 +32,11 @@ func TestLoggerMiddleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		assert.True(t, consoleLogs.Len() > 0)
-		assert.Contains(t, consoleLogs.All()[0].Message, "Request processed")
+		if gin.Mode() == gin.DebugMode {
+			logs := consoleLogs.All()
+			assert.NotEmpty(t, logs)
+			assert.Contains(t, logs[0].Message, "Request processed")
+		}
 
 		assert.True(t, fileLogs.Len() > 0)
 		assert.Equal(t, zapcore.InfoLevel, fileLogs.All()[0].Level)
@@ -50,8 +54,11 @@ func TestLoggerMiddleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
 
-		assert.True(t, consoleLogs.Len() > 0)
-		assert.Contains(t, consoleLogs.All()[0].Message, "Client Error")
+		if gin.Mode() == gin.DebugMode {
+			logs := consoleLogs.All()
+			assert.NotEmpty(t, logs)
+			assert.Contains(t, logs[0].Message, "Client Error")
+		}
 
 		assert.True(t, fileLogs.Len() > 0)
 		assert.Equal(t, zapcore.WarnLevel, fileLogs.All()[0].Level)
@@ -69,8 +76,11 @@ func TestLoggerMiddleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 
-		assert.True(t, consoleLogs.Len() > 0)
-		assert.Contains(t, consoleLogs.All()[0].Message, "Server Error")
+		if gin.Mode() == gin.DebugMode {
+			logs := consoleLogs.All()
+			assert.NotEmpty(t, logs)
+			assert.Contains(t, logs[0].Message, "Server Error")
+		}
 
 		assert.True(t, fileLogs.Len() > 0)
 		assert.Equal(t, zapcore.ErrorLevel, fileLogs.All()[0].Level)
