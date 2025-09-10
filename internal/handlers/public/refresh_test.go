@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -17,6 +18,15 @@ import (
 
 func TestRefresh(t *testing.T) {
 	db := testutils.SetupTestRepos()
+	origAccessKey := config.AccessKey
+	origRefreshKey := config.RefreshKey
+	config.AccessKey = []byte("access_secret")
+	config.RefreshKey = []byte("refresh_secret")
+
+	defer func() {
+		config.AccessKey = origAccessKey
+		config.RefreshKey = origRefreshKey
+	}()
 
 	mockLoginUser := testmodels.NewLoginUser()
 	db.Create(&mockLoginUser)

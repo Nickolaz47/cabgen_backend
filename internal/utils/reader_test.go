@@ -15,6 +15,7 @@ func writeMockFile(t *testing.T, filePath string, data []byte) {
 		t.Error("failed to write mock file")
 	}
 }
+
 func TestLoadJSONFile(t *testing.T) {
 	tempDir := t.TempDir()
 	mockFile := filepath.Join(tempDir, "file.json")

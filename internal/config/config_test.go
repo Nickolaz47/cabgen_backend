@@ -7,15 +7,10 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func writeMockEnvFile(t *testing.T, envFilePath, envContent string) {
-	if err := os.WriteFile(envFilePath, []byte(envContent), 0644); err != nil {
-		t.Errorf("failed to write mock env file: %v", err)
-	}
-}
 
 func TestLoadEnvVariables(t *testing.T) {
 	t.Run("Success - Corrected Env file", func(t *testing.T) {
@@ -48,7 +43,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
 
-		writeMockEnvFile(t, testEnvFile, envContent)
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
 
 		err := config.LoadEnvVariables(testEnvFile)
 		assert.NoError(t, err)
@@ -101,7 +96,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
 
-		writeMockEnvFile(t, testEnvFile, envContent)
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
 
 		err := config.LoadEnvVariables(testEnvFile)
 		assert.Error(t, err)

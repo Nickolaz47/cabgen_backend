@@ -7,6 +7,8 @@ import (
 	"maps"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
@@ -100,4 +102,10 @@ func AddTestGetRoute(engine *gin.Engine, statusCode int) {
 func DoGetRequest(r *gin.Engine, w *httptest.ResponseRecorder) {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	r.ServeHTTP(w, req)
+}
+
+func WriteMockEnvFile(t *testing.T, envFilePath, envContent string) {
+	if err := os.WriteFile(envFilePath, []byte(envContent), 0644); err != nil {
+		t.Errorf("failed to write mock env file: %v", err)
+	}
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -64,6 +65,13 @@ func DeleteCookie(cookieName Cookie, path string) *http.Cookie {
 }
 
 func GenerateToken(user models.UserToken, secret []byte, expiresIn time.Duration) (string, error) {
+	if len(secret) == 0 {
+		return "", fmt.Errorf("secret is empty")
+	}
+	if expiresIn <= 0 {
+		return "", fmt.Errorf("expiresIn must be > 0")
+	}
+
 	user.RegisteredClaims = jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -80,7 +88,8 @@ func ValidateToken(c *gin.Context, cookieName Cookie, secret []byte) (*models.Us
 		return nil, fmt.Errorf("cookie not found: %v", err)
 	}
 
-	token, err := jwt.ParseWithClaims(tokenStr, &models.UserToken{}, func(token *jwt.Token) (any, error) {
+	// Parses the token using MapClaims
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -91,12 +100,22 @@ func ValidateToken(c *gin.Context, cookieName Cookie, secret []byte) (*models.Us
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, fmt.Errorf("token expired: %v", err)
 		}
-
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
 
-	if claims, ok := token.Claims.(*models.UserToken); ok && token.Valid {
-		return claims, nil
+	// Validates and converts claims to UserToken
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		data, err := json.Marshal(claims)
+		if err != nil {
+			return nil, errors.New("invalid or expired token")
+		}
+
+		var userToken models.UserToken
+		if err := json.Unmarshal(data, &userToken); err != nil {
+			return nil, errors.New("invalid or expired token")
+		}
+
+		return &userToken, nil
 	}
 
 	return nil, errors.New("invalid or expired token")
