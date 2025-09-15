@@ -28,10 +28,13 @@ func init() {
 		log.Fatal(err)
 	}
 
-	logging.SetupLoggers()
+	logging.SetupLoggers("./logs/api.log")
 }
 
 func main() {
+	defer logging.ConsoleLogger.Sync()
+	defer logging.FileLogger.Sync()
+
 	gin.SetMode(gin.DebugMode)
 	if config.Environment != "dev" {
 		gin.SetMode(gin.ReleaseMode)

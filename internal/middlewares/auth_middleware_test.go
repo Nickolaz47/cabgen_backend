@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -19,12 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func writeMockEnvFile(t *testing.T, envFilePath, envContent string) {
-	if err := os.WriteFile(envFilePath, []byte(envContent), 0644); err != nil {
-		t.Errorf("failed to write mock env file: %v", err)
-	}
-}
-
 func TestAuthMiddleware(t *testing.T) {
 	testutils.SetupTestContext()
 
@@ -35,15 +27,11 @@ func TestAuthMiddleware(t *testing.T) {
 		mockLoginUser.UserRole,
 	)
 
-	tempDir := t.TempDir()
-	mockEnvFile := filepath.Join(tempDir, "test.env")
-	mockEnvContent := `
-	SECRET_ACCESS_KEY=super-test-secret
-	PORT=8080
-	`
-
-	writeMockEnvFile(t, mockEnvFile, mockEnvContent)
-	config.LoadEnvVariables(mockEnvFile)
+	origSecret := config.AccessKey
+	config.AccessKey = []byte("super-test-secret")
+	defer func() {
+		config.AccessKey = origSecret
+	}()
 
 	secret, _ := auth.GetSecretKey(auth.Access)
 
@@ -113,11 +101,11 @@ func TestAuthMiddleware(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
 		mockAccessToken, _ := auth.GenerateToken(
-			mockToken, secret, -1*time.Second,
+			mockToken, secret, time.Microsecond,
 		)
 		mockAccessCookie := auth.CreateCookie(
 			auth.Access, mockAccessToken,
-			"/", -1*time.Second,
+			"/", time.Microsecond,
 		)
 
 		req.AddCookie(mockAccessCookie)

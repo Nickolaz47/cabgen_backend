@@ -14,9 +14,9 @@ var (
 	LogFile       *lumberjack.Logger
 )
 
-func SetupLoggers() {
+func SetupLoggers(logPath string) {
 	LogFile = &lumberjack.Logger{
-		Filename:   "./logs/api.log",
+		Filename:   logPath,
 		MaxSize:    50, // Megabytes
 		MaxBackups: 30,  // Max number of files
 		Compress:   true,
@@ -30,6 +30,7 @@ func SetupLoggers() {
 	consoleEncoderConfig.CallerKey = "caller"
 	consoleEncoder := zapcore.NewConsoleEncoder(consoleEncoderConfig)
 
+	// Dev and prod environments
 	jsonEncoderConfig := zap.NewProductionEncoderConfig()
 	jsonEncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	jsonEncoderConfig.TimeKey = "timestamp"
@@ -48,7 +49,4 @@ func SetupLoggers() {
 
 	ConsoleLogger = zap.New(consoleCore, zap.AddCaller())
 	FileLogger = zap.New(fileCore, zap.AddCaller())
-
-	defer ConsoleLogger.Sync()
-	defer FileLogger.Sync()
 }
