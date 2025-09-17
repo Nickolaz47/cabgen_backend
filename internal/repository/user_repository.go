@@ -52,7 +52,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 
 func (r *UserRepository) GetUserByUsernameOrEmail(username, email string) (*models.User, error) {
 	var user models.User
-	if err := r.DB.Where("username = ? OR email = ?", username, email).First(&user).Error; err != nil {
+	if err := r.DB.Preload("Country").Where("username = ? OR email = ?", username, email).First(&user).Error; err != nil {
 		return nil, err
 	}
 
