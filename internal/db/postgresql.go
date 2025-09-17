@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,7 +15,7 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func Connect() error {
 	dns := config.DatabaseConnectionString
 
 	newLogger := logger.New(
@@ -30,16 +32,23 @@ func Connect() {
 		Logger: newLogger,
 	})
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
 
 	DB = db
+	return nil
 }
 
-func Migrate() {
+func Migrate() error {
+	if DB == nil {
+		return errors.New("DB was not initialized")
+	}
 	DB.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
+
 	err := DB.AutoMigrate(&models.User{}, &models.Country{})
 	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
+		return fmt.Errorf("failed to migrate database: %v", err)
 	}
+
+	return nil
 }

@@ -19,8 +19,14 @@ func init() {
 		log.Fatal(err)
 	}
 
-	db.Connect()
-	db.Migrate()
+	if err := db.Connect(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := db.Migrate(); err != nil {
+		log.Fatal(err)
+	}
+
 	repository.InitRepositories(db.DB)
 	translation.LoadTranslation()
 
