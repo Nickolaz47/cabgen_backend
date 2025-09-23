@@ -199,6 +199,50 @@ func TestGetUserByUsernameOrEmail(t *testing.T) {
 	})
 }
 
+func TestGetAllAdminUsers(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	mockCountry := testmodels.NewCountry("", "", "", "")
+	db.Create(&mockCountry)
+
+	mockUser := testmodels.NewLoginUser()
+	db.Create(&mockUser)
+
+	mockAdminUser := testmodels.NewAdminLoginUser()
+	db.Create(&mockAdminUser)
+
+	userRepo := repository.NewUserRepo(db)
+
+	t.Run("Success", func(t *testing.T) {
+		users, err := userRepo.GetAllAdminUsers()
+
+		mockAdminUser.CreatedAt = time.Time{}
+		mockAdminUser.UpdatedAt = time.Time{}
+		expected := []models.User{mockAdminUser}
+
+		for i := range users {
+			users[i].CreatedAt = time.Time{}
+			users[i].UpdatedAt = time.Time{}
+		}
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, expected, users)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockUserRepo := repository.NewUserRepo(mockDB)
+
+		users, err := mockUserRepo.GetAllAdminUsers()
+
+		assert.Error(t, err)
+		assert.Empty(t, users)
+	})
+}
+
 func TestCreateUser(t *testing.T) {
 	db := testutils.NewMockDB()
 

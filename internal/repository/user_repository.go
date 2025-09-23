@@ -59,6 +59,15 @@ func (r *UserRepository) GetUserByUsernameOrEmail(username, email string) (*mode
 	return &user, nil
 }
 
+func (r *UserRepository) GetAllAdminUsers() ([]models.User, error) {
+	var users []models.User
+	if err := r.DB.Preload("Country").Where("user_role = ?", models.Admin).Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (r *UserRepository) CreateUser(user *models.User) error {
 	return r.DB.Create(user).Error
 }

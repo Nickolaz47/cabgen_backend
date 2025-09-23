@@ -58,6 +58,7 @@ func NewAdminLoginUser() models.User {
 		Username:    "admin",
 		Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
 		Email:       "cadmin@mail.com",
+		UserRole:    models.Admin,
 		CountryCode: "BRA",
 		Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
 		IsActive:    true,
