@@ -33,6 +33,7 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 │   ├── data/                 # Dados estáticos (ex: countries.json)
 │   ├── db/                   # Configuração e conexão com o banco de dados
 │   ├── handlers/             # Controladores Gin
+│   ├── logging/              # Controle de logs
 │   ├── middlewares/          # Middlewares
 │   ├── models/               # Estruturas de dados e mapeamento do banco
 │   ├── repository            # Queries do banco de dados
