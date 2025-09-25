@@ -28,6 +28,10 @@ func TestLoadEnvVariables(t *testing.T) {
 			ADMIN_PASSWORD=adminpass
 			ENVIRONMENT=dev
 			API_HOST=localhost
+			SENDER_EMAIL=test@gmail.com
+			SENDER_PASSWORD=sender_password
+			SMTP_HOST=smtp.gmail.com
+			SMTP_PORT=587
 		`
 		expectedUser := "user"
 		expectedPassword := "password"
@@ -39,6 +43,10 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedAdminPassword := "adminpass"
 		expectedEnvironment := "dev"
 		expectedAPIHost := "localhost"
+		expectedSenderEmail := "test@gmail.com"
+		expectedSenderPassword := "sender_password"
+		expectedSMTPHost := "smtp.gmail.com"
+		expectedSMTPPort := 587
 
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
@@ -57,11 +65,17 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedAdminPassword, os.Getenv("ADMIN_PASSWORD"), "expected passwords to be equal")
 		assert.Equal(t, expectedEnvironment, os.Getenv("ENVIRONMENT"), "expected environments to be equal")
 		assert.Equal(t, expectedAPIHost, os.Getenv("API_HOST"), "expected hosts to be equal")
+		assert.Equal(t, expectedSenderEmail, os.Getenv("SENDER_EMAIL"), "expected sender emails to be equal")
+		assert.Equal(t, expectedSenderPassword, os.Getenv("SENDER_PASSWORD"), "expected sender passwords to be equal")
+		assert.Equal(t, expectedSMTPHost, os.Getenv("SMTP_HOST"), "expected smtp hosts to be equal")
 
-		SMTPPort, err := strconv.Atoi(os.Getenv("PORT"))
-
+		Port, err := strconv.Atoi(os.Getenv("PORT"))
 		assert.NoError(t, err)
-		assert.Equal(t, expectedPort, SMTPPort, "expected ports to be equal")
+		assert.Equal(t, expectedPort, Port, "expected ports to be equal")
+
+		SMTPPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+		assert.NoError(t, err)
+		assert.Equal(t, expectedSMTPPort, SMTPPort, "expected ports to be equal")
 	})
 
 	t.Run("Error - No default env file", func(t *testing.T) {
@@ -92,6 +106,10 @@ func TestLoadEnvVariables(t *testing.T) {
 			ADMIN_PASSWORD=adminpass
 			ENVIRONMENT=dev
 			API_HOST=localhost
+			SENDER_EMAIL=test@gmail.com
+			SENDER_PASSWORD=sender_password
+			SMTP_HOST=smtp.gmail.com
+			SMTP_PORT=587
 		`
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")

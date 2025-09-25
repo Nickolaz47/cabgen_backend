@@ -40,6 +40,7 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 │   ├── responses/            # Padronização de respostas
 │   ├── routes/               # Definição de endpoints
 │   ├── security/             # Criptografia de senhas
+│   ├── services/             # Regras de negócio
 │   ├── testutils/            # Funções auxiliares para os testes
 │   ├── translation/          # Arquivos e lógica de i18n
 │   ├── utils/                # Funções auxiliares

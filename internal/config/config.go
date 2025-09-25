@@ -16,6 +16,10 @@ var (
 	AdminPassword            = ""
 	Environment              = ""
 	APIHost                  = ""
+	SenderEmail              = ""
+	SenderPassword           = ""
+	SMTPHost                 = ""
+	SMTPPort                 = 0
 )
 
 /*
@@ -46,6 +50,11 @@ func LoadEnvVariables(envFile string) error {
 		return err
 	}
 
+	SMTPPort, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return err
+	}
+
 	DatabaseConnectionString = fmt.Sprintf(
 		"host=localhost user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=America/Sao_Paulo",
 		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
@@ -55,6 +64,9 @@ func LoadEnvVariables(envFile string) error {
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")
 	Environment = os.Getenv("ENVIRONMENT")
 	APIHost = os.Getenv("API_HOST")
+	SenderEmail = os.Getenv("SENDER_EMAIL")
+	SenderPassword = os.Getenv("SENDER_PASSWORD")
+	SMTPHost = os.Getenv("SMTP_HOST")
 
 	return nil
 }
