@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	gomail "gopkg.in/mail.v2"
@@ -84,4 +85,35 @@ func TestSendEmail(t *testing.T) {
 
 		assert.Error(t, err, "Expected to failed to send email")
 	})
+}
+
+func TestCreateDefaultSender(t *testing.T) {
+	origSenderEmail := config.SenderEmail
+	origSenderPassword := config.SenderPassword
+	origSMTPHost := config.SMTPHost
+	origSMTPPort := config.SMTPPort
+
+	expectedSenderEmail := "cabgen@mail.com"
+	expectedSenderPassword := "sender_password"
+	expectedSMTPHost := "smtp.mail.com"
+	expectedSMTPPort := 587
+
+	config.SenderEmail = expectedSenderEmail
+	config.SenderPassword = expectedSenderPassword
+	config.SMTPHost = expectedSMTPHost
+	config.SMTPPort = expectedSMTPPort
+	defer func() {
+		config.SenderEmail = origSenderEmail
+		config.SenderPassword = origSenderPassword
+		config.SMTPHost = origSMTPHost
+		config.SMTPPort = origSMTPPort
+	}()
+
+	result := CreateDefaultSender()
+
+	assert.NotEmpty(t, result)
+	assert.Equal(t, expectedSenderEmail, result.Username)
+	assert.Equal(t, expectedSenderPassword, result.Password)
+	assert.Equal(t, expectedSMTPHost, result.Host)
+	assert.Equal(t, expectedSMTPPort, result.Port)
 }

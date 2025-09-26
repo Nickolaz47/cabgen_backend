@@ -2,13 +2,17 @@ package public
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/email"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
@@ -95,6 +99,14 @@ func Register(c *gin.Context) {
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.RegisterCreateUserError)},
 		)
 		return
+	}
+
+	sender := email.CreateDefaultSender()
+	err = services.SendActivationUserEmail(user.Username, sender)
+	if err != nil {
+		logging.FileLogger.Error(
+			fmt.Sprintf("Failed to send activation email to admins: %v", err),
+		)
 	}
 
 	c.JSON(http.StatusCreated,

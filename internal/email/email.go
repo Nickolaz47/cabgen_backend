@@ -1,6 +1,7 @@
 package email
 
 import (
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	gomail "gopkg.in/mail.v2"
 )
 
@@ -16,6 +17,11 @@ type EmailConfig struct {
 	File      string
 }
 
+type EmailService struct {
+	Config EmailConfig
+	Sender EmailSender
+}
+
 type SMTPEmailSender struct {
 	Host     string
 	Port     int
@@ -23,14 +29,18 @@ type SMTPEmailSender struct {
 	Password string
 }
 
-type EmailService struct {
-	Config EmailConfig
-	Sender EmailSender
-}
-
 func (s *SMTPEmailSender) Send(message *gomail.Message) error {
 	dialer := gomail.NewDialer(s.Host, s.Port, s.Username, s.Password)
 	return dialer.DialAndSend(message)
+}
+
+func CreateDefaultSender() *SMTPEmailSender {
+	return &SMTPEmailSender{
+		Username: config.SenderEmail,
+		Password: config.SenderPassword,
+		Host:     config.SMTPHost,
+		Port:     config.SMTPPort,
+	}
 }
 
 func setupEmailMessage(message *gomail.Message, emailConfig EmailConfig) {
