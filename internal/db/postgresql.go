@@ -45,7 +45,7 @@ func Migrate() error {
 	}
 	DB.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 
-	err := DB.AutoMigrate(&models.User{}, &models.Country{})
+	err := DB.AutoMigrate(&models.User{}, &models.Country{}, &models.Origin{})
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %v", err)
 	}

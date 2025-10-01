@@ -29,6 +29,7 @@ func NewMockDB() *gorm.DB {
 	db.Exec("PRAGMA foreign_keys = ON")
 	db.AutoMigrate(&models.Country{})
 	db.AutoMigrate(&testmodels.User{})
+	db.AutoMigrate(&testmodels.Origin{})
 
 	return db
 }
