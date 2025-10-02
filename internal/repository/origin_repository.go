@@ -34,7 +34,8 @@ func (r *OriginRepository) GetOriginByID(ID uuid.UUID) (*models.Origin, error) {
 
 func (r *OriginRepository) GetOriginByName(name string) (*models.Origin, error) {
 	var origin models.Origin
-	if err := r.DB.Where("pt = ? OR en = ? OR es = ?", name, name, name).First(&origin).Error; err != nil {
+	if err := r.DB.Where("names->>'pt' = ? OR names->>'en' = ? OR names->>'es' = ?",
+		name, name, name).First(&origin).Error; err != nil {
 		return nil, err
 	}
 

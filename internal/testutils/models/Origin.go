@@ -6,11 +6,9 @@ import (
 )
 
 type Origin struct {
-	ID       string `gorm:"primaryKey;default:(hex(randomblob(16)))" json:"id"`
-	Pt       string `gorm:"not null" json:"pt"`
-	En       string `gorm:"not null" json:"en"`
-	Es       string `gorm:"not null" json:"es"`
-	IsActive bool   `gorm:"not null" json:"is_active"`
+	ID       string            `gorm:"primaryKey;default:(hex(randomblob(16)))" json:"id"`
+	Names    map[string]string `gorm:"json;not null" json:"names"`
+	IsActive bool              `gorm:"not null" json:"is_active"`
 }
 
 func NewOrigin(ID string, names map[string]string, isActive bool) models.Origin {
