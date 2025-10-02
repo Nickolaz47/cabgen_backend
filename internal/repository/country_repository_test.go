@@ -23,8 +23,9 @@ func TestNewCountryRepo(t *testing.T) {
 
 func TestGetCountries(t *testing.T) {
 	db := testutils.NewMockDB()
-	mockCountry := testmodels.NewCountry("", "", "", "")
-	mockCountry2 := testmodels.NewCountry("CYP", "Chipre", "Cyprus", "Chipre")
+	mockCountry := testmodels.NewCountry("", nil)
+	mockCountry2 := testmodels.NewCountry(
+		"CYP", map[string]string{"pt": "Chipre", "en": "Cyprus", "es": "Chipre"})
 	db.Create(&mockCountry)
 	db.Create(&mockCountry2)
 
@@ -53,7 +54,7 @@ func TestGetCountries(t *testing.T) {
 
 func TestGetCountry(t *testing.T) {
 	db := testutils.NewMockDB()
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	countryRepo := repository.NewCountryRepo(db)
@@ -62,9 +63,11 @@ func TestGetCountry(t *testing.T) {
 		country, err := countryRepo.GetCountry("BRA")
 		expected := models.Country{
 			Code: "BRA",
-			En:   "Brazil",
-			Es:   "Brazil",
-			Pt:   "Brasil",
+			Names: map[string]string{
+				"en": "Brazil",
+				"es": "Brazil",
+				"pt": "Brasil",
+			},
 		}
 
 		assert.NoError(t, err)

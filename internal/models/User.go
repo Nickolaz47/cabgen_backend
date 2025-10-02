@@ -22,7 +22,7 @@ type User struct {
 	Username    string     `gorm:"not null;uniqueIndex" json:"username"`
 	Email       string     `gorm:"not null;uniqueIndex" json:"email"`
 	Password    string     `gorm:"not null" json:"-"`
-	CountryCode string     `gorm:"type:uuid;not null" json:"country_code"`
+	CountryCode string     `gorm:"not null" json:"country_code"`
 	Country     Country    `gorm:"foreignKey:CountryCode;references:Code"`
 	IsActive    bool       `gorm:"not null" json:"is_active"`
 	UserRole    UserRole   `gorm:"type:varchar(20);not null" json:"user_role"`
@@ -42,15 +42,7 @@ func (u User) ToResponse(c *gin.Context) UserResponse {
 		language = "en"
 	}
 
-	var country string
-	switch language {
-	case "pt":
-		country = u.Country.Pt
-	case "es":
-		country = u.Country.Es
-	default:
-		country = u.Country.En
-	}
+	country := u.Country.Names[language]
 
 	return UserResponse{
 		ID:          u.ID,

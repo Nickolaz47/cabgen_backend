@@ -12,7 +12,7 @@ import (
 
 func TestValidateCountryCode(t *testing.T) {
 	db := testutils.SetupTestRepos()
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	t.Run("Country found", func(t *testing.T) {

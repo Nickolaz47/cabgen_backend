@@ -19,17 +19,19 @@ func writeMockFile(t *testing.T, filePath string, data []byte) {
 func TestLoadJSONFile(t *testing.T) {
 	tempDir := t.TempDir()
 	mockFile := filepath.Join(tempDir, "file.json")
-	mockContent := `[{"code": "ABW", "pt": "Aruba", "en": "Aruba", "es": "Aruba"}]`
+	mockContent := `[{"code": "ABW", "Names": {"pt": "Aruba", "en": "Aruba", "es": "Aruba"}}]`
 
 	mockErrFile := filepath.Join(tempDir, "err.json")
-	mockErrContent := `[{"code": "ABW", "pt": "Aruba", "en": "Aruba", "es": "Aruba"},]`
+	mockErrContent := `[{"code": "ABW", "Names": {"pt": "Aruba", "en": "Aruba", "es": "Aruba"}},]`
 
 	writeMockFile(t, mockFile, []byte(mockContent))
 	writeMockFile(t, mockErrFile, []byte(mockErrContent))
 
 	t.Run("Success", func(t *testing.T) {
 		expected := []models.Country{
-			{Code: "ABW", Pt: "Aruba", En: "Aruba", Es: "Aruba"},
+			{
+				Code:  "ABW",
+				Names: map[string]string{"pt": "Aruba", "en": "Aruba", "es": "Aruba"}},
 		}
 		result, err := utils.LoadJSONFile[models.Country](mockFile)
 

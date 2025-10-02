@@ -46,8 +46,13 @@ func NewLoginUser() models.User {
 		Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
 		Email:       "nick@mail.com",
 		CountryCode: "BRA",
-		Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
-		IsActive:    true,
+		Country: models.Country{
+			Code: "BRA", Names: map[string]string{
+				"pt": "Brasil",
+				"en": "Brazil",
+				"es": "Brazil",
+			}},
+		IsActive: true,
 	}
 }
 
@@ -60,8 +65,12 @@ func NewAdminLoginUser() models.User {
 		Email:       "cadmin@mail.com",
 		UserRole:    models.Admin,
 		CountryCode: "BRA",
-		Country:     models.Country{Code: "BRA", Pt: "Brasil", Es: "Brazil", En: "Brazil"},
-		IsActive:    true,
+		Country: models.Country{Code: "BRA", Names: map[string]string{
+			"pt": "Brasil",
+			"en": "Brazil",
+			"es": "Brazil",
+		}},
+		IsActive: true,
 	}
 }
 

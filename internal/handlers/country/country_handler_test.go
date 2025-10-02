@@ -16,7 +16,7 @@ func TestGetCountries(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	c, w := testutils.SetupGinContext(
@@ -37,7 +37,7 @@ func TestGetCountryByID(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	t.Run("Success", func(t *testing.T) {

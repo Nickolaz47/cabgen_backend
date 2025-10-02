@@ -17,7 +17,7 @@ func TestUpdateUser(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockLoginUser := testmodels.NewLoginUser()

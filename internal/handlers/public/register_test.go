@@ -17,7 +17,7 @@ func TestRegister(t *testing.T) {
 
 	db := testutils.SetupTestRepos()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	t.Run("Success", func(t *testing.T) {

@@ -25,7 +25,7 @@ func TestNewUserRepo(t *testing.T) {
 func TestGetUsers(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -70,7 +70,7 @@ func TestGetUsers(t *testing.T) {
 func TestGetUserByID(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -103,7 +103,7 @@ func TestGetUserByID(t *testing.T) {
 func TestGetUserByUsername(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -136,7 +136,7 @@ func TestGetUserByUsername(t *testing.T) {
 func TestGetUserByEmail(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -169,7 +169,7 @@ func TestGetUserByEmail(t *testing.T) {
 func TestGetUserByUsernameOrEmail(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -202,7 +202,7 @@ func TestGetUserByUsernameOrEmail(t *testing.T) {
 func TestGetAllAdminUsers(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -246,7 +246,7 @@ func TestGetAllAdminUsers(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -274,7 +274,7 @@ func TestCreateUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()
@@ -300,7 +300,7 @@ func TestUpdateUser(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	db := testutils.NewMockDB()
 
-	mockCountry := testmodels.NewCountry("", "", "", "")
+	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
 
 	mockUser := testmodels.NewLoginUser()

@@ -21,7 +21,7 @@ func TestToResponse(t *testing.T) {
 		Username:    mockUser.Username,
 		Email:       mockUser.Email,
 		CountryCode: mockUser.CountryCode,
-		Country:     mockUser.Country.En,
+		Country:     mockUser.Country.Names["en"],
 		UserRole:    mockUser.UserRole,
 		Interest:    mockUser.Interest,
 		Role:        mockUser.Role,

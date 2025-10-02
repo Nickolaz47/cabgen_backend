@@ -13,12 +13,10 @@ type Origin struct {
 	IsActive bool   `gorm:"not null" json:"is_active"`
 }
 
-func NewOrigin(ID, pt, en, es string, isActive bool) models.Origin {
+func NewOrigin(ID string, names map[string]string, isActive bool) models.Origin {
 	return models.Origin{
 		ID:       uuid.MustParse(ID),
-		Pt:       pt,
-		En:       en,
-		Es:       es,
+		Names:    names,
 		IsActive: isActive,
 	}
 }

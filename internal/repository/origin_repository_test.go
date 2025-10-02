@@ -25,7 +25,7 @@ func TestGetOrigins(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)
 
-	origin := testmodels.NewOrigin(uuid.New().String(), "Humano", "Human", "Humano", true)
+	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	db.Create(&origin)
 	t.Run("Success", func(t *testing.T) {
 		origins, err := repo.GetOrigins()
@@ -54,7 +54,7 @@ func TestGetOriginByID(t *testing.T) {
 	repo := repository.NewOriginRepo(db)
 
 	id := uuid.New()
-	origin := testmodels.NewOrigin(id.String(), "Humano", "Human", "Humano", true)
+	origin := testmodels.NewOrigin(id.String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	db.Create(&origin)
 
 	t.Run("Success", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestGetOriginByName(t *testing.T) {
 
 	origin := testmodels.NewOrigin(
 		uuid.New().String(),
-		"Alimentar", "Food", "Alimentaria",
+		map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"},
 		true,
 	)
 	db.Create(&origin)
@@ -123,7 +123,7 @@ func TestCreateOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)
 
-	origin := testmodels.NewOrigin(uuid.New().String(), "Humano", "Human", "Humano", true)
+	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	t.Run("Success", func(t *testing.T) {
 		err := repo.CreateOrigin(&origin)
 		assert.NoError(t, err)
@@ -150,14 +150,13 @@ func TestUpdateOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)
 
-	origin := testmodels.NewOrigin(uuid.New().String(), "Hum", "Human", "Humanio", true)
+	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Hum", "en": "Human", "es": "Humanio"}, true)
 	db.Create(&origin)
 	t.Run("Success", func(t *testing.T) {
 		originToUpdate := models.Origin{
-			ID: origin.ID,
-			Pt: "Humano",
-			En: "Human",
-			Es: "Humano",
+			ID:       origin.ID,
+			Names:    map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+			IsActive: true,
 		}
 
 		err := repo.UpdateOrigin(&originToUpdate)
@@ -168,9 +167,9 @@ func TestUpdateOrigin(t *testing.T) {
 
 		expected := models.Origin{
 			ID: origin.ID,
-			Pt: originToUpdate.Pt,
-			En: "Human",
-			Es: originToUpdate.Es,
+			Names: map[string]string{
+				"pt": originToUpdate.Names["pt"], "en": "Human", "es": originToUpdate.Names["es"]},
+			IsActive: true,
 		}
 
 		assert.NoError(t, err)
@@ -192,7 +191,7 @@ func TestDeleteOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)
 
-	origin := testmodels.NewOrigin(uuid.New().String(), "Humano", "Human", "Humano", true)
+	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	db.Create(&origin)
 	t.Run("Success", func(t *testing.T) {
 		err := repo.DeleteOrigin(&origin)
