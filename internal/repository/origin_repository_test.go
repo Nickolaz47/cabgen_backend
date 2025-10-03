@@ -87,21 +87,24 @@ func TestGetOriginByName(t *testing.T) {
 	)
 	db.Create(&origin)
 	t.Run("Success - Pt", func(t *testing.T) {
-		resultOrigin, err := repo.GetOriginByName("Alimentar")
+		lang := "pt"
+		resultOrigin, err := repo.GetOriginByName("Alimentar", lang)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &origin, resultOrigin)
 	})
 
 	t.Run("Success - En", func(t *testing.T) {
-		resultOrigin, err := repo.GetOriginByName("Food")
+		lang := "en"
+		resultOrigin, err := repo.GetOriginByName("Food", lang)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &origin, resultOrigin)
 	})
 
 	t.Run("Success - Es", func(t *testing.T) {
-		resultOrigin, err := repo.GetOriginByName("Alimentaria")
+		lang := "es"
+		resultOrigin, err := repo.GetOriginByName("Alimentaria", lang)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &origin, resultOrigin)
@@ -112,7 +115,7 @@ func TestGetOriginByName(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewOriginRepo(mockDB)
-		origin, err := mockCountryRepo.GetOriginByName("")
+		origin, err := mockCountryRepo.GetOriginByName("", "")
 
 		assert.Empty(t, origin)
 		assert.Error(t, err)

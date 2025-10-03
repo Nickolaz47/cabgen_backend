@@ -32,10 +32,10 @@ func (r *OriginRepository) GetOriginByID(ID uuid.UUID) (*models.Origin, error) {
 	return &origin, nil
 }
 
-func (r *OriginRepository) GetOriginByName(name string) (*models.Origin, error) {
+func (r *OriginRepository) GetOriginByName(name, lang string) (*models.Origin, error) {
 	var origin models.Origin
-	if err := r.DB.Where("names->>'pt' = ? OR names->>'en' = ? OR names->>'es' = ?",
-		name, name, name).First(&origin).Error; err != nil {
+	query:= "LOWER(names->>'" + lang + "') LIKE LOWER(?)"
+	if err := r.DB.Where(query, "%"+name+"%").First(&origin).Error; err != nil {
 		return nil, err
 	}
 
