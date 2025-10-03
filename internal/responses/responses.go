@@ -30,6 +30,8 @@ const (
 	OriginCreationSuccess              = "admin.origin.create.success"
 	OriginValidationMissingLanguage    = "admin.origin.validation.missingLanguage"
 	OriginValidationMissingTranslation = "admin.origin.validation.missingTranslation"
+	OriginNotFoundError                = "admin.origin.notFound.error"
+	OriginNameEmptyError               = "admin.origin.emptyName.error"
 )
 
 type APIResponse struct {

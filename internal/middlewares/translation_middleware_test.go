@@ -35,8 +35,14 @@ func TestI18nMiddleware(t *testing.T) {
 				localizer := v.(*i18n.Localizer)
 				message := responses.GetResponse(localizer, responses.UserNotFoundError)
 
-				if exists {
-					c.JSON(http.StatusOK, map[string]any{"lang": message})
+				rawLanguage, ok := c.Get("lang")
+				language, ok := rawLanguage.(string)
+
+				if exists && ok {
+					c.JSON(http.StatusOK, map[string]any{
+						"translatedMessage": message,
+						"language":          language,
+					})
 				}
 				c.Status(http.StatusNotFound)
 			})
@@ -45,7 +51,7 @@ func TestI18nMiddleware(t *testing.T) {
 			req.Header.Set("Accept-Language", lang)
 			r.ServeHTTP(w, req)
 
-			expected := fmt.Sprintf(`{"lang": "%s"}`, message)
+			expected := fmt.Sprintf(`{"translatedMessage": "%s", "language": "%s"}`, message, lang)
 
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, expected, w.Body.String())

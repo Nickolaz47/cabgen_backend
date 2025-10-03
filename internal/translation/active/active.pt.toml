@@ -132,3 +132,18 @@ other = "Origem sem tradução para {{.Param}}."
 
 [admin.origin.validation.missingTranslation]
 other = "Origem com a tradução para {{.Param}} vazia."
+
+[admin.origin.notFound.error]
+other =  "Origem não encontrada."
+
+[admin.origin.emptyName.error]
+other = "O parâmetro de busca originName está vazio."
+
+[validation.Names.required]
+other = "O parâmetro names com as traduções para pt, en e es é obrigatório."
+
+[validation.IsActive.required]
+other = "O parâmetro isActive é obrigatório."
+
+[validation.Names.min]
+other = "O parâmetro names deve conter pelo menos 3 chaves (pt, en, es)."

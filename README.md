@@ -1,6 +1,6 @@
 # Cabgen Backend
 
-API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o framework [Gin](https://gin-gonic.com/en/docs/). Esta API é uma nova versão do backend do site do [CABGen](https://cabgen.fiocruz.br/pt).
+API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o framework [Gin](https://gin-gonic.com/en/docs/). Esta API é uma versão do backend do site do [CABGen](https://cabgen.fiocruz.br/pt) reescrita em Golang.
 
 ## Índice
 
@@ -86,6 +86,12 @@ API_HOST=             # URL base da API (ex: http://localhost:8080)
 
 # Usuário administrador padrão
 ADMIN_PASSWORD=       # Senha inicial do admin
+
+# Configuração do envio de emails
+SENDER_EMAIL=
+SENDER_PASSWORD=
+SMTP_HOST=
+SMTP_PORT=
 ```
 
 ## Executando a API

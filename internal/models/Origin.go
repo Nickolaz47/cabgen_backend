@@ -33,7 +33,7 @@ func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
 }
 
 type OriginCreateInput struct {
-	Names    map[string]string `json:"names" binding:"required,min=1"`
+	Names    map[string]string `json:"names" binding:"required,min=3"`
 	IsActive bool              `json:"is_active" binding:"required"`
 }
 

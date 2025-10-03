@@ -48,3 +48,17 @@ func GetLocalizerFromContext(c *gin.Context) *i18n.Localizer {
 
 	return localizer
 }
+
+func GetLanguageFromContext(c *gin.Context) string {
+	value, exists := c.Get("lang")
+	if !exists {
+		return "en"
+	}
+
+	language, ok := value.(string)
+	if !ok {
+		return "en"
+	}
+
+	return language
+}

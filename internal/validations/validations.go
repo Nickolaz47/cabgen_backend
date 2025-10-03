@@ -13,7 +13,7 @@ import (
 type Model interface {
 	models.RegisterInput | models.LoginInput |
 		models.UpdateUserInput | models.AdminRegisterInput |
-		models.AdminUpdateInput
+		models.AdminUpdateInput | models.OriginCreateInput
 }
 
 func Validate[T Model](c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {

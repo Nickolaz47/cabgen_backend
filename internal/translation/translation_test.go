@@ -43,3 +43,29 @@ func TestGetLocalizerFromContext(t *testing.T) {
 		assert.Equal(t, expectedLocalizer, localizer)
 	})
 }
+
+func TestGetLanguageFromContext(t *testing.T) {
+	testutils.SetupTestContext()
+
+	t.Run("Language header not empty", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(
+			http.MethodGet, "/", "",
+			nil, nil,
+		)
+		expectedLocalizer := "pt"
+		c.Set("lang", expectedLocalizer)
+
+		localizer := translation.GetLanguageFromContext(c)
+
+		assert.Equal(t, expectedLocalizer, localizer)
+	})
+
+	t.Run("Language header empty", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
+
+		language := translation.GetLanguageFromContext(c)
+		expectedLanguage := "en"
+
+		assert.Equal(t, expectedLanguage, language)
+	})
+}

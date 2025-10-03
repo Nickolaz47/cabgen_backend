@@ -132,3 +132,18 @@ other = "Missing {{.Param}} translation."
 
 [admin.origin.validation.missingTranslation]
 other = "Empty {{.Param}} translation."
+
+[admin.origin.notFound.error]
+other = "Origin not found."
+
+[admin.origin.emptyName.error]
+other = "The search parameter originName is empty."
+
+[validation.Names.required]
+other = "The names parameter with translations for pt, en, and es is required."
+
+[validation.IsActive.required]
+other = "The isActive parameter is required."
+
+[validation.Names.min]
+other = "The names parameter must contain at least 3 keys (pt, en, es)."
