@@ -12,6 +12,8 @@ import (
 
 const LocalizerKey = "localizer"
 
+var Languages = []string{"pt", "en", "es"}
+
 //go:embed active/*.toml
 var localeFS embed.FS
 
@@ -20,7 +22,12 @@ var Bundle *i18n.Bundle
 func LoadTranslation() {
 	Bundle = i18n.NewBundle(language.English)
 	Bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	files := []string{"active/active.en.toml", "active/active.pt.toml", "active/active.es.toml"}
+
+	var files []string
+	for _, lang := range Languages {
+		files = append(files, "active/active."+lang+".toml")
+	}
+
 	for _, file := range files {
 		if _, err := Bundle.LoadMessageFileFS(localeFS, file); err != nil {
 			log.Fatalf("failed to load translation file %s: %v", file, err)

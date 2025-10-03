@@ -123,3 +123,12 @@ other = "User activated successfully."
 
 [admin.user.deactivate.success]
 other = "User deactivated successfully."
+
+[admin.origin.create.success]
+other = "Origin created successfully."
+
+[admin.origin.validation.missingLanguage]
+other = "Missing {{.Param}} translation."
+
+[admin.origin.validation.missingTranslation]
+other = "Empty {{.Param}} translation."

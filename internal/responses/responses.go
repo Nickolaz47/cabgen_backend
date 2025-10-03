@@ -27,6 +27,9 @@ const (
 	UserDeleted                        = "admin.user.delete.success"
 	UserActivated                      = "admin.user.activate.success"
 	UserDeactivated                    = "admin.user.deactivate.success"
+	OriginCreationSuccess              = "admin.origin.create.success"
+	OriginValidationMissingLanguage    = "admin.origin.validation.missingLanguage"
+	OriginValidationMissingTranslation = "admin.origin.validation.missingTranslation"
 )
 
 type APIResponse struct {
