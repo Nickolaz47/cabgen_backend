@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestToResponse(t *testing.T) {
+func TestUserToResponse(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
