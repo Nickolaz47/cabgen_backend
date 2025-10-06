@@ -6,9 +6,9 @@ import (
 )
 
 type Origin struct {
-	ID       uuid.UUID         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Names    map[string]string `gorm:"json;not null" json:"names"`
-	IsActive bool              `gorm:"not null" json:"is_active"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	Names    JSONMap   `gorm:"type:jsonb;not null" json:"names"`
+	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 
 type OriginResponse struct {
@@ -34,7 +34,7 @@ func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
 
 type OriginCreateInput struct {
 	Names    map[string]string `json:"names" binding:"required,min=3"`
-	IsActive bool              `json:"is_active" binding:"required"`
+	IsActive bool              `json:"is_active"`
 }
 
 type OriginUpdateInput struct {

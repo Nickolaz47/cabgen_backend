@@ -2,8 +2,10 @@ package admin
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -29,7 +31,7 @@ func GetAllOrigins(c *gin.Context) {
 
 func GetOriginByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	rawID := c.Param("originID")
+	rawID := c.Param("originId")
 	id := uuid.MustParse(rawID)
 
 	origin, err := repository.OriginRepo.GetOriginByID(id)
@@ -91,10 +93,10 @@ func CreateOrigin(c *gin.Context) {
 		return
 	}
 
-	errMsg, ok := validations.ValidateOriginNames(c, &newOrigin)
+	errMsg, ok := validations.ValidateOriginNames(c, newOrigin.Names)
 	if !ok {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
-			Error: responses.GetResponse(localizer, errMsg),
+			Error: errMsg,
 		})
 		return
 	}
@@ -117,6 +119,92 @@ func CreateOrigin(c *gin.Context) {
 	})
 }
 
-func UpdateOrigin(c *gin.Context) {}
+func UpdateOrigin(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	rawOriginID := c.Param("originId")
 
-func DeleteOrigin(c *gin.Context) {}
+	var originUpdateInput models.OriginUpdateInput
+	errMsg, ok := validations.Validate(c, localizer, &originUpdateInput)
+	if !ok {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{
+				Error: errMsg,
+			})
+		return
+	}
+
+	if originUpdateInput.Names != nil {
+		errMsg, ok = validations.ValidateOriginNames(c, originUpdateInput.Names)
+	}
+
+	if !ok {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: errMsg,
+		})
+		return
+	}
+
+	originID := uuid.MustParse(rawOriginID)
+	originToUpdate, err := repository.OriginRepo.GetOriginByID(originID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.OriginNotFoundError)},
+		)
+		return
+	}
+	logging.ConsoleLogger.Info(fmt.Sprintf("%v", originToUpdate))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	validations.ApplyOriginUpdate(originToUpdate, &originUpdateInput)
+	if err := repository.OriginRepo.UpdateOrigin(originToUpdate); err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(
+				localizer, responses.GenericInternalServerError,
+			)})
+		return
+	}
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{
+			Data: originToUpdate.ToResponse(c),
+		},
+	)
+}
+
+func DeleteOrigin(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	rawOriginID := c.Param("originId")
+
+	originID := uuid.MustParse(rawOriginID)
+	origin, err := repository.OriginRepo.GetOriginByID(originID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.OriginNotFoundError)},
+		)
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	if err := repository.OriginRepo.DeleteOrigin(origin); err != nil {
+		c.JSON(http.StatusInternalServerError,
+			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{
+			Message: responses.GetResponse(localizer, responses.OriginDeleted),
+		})
+}

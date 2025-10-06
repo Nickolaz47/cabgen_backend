@@ -143,7 +143,10 @@ other = "The search parameter originName is empty."
 other = "The names parameter with translations for pt, en, and es is required."
 
 [validation.IsActive.required]
-other = "The isActive parameter is required."
+other = "The is_active parameter is required."
 
 [validation.Names.min]
 other = "The names parameter must contain at least 3 keys (pt, en, es)."
+
+[admin.origin.delete.success]
+other = "Origin deleted successfully."

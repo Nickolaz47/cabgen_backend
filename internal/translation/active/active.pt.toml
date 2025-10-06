@@ -143,7 +143,10 @@ other = "O parâmetro de busca originName está vazio."
 other = "O parâmetro names com as traduções para pt, en e es é obrigatório."
 
 [validation.IsActive.required]
-other = "O parâmetro isActive é obrigatório."
+other = "O parâmetro is_active é obrigatório."
 
 [validation.Names.min]
 other = "O parâmetro names deve conter pelo menos 3 chaves (pt, en, es)."
+
+[admin.origin.delete.success]
+other = "Origem deletada com sucesso."

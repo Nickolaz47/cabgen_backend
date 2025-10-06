@@ -28,12 +28,12 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUpdateInput) {
 	}
 }
 
-func ValidateOriginNames(c *gin.Context, origin *models.OriginCreateInput) (string, bool) {
+func ValidateOriginNames(c *gin.Context, names map[string]string) (string, bool) {
 	localizer := translation.GetLocalizerFromContext(c)
 	defaultLanguages := translation.Languages
 
 	for _, l := range defaultLanguages {
-		value, ok := origin.Names[l]
+		value, ok := names[l]
 		if !ok {
 			return responses.GetResponseWithData(
 				localizer,

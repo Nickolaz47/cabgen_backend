@@ -49,47 +49,38 @@ func TestValidateOriginNames(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originInput := models.OriginCreateInput{
-			Names: map[string]string{
-				"pt": "Humano",
-				"en": "Human",
-				"es": "Humano",
-			},
-			IsActive: true,
+		names := map[string]string{
+			"pt": "Humano",
+			"en": "Human",
+			"es": "Humano",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, &originInput)
+		errMsg, ok := validations.ValidateOriginNames(c, names)
 
 		assert.Empty(t, errMsg)
 		assert.True(t, ok)
 	})
 
 	t.Run("Missing language", func(t *testing.T) {
-		originInput := models.OriginCreateInput{
-			Names: map[string]string{
-				"pt": "Humano",
-				"en": "Human",
-			},
-			IsActive: true,
+		names := map[string]string{
+			"pt": "Humano",
+			"en": "Human",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, &originInput)
+		errMsg, ok := validations.ValidateOriginNames(c, names)
 
 		assert.Equal(t, errMsg, "Missing es translation.")
 		assert.False(t, ok)
 	})
 
 	t.Run("Empty translation", func(t *testing.T) {
-		originInput := models.OriginCreateInput{
-			Names: map[string]string{
-				"pt": "",
-				"en": "Human",
-				"es": "Humano",
-			},
-			IsActive: true,
+		names := map[string]string{
+			"pt": "",
+			"en": "Human",
+			"es": "Humano",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, &originInput)
+		errMsg, ok := validations.ValidateOriginNames(c, names)
 
 		assert.Equal(t, errMsg, "Empty pt translation.")
 		assert.False(t, ok)
