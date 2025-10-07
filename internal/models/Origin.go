@@ -38,6 +38,6 @@ type OriginCreateInput struct {
 }
 
 type OriginUpdateInput struct {
-	Names    map[string]string `json:"names,omitempty" binding:"omitempty"`
+	Names    map[string]string `json:"names,omitempty" binding:"omitempty,min=3"`
 	IsActive *bool             `json:"is_active,omitempty" binding:"omitempty"`
 }

@@ -66,8 +66,8 @@ func SetupTestContext() {
 	translation.LoadTranslation()
 }
 
-func CopyMap(original map[string]string) map[string]string {
-	copy := make(map[string]string, len(original))
+func CopyMap(original map[string]any) map[string]any {
+	copy := make(map[string]any, len(original))
 	maps.Copy(copy, original)
 	return copy
 }

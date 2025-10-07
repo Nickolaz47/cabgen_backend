@@ -142,9 +142,6 @@ other = "El parámetro de búsqueda originName está vacío."
 [validation.Names.required]
 other = "El parámetro names con las traducciones para pt, en y es es obligatorio."
 
-[validation.IsActive.required]
-other = "El parámetro is_active es obligatorio."
-
 [validation.Names.min]
 other = "El parámetro names debe contener al menos 3 claves (pt, en, es)."
 
