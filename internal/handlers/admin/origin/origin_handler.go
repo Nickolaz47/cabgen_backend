@@ -2,10 +2,8 @@ package origin
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -152,7 +150,7 @@ func UpdateOrigin(c *gin.Context) {
 		)
 		return
 	}
-	logging.ConsoleLogger.Info(fmt.Sprintf("%v", originToUpdate))
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},

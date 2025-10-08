@@ -14,6 +14,16 @@ var CreateOriginTests = []Body{
 		b["names"] = map[string]string{"pt": "Humano"}
 		return b
 	}()), `{"error":"The names parameter must contain at least 3 keys (pt, en, es)."}`},
+	{"Missing names key", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseOriginCreateBody)
+		b["names"] = map[string]string{"pt": "Alimentar", "fr": "Nourrir", "es": "Alimentaria"}
+		return b
+	}()), `{"error":"Missing en translation."}`},
+	{"Empty translation", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseOriginCreateBody)
+		b["names"] = map[string]string{"pt": "Alimentar", "en": "", "es": "Alimentaria"}
+		return b
+	}()), `{"error":"Empty en translation."}`},
 }
 
 var baseOriginUpdateBody = map[string]any{
@@ -21,8 +31,20 @@ var baseOriginUpdateBody = map[string]any{
 	"is_active": true,
 }
 
-var UpdateOriginTest = Body{"Invalid names", testutils.ToJSON(func() map[string]any {
-	b := testutils.CopyMap(baseOriginUpdateBody)
-	b["names"] = map[string]string{"pt": "Humano"}
-	return b
-}()), `{"error":"The names parameter must contain at least 3 keys (pt, en, es)."}`}
+var UpdateOriginTests = []Body{
+	{"Invalid names", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseOriginUpdateBody)
+		b["names"] = map[string]string{"pt": "Humano"}
+		return b
+	}()), `{"error":"The names parameter must contain at least 3 keys (pt, en, es)."}`},
+	{"Missing names key", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseOriginUpdateBody)
+		b["names"] = map[string]string{"pt": "Alimentar", "fr": "Nourrir", "es": "Alimentaria"}
+		return b
+	}()), `{"error":"Missing en translation."}`},
+	{"Empty translation", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseOriginUpdateBody)
+		b["names"] = map[string]string{"pt": "Alimentar", "en": "", "es": "Alimentaria"}
+		return b
+	}()), `{"error":"Empty en translation."}`},
+}

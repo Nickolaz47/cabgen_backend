@@ -63,7 +63,7 @@ func TestCreateOrigin(t *testing.T) {
 			origin.CreateOrigin(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
-			assert.Equal(t, tt.Expected, w.Body.String())
+			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
@@ -90,6 +90,6 @@ func TestCreateOrigin(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Equal(t, expected, w.Body.String())
+		assert.JSONEq(t, expected, w.Body.String())
 	})
 }
