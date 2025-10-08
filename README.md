@@ -168,7 +168,15 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 | GET    | `/api/user/me`    | Retorna dados do usuário logado   |
 | PUT    | `/api/user/me`    | Atualiza dados do usuário logado         |
 
+### Origem
+
+| Método | Endpoint               | Descrição                          |
+|--------|------------------------|-----------------------------------|
+| GET    | `/api/origin`    | Retorna todas as origens ativas   |
+
 ### Admin
+
+#### Usuário
 
 | Método | Endpoint                 | Descrição                              |
 |--------|--------------------------|---------------------------------------|
@@ -178,6 +186,17 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 | PUT | `/api/admin/user/:username`   | Atualiza um usuário                |
 | PUT | `/api/admin/user/activation/:username`   | Ativa/desativa um usuário                |
 | DELETE | `/api/admin/user/:username`   | Deleta um usuário                |
+
+#### Origem
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/admin/origin`       | Lista todas as origens                |
+| GET    | `/api/admin/origin/:originId`       | Retorna uma origem específica       |
+| PUT | `/api/admin/origin/search?originName=`   | Procura uma origem pelo nome                |
+| POST | `/api/admin/origin`   | Cria uma nova origem|
+| PUT | `/api/admin/origin/:originId`   | Atualiza uma origem                |
+| DELETE | `/api/admin/origin/:originId`   | Deleta uma origem                |
 
 ## Internacionalização (i18n)
 

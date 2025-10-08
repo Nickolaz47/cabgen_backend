@@ -23,6 +23,15 @@ func (r *OriginRepository) GetOrigins() ([]models.Origin, error) {
 	return origins, nil
 }
 
+func (r *OriginRepository) GetActiveOrigins() ([]models.Origin, error) {
+	var origins []models.Origin
+	if err := r.DB.Where("is_active = true").Find(&origins).Error; err != nil {
+		return nil, err
+	}
+
+	return origins, nil
+}
+
 func (r *OriginRepository) GetOriginByID(ID uuid.UUID) (*models.Origin, error) {
 	var origin models.Origin
 	if err := r.DB.Where("id = ?", ID).First(&origin).Error; err != nil {
@@ -34,7 +43,7 @@ func (r *OriginRepository) GetOriginByID(ID uuid.UUID) (*models.Origin, error) {
 
 func (r *OriginRepository) GetOriginByName(name, lang string) (*models.Origin, error) {
 	var origin models.Origin
-	query:= "LOWER(names->>'" + lang + "') LIKE LOWER(?)"
+	query := "LOWER(names->>'" + lang + "') LIKE LOWER(?)"
 	if err := r.DB.Where(query, "%"+name+"%").First(&origin).Error; err != nil {
 		return nil, err
 	}

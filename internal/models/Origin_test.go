@@ -24,3 +24,16 @@ func TestOriginToResponse(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestOriginToPublicResponse(t *testing.T) {
+	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
+	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
+
+	result := mockOrigin.ToPublicResponse(c)
+	expected := models.OriginPublicResponse{
+		ID:   mockOrigin.ID,
+		Name: mockOrigin.Names["en"],
+	}
+
+	assert.Equal(t, expected, result)
+}

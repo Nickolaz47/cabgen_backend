@@ -49,6 +49,37 @@ func TestGetOrigins(t *testing.T) {
 	})
 }
 
+func TestGetActiveOrigins(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repository.NewOriginRepo(db)
+
+	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
+	origin2 := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"}, false)
+	db.Create(&origin)
+	db.Create(&origin2)
+
+	t.Run("Success", func(t *testing.T) {
+		origins, err := repo.GetActiveOrigins()
+
+		expected := []models.Origin{origin}
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, origins)
+		assert.Equal(t, expected, origins)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		origins, err := mockCountryRepo.GetActiveOrigins()
+
+		assert.Empty(t, origins)
+		assert.Error(t, err)
+	})
+}
+
 func TestGetOriginByID(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)

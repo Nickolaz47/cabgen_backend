@@ -17,6 +17,11 @@ type OriginResponse struct {
 	IsActive bool      `json:"is_active"`
 }
 
+type OriginPublicResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
 	language := c.GetHeader("Accept-Language")
 	if language == "" {
@@ -29,6 +34,20 @@ func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
 		ID:       o.ID,
 		Name:     name,
 		IsActive: o.IsActive,
+	}
+}
+
+func (o *Origin) ToPublicResponse(c *gin.Context) OriginPublicResponse {
+	language := c.GetHeader("Accept-Language")
+	if language == "" {
+		language = "en"
+	}
+
+	name := o.Names[language]
+
+	return OriginPublicResponse{
+		ID:       o.ID,
+		Name:     name,
 	}
 }
 
