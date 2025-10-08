@@ -1,10 +1,10 @@
-package admin_test
+package user_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
@@ -26,7 +26,7 @@ func TestGetAllUsers(t *testing.T) {
 		nil, nil,
 	)
 
-	admin.GetAllUsers(c)
+	user.GetAllUsers(c)
 
 	expected := testutils.ToJSON(
 		map[string][]models.User{

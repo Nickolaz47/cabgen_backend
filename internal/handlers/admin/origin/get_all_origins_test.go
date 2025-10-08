@@ -1,10 +1,10 @@
-package admin_test
+package origin_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
@@ -28,7 +28,7 @@ func TestGetAllOrigins(t *testing.T) {
 		nil, nil,
 	)
 
-	admin.GetAllOrigins(c)
+	origin.GetAllOrigins(c)
 
 	expected := testutils.ToJSON(
 		map[string][]models.Origin{

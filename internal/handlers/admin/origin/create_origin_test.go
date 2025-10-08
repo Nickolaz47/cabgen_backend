@@ -1,11 +1,11 @@
-package admin_test
+package origin_test
 
 import (
 	"encoding/json"
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -31,7 +31,7 @@ func TestCreateOrigin(t *testing.T) {
 			nil, nil,
 		)
 
-		admin.CreateOrigin(c)
+		origin.CreateOrigin(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"message": "Origin created successfully.",
@@ -60,7 +60,7 @@ func TestCreateOrigin(t *testing.T) {
 				nil, nil,
 			)
 
-			admin.CreateOrigin(c)
+			origin.CreateOrigin(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.Equal(t, tt.Expected, w.Body.String())
@@ -83,7 +83,7 @@ func TestCreateOrigin(t *testing.T) {
 			nil, nil,
 		)
 
-		admin.CreateOrigin(c)
+		origin.CreateOrigin(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

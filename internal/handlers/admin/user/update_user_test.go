@@ -1,11 +1,11 @@
-package admin_test
+package user_test
 
 import (
 	"encoding/json"
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
@@ -30,7 +30,7 @@ func TestUpdateUser(t *testing.T) {
 			nil, gin.Params{{Key: "username", Value: "nmfaraujo2"}},
 		)
 
-		admin.UpdateUser(c)
+		user.UpdateUser(c)
 
 		expected := `{"error": "User not found."}`
 
@@ -45,7 +45,7 @@ func TestUpdateUser(t *testing.T) {
 				nil, nil,
 			)
 
-			admin.UpdateUser(c)
+			user.UpdateUser(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
@@ -58,7 +58,7 @@ func TestUpdateUser(t *testing.T) {
 			nil, gin.Params{{Key: "username", Value: "nick"}},
 		)
 
-		admin.UpdateUser(c)
+		user.UpdateUser(c)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
 		assert.JSONEq(t, data.AdminCountryNotFoundTest.Expected, w.Body.String())
@@ -71,7 +71,7 @@ func TestUpdateUser(t *testing.T) {
 				nil, gin.Params{{Key: "username", Value: "nick"}},
 			)
 
-			admin.UpdateUser(c)
+			user.UpdateUser(c)
 
 			assert.Equal(t, http.StatusConflict, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
@@ -86,7 +86,7 @@ func TestUpdateUser(t *testing.T) {
 			nil, gin.Params{{Key: "username", Value: "nick"}},
 		)
 
-		admin.UpdateUser(c)
+		user.UpdateUser(c)
 
 		var got map[string]any
 		err := json.Unmarshal(w.Body.Bytes(), &got)

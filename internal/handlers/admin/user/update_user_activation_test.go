@@ -1,4 +1,4 @@
-package admin_test
+package user_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -62,7 +62,7 @@ func TestUpdateUserActivation(t *testing.T) {
 
 		c.Set("user", &mockAdminUserToken)
 
-		admin.UpdateUserActivation(c)
+		user.UpdateUserActivation(c)
 
 		var updatedUser models.User
 		db.Where(`username = ?`, mockLoginUser.Username).First(&updatedUser)
@@ -84,7 +84,7 @@ func TestUpdateUserActivation(t *testing.T) {
 		c.Request = req
 		c.Params = gin.Params{{Key: "username", Value: "nick"}}
 
-		admin.UpdateUserActivation(c)
+		user.UpdateUserActivation(c)
 
 		expected := `{"error": "Unauthorized. Please log in to continue."}`
 
@@ -103,7 +103,7 @@ func TestUpdateUserActivation(t *testing.T) {
 
 		c.Set("user", &mockAdminUserToken)
 
-		admin.UpdateUserActivation(c)
+		user.UpdateUserActivation(c)
 
 		expected := `{"error": "User not found."}`
 

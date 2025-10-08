@@ -1,11 +1,11 @@
-package admin_test
+package user_test
 
 import (
 	"encoding/json"
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -44,7 +44,7 @@ func TestCreateUser(t *testing.T) {
 			nil, nil,
 		)
 
-		admin.CreateUser(c)
+		user.CreateUser(c)
 
 		expected := `{"error": "Unauthorized. Please log in to continue."}`
 
@@ -61,7 +61,7 @@ func TestCreateUser(t *testing.T) {
 
 			c.Set("user", &mockAdminUserToken)
 
-			admin.CreateUser(c)
+			user.CreateUser(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
@@ -79,7 +79,7 @@ func TestCreateUser(t *testing.T) {
 
 		c.Set("user", &mockAdminUserToken)
 
-		admin.CreateUser(c)
+		user.CreateUser(c)
 
 		expected := `{"error": "Email is already in use."}`
 
@@ -98,7 +98,7 @@ func TestCreateUser(t *testing.T) {
 
 		c.Set("user", &mockAdminUserToken)
 
-		admin.CreateUser(c)
+		user.CreateUser(c)
 
 		expected := `{"error": "Username already exists."}`
 
@@ -115,7 +115,7 @@ func TestCreateUser(t *testing.T) {
 		)
 
 		c.Set("user", &mockAdminUserToken)
-		admin.CreateUser(c)
+		user.CreateUser(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"message": "User created successfully.",

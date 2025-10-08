@@ -1,33 +1,40 @@
-package admin_test
+package user_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeleteUser(t *testing.T) {
+func TestGetUserByUsername(t *testing.T) {
 	testutils.SetupTestContext()
-
 	db := testutils.SetupTestRepos()
+
+	mockCountry := testmodels.NewCountry("", nil)
+	db.Create(&mockCountry)
 
 	mockLoginUser := testmodels.NewLoginUser()
 	db.Create(&mockLoginUser)
 
 	t.Run("Success", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/user/nick", "",
-			nil, gin.Params{{Key: "username", Value: "nick"}},
+			http.MethodGet, "/api/user/nick",
+			"", nil, gin.Params{{Key: "username", Value: "nick"}},
 		)
 
-		admin.DeleteUser(c)
+		user.GetUserByUsername(c)
 
-		expected := `{"message": "User deleted successfully."}`
+		expected := testutils.ToJSON(
+			map[string]models.User{
+				"data": mockLoginUser,
+			},
+		)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
@@ -35,11 +42,11 @@ func TestDeleteUser(t *testing.T) {
 
 	t.Run("User not found", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/user/xxxx", "",
-			nil, gin.Params{{Key: "username", Value: "xxxx"}},
+			http.MethodGet, "/api/user/jao",
+			"", nil, gin.Params{{Key: "username", Value: "jao"}},
 		)
 
-		admin.DeleteUser(c)
+		user.GetUserByUsername(c)
 
 		expected := `{"error": "User not found."}`
 
