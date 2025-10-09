@@ -33,7 +33,6 @@ func TestGetOrigins(t *testing.T) {
 		expected := []models.Origin{origin}
 
 		assert.NoError(t, err)
-		assert.NotEmpty(t, origins)
 		assert.Equal(t, expected, origins)
 	})
 
@@ -64,7 +63,6 @@ func TestGetActiveOrigins(t *testing.T) {
 		expected := []models.Origin{origin}
 
 		assert.NoError(t, err)
-		assert.NotEmpty(t, origins)
 		assert.Equal(t, expected, origins)
 	})
 

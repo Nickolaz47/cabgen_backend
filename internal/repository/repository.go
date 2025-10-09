@@ -5,13 +5,15 @@ import (
 )
 
 var (
-	CountryRepo *CountryRepository
-	UserRepo    *UserRepository
-	OriginRepo  *OriginRepository
+	CountryRepo   *CountryRepository
+	UserRepo      *UserRepository
+	OriginRepo    *OriginRepository
+	SequencerRepo *SequencerRepository
 )
 
 func InitRepositories(db *gorm.DB) {
 	CountryRepo = NewCountryRepo(db)
 	UserRepo = NewUserRepo(db)
 	OriginRepo = NewOriginRepo(db)
+	SequencerRepo = NewSequencerRepo(db)
 }
