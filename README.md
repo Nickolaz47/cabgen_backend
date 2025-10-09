@@ -32,6 +32,7 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 │   ├── config/               # Carregamento das variáveis de ambiente
 │   ├── data/                 # Dados estáticos (ex: countries.json)
 │   ├── db/                   # Configuração e conexão com o banco de dados
+│   ├── email/                # Configuração e envio de emails
 │   ├── handlers/             # Controladores Gin
 │   ├── logging/              # Controle de logs
 │   ├── middlewares/          # Middlewares
