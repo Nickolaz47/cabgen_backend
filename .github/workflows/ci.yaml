@@ -42,7 +42,7 @@ jobs:
           go test ./... -v -cover -count=1 | tee test.log
 
       - name: Upload test log
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-log
           path: test.log
