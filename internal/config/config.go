@@ -36,11 +36,11 @@ func LoadEnvVariables(envFile string) error {
 	var err error
 
 	if envFile != "" {
-		if err := godotenv.Load(envFile); err != nil {
+		if err := godotenv.Overload(envFile); err != nil {
 			return err
 		}
 	} else {
-		if err := godotenv.Load(); err != nil {
+		if err := godotenv.Overload(); err != nil {
 			return err
 		}
 	}

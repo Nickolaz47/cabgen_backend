@@ -19,7 +19,9 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if err := db.Connect(); err != nil {
+	driver := "postgres"
+	dns := config.DatabaseConnectionString
+	if err := db.Connect(driver, dns); err != nil {
 		log.Fatal(err)
 	}
 

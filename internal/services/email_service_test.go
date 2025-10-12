@@ -29,9 +29,6 @@ func (m *MockEmailSender) Send(msg *gomail.Message) error {
 }
 
 func TestSendActivationUserEmail(t *testing.T) {
-	err := config.LoadEnvVariables("../../.env")
-	assert.NoError(t, err)
-
 	t.Run("Success", func(t *testing.T) {
 		db := testutils.SetupTestRepos()
 		repository.InitRepositories(db)

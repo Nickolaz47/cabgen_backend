@@ -3,7 +3,6 @@ package db_test
 import (
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/stretchr/testify/assert"
@@ -13,16 +12,12 @@ import (
 
 func TestConnect(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		err := db.Connect()
+		err := db.Connect("sqlite", ":memory:")
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		origDSN := config.DatabaseConnectionString
-		config.DatabaseConnectionString = "invalid-dsn"
-		defer func() { config.DatabaseConnectionString = origDSN }()
-
-		err := db.Connect()
+		err := db.Connect("postgres", "invalid-dsn")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to connect")
 	})

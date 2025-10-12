@@ -6,18 +6,16 @@ import (
 	"log"
 	"time"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-func Connect() error {
-	dns := config.DatabaseConnectionString
-
+func Connect(driver, dns string) error {
 	newLogger := logger.New(
 		log.Default(),
 		logger.Config{
@@ -28,9 +26,22 @@ func Connect() error {
 		},
 	)
 
-	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{
-		Logger: newLogger,
-	})
+	var (
+		db  *gorm.DB
+		err error
+	)
+
+	switch driver {
+	case "postgres":
+		db, err = gorm.Open(postgres.Open(dns), &gorm.Config{
+			Logger: newLogger,
+		})
+	case "sqlite":
+		db, err = gorm.Open(sqlite.Open(dns), &gorm.Config{Logger: newLogger})
+	default:
+		return fmt.Errorf("unknown driver: %s", driver)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %v", err)
 	}
