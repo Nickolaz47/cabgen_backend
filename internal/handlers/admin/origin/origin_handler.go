@@ -57,7 +57,7 @@ func GetOriginByName(c *gin.Context) {
 
 	if name == "" {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.OriginNameEmptyError),
+			Error: responses.GetResponse(localizer, responses.OriginEmptyNameError),
 		})
 		return
 	}

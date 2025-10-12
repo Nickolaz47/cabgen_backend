@@ -147,3 +147,27 @@ other = "O parâmetro names deve conter pelo menos 3 chaves (pt, en, es)."
 
 [admin.origin.delete.success]
 other = "Origem deletada com sucesso."
+
+[admin.sequencer.Brand.required]
+other = "A marca do sequenciador é obrigatória."
+
+[admin.sequencer.Model.required]
+other = "O modelo do sequenciador é obrigatório."
+
+[admin.sequencer.Brand.min]
+other = "A marca do sequenciador deve conter pelo menos 3 caracteres."
+
+[admin.sequencer.Model.min]
+other = "O modelo do sequenciador deve conter pelo menos 3 caracteres."
+
+[admin.sequencer.create.success]
+other = "Sequenciador cadastrado com sucesso."
+
+[admin.sequencer.brandOrModel.error]
+other = "O parâmetro de busca brandOrModel está vazio."
+
+[admin.sequencer.notFound.error]
+other = "Sequenciador não encontrado."
+
+[admin.sequencer.delete.success]
+other = "Sequenciador deletado com sucesso."

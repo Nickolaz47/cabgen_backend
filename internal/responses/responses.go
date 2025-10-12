@@ -31,8 +31,12 @@ const (
 	OriginValidationMissingLanguage    = "admin.origin.validation.missingLanguage"
 	OriginValidationMissingTranslation = "admin.origin.validation.missingTranslation"
 	OriginNotFoundError                = "admin.origin.notFound.error"
-	OriginNameEmptyError               = "admin.origin.emptyName.error"
+	OriginEmptyNameError               = "admin.origin.emptyName.error"
 	OriginDeleted                      = "admin.origin.delete.success"
+	SequencerCreationSuccess           = "admin.sequencer.create.success"
+	SequencerEmptyQueryError           = "admin.sequencer.brandOrModel.error"
+	SequencerNotFoundError             = "admin.sequencer.notFound.error"
+	SequencerDeleted                   = "admin.sequencer.delete.success"
 )
 
 type APIResponse struct {

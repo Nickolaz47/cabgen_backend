@@ -7,6 +7,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,5 +89,54 @@ func TestValidateOriginNames(t *testing.T) {
 }
 
 func TestApplyOriginUpdate(t *testing.T) {
+	origin := models.Origin{
+		ID:       uuid.New(),
+		Names:    map[string]string{"pt": "Humano", "en": "Human", "es": "Human"},
+		IsActive: false,
+	}
 
+	isActive := true
+	originUpdate := models.OriginUpdateInput{
+		Names:    map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+		IsActive: &isActive,
+	}
+
+	expected := models.Origin{
+		ID:       origin.ID,
+		Names:    originUpdate.Names,
+		IsActive: *originUpdate.IsActive,
+	}
+
+	validations.ApplyOriginUpdate(&origin, &originUpdate)
+
+	assert.Equal(t, expected, origin)
+}
+
+func TestApplySequecerUpdate(t *testing.T) {
+	sequencer := models.Sequencer{
+		ID:       uuid.New(),
+		Brand:    "Ilumina",
+		Model:    "Myseq",
+		IsActive: false,
+	}
+
+	brand := "Illumina"
+	model := "MiSeq"
+	isActive := true
+	sequencerUpdate := models.SequencerUpdateInput{
+		Brand:    &brand,
+		Model:    &model,
+		IsActive: &isActive,
+	}
+
+	expected := models.Sequencer{
+		ID:       sequencer.ID,
+		Brand:    *sequencerUpdate.Brand,
+		Model:    *sequencerUpdate.Model,
+		IsActive: *sequencerUpdate.IsActive,
+	}
+
+	validations.ApplySequencerUpdate(&sequencer, &sequencerUpdate)
+
+	assert.Equal(t, expected, sequencer)
 }

@@ -62,3 +62,17 @@ func ApplyOriginUpdate(origin *models.Origin, input *models.OriginUpdateInput) {
 		origin.IsActive = *input.IsActive
 	}
 }
+
+func ApplySequencerUpdate(sequencer *models.Sequencer, input *models.SequencerUpdateInput) {
+	if input.Brand != nil {
+		sequencer.Brand = *input.Brand
+	}
+
+	if input.Model != nil {
+		sequencer.Model = *input.Model
+	}
+
+	if input.IsActive != nil {
+		sequencer.IsActive = *input.IsActive
+	}
+}
