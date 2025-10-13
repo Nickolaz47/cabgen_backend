@@ -148,16 +148,16 @@ other = "The names parameter must contain at least 3 keys (pt, en, es)."
 [admin.origin.delete.success]
 other = "Origin deleted successfully."
 
-[admin.sequencer.Brand.required]
+[validation.Brand.required]
 other = "Sequencer brand is required."
 
-[admin.sequencer.Model.required]
+[validation.Model.required]
 other = "Sequencer model is required."
 
-[admin.sequencer.Brand.min]
+[validation.Brand.min]
 other = "Sequencer brand must contain at least 3 characters."
 
-[admin.sequencer.Model.min]
+[validation.Model.min]
 other = "Sequencer model must contain at least 3 characters."
 
 [admin.sequencer.create.success]

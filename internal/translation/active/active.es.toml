@@ -148,16 +148,16 @@ other = "El parámetro names debe contener al menos 3 claves (pt, en, es)."
 [admin.origin.delete.success]
 other = "Origen eliminado con éxito."
 
-[admin.sequencer.Brand.required]
+[validation.Brand.required]
 other = "La marca del secuenciador es obligatoria."
 
-[admin.sequencer.Model.required]
+[validation.Model.required]
 other = "El modelo del secuenciador es obligatorio."
 
-[admin.sequencer.Brand.min]
+[validation.Brand.min]
 other = "La marca del secuenciador debe contener al menos 3 caracteres."
 
-[admin.sequencer.Model.min]
+[validation.Model.min]
 other = "El modelo del secuenciador debe contener al menos 3 caracteres."
 
 [admin.sequencer.create.success]
