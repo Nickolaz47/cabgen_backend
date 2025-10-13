@@ -2,6 +2,7 @@ package admin
 
 import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/gin-gonic/gin"
@@ -25,4 +26,12 @@ func AdminRoutes(r *gin.RouterGroup) {
 	originGroup.POST("", origin.CreateOrigin)
 	originGroup.PUT("/:originId", origin.UpdateOrigin)
 	originGroup.DELETE("/:originId", origin.DeleteOrigin)
+
+	sequencerGroup := adminRouter.Group("/sequencer")
+	sequencerGroup.GET("", sequencer.GetAllSequencers)
+	sequencerGroup.GET("/:sequencerId", sequencer.GetSequencerByID)
+	sequencerGroup.GET("/search", sequencer.GetSequencersByBrandOrModel)
+	sequencerGroup.POST("", sequencer.CreateSequencer)
+	sequencerGroup.PUT("/:sequencerId", sequencer.UpdateSequencer)
+	sequencerGroup.DELETE("/:sequencerId", sequencer.DeleteSequencer)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllActiveOrigins(c *gin.Context) {
+func GetActiveOrigins(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	origins, err := repository.OriginRepo.GetActiveOrigins()

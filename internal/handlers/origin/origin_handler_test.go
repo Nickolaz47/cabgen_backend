@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestGetAllActiveOrigins(t *testing.T) {
+func TestGetActiveOrigins(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
@@ -30,7 +30,7 @@ func TestGetAllActiveOrigins(t *testing.T) {
 			nil, nil,
 		)
 
-		origin.GetAllActiveOrigins(c)
+		origin.GetActiveOrigins(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"data": []models.OriginPublicResponse{
@@ -57,7 +57,7 @@ func TestGetAllActiveOrigins(t *testing.T) {
 			nil, nil,
 		)
 
-		origin.GetAllActiveOrigins(c)
+		origin.GetActiveOrigins(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

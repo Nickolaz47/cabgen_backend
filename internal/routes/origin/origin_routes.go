@@ -8,5 +8,5 @@ import (
 
 func OriginRoutes(r *gin.RouterGroup) {
 	originRouter := r.Group("/origin", middlewares.AuthMiddleware())
-	originRouter.GET("", origin.GetAllActiveOrigins)
+	originRouter.GET("", origin.GetActiveOrigins)
 }
