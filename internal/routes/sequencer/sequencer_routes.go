@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func OriginRoutes(r *gin.RouterGroup) {
-	originRouter := r.Group("/sequencer", middlewares.AuthMiddleware())
-	originRouter.GET("", sequencer.GetActiveSequencers)
+func SequencerRoutes(r *gin.RouterGroup) {
+	sequencerRouter := r.Group("/sequencer", middlewares.AuthMiddleware())
+	sequencerRouter.GET("", sequencer.GetActiveSequencers)
 }

@@ -43,7 +43,8 @@ func (r *SequencerRepository) GetSequencerByID(ID uuid.UUID) (*models.Sequencer,
 
 func (r *SequencerRepository) GetSequencersByBrandOrModel(input string) ([]models.Sequencer, error) {
 	var sequencers []models.Sequencer
-	if err := r.DB.Where("LOWER(model) LIKE LOWER(?) OR LOWER(brand) LIKE LOWER(?)", input, input).Find(&sequencers).Error; err != nil {
+	inputQuery := "%" + input + "%"
+	if err := r.DB.Where("LOWER(model) LIKE LOWER(?) OR LOWER(brand) LIKE LOWER(?)", inputQuery, inputQuery).Find(&sequencers).Error; err != nil {
 		return nil, err
 	}
 

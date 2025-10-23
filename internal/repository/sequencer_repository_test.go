@@ -111,18 +111,21 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	db.Create(&sequencer)
+	sequencer2 := testmodels.NewSequencer(uuid.NewString(), "Illumina", "NextSeq 550", true)
+	db.Create(&sequencer2)
+
 
 	t.Run("Success - Brand", func(t *testing.T) {
-		resultSequencer, err := repo.GetSequencersByBrandOrModel("illumina")
+		resultSequencer, err := repo.GetSequencersByBrandOrModel("illu")
 
-		expected := []models.Sequencer{sequencer}
+		expected := []models.Sequencer{sequencer, sequencer2}
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, resultSequencer)
 	})
 
 	t.Run("Success - Model", func(t *testing.T) {
-		resultSequencer, err := repo.GetSequencersByBrandOrModel("miseq")
+		resultSequencer, err := repo.GetSequencersByBrandOrModel("mis")
 
 		expected := []models.Sequencer{sequencer}
 
