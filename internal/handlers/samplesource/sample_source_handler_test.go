@@ -1,10 +1,10 @@
-package origin_test
+package samplesource_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/origin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -15,26 +15,36 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestGetActiveOrigins(t *testing.T) {
+func TestGetActiveSampleSources(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
-	mockOrigin2 := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"}, false)
-	db.Create(&mockOrigin)
-	db.Create(&mockOrigin2)
+	mockSampleSource := testmodels.NewSampleSource(
+		uuid.NewString(),
+		map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		true,
+	)
+	mockSampleSource2 := testmodels.NewSampleSource(
+		uuid.NewString(),
+		map[string]string{"pt": "Coágulo sanguíneo", "en": "Blood clot", "es": "Coágulo de sangre"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		false,
+	)
+	db.Create(&mockSampleSource)
+	db.Create(&mockSampleSource2)
 
 	t.Run("Success", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/origin", "",
+			http.MethodGet, "/api/sampleSource", "",
 			nil, nil,
 		)
 
-		origin.GetActiveOrigins(c)
+		samplesource.GetActiveSampleSources(c)
 
 		expected := testutils.ToJSON(map[string]any{
-			"data": []models.OriginFormResponse{
-				mockOrigin.ToFormResponse(c),
+			"data": []models.SampleSourceFormResponse{
+				mockSampleSource.ToFormResponse(c),
 			},
 		})
 
@@ -43,21 +53,21 @@ func TestGetActiveOrigins(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		origRepo := repository.OriginRepo
+		sampleSourceRepo := repository.SampleSourceRepo
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		repository.OriginRepo = repository.NewOriginRepo(mockDB)
+		repository.SampleSourceRepo = repository.NewSampleSourceRepo(mockDB)
 		defer func() {
-			repository.OriginRepo = origRepo
+			repository.SampleSourceRepo = sampleSourceRepo
 		}()
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/origin", "",
+			http.MethodGet, "/api/sampleSource", "",
 			nil, nil,
 		)
 
-		origin.GetActiveOrigins(c)
+		samplesource.GetActiveSampleSources(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

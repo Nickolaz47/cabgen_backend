@@ -31,7 +31,7 @@ func SampleSourceToResponse(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func SampleSourceToPublicResponse(t *testing.T) {
+func SampleSourceToFormResponse(t *testing.T) {
 	mockSampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
 		map[string]string{"pt": "Aspirado", "en": "Aspirated", "es": "Aspirado"},
@@ -40,11 +40,11 @@ func SampleSourceToPublicResponse(t *testing.T) {
 	)
 	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
-	expected := models.SampleSourcePublicResponse{
+	expected := models.SampleSourceFormResponse{
 		ID:   mockSampleSource.ID,
 		Name: mockSampleSource.Names["en"],
 	}
-	result := mockSampleSource.ToPublicResponse(c)
+	result := mockSampleSource.ToFormResponse(c)
 
 	assert.Equal(t, expected, result)
 }

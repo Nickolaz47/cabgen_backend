@@ -1,4 +1,4 @@
-package origin
+package samplesource
 
 import (
 	"net/http"
@@ -10,22 +10,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetActiveOrigins(c *gin.Context) {
+func GetActiveSampleSources(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	origins, err := repository.OriginRepo.GetActiveOrigins()
+	sampleSources, err := repository.SampleSourceRepo.GetActiveSampleSources()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
 		return
 	}
-
-	publicOrigins := make([]models.OriginFormResponse, len(origins))
-	for i, orig := range origins {
-		publicOrigins[i] = orig.ToFormResponse(c)
+	
+	publicSampleSources := make([]models.SampleSourceFormResponse, len(sampleSources))
+	for i, s := range sampleSources {
+		publicSampleSources[i] = s.ToFormResponse(c)
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: publicOrigins,
+		Data: publicSampleSources,
 	})
 }

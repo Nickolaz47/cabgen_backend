@@ -19,7 +19,7 @@ type SampleSourceResponse struct {
 	IsActive bool      `json:"is_active"`
 }
 
-type SampleSourcePublicResponse struct {
+type SampleSourceFormResponse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
 }
@@ -41,7 +41,7 @@ func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
 	}
 }
 
-func (s *SampleSource) ToPublicResponse(c *gin.Context) SampleSourcePublicResponse {
+func (s *SampleSource) ToFormResponse(c *gin.Context) SampleSourceFormResponse {
 	language := c.GetHeader("Accept-Language")
 	if language != "" {
 		language = "en"
@@ -49,7 +49,7 @@ func (s *SampleSource) ToPublicResponse(c *gin.Context) SampleSourcePublicRespon
 
 	name := s.Names[language]
 
-	return SampleSourcePublicResponse{
+	return SampleSourceFormResponse{
 		ID:   s.ID,
 		Name: name,
 	}
