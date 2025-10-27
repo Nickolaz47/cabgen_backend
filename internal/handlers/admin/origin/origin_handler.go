@@ -91,7 +91,7 @@ func CreateOrigin(c *gin.Context) {
 		return
 	}
 
-	errMsg, ok := validations.ValidateOriginNames(c, newOrigin.Names)
+	errMsg, ok := validations.ValidateTranslationMap(c, "origin", newOrigin.Names)
 	if !ok {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
@@ -132,7 +132,7 @@ func UpdateOrigin(c *gin.Context) {
 	}
 
 	if originUpdateInput.Names != nil {
-		errMsg, ok = validations.ValidateOriginNames(c, originUpdateInput.Names)
+		errMsg, ok = validations.ValidateTranslationMap(c, "origin", originUpdateInput.Names)
 	}
 
 	if !ok {

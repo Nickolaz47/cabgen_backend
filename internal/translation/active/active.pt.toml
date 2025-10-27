@@ -171,3 +171,27 @@ other = "Sequenciador não encontrado."
 
 [admin.sequencer.delete.success]
 other = "Sequenciador deletado com sucesso."
+
+[validation.Groups.required]
+other = "O parâmetro grupos com as traduções para pt, en e es é obrigatório."
+
+[validation.Groups.min]
+other = "O parâmetro grupos deve conter pelo menos 3 chaves (pt, en, es)."
+
+[admin.sampleSource.validation.missingLanguage]
+other = "Fonte da amostra sem tradução para {{.Param}}."
+
+[admin.sampleSource.validation.missingTranslation]
+other = "Fonte da amostra com a tradução para {{.Param}} vazia."
+
+[admin.sampleSource.create.success]
+other = "Fonte da amostra criada com sucesso."
+
+[admin.sampleSource.nameOrGroup.error]
+other = "O parâmetro de busca nameOrGroup está vazio."
+
+[admin.sampleSource.notFound.error]
+other = "Fonte da amostra não encontrada."
+
+[admin.sampleSource.delete.success]
+other = "Fonte da amostra deletada com sucesso."

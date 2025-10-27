@@ -171,3 +171,27 @@ other = "Sequencer not found."
 
 [admin.sequencer.delete.success]
 other = "Sequencer deleted successfully."
+
+[validation.Groups.required]
+other = "The groups parameter with translations for pt, en, and es is required."
+
+[validation.Groups.min]
+other = "The groups parameter must contain at least 3 keys (pt, en, es)."
+
+[admin.sampleSource.validation.missingLanguage]
+other = "Sample source missing translation for {{.Param}}."
+
+[admin.sampleSource.validation.missingTranslation]
+other = "Sample source has empty translation for {{.Param}}."
+
+[admin.sampleSource.create.success]
+other = "Sample source created successfully."
+
+[admin.sampleSource.nameOrGroup.error]
+other = "The search parameter nameOrGroup is empty."
+
+[admin.sampleSource.notFound.error]
+other = "Sample source not found."
+
+[admin.sampleSource.delete.success]
+other = "Sample source deleted successfully."

@@ -11,33 +11,48 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUpdateInput) {
 	if input.Name != nil {
 		user.Name = *input.Name
 	}
+
 	if input.Username != nil {
 		user.Username = *input.Username
 	}
+
 	if input.Email != nil {
 		user.Email = *input.Email
 	}
+
 	if input.Interest != nil {
 		user.Interest = input.Interest
 	}
+
 	if input.Role != nil {
 		user.Role = input.Role
 	}
+
 	if input.Institution != nil {
 		user.Institution = input.Institution
 	}
 }
 
-func ValidateOriginNames(c *gin.Context, names map[string]string) (string, bool) {
+func ValidateTranslationMap(c *gin.Context, model string, translations map[string]string) (string, bool) {
 	localizer := translation.GetLocalizerFromContext(c)
 	defaultLanguages := translation.Languages
 
+	var missingLanguage, missingTranslation string
+	switch model {
+	case "origin":
+		missingLanguage, missingTranslation = responses.OriginValidationMissingLanguage, responses.OriginValidationMissingTranslation
+	case "sampleSource":
+		missingLanguage, missingTranslation = responses.SampleSourceValidationMissingLanguage, responses.SampleSourceValidationMissingTranslation
+	default:
+		missingLanguage, missingTranslation = "", ""
+	}
+
 	for _, l := range defaultLanguages {
-		value, ok := names[l]
+		value, ok := translations[l]
 		if !ok {
 			return responses.GetResponseWithData(
 				localizer,
-				responses.OriginValidationMissingLanguage,
+				missingLanguage,
 				map[string]any{"Param": l},
 			), false
 		}
@@ -45,7 +60,7 @@ func ValidateOriginNames(c *gin.Context, names map[string]string) (string, bool)
 		if value == "" {
 			return responses.GetResponseWithData(
 				localizer,
-				responses.OriginValidationMissingTranslation,
+				missingTranslation,
 				map[string]any{"Param": l},
 			), false
 		}
@@ -58,6 +73,7 @@ func ApplyOriginUpdate(origin *models.Origin, input *models.OriginUpdateInput) {
 	if input.Names != nil {
 		origin.Names = input.Names
 	}
+	
 	if input.IsActive != nil {
 		origin.IsActive = *input.IsActive
 	}
@@ -74,5 +90,19 @@ func ApplySequencerUpdate(sequencer *models.Sequencer, input *models.SequencerUp
 
 	if input.IsActive != nil {
 		sequencer.IsActive = *input.IsActive
+	}
+}
+
+func ApplySampleSourceUpdate(sampleSource *models.SampleSource, input *models.SampleSourceUpdateInput) {
+	if input.Names != nil {
+		sampleSource.Names = input.Names
+	}
+
+	if input.Groups != nil {
+		sampleSource.Groups = input.Groups
+	}
+
+	if input.IsActive != nil {
+		sampleSource.IsActive = *input.IsActive
 	}
 }

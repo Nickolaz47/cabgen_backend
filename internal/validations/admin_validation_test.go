@@ -42,21 +42,34 @@ func TestApplyAdminUpdateToUser(t *testing.T) {
 	assert.Equal(t, &role, user.Role)
 }
 
-func TestValidateOriginNames(t *testing.T) {
+func TestValidateTranslationMap(t *testing.T) {
 	testutils.SetupTestContext()
 	c, _ := testutils.SetupGinContext(
 		http.MethodGet, "/", "",
 		nil, nil,
 	)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Success - Origin", func(t *testing.T) {
 		names := map[string]string{
 			"pt": "Humano",
 			"en": "Human",
 			"es": "Humano",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, names)
+		errMsg, ok := validations.ValidateTranslationMap(c, "origin", names)
+
+		assert.Empty(t, errMsg)
+		assert.True(t, ok)
+	})
+
+	t.Run("Success - Sample Source", func(t *testing.T) {
+		names := map[string]string{
+			"pt": "Sangue",
+			"en": "Blood",
+			"es": "Sangre",
+		}
+
+		errMsg, ok := validations.ValidateTranslationMap(c, "sampleSource", names)
 
 		assert.Empty(t, errMsg)
 		assert.True(t, ok)
@@ -68,7 +81,7 @@ func TestValidateOriginNames(t *testing.T) {
 			"en": "Human",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, names)
+		errMsg, ok := validations.ValidateTranslationMap(c, "origin", names)
 
 		assert.Equal(t, errMsg, "Missing es translation.")
 		assert.False(t, ok)
@@ -81,7 +94,7 @@ func TestValidateOriginNames(t *testing.T) {
 			"es": "Humano",
 		}
 
-		errMsg, ok := validations.ValidateOriginNames(c, names)
+		errMsg, ok := validations.ValidateTranslationMap(c, "origin", names)
 
 		assert.Equal(t, errMsg, "Empty pt translation.")
 		assert.False(t, ok)
@@ -139,4 +152,42 @@ func TestApplySequecerUpdate(t *testing.T) {
 	validations.ApplySequencerUpdate(&sequencer, &sequencerUpdate)
 
 	assert.Equal(t, expected, sequencer)
+}
+
+func TestApplySampleSourceUpdate(t *testing.T) {
+	sampleSource := models.SampleSource{
+		ID: uuid.New(),
+		Names: map[string]string{
+			"pt": "Plasma",
+			"en": "Plasm",
+			"es": "Plasme",
+		},
+		Groups: map[string]string{
+			"pt": "Sangue",
+			"en": "Blood",
+			"es": "Sangre",
+		},
+		IsActive: false,
+	}
+
+	isActive := true
+	sampleSourceUpdate := models.SampleSourceUpdateInput{
+		Names: map[string]string{
+			"pt": "Plasma",
+			"en": "Plasma",
+			"es": "Plasma",
+		},
+		IsActive: &isActive,
+	}
+
+	expected := models.SampleSource{
+		ID: sampleSource.ID,
+		Names: sampleSourceUpdate.Names,
+		Groups: sampleSource.Groups,
+		IsActive: *sampleSourceUpdate.IsActive,
+	}
+
+	validations.ApplySampleSourceUpdate(&sampleSource, &sampleSourceUpdate)
+
+	assert.Equal(t, expected, sampleSource)
 }
