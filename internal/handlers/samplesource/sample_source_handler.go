@@ -19,13 +19,13 @@ func GetActiveSampleSources(c *gin.Context) {
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
 		return
 	}
-	
-	publicSampleSources := make([]models.SampleSourceFormResponse, len(sampleSources))
+
+	formSampleSources := make([]models.SampleSourceFormResponse, len(sampleSources))
 	for i, s := range sampleSources {
-		publicSampleSources[i] = s.ToFormResponse(c)
+		formSampleSources[i] = s.ToFormResponse(c)
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: publicSampleSources,
+		Data: formSampleSources,
 	})
 }

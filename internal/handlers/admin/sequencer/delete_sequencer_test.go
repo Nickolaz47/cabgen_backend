@@ -40,6 +40,24 @@ func TestDeleteSequencer(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Invalid ID", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodDelete, "/api/admin/sequencer", "",
+			nil, gin.Params{{Key: "sequencerId", Value: "132"}},
+		)
+
+		sequencer.DeleteSequencer(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "The URL ID is invalid.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Sequencer not found", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",

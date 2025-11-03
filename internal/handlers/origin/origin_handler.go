@@ -20,12 +20,12 @@ func GetActiveOrigins(c *gin.Context) {
 		return
 	}
 
-	publicOrigins := make([]models.OriginFormResponse, len(origins))
+	formOrigins := make([]models.OriginFormResponse, len(origins))
 	for i, orig := range origins {
-		publicOrigins[i] = orig.ToFormResponse(c)
+		formOrigins[i] = orig.ToFormResponse(c)
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: publicOrigins,
+		Data: formOrigins,
 	})
 }

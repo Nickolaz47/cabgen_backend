@@ -69,6 +69,24 @@ func TestUpdateSequencer(t *testing.T) {
 		})
 	}
 
+	t.Run("Invalid ID", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodPut, "/api/admin/sequencer", "",
+			nil, gin.Params{{Key: "sequencerId", Value: "132"}},
+		)
+
+		sequencer.UpdateSequencer(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "The URL ID is invalid.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Sequencer not found", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(

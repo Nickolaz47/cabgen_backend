@@ -63,6 +63,24 @@ func TestDeleteOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Invalid ID", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodDelete, "/api/admin/origin", "",
+			nil, gin.Params{{Key: "originId", Value: "123"}},
+		)
+
+		origin.DeleteOrigin(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "The URL ID is invalid.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("DB error", func(t *testing.T) {
 		origRepo := repository.OriginRepo
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})

@@ -32,7 +32,14 @@ func GetAllSequencers(c *gin.Context) {
 func GetSequencerByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sequencerId")
-	id := uuid.MustParse(rawID)
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
 
 	sequencer, err := repository.SequencerRepo.GetSequencerByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -106,7 +113,15 @@ func CreateSequencer(c *gin.Context) {
 
 func UpdateSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	rawSequencerID := c.Param("sequencerId")
+	rawID := c.Param("sequencerId")
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
 
 	var sequencerUpdateInput models.SequencerUpdateInput
 	if errMsg, valid := validations.Validate(c, localizer, &sequencerUpdateInput); !valid {
@@ -116,8 +131,7 @@ func UpdateSequencer(c *gin.Context) {
 		return
 	}
 
-	sequencerID := uuid.MustParse(rawSequencerID)
-	sequencerToUpdate, err := repository.SequencerRepo.GetSequencerByID(sequencerID)
+	sequencerToUpdate, err := repository.SequencerRepo.GetSequencerByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.SequencerNotFoundError),
@@ -147,10 +161,17 @@ func UpdateSequencer(c *gin.Context) {
 
 func DeleteSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	rawSequencerID := c.Param("sequencerId")
-	sequencerID := uuid.MustParse(rawSequencerID)
+	rawID := c.Param("sequencerId")
 
-	sequencerToDelete, err := repository.SequencerRepo.GetSequencerByID(sequencerID)
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
+
+	sequencerToDelete, err := repository.SequencerRepo.GetSequencerByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.SequencerNotFoundError),

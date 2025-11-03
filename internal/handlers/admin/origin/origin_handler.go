@@ -30,7 +30,14 @@ func GetAllOrigins(c *gin.Context) {
 func GetOriginByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("originId")
-	id := uuid.MustParse(rawID)
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
 
 	origin, err := repository.OriginRepo.GetOriginByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -119,7 +126,15 @@ func CreateOrigin(c *gin.Context) {
 
 func UpdateOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	rawOriginID := c.Param("originId")
+	rawID := c.Param("originId")
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
 
 	var originUpdateInput models.OriginUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &originUpdateInput)
@@ -142,8 +157,7 @@ func UpdateOrigin(c *gin.Context) {
 		return
 	}
 
-	originID := uuid.MustParse(rawOriginID)
-	originToUpdate, err := repository.OriginRepo.GetOriginByID(originID)
+	originToUpdate, err := repository.OriginRepo.GetOriginByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.OriginNotFoundError)},
@@ -176,10 +190,17 @@ func UpdateOrigin(c *gin.Context) {
 
 func DeleteOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	rawOriginID := c.Param("originId")
+	rawID := c.Param("originId")
 
-	originID := uuid.MustParse(rawOriginID)
-	origin, err := repository.OriginRepo.GetOriginByID(originID)
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, responses.InvalidURLID),
+		})
+		return
+	}
+
+	origin, err := repository.OriginRepo.GetOriginByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound,
 			responses.APIResponse{Error: responses.GetResponse(localizer, responses.OriginNotFoundError)},

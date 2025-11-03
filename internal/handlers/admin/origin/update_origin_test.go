@@ -71,6 +71,24 @@ func TestUpdateOrigin(t *testing.T) {
 		})
 	}
 
+	t.Run("Invalid ID", func(t *testing.T) {
+		c, w := testutils.SetupGinContext(
+			http.MethodPut, "/api/admin/origin", "",
+			nil, gin.Params{{Key: "originId", Value: "12"}},
+		)
+
+		origin.UpdateOrigin(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "The URL ID is invalid.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Origin not found", func(t *testing.T) {
 		body := testutils.ToJSON(mockOriginInput)
 		c, w := testutils.SetupGinContext(
