@@ -26,7 +26,7 @@ func TestGetOriginByName(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		name := "food"
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin/search?originName="+name, "",
+			http.MethodGet, "/api/admin/origin/search?name="+name, "",
 			nil, nil,
 		)
 
@@ -52,7 +52,7 @@ func TestGetOriginByName(t *testing.T) {
 
 		expected := testutils.ToJSON(
 			map[string]string{
-				"error": "The search parameter originName is empty.",
+				"error": "The search parameter name is empty.",
 			},
 		)
 
@@ -63,7 +63,7 @@ func TestGetOriginByName(t *testing.T) {
 	t.Run("Error - Origin not found", func(t *testing.T) {
 		name := "human"
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin/search?originName="+name, "",
+			http.MethodGet, "/api/admin/origin/search?name="+name, "",
 			nil, nil,
 		)
 

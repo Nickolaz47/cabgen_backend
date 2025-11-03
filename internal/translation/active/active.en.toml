@@ -10,6 +10,9 @@ other="Email is already in use."
 [generic.internalServer.error]
 other="There was a server error. Please try again."
 
+[generic.invalidId.error]
+other = "The URL ID is invalid."
+
 [public.auth.register.createUser.error]
 other="Error creating user. Please try again."
 
@@ -137,7 +140,7 @@ other = "Empty {{.Param}} translation."
 other = "Origin not found."
 
 [admin.origin.emptyName.error]
-other = "The search parameter originName is empty."
+other = "The search parameter name is empty."
 
 [validation.Names.required]
 other = "The names parameter with translations for pt, en, and es is required."

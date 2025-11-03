@@ -10,6 +10,9 @@ other="El correo electrónico ya está en uso."
 [generic.internalServer.error]
 other="Hubo un error en el servidor. Por favor, inténtelo de nuevo."
 
+[generic.invalidId.error]
+other = "El ID de la URL es inválido."
+
 [public.auth.register.createUser.error]
 other="Error al crear el usuario. Por favor, inténtelo de nuevo."
 
@@ -137,7 +140,7 @@ other = "Traducción de {{.Param}} vacía."
 other = "Origen no encontrado."
 
 [admin.origin.emptyName.error]
-other = "El parámetro de búsqueda originName está vacío."
+other = "El parámetro de búsqueda name está vacío."
 
 [validation.Names.required]
 other = "El parámetro names con las traducciones para pt, en y es es obligatorio."

@@ -2,6 +2,7 @@ package admin
 
 import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
@@ -34,4 +35,12 @@ func AdminRoutes(r *gin.RouterGroup) {
 	sequencerGroup.POST("", sequencer.CreateSequencer)
 	sequencerGroup.PUT("/:sequencerId", sequencer.UpdateSequencer)
 	sequencerGroup.DELETE("/:sequencerId", sequencer.DeleteSequencer)
+
+	sampleSourceGroup := adminRouter.Group("/sampleSource")
+	sampleSourceGroup.GET("", samplesource.GetSampleSources)
+	sampleSourceGroup.GET("/:sampleSourceId", samplesource.GetSampleSourceByID)
+	sampleSourceGroup.GET("/search", samplesource.GetSampleSourceByNameOrGroup)
+	sampleSourceGroup.POST("", samplesource.CreateSampleSource)
+	sampleSourceGroup.PUT("/:sampleSourceId", samplesource.UpdateSampleSource)
+	sampleSourceGroup.DELETE("/:sampleSourceId", samplesource.DeleteSampleSource)
 }

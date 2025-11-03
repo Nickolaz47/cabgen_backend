@@ -18,7 +18,7 @@ func TestToFormResponse(t *testing.T) {
 
 	expected := models.SequencerFormResponse{
 		ID:    sequencer.ID,
-		Brand: sequencer.Brand,
+		Model: sequencer.Model,
 	}
 	result := sequencer.ToFormResponse()
 

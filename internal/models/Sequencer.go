@@ -11,13 +11,13 @@ type Sequencer struct {
 
 type SequencerFormResponse struct {
 	ID    uuid.UUID `json:"id"`
-	Brand string    `json:"brand"`
+	Model string    `json:"model"`
 }
 
 func (s *Sequencer) ToFormResponse() SequencerFormResponse {
 	return SequencerFormResponse{
 		ID:    s.ID,
-		Brand: s.Brand,
+		Model: s.Model,
 	}
 }
 

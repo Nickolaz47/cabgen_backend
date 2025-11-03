@@ -26,7 +26,7 @@ type SampleSourceFormResponse struct {
 
 func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
 	language := c.GetHeader("Accept-Language")
-	if language != "" {
+	if language == "" {
 		language = "en"
 	}
 
@@ -43,7 +43,7 @@ func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
 
 func (s *SampleSource) ToFormResponse(c *gin.Context) SampleSourceFormResponse {
 	language := c.GetHeader("Accept-Language")
-	if language != "" {
+	if language == "" {
 		language = "en"
 	}
 

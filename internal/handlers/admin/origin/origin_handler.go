@@ -53,7 +53,7 @@ func GetOriginByID(c *gin.Context) {
 func GetOriginByName(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
-	name := c.Query("originName")
+	name := c.Query("name")
 
 	if name == "" {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{

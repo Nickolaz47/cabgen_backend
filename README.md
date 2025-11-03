@@ -175,6 +175,18 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 |--------|------------------------|-----------------------------------|
 | GET    | `/api/origin`    | Retorna todas as origens ativas   |
 
+### Sequenciador
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/sequencer`       | Lista todos os sequenciadores ativos              |
+
+#### Fonte da Amostra
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/sampleSource`       | Lista todas as fontes da amostra ativas              |
+
 ### Admin
 
 #### Usuário
@@ -194,10 +206,32 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 |--------|--------------------------|---------------------------------------|
 | GET    | `/api/admin/origin`       | Lista todas as origens                |
 | GET    | `/api/admin/origin/:originId`       | Retorna uma origem específica       |
-| PUT | `/api/admin/origin/search?originName=`   | Procura uma origem pelo nome                |
+| PUT | `/api/admin/origin/search?name=`   | Procura uma origem pelo nome                |
 | POST | `/api/admin/origin`   | Cria uma nova origem|
 | PUT | `/api/admin/origin/:originId`   | Atualiza uma origem                |
 | DELETE | `/api/admin/origin/:originId`   | Deleta uma origem                |
+
+#### Sequenciador
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/admin/sequencer`       | Lista todos os sequenciadores               |
+| GET    | `/api/admin/sequencer/:sequencerId`       | Retorna um sequenciador específico       |
+| PUT | `/api/admin/sequencer/search?brandOrModel=`   | Procura um sequenciador pela marca ou modelo                |
+| POST | `/api/admin/sequencer`   | Cria um novo sequenciador|
+| PUT | `/api/admin/sequencer/:sequencerId`   | Atualiza um sequenciador                |
+| DELETE | `/api/admin/sequencer/:sequencerId`   | Deleta um sequenciador                |
+
+#### Fonte da Amostra
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/admin/sampleSource`       | Lista todas as fontes da amostra                |
+| GET    | `/api/admin/sampleSource/:sampleSourceId`       | Retorna uma fonte da amostra específica       |
+| PUT | `/api/admin/sampleSource/search?nameOrGroup=`   | Procura uma fonte da amostra pelo nome ou grupo               |
+| POST | `/api/admin/sampleSource`   | Cria uma nova fonte da amostra |
+| PUT | `/api/admin/sampleSource/:sampleSourceId`   | Atualiza uma fonte da amostra                |
+| DELETE | `/api/admin/sampleSource/:sampleSourceId`   | Deleta uma fonte da amostra                |
 
 ## Internacionalização (i18n)
 

@@ -3,6 +3,7 @@ package sequencer
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -20,5 +21,10 @@ func GetActiveSequencers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.APIResponse{Data: activeSequencers})
+	formSequencers := make([]models.SequencerFormResponse, len(activeSequencers))
+	for i, seq := range activeSequencers {
+		formSequencers[i] = seq.ToFormResponse()
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{Data: formSequencers})
 }

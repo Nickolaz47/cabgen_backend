@@ -1,61 +1,59 @@
-package sequencer_test
+package samplesource_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/sequencer"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 )
 
-func TestGetActiveSequencers(t *testing.T) {
+func TestGetSampleSources(t *testing.T) {
 	testutils.SetupTestContext()
 	db := testutils.SetupTestRepos()
 
-	mockSequencer := testmodels.NewSequencer(
-		uuid.NewString(), "Illumina", "MiSeq", true,
+	mockSampleSource := testmodels.NewSampleSource(
+		uuid.NewString(),
+		map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		false,
 	)
-	mockSequencer2 := testmodels.NewSequencer(
-		uuid.NewString(), "Nanopore", "MinION", false,
-	)
-	db.Create(&mockSequencer)
-	db.Create(&mockSequencer2)
+	db.Create(&mockSampleSource)
 
 	t.Run("Success", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(http.MethodGet, "/api/sequencer", "", nil, nil)
+		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sampleSource", "", nil, nil)
 
-		sequencer.GetActiveSequencers(c)
+		samplesource.GetSampleSources(c)
 
-		expected := testutils.ToJSON(map[string]any{"data": []models.SequencerFormResponse{mockSequencer.ToFormResponse()}})
+		expected := testutils.ToJSON(map[string]any{"data": []models.SampleSource{mockSampleSource}})
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		origRepo := repository.SequencerRepo
+		origRepo := repository.SampleSourceRepo
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		repository.SequencerRepo = repository.NewSequencerRepo(mockDB)
+		repository.SampleSourceRepo = repository.NewSampleSourceRepo(mockDB)
 		defer func() {
-			repository.SequencerRepo = origRepo
+			repository.SampleSourceRepo = origRepo
 		}()
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sequencer", "",
+			http.MethodGet, "/api/admin/sampleSource", "",
 			nil, nil,
 		)
 
-		sequencer.GetActiveSequencers(c)
+		samplesource.GetSampleSources(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

@@ -15,7 +15,8 @@ type Model interface {
 		models.UpdateUserInput | models.AdminRegisterInput |
 		models.AdminUpdateInput | models.OriginCreateInput |
 		models.OriginUpdateInput | models.SequencerCreateInput |
-		models.SequencerUpdateInput
+		models.SequencerUpdateInput | models.SampleSourceCreateInput |
+		models.SampleSourceUpdateInput
 }
 
 func Validate[T Model](c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {
