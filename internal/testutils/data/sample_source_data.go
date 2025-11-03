@@ -59,25 +59,25 @@ var UpdateSampleSourceTests = []Body{
 		b := testutils.CopyMap(baseSampleSourceUpdateBody)
 		b["names"] = map[string]string{"pt": "Aspirado", "fr": "Aspiré", "es": "Aspirado"}
 		return b
-	}()), `{"error":"Sample source has empty translation for en."}`},
+	}()), `{"error":"Sample source missing translation for en."}`},
 	{"Empty name translation", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleSourceUpdateBody)
 		b["names"] = map[string]string{"pt": "Aspirado", "en": "", "es": "Aspirado"}
 		return b
-	}()), `{"error":"Empty en translation."}`},
+	}()), `{"error":"Sample source has empty translation for en."}`},
 	{"Invalid groups", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleSourceUpdateBody)
 		b["groups"] = map[string]string{"pt": "Trato respiratório"}
 		return b
-	}()), `{"error":"The names parameter must contain at least 3 keys (pt, en, es)."}`},
+	}()), `{"error":"The groups parameter must contain at least 3 keys (pt, en, es)."}`},
 	{"Missing groups key", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleSourceUpdateBody)
 		b["groups"] = map[string]string{"pt": "Trato respiratório", "fr": "Voies respiratoires", "es": "Vías respiratorias"}
 		return b
-	}()), `{"error":"Missing en translation."}`},
+	}()), `{"error":"Sample source missing translation for en."}`},
 	{"Empty group translation", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleSourceUpdateBody)
 		b["groups"] = map[string]string{"pt": "Trato respiratório", "en": "", "es": "Vías respiratorias"}
 		return b
-	}()), `{"error":"Empty en translation."}`},
+	}()), `{"error":"Sample source has empty translation for en."}`},
 }
