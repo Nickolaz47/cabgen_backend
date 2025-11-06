@@ -13,9 +13,9 @@ type LaboratoryRepository interface {
 	GetActiveLaboratories(ctx context.Context) ([]models.Laboratory, error)
 	GetLaboratoryByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
 	GetLaboratoriesByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error)
-	CreateLaboratory(ctx context.Context, lab models.Laboratory) error
-	UpdateLaboratory(ctx context.Context, lab models.Laboratory) error
-	DeleteLaboratory(ctx context.Context, lab models.Laboratory) error
+	CreateLaboratory(ctx context.Context, lab *models.Laboratory) error
+	UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error
+	DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error
 }
 
 type laboratoryRepo struct {
@@ -64,14 +64,14 @@ func (r *laboratoryRepo) GetLaboratoriesByNameOrAbbreviation(ctx context.Context
 	return labs, nil
 }
 
-func (r *laboratoryRepo) CreateLaboratory(ctx context.Context, lab models.Laboratory) error {
+func (r *laboratoryRepo) CreateLaboratory(ctx context.Context, lab *models.Laboratory) error {
 	return r.DB.WithContext(ctx).Create(lab).Error
 }
 
-func (r *laboratoryRepo) UpdateLaboratory(ctx context.Context, lab models.Laboratory) error {
+func (r *laboratoryRepo) UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error {
 	return r.DB.WithContext(ctx).Save(lab).Error
 }
 
-func (r *laboratoryRepo) DeleteLaboratory(ctx context.Context, lab models.Laboratory) error {
+func (r *laboratoryRepo) DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error {
 	return r.DB.WithContext(ctx).Delete(lab).Error
 }
