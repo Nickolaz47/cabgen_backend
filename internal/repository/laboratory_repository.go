@@ -13,6 +13,7 @@ type LaboratoryRepository interface {
 	GetActiveLaboratories(ctx context.Context) ([]models.Laboratory, error)
 	GetLaboratoryByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
 	GetLaboratoriesByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error)
+	GetLaboratoryDuplicate(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error)
 	CreateLaboratory(ctx context.Context, lab *models.Laboratory) error
 	UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error
 	DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error
@@ -62,6 +63,22 @@ func (r *laboratoryRepo) GetLaboratoriesByNameOrAbbreviation(ctx context.Context
 	}
 
 	return labs, nil
+}
+
+func (r *laboratoryRepo) GetLaboratoryDuplicate(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
+	var lab models.Laboratory
+
+	query := r.DB.WithContext(ctx).Where("LOWER(name) = LOWER(?)", name)
+
+	if ID != uuid.Nil {
+		query = query.Where("id != ?", ID)
+	}
+
+	if err := query.First(&lab).Error; err != nil {
+		return nil, err
+	}
+
+	return &lab, nil
 }
 
 func (r *laboratoryRepo) CreateLaboratory(ctx context.Context, lab *models.Laboratory) error {

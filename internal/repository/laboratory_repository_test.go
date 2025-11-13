@@ -144,6 +144,48 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 }
 
+func TestGetLaboratoryDuplicate(t *testing.T) {
+	db := testutils.NewMockDB()
+	labRepo := repository.NewLaboratoryRepo(db)
+
+	mockLab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
+	db.Create(&mockLab)
+
+	t.Run("Success - With ID", func(t *testing.T) {
+		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.New())
+
+		assert.NoError(t, err)
+		assert.Equal(t, &mockLab, lab)
+	})
+
+	t.Run("Success - Without ID", func(t *testing.T) {
+		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.UUID{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, &mockLab, lab)
+	})
+
+	t.Run("Error - Record not found", func(t *testing.T) {
+		name := "Laboratorio Central do Rio Grande do Sul"
+		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), name, uuid.UUID{})
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+		assert.Empty(t, lab)
+	})
+
+	t.Run("DB error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		lab, err := mockLabRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.New())
+
+		assert.Empty(t, lab)
+		assert.Error(t, err)
+	})
+}
+
 func TestCreateLaboratory(t *testing.T) {
 	db := testutils.NewMockDB()
 	labRepo := repository.NewLaboratoryRepo(db)

@@ -1,0 +1,115 @@
+package services
+
+import (
+	"context"
+	"errors"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
+type LaboratoryService interface {
+	FindAll(ctx context.Context) ([]models.Laboratory, error)
+	FindAllActive(ctx context.Context) ([]models.Laboratory, error)
+	FindByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
+	FindByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error)
+	Create(ctx context.Context, lab *models.Laboratory) error
+	Update(ctx context.Context, lab *models.Laboratory) error
+	Delete(ctx context.Context, lab *models.Laboratory) error
+}
+
+type laboratoryService struct {
+	Repo repository.LaboratoryRepository
+}
+
+func NewLaboratoryService(repo repository.LaboratoryRepository) LaboratoryService {
+	return &laboratoryService{Repo: repo}
+}
+
+func (s *laboratoryService) FindAll(ctx context.Context) ([]models.Laboratory, error) {
+	labs, err := s.Repo.GetLaboratories(ctx)
+
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return labs, nil
+}
+
+func (s *laboratoryService) FindAllActive(ctx context.Context) ([]models.Laboratory, error) {
+	labs, err := s.Repo.GetActiveLaboratories(ctx)
+
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return labs, nil
+}
+
+func (s *laboratoryService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
+	lab, err := s.Repo.GetLaboratoryByID(ctx, ID)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrNotFound
+	}
+
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return lab, nil
+}
+
+func (s *laboratoryService) FindByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error) {
+	labs, err := s.Repo.GetLaboratoriesByNameOrAbbreviation(ctx, input)
+
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return labs, nil
+}
+
+func (s *laboratoryService) Create(ctx context.Context, lab *models.Laboratory) error {
+	existingLab, err := s.Repo.GetLaboratoryDuplicate(ctx, lab.Name, uuid.UUID{})
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrInternal
+	}
+
+	if existingLab != nil {
+		return ErrConflict
+	}
+
+	if err := s.Repo.CreateLaboratory(ctx, lab); err != nil {
+		return ErrInternal
+	}
+
+	return nil
+}
+
+func (s *laboratoryService) Update(ctx context.Context, lab *models.Laboratory) error {
+	existingLab, err := s.Repo.GetLaboratoryDuplicate(ctx, lab.Name, lab.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrInternal
+	}
+
+	if existingLab != nil {
+		return ErrConflict
+	}
+
+	if err := s.Repo.UpdateLaboratory(ctx, lab); err != nil {
+		return ErrInternal
+	}
+
+	return nil
+}
+
+func (s *laboratoryService) Delete(ctx context.Context, lab *models.Laboratory) error {
+	if err := s.Repo.DeleteLaboratory(ctx, lab); err != nil {
+		return ErrInternal
+	}
+
+	return nil
+}
