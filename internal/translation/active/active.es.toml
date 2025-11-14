@@ -198,3 +198,15 @@ other = "Fuente de muestra no encontrada."
 
 [admin.sampleSource.delete.success]
 other = "Fuente de muestra eliminada con éxito."
+
+[admin.laboratory.create.success]
+other = "Laboratorio registrado con éxito."
+
+[admin.laboratory.nameAlreadyExists.error]
+other = "Ya existe un laboratorio con este nombre."
+
+[admin.laboratory.notFound.error]
+other = "Laboratorio no encontrado."
+
+[admin.laboratory.delete.success]
+other = "Laboratorio eliminado con éxito."

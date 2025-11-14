@@ -6,6 +6,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -125,7 +126,7 @@ func TestApplyOriginUpdate(t *testing.T) {
 	assert.Equal(t, expected, origin)
 }
 
-func TestApplySequecerUpdate(t *testing.T) {
+func TestApplySequencerUpdate(t *testing.T) {
 	sequencer := models.Sequencer{
 		ID:       uuid.New(),
 		Brand:    "Ilumina",
@@ -181,13 +182,42 @@ func TestApplySampleSourceUpdate(t *testing.T) {
 	}
 
 	expected := models.SampleSource{
-		ID: sampleSource.ID,
-		Names: sampleSourceUpdate.Names,
-		Groups: sampleSource.Groups,
+		ID:       sampleSource.ID,
+		Names:    sampleSourceUpdate.Names,
+		Groups:   sampleSource.Groups,
 		IsActive: *sampleSourceUpdate.IsActive,
 	}
 
 	validations.ApplySampleSourceUpdate(&sampleSource, &sampleSourceUpdate)
 
 	assert.Equal(t, expected, sampleSource)
+}
+
+func TestApplyLaboratoryUpdate(t *testing.T) {
+	laboratory := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratório do RJ",
+		"LABJ",
+		false,
+	)
+
+	name := "Laboratório do Rio de Janeiro"
+	abbreviation := "LABRJ"
+	isActive := true
+	laboratoryUpdate := models.LaboratoryUpdateInput{
+		Name:         &name,
+		Abbreviation: &abbreviation,
+		IsActive:     &isActive,
+	}
+
+	expected := models.Laboratory{
+		ID:           laboratory.ID,
+		Name:         *laboratoryUpdate.Name,
+		Abbreviation: *laboratoryUpdate.Abbreviation,
+		IsActive:     *laboratoryUpdate.IsActive,
+	}
+
+	validations.ApplyLaboratoryUpdate(&laboratory, &laboratoryUpdate)
+
+	assert.Equal(t, expected, laboratory)
 }

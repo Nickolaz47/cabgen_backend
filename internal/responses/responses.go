@@ -44,6 +44,10 @@ const (
 	SampleSourceEmptyQueryError              = "admin.sampleSource.nameOrGroup.error"
 	SampleSourceNotFoundError                = "admin.sampleSource.notFound.error"
 	SampleSourceDeleted                      = "admin.sampleSource.delete.success"
+	LaboratoryCreationSuccess                = "admin.laboratory.create.success"
+	LaboratoryNameAlreadyExistsError         = "admin.laboratory.nameAlreadyExists.error"
+	LaboratoryNotFoundError                  = "admin.laboratory.notFound.error"
+	LaboratoryDeleted                        = "admin.laboratory.delete.success"
 )
 
 type APIResponse struct {

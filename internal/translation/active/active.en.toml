@@ -198,3 +198,15 @@ other = "Sample source not found."
 
 [admin.sampleSource.delete.success]
 other = "Sample source deleted successfully."
+
+[admin.laboratory.create.success]
+other = "Laboratory registered successfully."
+
+[admin.laboratory.nameAlreadyExists.error]
+other = "A laboratory with this name already exists."
+
+[admin.laboratory.notFound.error]
+other = "Laboratory not found."
+
+[admin.laboratory.delete.success]
+other = "Laboratory deleted successfully."

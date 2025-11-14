@@ -73,7 +73,7 @@ func ApplyOriginUpdate(origin *models.Origin, input *models.OriginUpdateInput) {
 	if input.Names != nil {
 		origin.Names = input.Names
 	}
-	
+
 	if input.IsActive != nil {
 		origin.IsActive = *input.IsActive
 	}
@@ -104,5 +104,19 @@ func ApplySampleSourceUpdate(sampleSource *models.SampleSource, input *models.Sa
 
 	if input.IsActive != nil {
 		sampleSource.IsActive = *input.IsActive
+	}
+}
+
+func ApplyLaboratoryUpdate(laboratory *models.Laboratory, input *models.LaboratoryUpdateInput) {
+	if input.Name != nil {
+		laboratory.Name = *input.Name
+	}
+
+	if input.Abbreviation != nil {
+		laboratory.Abbreviation = *input.Abbreviation
+	}
+
+	if input.IsActive != nil {
+		laboratory.IsActive = *input.IsActive
 	}
 }
