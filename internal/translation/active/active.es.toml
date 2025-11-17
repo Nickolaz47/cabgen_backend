@@ -76,6 +76,12 @@ other = "El campo de rol debe tener como máximo {{.Param}} caracteres."
 [validation.Institution.max]
 other = "El campo de institución debe tener como máximo {{.Param}} caracteres."
 
+[validation.Abbreviation.required]
+other = "Abreviatura es obligatoria."
+
+[validation.Abbreviation.min]
+other = "Abreviatura debe tener al menos {{.Param}} caracteres."
+
 [validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
 

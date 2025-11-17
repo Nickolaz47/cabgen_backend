@@ -119,7 +119,7 @@ func (h *LaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
-		Data:    labToCreate,
+		Data:    labToCreate.ToResponse(),
 		Message: responses.GetResponse(localizer, responses.LaboratoryCreationSuccess),
 	})
 }
@@ -158,7 +158,7 @@ func (h *LaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: labUpdated,
+		Data: labUpdated.ToResponse(),
 	})
 }
 

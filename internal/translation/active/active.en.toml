@@ -76,6 +76,12 @@ other = "Role must be at most {{.Param}} characters long."
 [validation.Institution.max]
 other = "Institution must be at most {{.Param}} characters long."
 
+[validation.Abbreviation.required]
+other = "Abbreviation is required."
+
+[validation.Abbreviation.min]
+other = "Abbreviation must be at least {{.Param}} characters long."
+
 [validation.generic]
 other = "Invalid input. Please check the fields and try again."
 

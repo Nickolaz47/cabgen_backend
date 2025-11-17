@@ -76,6 +76,12 @@ other = "O campo de papel deve ter no máximo {{.Param}} caracteres."
 [validation.Institution.max]
 other = "O campo de instituição deve ter no máximo {{.Param}} caracteres."
 
+[validation.Abbreviation.required]
+other = "Abreviação é obrigatória."
+
+[validation.Abbreviation.min]
+other = "Abreviação deve ter pelo menos {{.Param}} caracteres."
+
 [validation.generic]
 other = "Entrada inválida. Verifique os campos e tente novamente."
 

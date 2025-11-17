@@ -9,9 +9,23 @@ type Laboratory struct {
 	IsActive     bool      `gorm:"not null" json:"is_active"`
 }
 
+type LaboratoryResponse struct {
+	Name         string `json:"name"`
+	Abbreviation string `json:"abbreviation"`
+	IsActive     bool   `json:"is_active"`
+}
+
 type LaboratoryFormResponse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
+}
+
+func (s *Laboratory) ToResponse() LaboratoryResponse {
+	return LaboratoryResponse{
+		Name:         s.Name,
+		Abbreviation: s.Abbreviation,
+		IsActive:     s.IsActive,
+	}
 }
 
 func (s *Laboratory) ToFormResponse() LaboratoryFormResponse {
@@ -23,12 +37,12 @@ func (s *Laboratory) ToFormResponse() LaboratoryFormResponse {
 
 type LaboratoryCreateInput struct {
 	Name         string `json:"name" binding:"required,min=3"`
-	Abbreviation string `json:"abbreviation" binding:"required,min=3"`
+	Abbreviation string `json:"abbreviation" binding:"required,min=2"`
 	IsActive     bool   `json:"is_active"`
 }
 
 type LaboratoryUpdateInput struct {
 	Name         *string `json:"name,omitempty" binding:"omitempty,min=3"`
-	Abbreviation *string `json:"abbreviation,omitempty" binding:"omitempty,min=3"`
+	Abbreviation *string `json:"abbreviation,omitempty" binding:"omitempty,min=2"`
 	IsActive     *bool   `json:"is_active,omitempty" binding:"omitempty"`
 }
