@@ -137,7 +137,7 @@ func TestLaboratoryFindAllActive(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		expected := []models.Laboratory{lab}
+		expected := []models.LaboratoryFormResponse{lab.ToFormResponse()}
 
 		labs, err := service.FindAllActive(context.Background())
 

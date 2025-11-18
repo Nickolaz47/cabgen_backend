@@ -74,7 +74,6 @@ func (m *MockLaboratoryService) Delete(ctx context.Context, ID uuid.UUID) error 
 
 func TestGetActiveLaboratories(t *testing.T) {
 	testutils.SetupTestContext()
-
 	mockLab := models.LaboratoryFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
