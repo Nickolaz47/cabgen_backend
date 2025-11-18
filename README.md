@@ -246,7 +246,7 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 |--------|--------------------------|---------------------------------------|
 | GET    | `/api/admin/laboratory`       | Lista todos os laboratórios               |
 | GET    | `/api/admin/laboratory/:laboratoryId`       | Retorna um laboratório específico       |
-| PUT | `/api/admin/laboratory/search?nameOrAbbreviation=`   | Procura um laboratório pela marca ou modelo                |
+| PUT | `/api/admin/laboratory/search?nameOrAbbreviation=`   | Procura um laboratório pelo nome ou abreviação                |
 | POST | `/api/admin/laboratory`   | Cria um novo laboratório|
 | PUT | `/api/admin/laboratory/:laboratoryId`   | Atualiza um laboratório                |
 | DELETE | `/api/admin/laboratory/:laboratoryId`   | Deleta um laboratório                |
