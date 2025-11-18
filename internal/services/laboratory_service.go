@@ -13,7 +13,7 @@ import (
 
 type LaboratoryService interface {
 	FindAll(ctx context.Context) ([]models.Laboratory, error)
-	FindAllActive(ctx context.Context) ([]models.Laboratory, error)
+	FindAllActive(ctx context.Context) ([]models.LaboratoryFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
 	FindByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error)
 	Create(ctx context.Context, lab *models.Laboratory) error
@@ -39,14 +39,19 @@ func (s *laboratoryService) FindAll(ctx context.Context) ([]models.Laboratory, e
 	return labs, nil
 }
 
-func (s *laboratoryService) FindAllActive(ctx context.Context) ([]models.Laboratory, error) {
+func (s *laboratoryService) FindAllActive(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 	labs, err := s.Repo.GetActiveLaboratories(ctx)
 
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return labs, nil
+	formLabs := make([]models.LaboratoryFormResponse, len(labs))
+	for i, lab := range labs {
+		formLabs[i] = lab.ToFormResponse()
+	}
+
+	return formLabs, nil
 }
 
 func (s *laboratoryService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {

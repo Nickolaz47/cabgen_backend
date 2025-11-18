@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/laboratory"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/laboratory"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -73,29 +72,28 @@ func (m *MockLaboratoryService) Delete(ctx context.Context, ID uuid.UUID) error 
 	return nil
 }
 
-func TestGetAllLaboratories(t *testing.T) {
+func TestGetActiveLaboratories(t *testing.T) {
 	testutils.SetupTestContext()
-	mockLab := testmodels.NewLaboratory(
-		uuid.NewString(), "Laboratory 1", "LAB1", true,
-	)
+
+	mockLab := models.LaboratoryFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
 		labSvc := MockLaboratoryService{
-			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
-				return []models.Laboratory{mockLab}, nil
+			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
+				return []models.LaboratoryFormResponse{mockLab}, nil
 			},
 		}
 
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
+			http.MethodGet, "/api/laboratory", "",
 			nil, nil,
 		)
-		handler.GetAllLaboratories(c)
+		handler.GetActiveLaboratories(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.Laboratory{
+			map[string][]models.LaboratoryFormResponse{
 				"data": {mockLab},
 			},
 		)
@@ -106,18 +104,18 @@ func TestGetAllLaboratories(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		labSvc := MockLaboratoryService{
-			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
+			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
+			http.MethodGet, "/api/laboratory", "",
 			nil, nil,
 		)
-		handler.GetAllLaboratories(c)
+		handler.GetActiveLaboratories(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{

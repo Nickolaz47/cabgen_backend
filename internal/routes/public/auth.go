@@ -5,10 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PublicRoutes(r *gin.RouterGroup) {
-	r.GET("/health", public.Health)
-
+func SetupAuthRoutes(r *gin.RouterGroup) {
 	authRouter := r.Group("/auth")
+
 	authRouter.POST("/register", public.Register)
 	authRouter.POST("/login", public.Login)
 	authRouter.POST("/logout", public.Logout)

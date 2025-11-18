@@ -12,17 +12,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type LaboratoryHandler struct {
+type AdminLaboratoryHandler struct {
 	Service services.LaboratoryService
 }
 
-func NewLaboratoryHandler(svc services.LaboratoryService) *LaboratoryHandler {
-	return &LaboratoryHandler{
+func NewAdminLaboratoryHandler(svc services.LaboratoryService) *AdminLaboratoryHandler {
+	return &AdminLaboratoryHandler{
 		Service: svc,
 	}
 }
 
-func (h *LaboratoryHandler) GetAllLaboratories(c *gin.Context) {
+func (h *AdminLaboratoryHandler) GetAllLaboratories(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	labs, err := h.Service.FindAll(c.Request.Context())
@@ -39,7 +39,7 @@ func (h *LaboratoryHandler) GetAllLaboratories(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: labs})
 }
 
-func (h *LaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
+func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("laboratoryId")
 
@@ -65,7 +65,7 @@ func (h *LaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: lab})
 }
 
-func (h *LaboratoryHandler) GetLaboratoryByNameOrAbbreviation(c *gin.Context) {
+func (h *AdminLaboratoryHandler) GetLaboratoryByNameOrAbbreviation(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	nameOrAbbreaviation := c.Query("nameOrAbbreaviation")
 
@@ -93,7 +93,7 @@ func (h *LaboratoryHandler) GetLaboratoryByNameOrAbbreviation(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: labs})
 }
 
-func (h *LaboratoryHandler) CreateLaboratory(c *gin.Context) {
+func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	var newLaboratory models.LaboratoryCreateInput
 
@@ -124,7 +124,7 @@ func (h *LaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	})
 }
 
-func (h *LaboratoryHandler) UpdateLaboratory(c *gin.Context) {
+func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("laboratoryId")
 
@@ -162,7 +162,7 @@ func (h *LaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	})
 }
 
-func (h *LaboratoryHandler) DeleteLaboratory(c *gin.Context) {
+func (h *AdminLaboratoryHandler) DeleteLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("laboratoryId")
 

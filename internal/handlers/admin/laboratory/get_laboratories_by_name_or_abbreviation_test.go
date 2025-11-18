@@ -28,7 +28,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",
@@ -53,7 +53,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=", "",
@@ -78,7 +78,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",

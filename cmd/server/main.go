@@ -4,11 +4,14 @@ import (
 	"log"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
+	"github.com/CABGenOrg/cabgen_backend/internal/container"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
-	"github.com/CABGenOrg/cabgen_backend/internal/routes"
+	"github.com/CABGenOrg/cabgen_backend/internal/routes/admin"
+	"github.com/CABGenOrg/cabgen_backend/internal/routes/common"
+	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -56,7 +59,39 @@ func main() {
 	)
 
 	api := r.Group("/api")
-	routes.Router(api)
+
+	// Services
+	labSvc := container.BuildLaboratoryService(db.DB)
+
+	// Public handlers
+
+	// Common handlers
+	laboratoryHandler := container.BuildLaboratoryHandler(labSvc)
+
+	// Admin handlers
+	adminLaboratoryHandler := container.BuildAdminLaboratoryHandler(labSvc)
+
+	// Public routes
+	publicRouter := api.Group("")
+	public.SetupHealthRoute(publicRouter)
+	public.SetupCountryRoutes(publicRouter)
+	public.SetupAuthRoutes(publicRouter)
+
+	// Common routes
+	commonRouter := api.Group("", middlewares.AuthMiddleware())
+	common.SetupUserRoutes(commonRouter)
+	common.SetupOriginRoutes(commonRouter)
+	common.SetupSequencerRoutes(commonRouter)
+	common.SetupSampleSourceRoutes(commonRouter)
+	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)
+
+	// Admin routes
+	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
+	admin.SetupUserRoutes(adminRouter)
+	admin.SetupOriginRoutes(adminRouter)
+	admin.SetupSequencerRoutes(adminRouter)
+	admin.SetupSampleSourceRoutes(adminRouter)
+	admin.SetupLaboratoryRoutes(adminRouter, adminLaboratoryHandler)
 
 	r.Run()
 }

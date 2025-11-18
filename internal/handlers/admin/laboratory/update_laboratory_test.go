@@ -39,7 +39,7 @@ func TestUpdateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
@@ -61,7 +61,7 @@ func TestUpdateLaboratory(t *testing.T) {
 		t.Run(tt.Name, func(t *testing.T) {
 			labSvc := MockLaboratoryService{}
 
-			handler := laboratory.NewLaboratoryHandler(&labSvc)
+			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 			c, w := testutils.SetupGinContext(
 				http.MethodPut, "/api/admin/laboratory", tt.Body,
 				nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
@@ -76,7 +76,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		labSvc := MockLaboratoryService{}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
@@ -101,7 +101,7 @@ func TestUpdateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
@@ -126,7 +126,7 @@ func TestUpdateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),

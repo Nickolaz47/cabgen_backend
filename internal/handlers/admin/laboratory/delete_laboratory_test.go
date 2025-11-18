@@ -24,7 +24,7 @@ func TestDeleteLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -45,7 +45,7 @@ func TestDeleteLaboratory(t *testing.T) {
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		labSvc := MockLaboratoryService{}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -70,7 +70,7 @@ func TestDeleteLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -95,7 +95,7 @@ func TestDeleteLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",

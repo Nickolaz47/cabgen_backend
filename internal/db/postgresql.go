@@ -62,6 +62,7 @@ func Migrate() error {
 		&models.Origin{},
 		&models.Sequencer{},
 		&models.SampleSource{},
+		&models.Laboratory{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %v", err)

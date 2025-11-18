@@ -28,7 +28,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory", "",
@@ -53,7 +53,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory", "",
@@ -78,7 +78,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory", "",
@@ -103,7 +103,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/laboratory", "",

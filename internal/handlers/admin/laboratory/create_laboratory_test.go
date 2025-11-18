@@ -29,7 +29,7 @@ func TestCreateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),
@@ -51,7 +51,7 @@ func TestCreateLaboratory(t *testing.T) {
 	for _, tt := range data.CreateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
 			labSvc := MockLaboratoryService{}
-			handler := laboratory.NewLaboratoryHandler(&labSvc)
+			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/laboratory", tt.Body,
@@ -71,7 +71,7 @@ func TestCreateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),
@@ -96,7 +96,7 @@ func TestCreateLaboratory(t *testing.T) {
 			},
 		}
 
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),

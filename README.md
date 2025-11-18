@@ -30,6 +30,7 @@ API desenvolvida utilizando a linguagem [Go](https://go.dev/) juntamente com o f
 ├── internal/                 # Código interno (não exportável)
 │   ├── auth/                 # JWT e cookies
 │   ├── config/               # Carregamento das variáveis de ambiente
+│   ├── container/            # Inicialização dos services e handlers
 │   ├── data/                 # Dados estáticos (ex: countries.json)
 │   ├── db/                   # Configuração e conexão com o banco de dados
 │   ├── email/                # Configuração e envio de emails
@@ -187,6 +188,12 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 |--------|--------------------------|---------------------------------------|
 | GET    | `/api/sampleSource`       | Lista todas as fontes da amostra ativas              |
 
+#### Laboratório
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/laboratory`       | Lista todos os laboratórios ativos              |
+
 ### Admin
 
 #### Usuário
@@ -232,6 +239,17 @@ Por padrão, a aplicação irá usar as configurações do arquivo .env e escuta
 | POST | `/api/admin/sampleSource`   | Cria uma nova fonte da amostra |
 | PUT | `/api/admin/sampleSource/:sampleSourceId`   | Atualiza uma fonte da amostra                |
 | DELETE | `/api/admin/sampleSource/:sampleSourceId`   | Deleta uma fonte da amostra                |
+
+#### Laboratório
+
+| Método | Endpoint                 | Descrição                              |
+|--------|--------------------------|---------------------------------------|
+| GET    | `/api/admin/laboratory`       | Lista todos os laboratórios               |
+| GET    | `/api/admin/laboratory/:laboratoryId`       | Retorna um laboratório específico       |
+| PUT | `/api/admin/laboratory/search?nameOrAbbreviation=`   | Procura um laboratório pela marca ou modelo                |
+| POST | `/api/admin/laboratory`   | Cria um novo laboratório|
+| PUT | `/api/admin/laboratory/:laboratoryId`   | Atualiza um laboratório                |
+| DELETE | `/api/admin/laboratory/:laboratoryId`   | Deleta um laboratório                |
 
 ## Internacionalização (i18n)
 
