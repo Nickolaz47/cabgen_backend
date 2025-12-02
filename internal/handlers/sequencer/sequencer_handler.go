@@ -13,7 +13,7 @@ import (
 func GetActiveSequencers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	activeSequencers, err := repository.SequencerRepo.GetActiveSequencers()
+	activeSequencers, err := repository.SequencerRepo.GetActiveSequencers(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),

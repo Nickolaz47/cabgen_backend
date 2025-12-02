@@ -8,7 +8,7 @@ var (
 	CountryRepo      *CountryRepository
 	UserRepo         *UserRepository
 	OriginRepo       *OriginRepository
-	SequencerRepo    *SequencerRepository
+	SequencerRepo    SequencerRepository
 	SampleSourceRepo *SampleSourceRepository
 )
 

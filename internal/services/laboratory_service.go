@@ -100,6 +100,7 @@ func (s *laboratoryService) Update(ctx context.Context, ID uuid.UUID, input mode
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
 	}
+	
 	if err != nil {
 		return nil, ErrInternal
 	}

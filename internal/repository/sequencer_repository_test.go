@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -28,7 +29,7 @@ func TestGetSequencers(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	db.Create(&sequencer)
 	t.Run("Success", func(t *testing.T) {
-		sequencers, err := repo.GetSequencers()
+		sequencers, err := repo.GetSequencers(context.Background())
 
 		expected := []models.Sequencer{sequencer}
 
@@ -41,7 +42,7 @@ func TestGetSequencers(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		sequencers, err := mockSequencerRepo.GetSequencers()
+		sequencers, err := mockSequencerRepo.GetSequencers(context.Background())
 
 		assert.Error(t, err)
 		assert.Empty(t, sequencers)
@@ -58,7 +59,7 @@ func TestGetActiveSequencers(t *testing.T) {
 	db.Create(&sequencer2)
 
 	t.Run("Success", func(t *testing.T) {
-		sequencers, err := repo.GetActiveSequencers()
+		sequencers, err := repo.GetActiveSequencers(context.Background())
 
 		expected := []models.Sequencer{sequencer}
 
@@ -71,7 +72,7 @@ func TestGetActiveSequencers(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		sequencers, err := mockSequencerRepo.GetActiveSequencers()
+		sequencers, err := mockSequencerRepo.GetActiveSequencers(context.Background())
 
 		assert.Error(t, err)
 		assert.Empty(t, sequencers)
@@ -87,7 +88,7 @@ func TestGetSequencerByID(t *testing.T) {
 	db.Create(&sequencer)
 
 	t.Run("Success", func(t *testing.T) {
-		resultSequencer, err := repo.GetSequencerByID(id)
+		resultSequencer, err := repo.GetSequencerByID(context.Background(), id)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &sequencer, resultSequencer)
@@ -98,7 +99,7 @@ func TestGetSequencerByID(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		sequencer, err := mockSequencerRepo.GetSequencerByID(uuid.UUID{})
+		sequencer, err := mockSequencerRepo.GetSequencerByID(context.Background(), uuid.UUID{})
 
 		assert.Error(t, err)
 		assert.Empty(t, sequencer)
@@ -114,9 +115,8 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 	sequencer2 := testmodels.NewSequencer(uuid.NewString(), "Illumina", "NextSeq 550", true)
 	db.Create(&sequencer2)
 
-
 	t.Run("Success - Brand", func(t *testing.T) {
-		resultSequencer, err := repo.GetSequencersByBrandOrModel("illu")
+		resultSequencer, err := repo.GetSequencersByBrandOrModel(context.Background(), "illu")
 
 		expected := []models.Sequencer{sequencer, sequencer2}
 
@@ -125,7 +125,7 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("Success - Model", func(t *testing.T) {
-		resultSequencer, err := repo.GetSequencersByBrandOrModel("mis")
+		resultSequencer, err := repo.GetSequencersByBrandOrModel(context.Background(), "mis")
 
 		expected := []models.Sequencer{sequencer}
 
@@ -138,10 +138,52 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		sequencers, err := mockSequencerRepo.GetSequencersByBrandOrModel("illumina")
+		sequencers, err := mockSequencerRepo.GetSequencersByBrandOrModel(context.Background(), "illumina")
 
 		assert.Error(t, err)
 		assert.Empty(t, sequencers)
+	})
+}
+
+func TestGetSequencerDuplicate(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repository.NewSequencerRepo(db)
+
+	mockSequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
+	db.Create(&mockSequencer)
+
+	t.Run("Success - With ID", func(t *testing.T) {
+		sequencer, err := repo.GetSequencerDuplicate(context.Background(), mockSequencer.Model, uuid.New())
+
+		assert.NoError(t, err)
+		assert.Equal(t, &mockSequencer, sequencer)
+	})
+
+	t.Run("Success - Without ID", func(t *testing.T) {
+		sequencer, err := repo.GetSequencerDuplicate(context.Background(), mockSequencer.Model, uuid.UUID{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, &mockSequencer, sequencer)
+	})
+
+	t.Run("Error - Record not found", func(t *testing.T) {
+		model := "MinION"
+		sequencer, err := repo.GetSequencerDuplicate(context.Background(), model, uuid.UUID{})
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+		assert.Empty(t, sequencer)
+	})
+
+	t.Run("DB error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		sequencer, err := mockSequencerRepo.GetSequencerDuplicate(context.Background(), "Mis", uuid.UUID{})
+
+		assert.Error(t, err)
+		assert.Empty(t, sequencer)
 	})
 }
 
@@ -151,7 +193,7 @@ func TestCreateSequencer(t *testing.T) {
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	t.Run("Success", func(t *testing.T) {
-		err := repo.CreateSequencer(&sequencer)
+		err := repo.CreateSequencer(context.Background(), &sequencer)
 		assert.NoError(t, err)
 
 		var result models.Sequencer
@@ -166,7 +208,7 @@ func TestCreateSequencer(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		err = mockSequencerRepo.CreateSequencer(&models.Sequencer{})
+		err = mockSequencerRepo.CreateSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)
 	})
@@ -186,7 +228,7 @@ func TestUpdateSequencer(t *testing.T) {
 			IsActive: true,
 		}
 
-		err := repo.UpdateSequencer(&sequencerToUpdate)
+		err := repo.UpdateSequencer(context.Background(), &sequencerToUpdate)
 		assert.NoError(t, err)
 
 		var result models.Sequencer
@@ -201,7 +243,7 @@ func TestUpdateSequencer(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		err = mockSequencerRepo.UpdateSequencer(&models.Sequencer{})
+		err = mockSequencerRepo.UpdateSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)
 	})
@@ -214,7 +256,7 @@ func TestDeleteSequencer(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MySeq", true)
 	db.Create(&sequencer)
 	t.Run("Success", func(t *testing.T) {
-		err := repo.DeleteSequencer(&sequencer)
+		err := repo.DeleteSequencer(context.Background(), &sequencer)
 		assert.NoError(t, err)
 
 		var result models.Sequencer
@@ -230,7 +272,7 @@ func TestDeleteSequencer(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
-		err = mockSequencerRepo.DeleteSequencer(&models.Sequencer{})
+		err = mockSequencerRepo.DeleteSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)
 	})
