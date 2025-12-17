@@ -172,6 +172,9 @@ other = "El modelo del secuenciador debe contener al menos 3 caracteres."
 [admin.sequencer.create.success]
 other = "Secuenciador registrado con éxito."
 
+[admin.sequencer.modelAlreadyExists.error]
+other = "Ya existe un secuenciador de este modelo."
+
 [admin.sequencer.brandOrModel.error]
 other = "El parámetro de búsqueda brandOrModel está vacío."
 

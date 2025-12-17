@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 type MockSequencerService struct {
@@ -73,48 +72,54 @@ func (s *MockSequencerService) Delete(ctx context.Context, ID uuid.UUID) error {
 	return nil
 }
 
-func TestGetAllSequencers(t *testing.T) {
+func TestGetActiveSequencers(t *testing.T) {
 	testutils.SetupTestContext()
-
-	mockSequencer := testmodels.NewSequencer(
-		uuid.NewString(), "Illumina", "MiSeq", true,
-	)
+	mockSequencer := models.SequencerFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
-		service := MockSequencerService{
-			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return []models.Sequencer{mockSequencer}, nil
+		sequencerSvc := MockSequencerService{
+			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
+				return []models.SequencerFormResponse{mockSequencer}, nil
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
 
-		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sequencer", "", nil, nil)
-		mockHandler.GetAllSequencers(c)
+		handler := sequencer.NewSequencerHandler(&sequencerSvc)
 
-		expected := testutils.ToJSON(map[string]any{"data": []models.Sequencer{mockSequencer}})
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/sequencer", "", nil, nil,
+		)
+		handler.GetActiveSequencers(c)
+
+		expected := testutils.ToJSON(
+			map[string][]models.SequencerFormResponse{
+				"data": {mockSequencer},
+			},
+		)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		service := MockSequencerService{
-			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return nil, services.ErrInternal
+		sequencerSvc := MockSequencerService{
+			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
+				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+
+		handler := sequencer.NewSequencerHandler(&sequencerSvc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sequencer", "",
+			http.MethodGet, "/api/laboratory", "",
 			nil, nil,
 		)
+		handler.GetActiveSequencers(c)
 
-		mockHandler.GetAllSequencers(c)
-
-		expected := testutils.ToJSON(map[string]any{
-			"error": "There was a server error. Please try again.",
-		})
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "There was a server error. Please try again.",
+			},
+		)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())

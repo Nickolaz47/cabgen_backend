@@ -1,23 +1,21 @@
 package sequencer_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func TestCreateSequencer(t *testing.T) {
 	testutils.SetupTestContext()
-	testutils.SetupTestRepos()
 
 	mockSequencerInput := models.SequencerCreateInput{
 		Brand:    "Illumina",
@@ -26,13 +24,20 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
+		service := MockSequencerService{
+			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
+				return nil
+			},
+		}
+		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+
 		body := testutils.ToJSON(mockSequencerInput)
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/sequencer", body,
 			nil, nil,
 		)
 
-		sequencer.CreateSequencer(c)
+		mockHandler.CreateSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
@@ -59,12 +64,15 @@ func TestCreateSequencer(t *testing.T) {
 
 	for _, tt := range data.CreateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
+			service := MockSequencerService{}
+			mockHandler := sequencer.NewAdminSequencerHandler(&service)
+
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/sequencer", tt.Body,
 				nil, nil,
 			)
 
-			sequencer.CreateSequencer(c)
+			mockHandler.CreateSequencer(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
@@ -72,14 +80,12 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("DB error", func(t *testing.T) {
-		origRepo := repository.SequencerRepo
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
-
-		repository.SequencerRepo = repository.NewSequencerRepo(mockDB)
-		defer func() {
-			repository.SequencerRepo = origRepo
-		}()
+		service := MockSequencerService{
+			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
+				return services.ErrInternal
+			},
+		}
+		mockHandler := sequencer.NewAdminSequencerHandler(&service)
 
 		body := testutils.ToJSON(mockSequencerInput)
 		c, w := testutils.SetupGinContext(
@@ -87,7 +93,7 @@ func TestCreateSequencer(t *testing.T) {
 			nil, nil,
 		)
 
-		sequencer.CreateSequencer(c)
+		mockHandler.CreateSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupSequencerRoutes(r *gin.RouterGroup) {
+func SetupSequencerRoutes(r *gin.RouterGroup, handler *sequencer.AdminSequencerHandler) {
 	sequencerRouter := r.Group("/sequencer")
 
-	sequencerRouter.GET("", sequencer.GetAllSequencers)
-	sequencerRouter.GET("/:sequencerId", sequencer.GetSequencerByID)
-	sequencerRouter.GET("/search", sequencer.GetSequencersByBrandOrModel)
-	sequencerRouter.POST("", sequencer.CreateSequencer)
-	sequencerRouter.PUT("/:sequencerId", sequencer.UpdateSequencer)
-	sequencerRouter.DELETE("/:sequencerId", sequencer.DeleteSequencer)
+	sequencerRouter.GET("", handler.GetAllSequencers)
+	sequencerRouter.GET("/:sequencerId", handler.GetSequencerByID)
+	sequencerRouter.GET("/search", handler.GetSequencersByBrandOrModel)
+	sequencerRouter.POST("", handler.CreateSequencer)
+	sequencerRouter.PUT("/:sequencerId", handler.UpdateSequencer)
+	sequencerRouter.DELETE("/:sequencerId", handler.DeleteSequencer)
 }

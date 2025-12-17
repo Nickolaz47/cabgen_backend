@@ -172,6 +172,9 @@ other = "Sequencer model must contain at least 3 characters."
 [admin.sequencer.create.success]
 other = "Sequencer registered successfully."
 
+[admin.sequencer.modelAlreadyExists.error]
+other = "A sequencer with this model already exists."
+
 [admin.sequencer.brandOrModel.error]
 other = "The search parameter brandOrModel is empty."
 

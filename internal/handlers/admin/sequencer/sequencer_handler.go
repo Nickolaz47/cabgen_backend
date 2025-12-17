@@ -1,27 +1,35 @@
 package sequencer
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-func GetAllSequencers(c *gin.Context) {
+type AdminSequencerHandler struct {
+	Service services.SequencerService
+}
+
+func NewAdminSequencerHandler(svc services.SequencerService) *AdminSequencerHandler {
+	return &AdminSequencerHandler{Service: svc}
+}
+
+func (h *AdminSequencerHandler) GetAllSequencers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	sequencers, err := repository.SequencerRepo.GetSequencers(c.Request.Context())
+	sequencers, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError,
+		code, errMsg := handleError(err)
+		c.JSON(
+			code,
 			responses.APIResponse{
-				Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
+				Error: responses.GetResponse(localizer, errMsg),
 			})
 		return
 	}
@@ -29,7 +37,7 @@ func GetAllSequencers(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencers})
 }
 
-func GetSequencerByID(c *gin.Context) {
+func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sequencerId")
 
@@ -41,47 +49,49 @@ func GetSequencerByID(c *gin.Context) {
 		return
 	}
 
-	sequencer, err := repository.SequencerRepo.GetSequencerByID(c.Request.Context(), id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.SequencerNotFoundError)},
-		)
-		return
-	}
-
+	sequencer, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
-		)
+		code, errMsg := handleError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
 		return
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencer})
 }
 
-func GetSequencersByBrandOrModel(c *gin.Context) {
+func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	input := c.Query("brandOrModel")
+	brandOrModel := c.Query("brandOrModel")
 
-	if input == "" {
-		c.JSON(http.StatusBadRequest, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.SequencerEmptyQueryError),
-		})
-		return
+	var (
+		sequencers []models.Sequencer
+		err        error
+	)
+
+	if brandOrModel == "" {
+		sequencers, err = h.Service.FindAll(c.Request.Context())
+	} else {
+		sequencers, err = h.Service.FindByBrandOrModel(c.Request.Context(), brandOrModel)
 	}
 
-	sequencers, err := repository.SequencerRepo.GetSequencersByBrandOrModel(c.Request.Context(),input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)},
-		)
+		code, errMsg := handleError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
 		return
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencers})
 }
 
-func CreateSequencer(c *gin.Context) {
+func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	var newSequencer models.SequencerCreateInput
@@ -98,9 +108,10 @@ func CreateSequencer(c *gin.Context) {
 		IsActive: newSequencer.IsActive,
 	}
 
-	if err := repository.SequencerRepo.CreateSequencer(c.Request.Context(), &sequencerToCreate); err != nil {
-		c.JSON(http.StatusInternalServerError, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
+	if err := h.Service.Create(c.Request.Context(), &sequencerToCreate); err != nil {
+		code, errMsg := handleError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
 		})
 		return
 	}
@@ -111,7 +122,7 @@ func CreateSequencer(c *gin.Context) {
 	})
 }
 
-func UpdateSequencer(c *gin.Context) {
+func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sequencerId")
 
@@ -124,42 +135,30 @@ func UpdateSequencer(c *gin.Context) {
 	}
 
 	var sequencerUpdateInput models.SequencerUpdateInput
-	if errMsg, valid := validations.Validate(c, localizer, &sequencerUpdateInput); !valid {
-		c.JSON(http.StatusBadRequest, responses.APIResponse{
-			Error: errMsg,
-		})
+	errMsg, ok := validations.Validate(c, localizer, &sequencerUpdateInput)
+	if !ok {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{
+				Error: errMsg,
+			})
 		return
 	}
 
-	sequencerToUpdate, err := repository.SequencerRepo.GetSequencerByID(c.Request.Context(),id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.SequencerNotFoundError),
-		})
-		return
-	}
-
+	sequencerUpdated, err := h.Service.Update(c.Request.Context(), id, sequencerUpdateInput)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
-		})
+		code, errMsg := handleError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
 		return
 	}
 
-	validations.ApplySequencerUpdate(sequencerToUpdate, &sequencerUpdateInput)
-	if err := repository.SequencerRepo.UpdateSequencer(c.Request.Context(), sequencerToUpdate); err != nil {
-		c.JSON(http.StatusOK, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: sequencerToUpdate,
-	})
+	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencerUpdated.ToFormResponse()})
 }
 
-func DeleteSequencer(c *gin.Context) {
+func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sequencerId")
 
@@ -171,25 +170,13 @@ func DeleteSequencer(c *gin.Context) {
 		return
 	}
 
-	sequencerToDelete, err := repository.SequencerRepo.GetSequencerByID(c.Request.Context(),id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.SequencerNotFoundError),
-		})
-		return
-	}
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
-		})
-		return
-	}
-
-	if err := repository.SequencerRepo.DeleteSequencer(c.Request.Context(), sequencerToDelete); err != nil {
-		c.JSON(http.StatusInternalServerError, responses.APIResponse{
-			Error: responses.GetResponse(localizer, responses.GenericInternalServerError),
-		})
+	if err := h.Service.Delete(c.Request.Context(), id); err != nil {
+		code, errMsg := handleError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
 		return
 	}
 

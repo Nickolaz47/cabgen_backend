@@ -35,6 +35,7 @@ const (
 	OriginEmptyNameError                     = "admin.origin.emptyName.error"
 	OriginDeleted                            = "admin.origin.delete.success"
 	SequencerCreationSuccess                 = "admin.sequencer.create.success"
+	SequencerModelAlreadyExistsError         = "admin.sequencer.modelAlreadyExists.error"
 	SequencerEmptyQueryError                 = "admin.sequencer.brandOrModel.error"
 	SequencerNotFoundError                   = "admin.sequencer.notFound.error"
 	SequencerDeleted                         = "admin.sequencer.delete.success"
