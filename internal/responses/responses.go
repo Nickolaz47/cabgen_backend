@@ -32,6 +32,7 @@ const (
 	OriginValidationMissingLanguage          = "admin.origin.validation.missingLanguage"
 	OriginValidationMissingTranslation       = "admin.origin.validation.missingTranslation"
 	OriginNotFoundError                      = "admin.origin.notFound.error"
+	OriginAlreadyExistsError                 = "admin.origin.alreadyExists.error"
 	OriginEmptyNameError                     = "admin.origin.emptyName.error"
 	OriginDeleted                            = "admin.origin.delete.success"
 	SequencerCreationSuccess                 = "admin.sequencer.create.success"

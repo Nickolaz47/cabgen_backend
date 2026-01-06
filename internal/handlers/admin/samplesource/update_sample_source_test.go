@@ -48,7 +48,6 @@ func TestUpdateSampleSource(t *testing.T) {
 		expected := testutils.ToJSON(
 			map[string]any{
 				"data": map[string]any{
-					"id":        mockSampleSource.ID,
 					"name":      mockSampleSourceInput.Names["en"],
 					"group":     mockSampleSourceInput.Groups["en"],
 					"is_active": *mockSampleSourceInput.IsActive,

@@ -1,39 +1,36 @@
 package origin_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func TestDeleteOrigin(t *testing.T) {
 	testutils.SetupTestContext()
-	db := testutils.SetupTestRepos()
-
-	id := uuid.NewString()
-	mockOrigin := testmodels.NewOrigin(
-		id,
-		map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"},
-		true,
-	)
-	db.Create(&mockOrigin)
 
 	t.Run("Success", func(t *testing.T) {
+		originSvc := MockOriginService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return nil
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: id}},
+			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
 
-		origin.DeleteOrigin(c)
+		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -45,13 +42,20 @@ func TestDeleteOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Origin not found", func(t *testing.T) {
+	t.Run("Error - Origin not found", func(t *testing.T) {
+		originSvc := MockOriginService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return services.ErrNotFound
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
 
-		origin.DeleteOrigin(c)
+		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -63,13 +67,16 @@ func TestDeleteOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Invalid ID", func(t *testing.T) {
+	t.Run("Error - Invalid ID", func(t *testing.T) {
+		originSvc := MockOriginService{}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: "123"}},
 		)
 
-		origin.DeleteOrigin(c)
+		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -81,22 +88,19 @@ func TestDeleteOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("DB error", func(t *testing.T) {
-		origRepo := repository.OriginRepo
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
-
-		repository.OriginRepo = repository.NewOriginRepo(mockDB)
-		defer func() {
-			repository.OriginRepo = origRepo
-		}()
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		originSvc := MockOriginService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: id}},
+			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
-
-		origin.DeleteOrigin(c)
+		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

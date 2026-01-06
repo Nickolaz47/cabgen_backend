@@ -65,7 +65,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: lab})
 }
 
-func (h *AdminLaboratoryHandler) GetLaboratoryByNameOrAbbreviation(c *gin.Context) {
+func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	nameOrAbbreaviation := c.Query("nameOrAbbreaviation")
 

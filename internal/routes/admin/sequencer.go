@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupSequencerRoutes(r *gin.RouterGroup, handler *sequencer.AdminSequencerHandler) {
+func SetupAdminSequencerRoutes(r *gin.RouterGroup, handler *sequencer.AdminSequencerHandler) {
 	sequencerRouter := r.Group("/sequencer")
 
 	sequencerRouter.GET("", handler.GetAllSequencers)

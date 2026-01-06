@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupSampleSourceRoutes(r *gin.RouterGroup) {
+func SetupAdminSampleSourceRoutes(r *gin.RouterGroup) {
 	sampleSourceRouter := r.Group("/sampleSource")
 
 	sampleSourceRouter.GET("", samplesource.GetSampleSources)

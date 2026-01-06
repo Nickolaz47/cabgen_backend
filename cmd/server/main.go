@@ -63,16 +63,19 @@ func main() {
 	// Services
 	labSvc := container.BuildLaboratoryService(db.DB)
 	sequencerSvc := container.BuildSequencerService(db.DB)
+	originSvc := container.BuildOriginService(db.DB)
 
 	// Public handlers
 
 	// Common handlers
 	laboratoryHandler := container.BuildLaboratoryHandler(labSvc)
 	sequencerHandler := container.BuildSequencerHandler(sequencerSvc)
+	originHandler := container.BuildOriginHandler(originSvc)
 
 	// Admin handlers
 	adminLaboratoryHandler := container.BuildAdminLaboratoryHandler(labSvc)
 	adminSequencerHandler := container.BuildAdminSequencerHandler(sequencerSvc)
+	adminOriginHandler := container.BuildAdminOriginHandler(originSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -82,19 +85,19 @@ func main() {
 
 	// Common routes
 	commonRouter := api.Group("", middlewares.AuthMiddleware())
-	common.SetupUserRoutes(commonRouter)
-	common.SetupOriginRoutes(commonRouter)
 	common.SetupSequencerRoutes(commonRouter, sequencerHandler)
-	common.SetupSampleSourceRoutes(commonRouter)
 	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)
+	common.SetupOriginRoutes(commonRouter, originHandler)
+	common.SetupUserRoutes(commonRouter)
+	common.SetupSampleSourceRoutes(commonRouter)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
-	admin.SetupUserRoutes(adminRouter)
-	admin.SetupOriginRoutes(adminRouter)
-	admin.SetupSequencerRoutes(adminRouter, adminSequencerHandler)
-	admin.SetupSampleSourceRoutes(adminRouter)
-	admin.SetupLaboratoryRoutes(adminRouter, adminLaboratoryHandler)
+	admin.SetupAdminSequencerRoutes(adminRouter, adminSequencerHandler)
+	admin.SetupAdminLaboratoryRoutes(adminRouter, adminLaboratoryHandler)
+	admin.SetupAdminOriginRoutes(adminRouter, adminOriginHandler)
+	admin.SetupAdminUserRoutes(adminRouter)
+	admin.SetupAdminSampleSourceRoutes(adminRouter)
 
 	r.Run()
 }

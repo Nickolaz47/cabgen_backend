@@ -1,55 +1,52 @@
 package origin_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func TestUpdateOrigin(t *testing.T) {
 	testutils.SetupTestContext()
-	db := testutils.SetupTestRepos()
+	names, isActive := map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true
 
-	id := uuid.NewString()
-	mockOrigin := testmodels.NewOrigin(
-		id,
-		map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"},
-		true,
-	)
-	db.Create(&mockOrigin)
-
-	isActive := false
-	mockOriginInput := models.OriginUpdateInput{
+	updateInput := models.OriginUpdateInput{
+		Names:    names,
 		IsActive: &isActive,
 	}
 
-	t.Run("Success", func(t *testing.T) {
-		body := testutils.ToJSON(mockOriginInput)
-		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", body,
-			nil, gin.Params{{Key: "originId", Value: id}},
-		)
+	mockOrigin := models.Origin{
+		Names:    names,
+		IsActive: isActive,
+	}
 
-		origin.UpdateOrigin(c)
+	t.Run("Success", func(t *testing.T) {
+		originSvc := MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+				return &mockOrigin, nil
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut, "/api/admin/origin", testutils.ToJSON(updateInput),
+			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+		)
+		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": map[string]any{
-					"id":        id,
-					"name":      mockOrigin.Names["en"],
-					"is_active": *mockOriginInput.IsActive,
-				},
+				"data": mockOrigin.ToResponse(""),
 			},
 		)
 
@@ -59,25 +56,29 @@ func TestUpdateOrigin(t *testing.T) {
 
 	for _, tt := range data.UpdateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
+			originSvc := MockOriginService{}
+			handler := origin.NewAdminOriginHandler(&originSvc)
+
 			c, w := testutils.SetupGinContext(
 				http.MethodPut, "/api/admin/origin", tt.Body,
-				nil, gin.Params{{Key: "originId", Value: id}},
+				nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 			)
-
-			origin.UpdateOrigin(c)
+			handler.UpdateOrigin(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
-	t.Run("Invalid ID", func(t *testing.T) {
+	t.Run("Error - Invalid ID", func(t *testing.T) {
+		originSvc := MockOriginService{}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: "12"}},
 		)
-
-		origin.UpdateOrigin(c)
+		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -89,14 +90,19 @@ func TestUpdateOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Origin not found", func(t *testing.T) {
-		body := testutils.ToJSON(mockOriginInput)
+	t.Run("Error - Not found", func(t *testing.T) {
+		originSvc := MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+				return nil, services.ErrNotFound
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
+
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", body,
+			http.MethodPut, "/api/admin/origin", testutils.ToJSON(updateInput),
 			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
-
-		origin.UpdateOrigin(c)
+		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{"error": "Origin not found."},
@@ -106,23 +112,19 @@ func TestUpdateOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("DB error", func(t *testing.T) {
-		origRepo := repository.OriginRepo
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		originSvc := MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+		handler := origin.NewAdminOriginHandler(&originSvc)
 
-		repository.OriginRepo = repository.NewOriginRepo(mockDB)
-		defer func() {
-			repository.OriginRepo = origRepo
-		}()
-
-		body := testutils.ToJSON(mockOriginInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", body,
-			nil, gin.Params{{Key: "originId", Value: id}},
+			http.MethodPut, "/api/admin/origin", testutils.ToJSON(mockOrigin),
+			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
-
-		origin.UpdateOrigin(c)
+		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

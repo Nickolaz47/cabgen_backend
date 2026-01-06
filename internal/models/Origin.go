@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -12,7 +11,6 @@ type Origin struct {
 }
 
 type OriginResponse struct {
-	ID       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`
 	IsActive bool      `json:"is_active"`
 }
@@ -22,8 +20,7 @@ type OriginFormResponse struct {
 	Name string    `json:"name"`
 }
 
-func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
-	language := c.GetHeader("Accept-Language")
+func (o *Origin) ToResponse(language string) OriginResponse {
 	if language == "" {
 		language = "en"
 	}
@@ -31,14 +28,12 @@ func (o *Origin) ToResponse(c *gin.Context) OriginResponse {
 	name := o.Names[language]
 
 	return OriginResponse{
-		ID:       o.ID,
 		Name:     name,
 		IsActive: o.IsActive,
 	}
 }
 
-func (o *Origin) ToFormResponse(c *gin.Context) OriginFormResponse {
-	language := c.GetHeader("Accept-Language")
+func (o *Origin) ToFormResponse(language string) OriginFormResponse {
 	if language == "" {
 		language = "en"
 	}
@@ -46,8 +41,8 @@ func (o *Origin) ToFormResponse(c *gin.Context) OriginFormResponse {
 	name := o.Names[language]
 
 	return OriginFormResponse{
-		ID:       o.ID,
-		Name:     name,
+		ID:   o.ID,
+		Name: name,
 	}
 }
 

@@ -13,10 +13,9 @@ type SampleSource struct {
 }
 
 type SampleSourceResponse struct {
-	ID       uuid.UUID `json:"id"`
-	Name     string    `json:"name"`
-	Group    string    `json:"group"`
-	IsActive bool      `json:"is_active"`
+	Name     string `json:"name"`
+	Group    string `json:"group"`
+	IsActive bool   `json:"is_active"`
 }
 
 type SampleSourceFormResponse struct {
@@ -34,7 +33,6 @@ func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
 	group := s.Groups[language]
 
 	return SampleSourceResponse{
-		ID:       s.ID,
 		Name:     name,
 		Group:    group,
 		IsActive: s.IsActive,

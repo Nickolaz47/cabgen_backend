@@ -1,11 +1,9 @@
 package models_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -13,12 +11,11 @@ import (
 
 func TestOriginToResponse(t *testing.T) {
 	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
-	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
+	lang := "en"
 
-	result := mockOrigin.ToResponse(c)
+	result := mockOrigin.ToResponse(lang)
 	expected := models.OriginResponse{
-		ID:       mockOrigin.ID,
-		Name:     mockOrigin.Names["en"],
+		Name:     mockOrigin.Names[lang],
 		IsActive: mockOrigin.IsActive,
 	}
 
@@ -27,12 +24,12 @@ func TestOriginToResponse(t *testing.T) {
 
 func TestOriginToFormResponse(t *testing.T) {
 	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
-	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
+	lang := "pt"
 
-	result := mockOrigin.ToFormResponse(c)
+	result := mockOrigin.ToFormResponse(lang)
 	expected := models.OriginFormResponse{
 		ID:   mockOrigin.ID,
-		Name: mockOrigin.Names["en"],
+		Name: mockOrigin.Names[lang],
 	}
 
 	assert.Equal(t, expected, result)

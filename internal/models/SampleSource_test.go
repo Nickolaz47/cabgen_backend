@@ -21,7 +21,6 @@ func SampleSourceToResponse(t *testing.T) {
 	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
 	expected := models.SampleSourceResponse{
-		ID:       mockSampleSource.ID,
 		Name:     mockSampleSource.Names["en"],
 		Group:    mockSampleSource.Groups["en"],
 		IsActive: mockSampleSource.IsActive,

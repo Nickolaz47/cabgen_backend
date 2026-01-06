@@ -119,7 +119,7 @@ func TestUpdateLaboratory(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Error - Internal Server Error", func(t *testing.T) {
+	t.Run("Error - Internal Server", func(t *testing.T) {
 		labSvc := MockLaboratoryService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction

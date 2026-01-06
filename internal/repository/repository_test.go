@@ -11,13 +11,9 @@ import (
 func TestInitRepositories(t *testing.T) {
 	origUserRepo := repository.UserRepo
 	origCountryRepo := repository.CountryRepo
-	origOriginRepo := repository.OriginRepo
-	origSequencerRepo := repository.SequencerRepo
 	defer func() {
 		repository.UserRepo = origUserRepo
 		repository.CountryRepo = origCountryRepo
-		repository.OriginRepo = origOriginRepo
-		repository.SequencerRepo = origSequencerRepo
 	}()
 
 	db := testutils.NewMockDB()
@@ -25,6 +21,4 @@ func TestInitRepositories(t *testing.T) {
 
 	assert.NotEmpty(t, repository.UserRepo)
 	assert.NotEmpty(t, repository.CountryRepo)
-	assert.NotEmpty(t, repository.OriginRepo)
-	assert.NotEmpty(t, repository.SequencerRepo)
 }

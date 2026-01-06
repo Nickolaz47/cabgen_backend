@@ -145,6 +145,9 @@ other = "Empty {{.Param}} translation."
 [admin.origin.notFound.error]
 other = "Origin not found."
 
+[admin.origin.alreadyExists.error]
+other = "Origin already exists."
+
 [admin.origin.emptyName.error]
 other = "The search parameter name is empty."
 

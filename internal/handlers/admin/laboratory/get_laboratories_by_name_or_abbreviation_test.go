@@ -34,7 +34,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",
 			nil, nil,
 		)
-		handler.GetLaboratoryByNameOrAbbreviation(c)
+		handler.GetLaboratoriesByNameOrAbbreviation(c)
 
 		expected := testutils.ToJSON(
 			map[string][]models.Laboratory{
@@ -59,7 +59,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=", "",
 			nil, nil,
 		)
-		handler.GetLaboratoryByNameOrAbbreviation(c)
+		handler.GetLaboratoriesByNameOrAbbreviation(c)
 
 		expected := testutils.ToJSON(
 			map[string][]models.Laboratory{
@@ -84,7 +84,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",
 			nil, nil,
 		)
-		handler.GetLaboratoryByNameOrAbbreviation(c)
+		handler.GetLaboratoriesByNameOrAbbreviation(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{

@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupOriginRoutes(r *gin.RouterGroup) {
+func SetupAdminOriginRoutes(r *gin.RouterGroup, handler *origin.AdminOriginHandler) {
 	originRouter := r.Group("/origin")
 
-	originRouter.GET("", origin.GetAllOrigins)
-	originRouter.GET("/:originId", origin.GetOriginByID)
-	originRouter.GET("/search", origin.GetOriginByName)
-	originRouter.POST("", origin.CreateOrigin)
-	originRouter.PUT("/:originId", origin.UpdateOrigin)
-	originRouter.DELETE("/:originId", origin.DeleteOrigin)
+	originRouter.GET("", handler.GetAllOrigins)
+	originRouter.GET("/:originId", handler.GetOriginByID)
+	originRouter.GET("/search", handler.GetOriginsByName)
+	originRouter.POST("", handler.CreateOrigin)
+	originRouter.PUT("/:originId", handler.UpdateOrigin)
+	originRouter.DELETE("/:originId", handler.DeleteOrigin)
 }

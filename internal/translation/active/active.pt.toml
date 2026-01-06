@@ -145,6 +145,9 @@ other = "Origem com a tradução para {{.Param}} vazia."
 [admin.origin.notFound.error]
 other =  "Origem não encontrada."
 
+[admin.origin.alreadyExists.error]
+other = "Origem já existe."
+
 [admin.origin.emptyName.error]
 other = "O parâmetro de busca name está vazio."
 
