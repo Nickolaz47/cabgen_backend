@@ -14,65 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type MockLaboratoryService struct {
-	FindAllFunc                  func(ctx context.Context) ([]models.Laboratory, error)
-	FindAllActiveFunc            func(ctx context.Context) ([]models.LaboratoryFormResponse, error)
-	FindByIDFunc                 func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
-	FindByNameOrAbbreviationFunc func(ctx context.Context, input string) ([]models.Laboratory, error)
-	CreateFunc                   func(ctx context.Context, lab *models.Laboratory) error
-	UpdateFunc                   func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error)
-	DeleteFunc                   func(ctx context.Context, ID uuid.UUID) error
-}
-
-func (m *MockLaboratoryService) FindAll(ctx context.Context) ([]models.Laboratory, error) {
-	if m.FindAllFunc != nil {
-		return m.FindAllFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) FindAllActive(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
-	if m.FindAllActiveFunc != nil {
-		return m.FindAllActiveFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-	if m.FindByIDFunc != nil {
-		return m.FindByIDFunc(ctx, ID)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) FindByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error) {
-	if m.FindByNameOrAbbreviationFunc != nil {
-		return m.FindByNameOrAbbreviationFunc(ctx, input)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) Create(ctx context.Context, lab *models.Laboratory) error {
-	if m.CreateFunc != nil {
-		return m.CreateFunc(ctx, lab)
-	}
-	return nil
-}
-
-func (m *MockLaboratoryService) Update(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
-	if m.UpdateFunc != nil {
-		return m.UpdateFunc(ctx, ID, input)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) Delete(ctx context.Context, ID uuid.UUID) error {
-	if m.DeleteFunc != nil {
-		return m.DeleteFunc(ctx, ID)
-	}
-	return nil
-}
-
 func TestGetAllLaboratories(t *testing.T) {
 	testutils.SetupTestContext()
 	mockLab := testmodels.NewLaboratory(
@@ -80,7 +21,7 @@ func TestGetAllLaboratories(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return []models.Laboratory{mockLab}, nil
 			},
@@ -105,7 +46,7 @@ func TestGetAllLaboratories(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

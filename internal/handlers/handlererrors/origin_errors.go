@@ -1,4 +1,4 @@
-package sequencer
+package handlererrors
 
 import (
 	"errors"
@@ -8,12 +8,12 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 )
 
-func handleError(err error) (int, string) {
+func HandleOriginError(err error) (int, string) {
 	switch {
 	case errors.Is(err, services.ErrConflict):
-		return http.StatusConflict, responses.SequencerModelAlreadyExistsError
+		return http.StatusConflict, responses.OriginAlreadyExistsError
 	case errors.Is(err, services.ErrNotFound):
-		return http.StatusNotFound, responses.SequencerNotFoundError
+		return http.StatusNotFound, responses.OriginNotFoundError
 	default:
 		return http.StatusInternalServerError, responses.GenericInternalServerError
 	}

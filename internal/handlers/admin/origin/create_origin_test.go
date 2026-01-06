@@ -21,7 +21,7 @@ func TestCreateOrigin(t *testing.T) {
 	mockOrigin := testmodels.NewOrigin(uuid.NewString(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
 				return nil
 			},
@@ -46,7 +46,7 @@ func TestCreateOrigin(t *testing.T) {
 
 	for _, tt := range data.CreateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			originSvc := MockOriginService{}
+			originSvc := testmodels.MockOriginService{}
 			handler := origin.NewAdminOriginHandler(&originSvc)
 
 			c, w := testutils.SetupGinContext(
@@ -62,7 +62,7 @@ func TestCreateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
 				return services.ErrConflict
 			},
@@ -86,7 +86,7 @@ func TestCreateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
 				return gorm.ErrInvalidTransaction
 			},

@@ -22,7 +22,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	mockLab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratório Bittar", "LABB", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
 				return []models.Laboratory{mockLab}, nil
 			},
@@ -47,7 +47,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Success - Input Empty", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return []models.Laboratory{mockLab, mockLab2}, nil
 			},
@@ -72,7 +72,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

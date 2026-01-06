@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		service := MockSequencerService{
+		service := testmodels.MockSequencerService{
 			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return nil
 			},
@@ -64,7 +65,7 @@ func TestCreateSequencer(t *testing.T) {
 
 	for _, tt := range data.CreateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			service := MockSequencerService{}
+			service := testmodels.MockSequencerService{}
 			mockHandler := sequencer.NewAdminSequencerHandler(&service)
 
 			c, w := testutils.SetupGinContext(
@@ -80,7 +81,7 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("DB error", func(t *testing.T) {
-		service := MockSequencerService{
+		service := testmodels.MockSequencerService{
 			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return services.ErrInternal
 			},

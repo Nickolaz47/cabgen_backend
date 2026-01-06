@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ func TestUpdateOrigin(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
 				return &mockOrigin, nil
 			},
@@ -56,7 +57,7 @@ func TestUpdateOrigin(t *testing.T) {
 
 	for _, tt := range data.UpdateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			originSvc := MockOriginService{}
+			originSvc := testmodels.MockOriginService{}
 			handler := origin.NewAdminOriginHandler(&originSvc)
 
 			c, w := testutils.SetupGinContext(
@@ -71,7 +72,7 @@ func TestUpdateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := MockOriginService{}
+		originSvc := testmodels.MockOriginService{}
 		handler := origin.NewAdminOriginHandler(&originSvc)
 
 		c, w := testutils.SetupGinContext(
@@ -91,7 +92,7 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
 				return nil, services.ErrNotFound
 			},
@@ -113,7 +114,7 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

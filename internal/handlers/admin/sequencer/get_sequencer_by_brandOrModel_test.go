@@ -22,7 +22,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	)
 
 	t.Run("Success - Brand", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
 				return []models.Sequencer{mockSequencer}, nil
 			},
@@ -46,7 +46,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("Success - Model", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
 				return []models.Sequencer{mockSequencer}, nil
 			},
@@ -70,7 +70,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("Success - Input empty", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 				return []models.Sequencer{mockSequencer}, nil
 			},
@@ -94,7 +94,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
 				return nil, services.ErrInternal
 			},

@@ -22,7 +22,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &mockLab, nil
 			},
@@ -47,7 +47,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, nil
 			},
@@ -72,7 +72,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, services.ErrNotFound
 			},
@@ -97,7 +97,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, services.ErrInternal
 			},

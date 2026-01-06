@@ -3,6 +3,7 @@ package laboratory
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -27,7 +28,7 @@ func (h *AdminLaboratoryHandler) GetAllLaboratories(c *gin.Context) {
 
 	labs, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -53,7 +54,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 
 	lab, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -81,7 +82,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Cont
 	}
 
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -109,7 +110,7 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	}
 
 	if err := h.Service.Create(c.Request.Context(), &labToCreate); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -148,7 +149,7 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 
 	labUpdated, err := h.Service.Update(c.Request.Context(), id, laboratoryUpdateInput)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -175,7 +176,7 @@ func (h *AdminLaboratoryHandler) DeleteLaboratory(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{

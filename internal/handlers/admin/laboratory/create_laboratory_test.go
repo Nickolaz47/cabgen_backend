@@ -23,7 +23,7 @@ func TestCreateLaboratory(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return nil
 			},
@@ -50,7 +50,7 @@ func TestCreateLaboratory(t *testing.T) {
 
 	for _, tt := range data.CreateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			labSvc := MockLaboratoryService{}
+			labSvc := testmodels.MockLaboratoryService{}
 			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
 			c, w := testutils.SetupGinContext(
@@ -65,7 +65,7 @@ func TestCreateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return services.ErrConflict
 			},
@@ -90,7 +90,7 @@ func TestCreateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return gorm.ErrInvalidTransaction
 			},

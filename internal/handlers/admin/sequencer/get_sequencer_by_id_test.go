@@ -24,7 +24,7 @@ func TestGetSequencerByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &mockSequencer, nil
 			},
@@ -49,7 +49,7 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{}
+		sequencerSvc := testmodels.MockSequencerService{}
 		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
 
 		c, w := testutils.SetupGinContext(
@@ -70,7 +70,7 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, services.ErrNotFound
 			},
@@ -95,7 +95,7 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

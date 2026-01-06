@@ -3,6 +3,7 @@ package sequencer
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -24,7 +25,7 @@ func (h *SequencerHandler) GetActiveSequencers(c *gin.Context) {
 
 	sequencers, err := h.Service.FindAllActive(c.Request.Context())
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{

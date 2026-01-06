@@ -25,7 +25,7 @@ func TestGetOriginByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &mockOrigin, nil
 			},
@@ -49,7 +49,7 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, nil
 			},
@@ -73,7 +73,7 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, services.ErrNotFound
 			},
@@ -97,7 +97,7 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, services.ErrInternal
 			},

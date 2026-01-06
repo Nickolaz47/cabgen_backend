@@ -3,6 +3,7 @@ package sequencer
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -25,7 +26,7 @@ func (h *AdminSequencerHandler) GetAllSequencers(c *gin.Context) {
 
 	sequencers, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -51,7 +52,7 @@ func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 
 	sequencer, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -79,7 +80,7 @@ func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	}
 
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -109,7 +110,7 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 	}
 
 	if err := h.Service.Create(c.Request.Context(), &sequencerToCreate); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
 		})
@@ -146,7 +147,7 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 
 	sequencerUpdated, err := h.Service.Update(c.Request.Context(), id, sequencerUpdateInput)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -171,7 +172,7 @@ func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {
 	}
 
 	if err := h.Service.Delete(c.Request.Context(), id); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{

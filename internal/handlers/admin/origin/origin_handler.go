@@ -3,6 +3,7 @@ package origin
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -25,7 +26,7 @@ func (h *AdminOriginHandler) GetAllOrigins(c *gin.Context) {
 
 	origins, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -51,7 +52,7 @@ func (h *AdminOriginHandler) GetOriginByID(c *gin.Context) {
 
 	origin, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -80,7 +81,7 @@ func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 	}
 
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -118,7 +119,7 @@ func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 	}
 
 	if err := h.Service.Create(c.Request.Context(), &originToCreate); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -169,7 +170,7 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 
 	originUpdated, err := h.Service.Update(c.Request.Context(), id, originUpdateInput)
 	if err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{
@@ -198,7 +199,7 @@ func (h *AdminOriginHandler) DeleteOrigin(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
-		code, errMsg := handleError(err)
+		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
 			responses.APIResponse{

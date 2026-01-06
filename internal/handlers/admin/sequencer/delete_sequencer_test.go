@@ -22,7 +22,7 @@ func TestDeleteSequencer(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
@@ -45,7 +45,7 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{}
+		sequencerSvc := testmodels.MockSequencerService{}
 		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
 
 		c, w := testutils.SetupGinContext(
@@ -66,7 +66,7 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
@@ -89,7 +89,7 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("DB Error", func(t *testing.T) {
-		sequencerSvc := MockSequencerService{
+		sequencerSvc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrInternal
 			},

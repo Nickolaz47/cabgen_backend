@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestDeleteOrigin(t *testing.T) {
 	testutils.SetupTestContext()
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
@@ -43,7 +44,7 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Origin not found", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
@@ -68,7 +69,7 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := MockOriginService{}
+		originSvc := testmodels.MockOriginService{}
 		handler := origin.NewAdminOriginHandler(&originSvc)
 
 		c, w := testutils.SetupGinContext(
@@ -89,7 +90,7 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return gorm.ErrInvalidTransaction
 			},

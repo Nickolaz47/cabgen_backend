@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
 				return &mockLab, nil
 			},
@@ -59,7 +60,7 @@ func TestUpdateLaboratory(t *testing.T) {
 
 	for _, tt := range data.UpdateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			labSvc := MockLaboratoryService{}
+			labSvc := testmodels.MockLaboratoryService{}
 
 			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 			c, w := testutils.SetupGinContext(
@@ -74,7 +75,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := MockLaboratoryService{}
+		labSvc := testmodels.MockLaboratoryService{}
 
 		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
@@ -95,7 +96,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
 				return nil, services.ErrNotFound
 			},
@@ -120,7 +121,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

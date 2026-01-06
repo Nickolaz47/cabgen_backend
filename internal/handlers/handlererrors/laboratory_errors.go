@@ -1,4 +1,4 @@
-package laboratory
+package handlererrors
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 )
 
-func handleError(err error) (int, string) {
+func HandleLaboratoryError(err error) (int, string) {
 	switch {
 	case errors.Is(err, services.ErrConflict):
 		return http.StatusConflict, responses.LaboratoryNameAlreadyExistsError

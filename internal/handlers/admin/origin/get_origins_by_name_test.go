@@ -24,7 +24,7 @@ func TestGetOriginsByName(t *testing.T) {
 	mockOrigin2 := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.Origin, error) {
 				return []models.Origin{mockOrigin}, nil
 			},
@@ -50,7 +50,7 @@ func TestGetOriginsByName(t *testing.T) {
 	})
 
 	t.Run("Success - Input Empty", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindAllFunc: func(ctx context.Context) ([]models.Origin, error) {
 				return []models.Origin{mockOrigin, mockOrigin2}, nil
 			},
@@ -74,7 +74,7 @@ func TestGetOriginsByName(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originSvc := MockOriginService{
+		originSvc := testmodels.MockOriginService{
 			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},

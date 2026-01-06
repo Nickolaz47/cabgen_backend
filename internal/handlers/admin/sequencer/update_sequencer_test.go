@@ -34,7 +34,7 @@ func TestUpdateSequencer(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		service := MockSequencerService{
+		service := testmodels.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
 				return &mockUpdatedSequencer, nil
 			},
@@ -60,7 +60,7 @@ func TestUpdateSequencer(t *testing.T) {
 
 	for _, tt := range data.UpdateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			service := MockSequencerService{}
+			service := testmodels.MockSequencerService{}
 			mockHandler := sequencer.NewAdminSequencerHandler(&service)
 
 			c, w := testutils.SetupGinContext(
@@ -76,7 +76,7 @@ func TestUpdateSequencer(t *testing.T) {
 	}
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		service := MockSequencerService{}
+		service := testmodels.MockSequencerService{}
 		mockHandler := sequencer.NewAdminSequencerHandler(&service)
 
 		c, w := testutils.SetupGinContext(
@@ -97,7 +97,7 @@ func TestUpdateSequencer(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		service := MockSequencerService{
+		service := testmodels.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
 				return nil, services.ErrNotFound
 			},
@@ -124,7 +124,7 @@ func TestUpdateSequencer(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		service := MockSequencerService{
+		service := testmodels.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
 				return nil, services.ErrInternal
 			},

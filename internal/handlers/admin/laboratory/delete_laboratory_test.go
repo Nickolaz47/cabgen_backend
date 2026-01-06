@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/laboratory"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestDeleteLaboratory(t *testing.T) {
 	testutils.SetupTestContext()
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
@@ -43,7 +44,7 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := MockLaboratoryService{}
+		labSvc := testmodels.MockLaboratoryService{}
 
 		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 
@@ -64,7 +65,7 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
@@ -89,7 +90,7 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
-		labSvc := MockLaboratoryService{
+		labSvc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return gorm.ErrInvalidTransaction
 			},
