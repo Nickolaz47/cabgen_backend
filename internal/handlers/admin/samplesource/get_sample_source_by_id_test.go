@@ -35,7 +35,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource", "",
+			http.MethodGet, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: mockSampleSource.ID.String()}},
 		)
 		handler.GetSampleSourceByID(c)
@@ -55,7 +55,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource", "",
+			http.MethodGet, "/api/admin/sample-source", "",
 			nil, nil,
 		)
 		handler.GetSampleSourceByID(c)
@@ -79,7 +79,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource", "",
+			http.MethodGet, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.GetSampleSourceByID(c)
@@ -103,7 +103,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource", "",
+			http.MethodGet, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.GetSampleSourceByID(c)

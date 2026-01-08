@@ -12,12 +12,12 @@ import (
 )
 
 type OriginService interface {
-	FindAll(ctx context.Context) ([]models.Origin, error)
-	FindAllActive(ctx context.Context, lang string) ([]models.OriginFormResponse, error)
-	FindByID(ctx context.Context, ID uuid.UUID) (*models.Origin, error)
-	FindByName(ctx context.Context, name, lang string) ([]models.Origin, error)
-	Create(ctx context.Context, origin *models.Origin) error
-	Update(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error)
+	FindAll(ctx context.Context, language string) ([]models.OriginAdminTableResponse, error)
+	FindAllActive(ctx context.Context, language string) ([]models.OriginFormResponse, error)
+	FindByID(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error)
+	FindByName(ctx context.Context, name, language string) ([]models.OriginAdminTableResponse, error)
+	Create(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error)
+	Update(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error)
 	Delete(ctx context.Context, ID uuid.UUID) error
 }
 
@@ -29,17 +29,22 @@ func NewOriginService(repo repository.OriginRepository) OriginService {
 	return &originService{Repo: repo}
 }
 
-func (s *originService) FindAll(ctx context.Context) ([]models.Origin, error) {
+func (s *originService) FindAll(ctx context.Context, language string) ([]models.OriginAdminTableResponse, error) {
 	origins, err := s.Repo.GetOrigins(ctx)
 
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return origins, nil
+	tableResponses := make([]models.OriginAdminTableResponse, len(origins))
+	for i, origin := range origins {
+		tableResponses[i] = origin.ToAdminTableResponse(language)
+	}
+
+	return tableResponses, nil
 }
 
-func (s *originService) FindAllActive(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
+func (s *originService) FindAllActive(ctx context.Context, language string) ([]models.OriginFormResponse, error) {
 	origins, err := s.Repo.GetActiveOrigins(ctx)
 	if err != nil {
 		return nil, ErrInternal
@@ -47,15 +52,14 @@ func (s *originService) FindAllActive(ctx context.Context, lang string) ([]model
 
 	formOrigins := make([]models.OriginFormResponse, len(origins))
 	for i, origin := range origins {
-		formOrigins[i] = origin.ToFormResponse(lang)
+		formOrigins[i] = origin.ToFormResponse(language)
 	}
 
 	return formOrigins, nil
 }
 
-func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
+func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 	origin, err := s.Repo.GetOriginByID(ctx, ID)
-
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
 	}
@@ -64,36 +68,48 @@ func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Ori
 		return nil, ErrInternal
 	}
 
-	return origin, nil
+	detailResponse := origin.ToAdminDetailResponse()
+	return &detailResponse, nil
 }
 
-func (s *originService) FindByName(ctx context.Context, name, lang string) ([]models.Origin, error) {
-	origins, err := s.Repo.GetOriginsByName(ctx, name, lang)
+func (s *originService) FindByName(ctx context.Context, name, language string) ([]models.OriginAdminTableResponse, error) {
+	origins, err := s.Repo.GetOriginsByName(ctx, name, language)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return origins, nil
+	tableResponses := make([]models.OriginAdminTableResponse, len(origins))
+	for i, origin := range origins {
+		tableResponses[i] = origin.ToAdminTableResponse(language)
+	}
+
+	return tableResponses, nil
 }
 
-func (s *originService) Create(ctx context.Context, origin *models.Origin) error {
+func (s *originService) Create(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
+	origin := models.Origin{
+		Names:    input.Names,
+		IsActive: input.IsActive,
+	}
+
 	existingOrigin, err := s.Repo.GetOriginDuplicate(ctx, origin.Names, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 
 	if existingOrigin != nil {
-		return ErrConflict
+		return nil, ErrConflict
 	}
 
-	if err := s.Repo.CreateOrigin(ctx, origin); err != nil {
-		return ErrInternal
+	if err := s.Repo.CreateOrigin(ctx, &origin); err != nil {
+		return nil, ErrInternal
 	}
 
-	return nil
+	detailResponse := origin.ToAdminDetailResponse()
+	return &detailResponse, nil
 }
 
-func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 	existingOrigin, err := s.Repo.GetOriginByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
@@ -118,7 +134,8 @@ func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.O
 		return nil, ErrInternal
 	}
 
-	return existingOrigin, nil
+	detailResponse := existingOrigin.ToAdminDetailResponse()
+	return &detailResponse, nil
 }
 
 func (s *originService) Delete(ctx context.Context, ID uuid.UUID) error {

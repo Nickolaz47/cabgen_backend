@@ -48,18 +48,18 @@ func TestUpdateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/sampleSource", body,
+			http.MethodPut, "/api/admin/sample-source", body,
 			nil, gin.Params{{Key: "sampleSourceId", Value: mockSampleSource.ID.String()}},
 		)
 		handler.UpdateSampleSource(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": map[string]any{
-					"id":        mockSampleSource.ID,
-					"names":      mockSampleSourceInput.Names,
-					"groups":     mockSampleSourceInput.Groups,
-					"is_active": *mockSampleSourceInput.IsActive,
+				"data": models.SampleSourceAdminDetailResponse{
+					ID:       mockSampleSource.ID,
+					Names:    mockSampleSourceInput.Names,
+					Groups:   mockSampleSourceInput.Groups,
+					IsActive: isActive,
 				},
 			},
 		)
@@ -74,7 +74,7 @@ func TestUpdateSampleSource(t *testing.T) {
 			handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
-				http.MethodPut, "/api/admin/sampleSource", tt.Body,
+				http.MethodPut, "/api/admin/sample-source", tt.Body,
 				nil, gin.Params{{Key: "sampleSourceId", Value: mockSampleSource.ID.String()}},
 			)
 			handler.UpdateSampleSource(c)
@@ -90,7 +90,7 @@ func TestUpdateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/sampleSource", body,
+			http.MethodPut, "/api/admin/sample-source", body,
 			nil, gin.Params{{Key: "sampleSourceId", Value: "123"}},
 		)
 		handler.UpdateSampleSource(c)
@@ -115,7 +115,7 @@ func TestUpdateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/sampleSource", body,
+			http.MethodPut, "/api/admin/sample-source", body,
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.UpdateSampleSource(c)
@@ -130,6 +130,31 @@ func TestUpdateSampleSource(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockSampleSourceService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
+				return nil, services.ErrConflict
+			},
+		}
+		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+
+		body := testutils.ToJSON(mockSampleSourceInput)
+		c, w := testutils.SetupGinContext(
+			http.MethodPut, "/api/admin/sample-source", body,
+			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
+		)
+		handler.UpdateSampleSource(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Sample source already exists.",
+			},
+		)
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := testmodels.MockSampleSourceService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
@@ -140,7 +165,7 @@ func TestUpdateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/sampleSource", body,
+			http.MethodPut, "/api/admin/sample-source", body,
 			nil, gin.Params{{Key: "sampleSourceId", Value: mockSampleSource.ID.String()}},
 		)
 		handler.UpdateSampleSource(c)

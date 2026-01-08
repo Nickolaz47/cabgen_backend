@@ -16,28 +16,38 @@ import (
 
 func TestGetAllLaboratories(t *testing.T) {
 	testutils.SetupTestContext()
-	mockLab := testmodels.NewLaboratory(
-		uuid.NewString(), "Laboratory 1", "LAB1", true,
+
+	lab := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratory 1",
+		"LAB1",
+		true,
 	)
 
+	adminResponse := lab.ToAdminTableResponse()
+
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
-				return []models.Laboratory{mockLab}, nil
+		svc := testmodels.MockLaboratoryService{
+			FindAllFunc: func(ctx context.Context) ([]models.LaboratoryAdminTableResponse, error) {
+				return []models.LaboratoryAdminTableResponse{
+					adminResponse,
+				}, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetAllLaboratories(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.Laboratory{
-				"data": {mockLab},
+			map[string][]models.LaboratoryAdminTableResponse{
+				"data": {adminResponse},
 			},
 		)
 
@@ -46,17 +56,19 @@ func TestGetAllLaboratories(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			FindAllFunc: func(ctx context.Context) ([]models.LaboratoryAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetAllLaboratories(c)
 

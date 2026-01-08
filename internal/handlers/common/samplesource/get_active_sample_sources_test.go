@@ -24,15 +24,15 @@ func TestGetActiveSampleSources(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceSvc := testmodels.MockSampleSourceService{
+		svc := testmodels.MockSampleSourceService{
 			FindAllActiveFunc: func(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error) {
 				return []models.SampleSourceFormResponse{mockSampleSource.ToFormResponse("en")}, nil
 			},
 		}
-		handler := samplesource.NewSampleSourceHandler(&sampleSourceSvc)
+		handler := samplesource.NewSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/samplesource",
+			http.MethodGet, "/api/sample-source",
 			"", nil, nil,
 		)
 		handler.GetActiveSampleSources(c)
@@ -46,15 +46,15 @@ func TestGetActiveSampleSources(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sampleSourceSvc := testmodels.MockSampleSourceService{
+		svc := testmodels.MockSampleSourceService{
 			FindAllActiveFunc: func(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := samplesource.NewSampleSourceHandler(&sampleSourceSvc)
+		handler := samplesource.NewSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/samplesource",
+			http.MethodGet, "/api/sample-source",
 			"", nil, nil,
 		)
 		handler.GetActiveSampleSources(c)

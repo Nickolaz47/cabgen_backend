@@ -9,19 +9,22 @@ type Laboratory struct {
 	IsActive     bool      `gorm:"not null" json:"is_active"`
 }
 
-type LaboratoryResponse struct {
-	Name         string `json:"name"`
-	Abbreviation string `json:"abbreviation"`
-	IsActive     bool   `json:"is_active"`
+type LaboratoryAdminTableResponse struct {
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Abbreviation string    `json:"abbreviation"`
+	IsActive     bool      `json:"is_active"`
 }
 
 type LaboratoryFormResponse struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Abbreviation string    `json:"abbreviation"`
 }
 
-func (s *Laboratory) ToResponse() LaboratoryResponse {
-	return LaboratoryResponse{
+func (s *Laboratory) ToAdminTableResponse() LaboratoryAdminTableResponse {
+	return LaboratoryAdminTableResponse{
+		ID:           s.ID,
 		Name:         s.Name,
 		Abbreviation: s.Abbreviation,
 		IsActive:     s.IsActive,
@@ -30,8 +33,9 @@ func (s *Laboratory) ToResponse() LaboratoryResponse {
 
 func (s *Laboratory) ToFormResponse() LaboratoryFormResponse {
 	return LaboratoryFormResponse{
-		ID:   s.ID,
-		Name: s.Name,
+		ID:           s.ID,
+		Name:         s.Name,
+		Abbreviation: s.Abbreviation,
 	}
 }
 

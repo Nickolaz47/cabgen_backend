@@ -20,37 +20,43 @@ func TestUpdateSequencer(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockSequencer := testmodels.NewSequencer(
-		uuid.NewString(), "Ilumina", "MySeq", true,
+		uuid.NewString(), "Ilumina", "MySeq", false,
 	)
 
-	brand, model := "Illumina", "MiSeq"
+	brand, model, isActive := "Illumina", "MiSeq", true
 	mockSequencerInput := models.SequencerUpdateInput{
-		Brand: &brand,
-		Model: &model,
+		Brand:    &brand,
+		Model:    &model,
+		IsActive: &isActive,
 	}
 
-	mockUpdatedSequencer := testmodels.NewSequencer(
-		mockSequencer.ID.String(), brand, model, mockSequencer.IsActive,
-	)
-
 	t.Run("Success", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
-				return &mockUpdatedSequencer, nil
+		svc := testmodels.MockSequencerService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
+				return &models.SequencerAdminTableResponse{
+					ID:       mockSequencer.ID,
+					Model:    *mockSequencerInput.Model,
+					Brand:    *mockSequencerInput.Brand,
+					IsActive: *mockSequencerInput.IsActive,
+				}, nil
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(mockSequencerInput),
 			nil, gin.Params{{Key: "sequencerId", Value: mockSequencer.ID.String()}},
 		)
-
-		mockHandler.UpdateSequencer(c)
+		handler.UpdateSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": mockUpdatedSequencer.ToFormResponse(),
+				"data": models.SequencerAdminTableResponse{
+					ID:       mockSequencer.ID,
+					Model:    *mockSequencerInput.Model,
+					Brand:    *mockSequencerInput.Brand,
+					IsActive: *mockSequencerInput.IsActive,
+				},
 			},
 		)
 
@@ -60,31 +66,29 @@ func TestUpdateSequencer(t *testing.T) {
 
 	for _, tt := range data.UpdateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			service := testmodels.MockSequencerService{}
-			mockHandler := sequencer.NewAdminSequencerHandler(&service)
+			svc := testmodels.MockSequencerService{}
+			handler := sequencer.NewAdminSequencerHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPut, "/api/admin/sequencer", tt.Body,
 				nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
 			)
-
-			mockHandler.UpdateSequencer(c)
+			handler.UpdateSequencer(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
-	t.Run("Invalid ID", func(t *testing.T) {
-		service := testmodels.MockSequencerService{}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+	t.Run("Error - Invalid ID", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{}
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", "",
 			nil, gin.Params{{Key: "sequencerId", Value: "132"}},
 		)
-
-		mockHandler.UpdateSequencer(c)
+		handler.UpdateSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -96,13 +100,13 @@ func TestUpdateSequencer(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Sequencer not found", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
+	t.Run("Error - Not Found", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(
@@ -110,8 +114,7 @@ func TestUpdateSequencer(t *testing.T) {
 			),
 			nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
 		)
-
-		mockHandler.UpdateSequencer(c)
+		handler.UpdateSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
@@ -123,13 +126,13 @@ func TestUpdateSequencer(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("DB error", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
-				return nil, services.ErrInternal
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
+				return nil, services.ErrConflict
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(
@@ -137,8 +140,33 @@ func TestUpdateSequencer(t *testing.T) {
 			),
 			nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
 		)
+		handler.UpdateSequencer(c)
 
-		mockHandler.UpdateSequencer(c)
+		expected := testutils.ToJSON(
+			map[string]any{
+				"error": "A sequencer with this model already exists.",
+			},
+		)
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := sequencer.NewAdminSequencerHandler(&svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(
+				mockSequencerInput,
+			),
+			nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
+		)
+		handler.UpdateSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

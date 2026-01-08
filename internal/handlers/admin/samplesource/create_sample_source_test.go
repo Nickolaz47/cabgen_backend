@@ -37,7 +37,7 @@ func TestCreateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/sampleSource", body,
+			http.MethodPost, "/api/admin/sample-source", body,
 			nil, nil,
 		)
 		handler.CreateSampleSource(c)
@@ -61,7 +61,7 @@ func TestCreateSampleSource(t *testing.T) {
 			handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
-				http.MethodPost, "/api/admin/sampleSource", tt.Body,
+				http.MethodPost, "/api/admin/sample-source", tt.Body,
 				nil, nil,
 			)
 			handler.CreateSampleSource(c)
@@ -105,7 +105,7 @@ func TestCreateSampleSource(t *testing.T) {
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/sampleSource", body,
+			http.MethodPost, "/api/admin/sample-source", body,
 			nil, nil,
 		)
 		handler.CreateSampleSource(c)

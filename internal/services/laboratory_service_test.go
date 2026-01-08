@@ -100,7 +100,7 @@ func TestLaboratoryFindAll(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		expected := []models.Laboratory{lab}
+		expected := []models.LaboratoryAdminTableResponse{lab.ToAdminTableResponse()}
 
 		labs, err := service.FindAll(context.Background())
 
@@ -169,15 +169,16 @@ func TestLaboratoryFindByID(t *testing.T) {
 				return &lab, nil
 			},
 		}
-
 		service := services.NewLaboratoryService(&labRepo)
+
+		expected := lab.ToAdminTableResponse()
 		labFound, err := service.FindByID(context.Background(), lab.ID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &lab, labFound)
+		assert.Equal(t, &expected, labFound)
 	})
 
-	t.Run("Record not found", func(t *testing.T) {
+	t.Run("Error - Not found", func(t *testing.T) {
 		labRepo := mockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrRecordNotFound
@@ -192,7 +193,7 @@ func TestLaboratoryFindByID(t *testing.T) {
 		assert.Empty(t, lab)
 	})
 
-	t.Run("DB error", func(t *testing.T) {
+	t.Run("Error - Internal Server", func(t *testing.T) {
 		labRepo := mockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
@@ -217,12 +218,13 @@ func TestLaboratoryFindByNameOrAbbreviation(t *testing.T) {
 				return []models.Laboratory{lab}, nil
 			},
 		}
-
 		service := services.NewLaboratoryService(&labRepo)
+
+		expected := []models.LaboratoryAdminTableResponse{lab.ToAdminTableResponse()}
 		labs, err := service.FindByNameOrAbbreviation(context.Background(), "lab")
 
 		assert.NoError(t, err)
-		assert.Equal(t, []models.Laboratory{lab}, labs)
+		assert.Equal(t, expected, labs)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -242,17 +244,29 @@ func TestLaboratoryFindByNameOrAbbreviation(t *testing.T) {
 }
 
 func TestLaboratoryCreate(t *testing.T) {
+	input := models.LaboratoryCreateInput{
+		Name:         "Lab1",
+		Abbreviation: "L1",
+		IsActive:     true,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		labRepo := mockLaboratoryRepository{
 			CreateLaboratoryFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return nil
 			},
 		}
-
 		service := services.NewLaboratoryService(&labRepo)
-		err := service.Create(context.Background(), &models.Laboratory{})
+
+		expected := models.LaboratoryAdminTableResponse{
+			Name:         input.Name,
+			Abbreviation: input.Abbreviation,
+			IsActive:     input.IsActive,
+		}
+		result, err := service.Create(context.Background(), input)
 
 		assert.NoError(t, err)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
@@ -263,10 +277,11 @@ func TestLaboratoryCreate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		err := service.Create(context.Background(), &models.Laboratory{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -277,10 +292,11 @@ func TestLaboratoryCreate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		err := service.Create(context.Background(), &models.Laboratory{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -291,29 +307,44 @@ func TestLaboratoryCreate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		err := service.Create(context.Background(), &models.Laboratory{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
 	})
 }
 
 func TestLaboratoryUpdate(t *testing.T) {
+	id := uuid.New()
+	name, abbreviation, isActive := "Lab1", "L1", true
+	input := models.LaboratoryUpdateInput{
+		Name:         &name,
+		Abbreviation: &abbreviation,
+		IsActive:     &isActive,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		labRepo := mockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-				return &models.Laboratory{ID: uuid.New()}, nil
+				return &models.Laboratory{ID: id}, nil
 			},
 			UpdateLaboratoryFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return nil
 			},
 		}
-
 		service := services.NewLaboratoryService(&labRepo)
-		lab, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
+
+		expected := models.LaboratoryAdminTableResponse{
+			ID:           id,
+			Name:         *input.Name,
+			Abbreviation: *input.Abbreviation,
+			IsActive:     *input.IsActive,
+		}
+		result, err := service.Update(context.Background(), id, input)
 
 		assert.NoError(t, err)
-		assert.NotEmpty(t, lab)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -324,11 +355,11 @@ func TestLaboratoryUpdate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		lab, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Empty(t, lab)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -342,11 +373,11 @@ func TestLaboratoryUpdate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		lab, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
-		assert.Empty(t, lab)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -360,11 +391,11 @@ func TestLaboratoryUpdate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		lab, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, lab)
+		assert.Empty(t, result)
 	})
 }
 

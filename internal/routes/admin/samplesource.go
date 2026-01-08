@@ -6,7 +6,7 @@ import (
 )
 
 func SetupAdminSampleSourceRoutes(r *gin.RouterGroup, handler *samplesource.AdminSampleSourceHandler) {
-	sampleSourceRouter := r.Group("/sampleSource")
+	sampleSourceRouter := r.Group("/sample-source")
 
 	sampleSourceRouter.GET("", handler.GetSampleSources)
 	sampleSourceRouter.GET("/:sampleSourceId", handler.GetSampleSourceByID)

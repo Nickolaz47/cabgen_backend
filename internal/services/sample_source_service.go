@@ -58,7 +58,7 @@ func (s *sampleSourceService) FindAllActive(ctx context.Context, language string
 
 func (s *sampleSourceService) FindByID(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error) {
 	sampleSource, err := s.Repo.GetSampleSourceByID(ctx, ID)
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
 	}
 

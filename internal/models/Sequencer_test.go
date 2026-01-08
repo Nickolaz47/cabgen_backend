@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestToFormResponse(t *testing.T) {
+func TestSequencerToFormResponse(t *testing.T) {
 	sequencer := models.Sequencer{
 		ID:       uuid.New(),
 		Brand:    "Illumina",
@@ -19,8 +19,28 @@ func TestToFormResponse(t *testing.T) {
 	expected := models.SequencerFormResponse{
 		ID:    sequencer.ID,
 		Model: sequencer.Model,
+		Brand: sequencer.Brand,
 	}
 	result := sequencer.ToFormResponse()
+
+	assert.Equal(t, expected, result)
+}
+
+func TestSequencerToAdminTableResponse(t *testing.T) {
+	sequencer := models.Sequencer{
+		ID:       uuid.New(),
+		Brand:    "Illumina",
+		Model:    "MySeq",
+		IsActive: true,
+	}
+
+	expected := models.SequencerAdminTableResponse{
+		ID:       sequencer.ID,
+		Model:    sequencer.Model,
+		Brand:    sequencer.Brand,
+		IsActive: sequencer.IsActive,
+	}
+	result := sequencer.ToAdminTableResponse()
 
 	assert.Equal(t, expected, result)
 }

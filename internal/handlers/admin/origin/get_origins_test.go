@@ -16,30 +16,37 @@ import (
 
 func TestGetAllOrigins(t *testing.T) {
 	testutils.SetupTestContext()
+
 	mockOrigin := testmodels.NewOrigin(
 		uuid.New().String(),
 		map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"},
 		true,
 	)
 
+	mockResponse := mockOrigin.ToAdminTableResponse("pt")
+
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindAllFunc: func(ctx context.Context) ([]models.Origin, error) {
-				return []models.Origin{mockOrigin}, nil
+		svc := testmodels.MockOriginService{
+			FindAllFunc: func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
+				return []models.OriginAdminTableResponse{mockResponse}, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			nil,
 		)
+
 		handler.GetAllOrigins(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.Origin{
-				"data": {mockOrigin},
+			map[string][]models.OriginAdminTableResponse{
+				"data": {mockResponse},
 			},
 		)
 
@@ -48,18 +55,22 @@ func TestGetAllOrigins(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindAllFunc: func(ctx context.Context) ([]models.Origin, error) {
+		svc := testmodels.MockOriginService{
+			FindAllFunc: func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			nil,
 		)
+
 		handler.GetAllOrigins(c)
 
 		expected := testutils.ToJSON(

@@ -24,23 +24,30 @@ func TestGetOriginByID(t *testing.T) {
 		true,
 	)
 
+	mockResponse := mockOrigin.ToAdminDetailResponse()
+
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
-				return &mockOrigin, nil
+		svc := testmodels.MockOriginService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
+				return &mockResponse, nil
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: mockOrigin.ID.String()}},
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			gin.Params{{Key: "originId", Value: mockOrigin.ID.String()}},
 		)
+
 		handler.GetOriginByID(c)
 
 		expected := testutils.ToJSON(
-			map[string]models.Origin{
-				"data": mockOrigin,
+			map[string]any{
+				"data": mockResponse,
 			},
 		)
 
@@ -49,17 +56,17 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
-				return nil, nil
-			},
-		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		svc := testmodels.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			nil,
 		)
+
 		handler.GetOriginByID(c)
 
 		expected := testutils.ToJSON(
@@ -73,17 +80,22 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
+		svc := testmodels.MockOriginService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
+
 		handler.GetOriginByID(c)
 
 		expected := testutils.ToJSON(
@@ -97,22 +109,29 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
+		svc := testmodels.MockOriginService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: mockOrigin.ID.String()}},
+			http.MethodGet,
+			"/api/admin/origin",
+			"",
+			nil,
+			gin.Params{{Key: "originId", Value: mockOrigin.ID.String()}},
 		)
+
 		handler.GetOriginByID(c)
 
-		expected := testutils.ToJSON(map[string]any{
-			"error": "There was a server error. Please try again.",
-		})
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "There was a server error. Please try again.",
+			},
+		)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())

@@ -19,6 +19,7 @@ import (
 
 func TestUpdateLaboratory(t *testing.T) {
 	testutils.SetupTestContext()
+
 	name, abbreviation, isActive := "Laboratório Bittar", "LB", true
 
 	updateInput := models.LaboratoryUpdateInput{
@@ -27,30 +28,39 @@ func TestUpdateLaboratory(t *testing.T) {
 		IsActive:     &isActive,
 	}
 
-	mockLab := models.Laboratory{
-		Name:         name,
-		Abbreviation: abbreviation,
-		IsActive:     isActive,
-	}
+	lab := testmodels.NewLaboratory(
+		uuid.NewString(),
+		name,
+		abbreviation,
+		isActive,
+	)
+
+	adminResponse := lab.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
-				return &mockLab, nil
+		svc := testmodels.MockLaboratoryService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.LaboratoryUpdateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return &adminResponse, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/laboratory",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
 		)
 		handler.UpdateLaboratory(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": mockLab.ToResponse(),
+				"data": adminResponse,
 			},
 		)
 
@@ -60,12 +70,15 @@ func TestUpdateLaboratory(t *testing.T) {
 
 	for _, tt := range data.UpdateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			labSvc := testmodels.MockLaboratoryService{}
+			svc := testmodels.MockLaboratoryService{}
+			handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
-			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
 			c, w := testutils.SetupGinContext(
-				http.MethodPut, "/api/admin/laboratory", tt.Body,
-				nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+				http.MethodPut,
+				"/api/admin/laboratory",
+				tt.Body,
+				nil,
+				gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
 			)
 			handler.UpdateLaboratory(c)
 
@@ -75,13 +88,15 @@ func TestUpdateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		svc := testmodels.MockLaboratoryService{}
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "laboratoryId", Value: "asdae2"}},
+			http.MethodPut,
+			"/api/admin/laboratory",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: "asdae2"}},
 		)
 		handler.UpdateLaboratory(c)
 
@@ -96,17 +111,23 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.LaboratoryUpdateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/laboratory",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
 		)
 		handler.UpdateLaboratory(c)
 
@@ -120,18 +141,55 @@ func TestUpdateLaboratory(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockLaboratoryService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.LaboratoryUpdateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return nil, services.ErrConflict
+			},
+		}
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/laboratory",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+		)
+		handler.UpdateLaboratory(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "A laboratory with this name already exists.",
+			},
+		)
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.LaboratoryUpdateInput) (*models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.LaboratoryUpdateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/laboratory", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/laboratory",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
 		)
 		handler.UpdateLaboratory(c)
 

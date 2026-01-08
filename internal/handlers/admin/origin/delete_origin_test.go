@@ -19,18 +19,17 @@ func TestDeleteOrigin(t *testing.T) {
 	testutils.SetupTestContext()
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
+		svc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
-
 		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -44,18 +43,17 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Origin not found", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
+		svc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
-
 		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -69,14 +67,13 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		svc := testmodels.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/origin", "",
 			nil, gin.Params{{Key: "originId", Value: "123"}},
 		)
-
 		handler.DeleteOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -90,12 +87,12 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
+		svc := testmodels.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
@@ -103,7 +100,7 @@ func TestDeleteOrigin(t *testing.T) {
 		)
 		handler.DeleteOrigin(c)
 
-		expected := testutils.ToJSON(map[string]any{
+		expected := testutils.ToJSON(map[string]string{
 			"error": "There was a server error. Please try again.",
 		})
 

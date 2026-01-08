@@ -16,29 +16,49 @@ import (
 
 func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	testutils.SetupTestContext()
-	mockLab := testmodels.NewLaboratory(
-		uuid.NewString(), "Laboratório Dom Bosco", "LABDB", true,
+
+	lab1 := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratório Dom Bosco",
+		"LABDB",
+		true,
 	)
-	mockLab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratório Bittar", "LABB", true)
+
+	lab2 := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratório Bittar",
+		"LABB",
+		true,
+	)
+
+	adminResponse1 := lab1.ToAdminTableResponse()
+	adminResponse2 := lab2.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
-				return []models.Laboratory{mockLab}, nil
+		svc := testmodels.MockLaboratoryService{
+			FindByNameOrAbbreviationFunc: func(
+				ctx context.Context,
+				input string,
+			) ([]models.LaboratoryAdminTableResponse, error) {
+				return []models.LaboratoryAdminTableResponse{
+					adminResponse1,
+				}, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory/search?nameOrAbbreaviation=dom",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetLaboratoriesByNameOrAbbreviation(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.Laboratory{
-				"data": {mockLab},
+			map[string][]models.LaboratoryAdminTableResponse{
+				"data": {adminResponse1},
 			},
 		)
 
@@ -47,23 +67,30 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Success - Input Empty", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindAllFunc: func(ctx context.Context) ([]models.Laboratory, error) {
-				return []models.Laboratory{mockLab, mockLab2}, nil
+		svc := testmodels.MockLaboratoryService{
+			FindAllFunc: func(
+				ctx context.Context,
+			) ([]models.LaboratoryAdminTableResponse, error) {
+				return []models.LaboratoryAdminTableResponse{
+					adminResponse1,
+					adminResponse2,
+				}, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory/search?nameOrAbbreaviation=",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetLaboratoriesByNameOrAbbreviation(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.Laboratory{
-				"data": {mockLab, mockLab2},
+			map[string][]models.LaboratoryAdminTableResponse{
+				"data": {adminResponse1, adminResponse2},
 			},
 		)
 
@@ -72,17 +99,22 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			FindByNameOrAbbreviationFunc: func(
+				ctx context.Context,
+				input string,
+			) ([]models.LaboratoryAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory/search?nameOrAbbreaviation=dom", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory/search?nameOrAbbreaviation=dom",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetLaboratoriesByNameOrAbbreviation(c)
 

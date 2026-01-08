@@ -22,17 +22,16 @@ func TestGetActiveOrigins(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
+		svc := testmodels.MockOriginService{
 			FindAllActiveFunc: func(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
 				return []models.OriginFormResponse{mockOrigin.ToFormResponse(lang)}, nil
 			},
 		}
-		handler := NewOriginHandler(&originSvc)
+		handler := NewOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(http.MethodGet, "/api/origin", "",
 			nil, nil,
 		)
-
 		handler.GetActiveOrigins(c)
 
 		expected := testutils.ToJSON(map[string][]models.OriginFormResponse{
@@ -44,17 +43,16 @@ func TestGetActiveOrigins(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
+		svc := testmodels.MockOriginService{
 			FindAllActiveFunc: func(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := NewOriginHandler(&originSvc)
+		handler := NewOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(http.MethodGet, "/api/origin", "",
 			nil, nil,
 		)
-
 		handler.GetActiveOrigins(c)
 
 		expected := testutils.ToJSON(map[string]string{

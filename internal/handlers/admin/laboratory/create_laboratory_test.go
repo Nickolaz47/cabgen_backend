@@ -18,29 +18,46 @@ import (
 
 func TestCreateLaboratory(t *testing.T) {
 	testutils.SetupTestContext()
-	mockLab := testmodels.NewLaboratory(
-		uuid.NewString(), "Laboratory 1", "LAB1", true,
+
+	lab := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratory 1",
+		"LAB1",
+		true,
 	)
 
+	createInput := models.LaboratoryCreateInput{
+		Name:         lab.Name,
+		Abbreviation: lab.Abbreviation,
+		IsActive:     lab.IsActive,
+	}
+
+	adminResponse := lab.ToAdminTableResponse()
+
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
-				return nil
+		svc := testmodels.MockLaboratoryService{
+			CreateFunc: func(
+				ctx context.Context,
+				input models.LaboratoryCreateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return &adminResponse, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/laboratory",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
 		handler.CreateLaboratory(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
 				"message": "Laboratory registered successfully.",
-				"data":    mockLab.ToResponse(),
+				"data":    adminResponse,
 			},
 		)
 
@@ -50,12 +67,15 @@ func TestCreateLaboratory(t *testing.T) {
 
 	for _, tt := range data.CreateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			labSvc := testmodels.MockLaboratoryService{}
-			handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+			svc := testmodels.MockLaboratoryService{}
+			handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
-				http.MethodPost, "/api/admin/laboratory", tt.Body,
-				nil, nil,
+				http.MethodPost,
+				"/api/admin/laboratory",
+				tt.Body,
+				nil,
+				nil,
 			)
 			handler.CreateLaboratory(c)
 
@@ -65,17 +85,22 @@ func TestCreateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
-				return services.ErrConflict
+		svc := testmodels.MockLaboratoryService{
+			CreateFunc: func(
+				ctx context.Context,
+				input models.LaboratoryCreateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return nil, services.ErrConflict
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/laboratory",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
 		handler.CreateLaboratory(c)
 
@@ -90,17 +115,22 @@ func TestCreateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			CreateFunc: func(ctx context.Context, lab *models.Laboratory) error {
-				return gorm.ErrInvalidTransaction
+		svc := testmodels.MockLaboratoryService{
+			CreateFunc: func(
+				ctx context.Context,
+				input models.LaboratoryCreateInput,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/laboratory", testutils.ToJSON(mockLab),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/laboratory",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
 		handler.CreateLaboratory(c)
 

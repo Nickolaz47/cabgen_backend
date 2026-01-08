@@ -19,35 +19,45 @@ import (
 
 func TestUpdateOrigin(t *testing.T) {
 	testutils.SetupTestContext()
-	names, isActive := map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true
+
+	names := map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}
+	isActive := true
 
 	updateInput := models.OriginUpdateInput{
 		Names:    names,
 		IsActive: &isActive,
 	}
 
-	mockOrigin := models.Origin{
-		Names:    names,
-		IsActive: isActive,
-	}
+	mockOrigin := testmodels.NewOrigin(
+		uuid.New().String(),
+		names,
+		isActive,
+	)
+
+	mockResponse := mockOrigin.ToAdminDetailResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
-				return &mockOrigin, nil
+		svc := testmodels.MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
+				return &mockResponse, nil
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/origin",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
+
 		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": mockOrigin.ToResponse(""),
+				"data": mockResponse,
 			},
 		)
 
@@ -57,13 +67,17 @@ func TestUpdateOrigin(t *testing.T) {
 
 	for _, tt := range data.UpdateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			originSvc := testmodels.MockOriginService{}
-			handler := origin.NewAdminOriginHandler(&originSvc)
+			svc := testmodels.MockOriginService{}
+			handler := origin.NewAdminOriginHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
-				http.MethodPut, "/api/admin/origin", tt.Body,
-				nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+				http.MethodPut,
+				"/api/admin/origin",
+				tt.Body,
+				nil,
+				gin.Params{{Key: "originId", Value: uuid.NewString()}},
 			)
+
 			handler.UpdateOrigin(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -72,13 +86,17 @@ func TestUpdateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+		svc := testmodels.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", "",
-			nil, gin.Params{{Key: "originId", Value: "12"}},
+			http.MethodPut,
+			"/api/admin/origin",
+			"",
+			nil,
+			gin.Params{{Key: "originId", Value: "12"}},
 		)
+
 		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -92,17 +110,22 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+		svc := testmodels.MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", testutils.ToJSON(updateInput),
-			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/origin",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
+
 		handler.UpdateOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -113,23 +136,57 @@ func TestUpdateOrigin(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
+				return nil, services.ErrConflict
+			},
+		}
+
+		handler := origin.NewAdminOriginHandler(&svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/origin",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "originId", Value: uuid.NewString()}},
+		)
+
+		handler.UpdateOrigin(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{"error": "Origin already exists."},
+		)
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.Origin, error) {
+		svc := testmodels.MockOriginService{
+			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPut, "/api/admin/origin", testutils.ToJSON(mockOrigin),
-			nil, gin.Params{{Key: "originId", Value: uuid.NewString()}},
+			http.MethodPut,
+			"/api/admin/origin",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "originId", Value: uuid.NewString()}},
 		)
+
 		handler.UpdateOrigin(c)
 
-		expected := testutils.ToJSON(map[string]any{
-			"error": "There was a server error. Please try again.",
-		})
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "There was a server error. Please try again.",
+			},
+		)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())

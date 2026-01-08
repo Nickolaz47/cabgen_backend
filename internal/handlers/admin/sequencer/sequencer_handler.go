@@ -21,7 +21,7 @@ func NewAdminSequencerHandler(svc services.SequencerService) *AdminSequencerHand
 	return &AdminSequencerHandler{Service: svc}
 }
 
-func (h *AdminSequencerHandler) GetAllSequencers(c *gin.Context) {
+func (h *AdminSequencerHandler) GetSequencers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	sequencers, err := h.Service.FindAll(c.Request.Context())
@@ -69,7 +69,7 @@ func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	brandOrModel := c.Query("brandOrModel")
 
 	var (
-		sequencers []models.Sequencer
+		sequencers []models.SequencerAdminTableResponse
 		err        error
 	)
 
@@ -103,13 +103,8 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 		return
 	}
 
-	sequencerToCreate := models.Sequencer{
-		Brand:    newSequencer.Brand,
-		Model:    newSequencer.Model,
-		IsActive: newSequencer.IsActive,
-	}
-
-	if err := h.Service.Create(c.Request.Context(), &sequencerToCreate); err != nil {
+	sequencer, err := h.Service.Create(c.Request.Context(), newSequencer)
+	if err != nil {
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -119,7 +114,7 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.SequencerCreationSuccess),
-		Data:    sequencerToCreate,
+		Data:    sequencer,
 	})
 }
 
@@ -156,7 +151,7 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencerUpdated.ToFormResponse()})
+	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencerUpdated})
 }
 
 func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {

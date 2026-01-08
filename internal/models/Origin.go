@@ -10,7 +10,14 @@ type Origin struct {
 	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 
-type OriginResponse struct {
+type OriginAdminDetailResponse struct {
+	ID       uuid.UUID         `json:"id"`
+	Names    map[string]string `json:"names"`
+	IsActive bool              `json:"is_active"`
+}
+
+type OriginAdminTableResponse struct {
+	ID       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`
 	IsActive bool      `json:"is_active"`
 }
@@ -20,15 +27,22 @@ type OriginFormResponse struct {
 	Name string    `json:"name"`
 }
 
-func (o *Origin) ToResponse(language string) OriginResponse {
+func (o *Origin) ToAdminDetailResponse() OriginAdminDetailResponse {
+	return OriginAdminDetailResponse{
+		ID:       o.ID,
+		Names:    o.Names,
+		IsActive: o.IsActive,
+	}
+}
+
+func (o *Origin) ToAdminTableResponse(language string) OriginAdminTableResponse {
 	if language == "" {
 		language = "en"
 	}
 
-	name := o.Names[language]
-
-	return OriginResponse{
-		Name:     name,
+	return OriginAdminTableResponse{
+		ID:       o.ID,
+		Name:     o.Names[language],
 		IsActive: o.IsActive,
 	}
 }
@@ -38,11 +52,9 @@ func (o *Origin) ToFormResponse(language string) OriginFormResponse {
 		language = "en"
 	}
 
-	name := o.Names[language]
-
 	return OriginFormResponse{
 		ID:   o.ID,
-		Name: name,
+		Name: o.Names[language],
 	}
 }
 

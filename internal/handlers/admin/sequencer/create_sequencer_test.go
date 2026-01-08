@@ -2,7 +2,6 @@ package sequencer_test
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -18,83 +17,100 @@ import (
 func TestCreateSequencer(t *testing.T) {
 	testutils.SetupTestContext()
 
-	mockSequencerInput := models.SequencerCreateInput{
+	input := models.SequencerCreateInput{
 		Brand:    "Illumina",
 		Model:    "MiSeq",
 		IsActive: true,
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
-				return nil
+		svc := testmodels.MockSequencerService{
+			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
+				return &models.SequencerAdminTableResponse{
+					Model:    input.Model,
+					Brand:    input.Brand,
+					IsActive: input.IsActive,
+				}, nil
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
-		body := testutils.ToJSON(mockSequencerInput)
+		body := testutils.ToJSON(input)
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/sequencer", body,
 			nil, nil,
 		)
-
-		mockHandler.CreateSequencer(c)
+		handler.CreateSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
 				"message": "Sequencer registered successfully.",
-				"data": map[string]any{
-					"brand":     mockSequencerInput.Brand,
-					"model":     mockSequencerInput.Model,
-					"is_active": mockSequencerInput.IsActive,
+				"data": models.SequencerAdminTableResponse{
+					Model:    input.Model,
+					Brand:    input.Brand,
+					IsActive: input.IsActive,
 				},
 			},
 		)
 
-		var result map[string]any
-		err := json.Unmarshal(w.Body.Bytes(), &result)
-		assert.NoError(t, err)
-
-		if data, ok := result["data"].(map[string]any); ok {
-			delete(data, "id")
-		}
-
 		assert.Equal(t, http.StatusCreated, w.Code)
-		assert.JSONEq(t, expected, testutils.ToJSON(result))
+		assert.JSONEq(t, expected, w.Body.String())
 	})
 
 	for _, tt := range data.CreateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
 			service := testmodels.MockSequencerService{}
-			mockHandler := sequencer.NewAdminSequencerHandler(&service)
+			handler := sequencer.NewAdminSequencerHandler(&service)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/sequencer", tt.Body,
 				nil, nil,
 			)
 
-			mockHandler.CreateSequencer(c)
+			handler.CreateSequencer(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
-	t.Run("DB error", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			CreateFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
-				return services.ErrInternal
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
+				return nil, services.ErrConflict
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
-		body := testutils.ToJSON(mockSequencerInput)
+		body := testutils.ToJSON(input)
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/sequencer", body,
 			nil, nil,
 		)
+		handler.CreateSequencer(c)
 
-		mockHandler.CreateSequencer(c)
+		expected := testutils.ToJSON(map[string]any{
+			"error": "A sequencer with this model already exists.",
+		})
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := sequencer.NewAdminSequencerHandler(&svc)
+
+		body := testutils.ToJSON(input)
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/admin/sequencer", body,
+			nil, nil,
+		)
+		handler.CreateSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

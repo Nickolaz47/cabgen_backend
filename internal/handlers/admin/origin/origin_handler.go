@@ -23,8 +23,9 @@ func NewAdminOriginHandler(svc services.OriginService) *AdminOriginHandler {
 
 func (h *AdminOriginHandler) GetAllOrigins(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
-	origins, err := h.Service.FindAll(c.Request.Context())
+	origins, err := h.Service.FindAll(c.Request.Context(), language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
@@ -70,12 +71,12 @@ func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 	name := c.Query("name")
 
 	var (
-		origins []models.Origin
+		origins []models.OriginAdminTableResponse
 		err     error
 	)
 
 	if name == "" {
-		origins, err = h.Service.FindAll(c.Request.Context())
+		origins, err = h.Service.FindAll(c.Request.Context(), language)
 	} else {
 		origins, err = h.Service.FindByName(c.Request.Context(), name, language)
 	}
@@ -97,7 +98,7 @@ func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 
 func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	language := translation.GetLanguageFromContext(c)
+
 	var newOrigin models.OriginCreateInput
 
 	if errMsg, valid := validations.Validate(c, localizer, &newOrigin); !valid {
@@ -113,12 +114,8 @@ func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 		return
 	}
 
-	originToCreate := models.Origin{
-		Names:    newOrigin.Names,
-		IsActive: newOrigin.IsActive,
-	}
-
-	if err := h.Service.Create(c.Request.Context(), &originToCreate); err != nil {
+	origin, err := h.Service.Create(c.Request.Context(), newOrigin)
+	if err != nil {
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -129,14 +126,13 @@ func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
-		Data:    originToCreate.ToResponse(language),
+		Data:    origin,
 		Message: responses.GetResponse(localizer, responses.OriginCreationSuccess),
 	})
 }
 
 func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("originId")
 
 	id, err := uuid.Parse(rawID)
@@ -181,7 +177,7 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 
 	c.JSON(http.StatusOK,
 		responses.APIResponse{
-			Data: originUpdated.ToResponse(language),
+			Data: originUpdated,
 		},
 	)
 }

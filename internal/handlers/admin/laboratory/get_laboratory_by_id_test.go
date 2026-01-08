@@ -17,28 +17,39 @@ import (
 
 func TestGetLaboratoryByID(t *testing.T) {
 	testutils.SetupTestContext()
-	mockLab := testmodels.NewLaboratory(
-		uuid.NewString(), "Laboratory 1", "LAB1", true,
+
+	lab := testmodels.NewLaboratory(
+		uuid.NewString(),
+		"Laboratory 1",
+		"LAB1",
+		true,
 	)
 
+	adminResponse := lab.ToAdminTableResponse()
+
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-				return &mockLab, nil
+		svc := testmodels.MockLaboratoryService{
+			FindByIDFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+			) (*models.LaboratoryAdminTableResponse, error) {
+				return &adminResponse, nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, gin.Params{{Key: "laboratoryId", Value: mockLab.ID.String()}},
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: lab.ID.String()}},
 		)
 		handler.GetLaboratoryByID(c)
 
 		expected := testutils.ToJSON(
-			map[string]models.Laboratory{
-				"data": mockLab,
+			map[string]models.LaboratoryAdminTableResponse{
+				"data": adminResponse,
 			},
 		)
 
@@ -47,17 +58,15 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-				return nil, nil
-			},
-		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		svc := testmodels.MockLaboratoryService{}
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, nil,
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			nil,
 		)
 		handler.GetLaboratoryByID(c)
 
@@ -72,17 +81,22 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			FindByIDFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+			) (*models.LaboratoryAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: uuid.NewString()}},
 		)
 		handler.GetLaboratoryByID(c)
 
@@ -97,17 +111,22 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
+		svc := testmodels.MockLaboratoryService{
+			FindByIDFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+			) (*models.LaboratoryAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/laboratory", "",
-			nil, gin.Params{{Key: "laboratoryId", Value: mockLab.ID.String()}},
+			http.MethodGet,
+			"/api/admin/laboratory",
+			"",
+			nil,
+			gin.Params{{Key: "laboratoryId", Value: lab.ID.String()}},
 		)
 		handler.GetLaboratoryByID(c)
 

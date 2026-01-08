@@ -88,13 +88,13 @@ func TestSequencerFindAll(t *testing.T) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-
 		service := services.NewSequencerService(&seqRepo)
 
+		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		sequencers, err := service.FindAll(context.Background())
 
 		assert.NoError(t, err)
-		assert.Equal(t, []models.Sequencer{sequencer}, sequencers)
+		assert.Equal(t, expected, sequencers)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -103,7 +103,6 @@ func TestSequencerFindAll(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
 		service := services.NewSequencerService(&seqRepo)
 
 		sequencers, err := service.FindAll(context.Background())
@@ -125,10 +124,11 @@ func TestSequencerFindAllActive(t *testing.T) {
 		}
 		service := services.NewSequencerService(&seqRepo)
 
+		expected := []models.SequencerFormResponse{sequencer.ToFormResponse()}
 		sequencers, err := service.FindAllActive(context.Background())
 
 		assert.NoError(t, err)
-		assert.Equal(t, []models.SequencerFormResponse{sequencer.ToFormResponse()}, sequencers)
+		assert.Equal(t, expected, sequencers)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -137,7 +137,6 @@ func TestSequencerFindAllActive(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
 		service := services.NewSequencerService(&seqRepo)
 
 		sequencers, err := service.FindAllActive(context.Background())
@@ -159,10 +158,11 @@ func TestSequencerFindByID(t *testing.T) {
 		}
 		service := services.NewSequencerService(&seqRepo)
 
+		expected := sequencer.ToAdminTableResponse()
 		result, err := service.FindByID(context.Background(), sequencer.ID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &sequencer, result)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Record not found", func(t *testing.T) {
@@ -205,12 +205,13 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-
 		service := services.NewSequencerService(&sequencerRepo)
+
+		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		result, err := service.FindByBrandOrModel(context.Background(), "illumin")
 
 		assert.NoError(t, err)
-		assert.Equal(t, []models.Sequencer{sequencer}, result)
+		assert.Equal(t, expected, result)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -230,17 +231,29 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 }
 
 func TestSequencerCreate(t *testing.T) {
+	input := models.SequencerCreateInput{
+		Model:    "MiSeq",
+		Brand:    "Illumina",
+		IsActive: true,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		sequencerRepo := mockSequencerRepository{
 			CreateSequencerFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return nil
 			},
 		}
-
 		service := services.NewSequencerService(&sequencerRepo)
-		err := service.Create(context.Background(), &models.Sequencer{})
+
+		expected := models.SequencerAdminTableResponse{
+			Model:    input.Model,
+			Brand:    input.Brand,
+			IsActive: input.IsActive,
+		}
+		result, err := service.Create(context.Background(), input)
 
 		assert.NoError(t, err)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
@@ -251,10 +264,11 @@ func TestSequencerCreate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		err := service.Create(context.Background(), &models.Sequencer{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -265,10 +279,11 @@ func TestSequencerCreate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		err := service.Create(context.Background(), &models.Sequencer{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
+		assert.Empty(t, result)
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -279,29 +294,44 @@ func TestSequencerCreate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		err := service.Create(context.Background(), &models.Sequencer{})
+		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
 	})
 }
 
 func TestSequencerUpdate(t *testing.T) {
+	id := uuid.New()
+	model, brand, isActive := "MiSeq", "Illumina", true
+	input := models.SequencerUpdateInput{
+		Model:    &model,
+		Brand:    &brand,
+		IsActive: &isActive,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		sequencerRepo := mockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
-				return &models.Sequencer{ID: uuid.New()}, nil
+				return &models.Sequencer{ID: id}, nil
 			},
 			UpdateSequencerFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return nil
 			},
 		}
-
 		service := services.NewSequencerService(&sequencerRepo)
-		result, err := service.Update(context.Background(), uuid.New(), models.SequencerUpdateInput{})
+
+		expected := models.SequencerAdminTableResponse{
+			ID:       id,
+			Model:    *input.Model,
+			Brand:    *input.Brand,
+			IsActive: *input.IsActive,
+		}
+		result, err := service.Update(context.Background(), id, input)
 
 		assert.NoError(t, err)
-		assert.NotEmpty(t, result)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -312,7 +342,7 @@ func TestSequencerUpdate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		result, err := service.Update(context.Background(), uuid.New(), models.SequencerUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -330,7 +360,7 @@ func TestSequencerUpdate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		result, err := service.Update(context.Background(), uuid.New(), models.SequencerUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
@@ -348,7 +378,7 @@ func TestSequencerUpdate(t *testing.T) {
 		}
 
 		service := services.NewSequencerService(&sequencerRepo)
-		result, err := service.Update(context.Background(), uuid.New(), models.SequencerUpdateInput{})
+		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

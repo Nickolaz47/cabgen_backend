@@ -25,7 +25,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/sampleSource", "",
+			http.MethodDelete, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.DeleteSampleSource(c)
@@ -45,7 +45,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/sampleSource", "",
+			http.MethodDelete, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: "12"}},
 		)
 		handler.DeleteSampleSource(c)
@@ -69,7 +69,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/sampleSource", "",
+			http.MethodDelete, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.DeleteSampleSource(c)
@@ -93,7 +93,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/sampleSource", "",
+			http.MethodDelete, "/api/admin/sample-source", "",
 			nil, gin.Params{{Key: "sampleSourceId", Value: uuid.NewString()}},
 		)
 		handler.DeleteSampleSource(c)

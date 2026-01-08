@@ -22,36 +22,42 @@ func TestGetAllSequencers(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return []models.Sequencer{mockSequencer}, nil
+		svc := testmodels.MockSequencerService{
+			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
+				return []models.SequencerAdminTableResponse{
+					mockSequencer.ToAdminTableResponse(),
+				}, nil
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
-		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sequencer", "", nil, nil)
-		mockHandler.GetAllSequencers(c)
+		c, w := testutils.SetupGinContext(http.MethodGet, 
+			"/api/admin/sequencer", "", nil, nil)
+		handler.GetSequencers(c)
 
-		expected := testutils.ToJSON(map[string]any{"data": []models.Sequencer{mockSequencer}})
+		expected := testutils.ToJSON(map[string]any{
+			"data": []models.SequencerAdminTableResponse{
+				mockSequencer.ToAdminTableResponse(),
+			},
+		})
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		service := testmodels.MockSequencerService{
-			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
+		svc := testmodels.MockSequencerService{
+			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&service)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",
 			nil, nil,
 		)
-
-		mockHandler.GetAllSequencers(c)
+		handler.GetSequencers(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

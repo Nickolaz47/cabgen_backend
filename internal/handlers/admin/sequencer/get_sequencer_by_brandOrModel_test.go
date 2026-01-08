@@ -21,42 +21,18 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 		uuid.NewString(), "Illumina", "MiSeq", true,
 	)
 
-	t.Run("Success - Brand", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
-			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
-				return []models.Sequencer{mockSequencer}, nil
+	t.Run("Success", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error) {
+				return []models.SequencerAdminTableResponse{mockSequencer.ToAdminTableResponse()}, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sequencer/search?brandOrModel=illumina", "", nil, nil,
+			http.MethodGet, "/api/admin/sequencer/search?brandOrModel=illumina",
+			"", nil, nil,
 		)
-
-		handler.GetSequencersByBrandOrModel(c)
-
-		expected := testutils.ToJSON(
-			map[string]any{
-				"data": []models.Sequencer{mockSequencer},
-			},
-		)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-
-	t.Run("Success - Model", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
-			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
-				return []models.Sequencer{mockSequencer}, nil
-			},
-		}
-		handler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
-
-		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sequencer/search?brandOrModel=miseq", "", nil, nil,
-		)
-
 		handler.GetSequencersByBrandOrModel(c)
 
 		expected := testutils.ToJSON(
@@ -70,17 +46,16 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("Success - Input empty", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
-			FindAllFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return []models.Sequencer{mockSequencer}, nil
+		svc := testmodels.MockSequencerService{
+			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
+				return []models.SequencerAdminTableResponse{mockSequencer.ToAdminTableResponse()}, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer/search?brandOrModel=", "", nil, nil,
 		)
-
 		handler.GetSequencersByBrandOrModel(c)
 
 		expected := testutils.ToJSON(
@@ -93,19 +68,18 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("DB error", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
-			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := testmodels.MockSequencerService{
+			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer/search?brandOrModel=miseq", "",
 			nil, nil,
 		)
-
 		handler.GetSequencersByBrandOrModel(c)
 
 		expected := testutils.ToJSON(map[string]any{

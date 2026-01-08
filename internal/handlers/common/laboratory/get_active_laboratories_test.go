@@ -19,13 +19,12 @@ func TestGetActiveLaboratories(t *testing.T) {
 	mockLab := models.LaboratoryFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
+		svc := testmodels.MockLaboratoryService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 				return []models.LaboratoryFormResponse{mockLab}, nil
 			},
 		}
-
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",
@@ -44,13 +43,12 @@ func TestGetActiveLaboratories(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
+		svc := testmodels.MockLaboratoryService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewLaboratoryHandler(&labSvc)
+		handler := laboratory.NewLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",

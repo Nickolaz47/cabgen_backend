@@ -9,12 +9,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOriginToResponse(t *testing.T) {
-	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
+func TestOriginToAdminDetailResponse(t *testing.T) {
+	mockOrigin := testmodels.NewOrigin(uuid.New().String(),
+		map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+		true,
+	)
+
+	result := mockOrigin.ToAdminDetailResponse()
+	expected := models.OriginAdminDetailResponse{
+		ID:       mockOrigin.ID,
+		Names:    mockOrigin.Names,
+		IsActive: mockOrigin.IsActive,
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestOriginToAdminTableResponse(t *testing.T) {
+	mockOrigin := testmodels.NewOrigin(uuid.New().String(),
+		map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+		true,
+	)
 	lang := "en"
 
-	result := mockOrigin.ToResponse(lang)
-	expected := models.OriginResponse{
+	result := mockOrigin.ToAdminTableResponse(lang)
+	expected := models.OriginAdminTableResponse{
+		ID:       mockOrigin.ID,
 		Name:     mockOrigin.Names[lang],
 		IsActive: mockOrigin.IsActive,
 	}
@@ -23,7 +43,10 @@ func TestOriginToResponse(t *testing.T) {
 }
 
 func TestOriginToFormResponse(t *testing.T) {
-	mockOrigin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
+	mockOrigin := testmodels.NewOrigin(
+		uuid.New().String(),
+		map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+		true)
 	lang := "pt"
 
 	result := mockOrigin.ToFormResponse(lang)

@@ -22,19 +22,18 @@ func TestDeleteSequencer(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
+		svc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
 			nil, gin.Params{{Key: "sequencerId", Value: mockSequencer.ID.String()}},
 		)
-
-		mockHandler.DeleteSequencer(c)
+		handler.DeleteSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"message": "Sequencer deleted successfully.",
@@ -45,15 +44,14 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{}
-		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		svc := testmodels.MockSequencerService{}
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
 			nil, gin.Params{{Key: "sequencerId", Value: "132"}},
 		)
-
-		mockHandler.DeleteSequencer(c)
+		handler.DeleteSequencer(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -66,19 +64,18 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
+		svc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
 			nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
 		)
-
-		mockHandler.DeleteSequencer(c)
+		handler.DeleteSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "Sequencer not found.",
@@ -89,19 +86,18 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("DB Error", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
+		svc := testmodels.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrInternal
 			},
 		}
-		mockHandler := sequencer.NewAdminSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewAdminSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
 			nil, gin.Params{{Key: "sequencerId", Value: uuid.NewString()}},
 		)
-
-		mockHandler.DeleteSequencer(c)
+		handler.DeleteSequencer(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

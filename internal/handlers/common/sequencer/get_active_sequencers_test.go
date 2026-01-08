@@ -19,13 +19,12 @@ func TestGetActiveSequencers(t *testing.T) {
 	mockSequencer := models.SequencerFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
+		svc := testmodels.MockSequencerService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
 				return []models.SequencerFormResponse{mockSequencer}, nil
 			},
 		}
-
-		handler := sequencer.NewSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/sequencer", "", nil, nil,
@@ -43,13 +42,12 @@ func TestGetActiveSequencers(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sequencerSvc := testmodels.MockSequencerService{
+		svc := testmodels.MockSequencerService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := sequencer.NewSequencerHandler(&sequencerSvc)
+		handler := sequencer.NewSequencerHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",

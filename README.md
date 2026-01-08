@@ -15,11 +15,11 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 
 ## Tecnologias
 
-* [Go](https://go.dev/) `>= 1.23.0`
-* [Gin](https://gin-gonic.com/)
-* [GORM](https://gorm.io/)
-* [PostgreSQL](https://www.postgresql.org/)
-* [go-i18n](https://github.com/nicksnyder/go-i18n)
+- [Go](https://go.dev/) `>= 1.23.0`
+- [Gin](https://gin-gonic.com/)
+- [GORM](https://gorm.io/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [go-i18n](https://github.com/nicksnyder/go-i18n)
 
 ## Estrutura do Projeto
 
@@ -57,9 +57,9 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 
 ### Pré-requisitos
 
-* [Go](https://go.dev/dl/) `>= 1.23.0`
-* [PostgreSQL](https://www.postgresql.org/download/)
-* [SQLite](https://sqlite.org/) (utilizado nos testes)
+- [Go](https://go.dev/dl/) `>= 1.23.0`
+- [PostgreSQL](https://www.postgresql.org/download/)
+- [SQLite](https://sqlite.org/) (utilizado nos testes)
 
 ### Passos
 
@@ -144,9 +144,9 @@ go build -o cabgen-backend ./cmd/server
 
 Idiomas suportados:
 
-* pt-BR
-* en-US
-* es-ES
+- pt-BR
+- en-US
+- es-ES
 
 O idioma é detectado via header `Accept-Language`. Caso ele não seja enviado, o idioma padrão será o en-US.
 
@@ -156,9 +156,9 @@ Para alguns recursos que possuem dados traduzidos (como **origens** e **fontes d
 
 Nesses casos:
 
-* Apenas a tradução correspondente ao idioma solicitado será retornada;
-* As demais traduções não são incluídas na resposta;
-* As buscas textuais consideram exclusivamente o idioma ativo.
+- Apenas a tradução correspondente ao idioma solicitado será retornada;
+- As demais traduções não são incluídas na resposta;
+- As buscas textuais consideram exclusivamente o idioma ativo.
 
 ## Formato das Respostas e Códigos HTTP
 
@@ -174,22 +174,22 @@ A API utiliza um formato de resposta padronizado, composto pelos seguintes campo
 
 ### Campos da Resposta
 
-* **data**
+- **data**
   Utilizado para retornar dados da API.
   Está presente nos seguintes casos:
 
-  * Respostas de leitura (`GET`)
-  * Criação de recursos (`POST`)
-  * Atualização de recursos (`PUT`)
+  - Respostas de leitura (`GET`)
+  - Criação de recursos (`POST`)
+  - Atualização de recursos (`PUT`)
 
-* **message**
+- **message**
   Utilizado para mensagens informativas de sucesso.
   Está presente principalmente em:
 
-  * Criação de recursos (`POST`)
-  * Remoção de recursos (`DELETE`)
+  - Criação de recursos (`POST`)
+  - Remoção de recursos (`DELETE`)
 
-* **error**
+- **error**
   Presente **exclusivamente** quando ocorre algum erro durante o processamento da requisição.
   Contém uma mensagem descritiva do problema.
 
@@ -221,9 +221,9 @@ A API utiliza os seguintes códigos de status HTTP:
 
 Os endpoints estão organizados em três níveis de acesso:
 
-* **Público**: não requer autenticação
-* **Common**: requer autenticação
-* **Admin**: acesso restrito a administradores
+- **Público**: não requer autenticação
+- **Common**: requer autenticação
+- **Admin**: acesso restrito a administradores
 
 ### Público
 
@@ -272,9 +272,9 @@ Os endpoints estão organizados em três níveis de acesso:
 
 #### Fonte da Amostra
 
-| Método | Endpoint            | Descrição                      |
-| ------ | ------------------- | ------------------------------ |
-| GET    | `/api/sampleSource` | Lista fontes de amostra ativas |
+| Método | Endpoint             | Descrição                      |
+| ------ | -------------------- | ------------------------------ |
+| GET    | `/api/sample-source` | Lista fontes de amostra ativas |
 
 #### Laboratório
 
@@ -321,14 +321,14 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 #### Fonte da Amostra
 
-| Método | Endpoint                                      | Descrição                                    |
-| ------ | --------------------------------------------- | -------------------------------------------- |
-| GET    | `/api/admin/sampleSource`                     | Lista todas as fontes da amostra             |
-| GET    | `/api/admin/sampleSource/:sampleSourceId`     | Retorna uma fonte da amostra específica      |
-| PUT    | `/api/admin/sampleSource/search?nameOrGroup=` | Procura fontes da amostra pelo nome ou grupo |
-| POST   | `/api/admin/sampleSource`                     | Cria uma nova fonte da amostra               |
-| PUT    | `/api/admin/sampleSource/:sampleSourceId`     | Atualiza uma fonte da amostra                |
-| DELETE | `/api/admin/sampleSource/:sampleSourceId`     | Deleta uma fonte da amostra                  |
+| Método | Endpoint                                       | Descrição                                    |
+| ------ | ---------------------------------------------- | -------------------------------------------- |
+| GET    | `/api/admin/sample-source`                     | Lista todas as fontes da amostra             |
+| GET    | `/api/admin/sample-source/:sampleSourceId`     | Retorna uma fonte da amostra específica      |
+| PUT    | `/api/admin/sample-source/search?nameOrGroup=` | Procura fontes da amostra pelo nome ou grupo |
+| POST   | `/api/admin/sample-source`                     | Cria uma nova fonte da amostra               |
+| PUT    | `/api/admin/sample-source/:sampleSourceId`     | Atualiza uma fonte da amostra                |
+| DELETE | `/api/admin/sample-source/:sampleSourceId`     | Deleta uma fonte da amostra                  |
 
 #### Laboratório
 

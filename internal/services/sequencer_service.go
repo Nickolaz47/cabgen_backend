@@ -12,12 +12,12 @@ import (
 )
 
 type SequencerService interface {
-	FindAll(ctx context.Context) ([]models.Sequencer, error)
+	FindAll(ctx context.Context) ([]models.SequencerAdminTableResponse, error)
 	FindAllActive(ctx context.Context) ([]models.SequencerFormResponse, error)
-	FindByID(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error)
-	FindByBrandOrModel(ctx context.Context, input string) ([]models.Sequencer, error)
-	Create(ctx context.Context, sequencer *models.Sequencer) error
-	Update(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error)
+	FindByID(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error)
+	FindByBrandOrModel(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error)
+	Create(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error)
+	Update(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error)
 	Delete(ctx context.Context, ID uuid.UUID) error
 }
 
@@ -29,14 +29,19 @@ func NewSequencerService(repo repository.SequencerRepository) SequencerService {
 	return &sequencerService{Repo: repo}
 }
 
-func (s *sequencerService) FindAll(ctx context.Context) ([]models.Sequencer, error) {
+func (s *sequencerService) FindAll(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
 	sequencers, err := s.Repo.GetSequencers(ctx)
 
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return sequencers, nil
+	tableResponses := make([]models.SequencerAdminTableResponse, len(sequencers))
+	for i, sequencer := range sequencers {
+		tableResponses[i] = sequencer.ToAdminTableResponse()
+	}
+
+	return tableResponses, nil
 }
 
 func (s *sequencerService) FindAllActive(ctx context.Context) ([]models.SequencerFormResponse, error) {
@@ -53,7 +58,9 @@ func (s *sequencerService) FindAllActive(ctx context.Context) ([]models.Sequence
 	return formSequencers, nil
 }
 
-func (s *sequencerService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
+func (s *sequencerService) FindByID(
+	ctx context.Context,
+	ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
 	sequencer, err := s.Repo.GetSequencerByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
@@ -63,36 +70,56 @@ func (s *sequencerService) FindByID(ctx context.Context, ID uuid.UUID) (*models.
 		return nil, ErrInternal
 	}
 
-	return sequencer, nil
+	tableResponse := sequencer.ToAdminTableResponse()
+	return &tableResponse, nil
 }
 
-func (s *sequencerService) FindByBrandOrModel(ctx context.Context, input string) ([]models.Sequencer, error) {
+func (s *sequencerService) FindByBrandOrModel(
+	ctx context.Context,
+	input string) ([]models.SequencerAdminTableResponse, error) {
 	sequencers, err := s.Repo.GetSequencersByBrandOrModel(ctx, input)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return sequencers, nil
+	tableResponses := make([]models.SequencerAdminTableResponse, len(sequencers))
+	for i, sequencer := range sequencers {
+		tableResponses[i] = sequencer.ToAdminTableResponse()
+	}
+
+	return tableResponses, nil
 }
 
-func (s *sequencerService) Create(ctx context.Context, sequencer *models.Sequencer) error {
+func (s *sequencerService) Create(
+	ctx context.Context,
+	input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
+	sequencer := models.Sequencer{
+		Model:    input.Model,
+		Brand:    input.Brand,
+		IsActive: input.IsActive,
+	}
+
 	existingSequencer, err := s.Repo.GetSequencerDuplicate(ctx, sequencer.Model, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 
 	if existingSequencer != nil {
-		return ErrConflict
+		return nil, ErrConflict
 	}
 
-	if err := s.Repo.CreateSequencer(ctx, sequencer); err != nil {
-		return ErrInternal
+	if err := s.Repo.CreateSequencer(ctx, &sequencer); err != nil {
+		return nil, ErrInternal
 	}
 
-	return nil
+	tableResponse := sequencer.ToAdminTableResponse()
+	return &tableResponse, nil
 }
 
-func (s *sequencerService) Update(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.Sequencer, error) {
+func (s *sequencerService) Update(
+	ctx context.Context,
+	ID uuid.UUID,
+	input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 	existingSequencer, err := s.Repo.GetSequencerByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrNotFound
@@ -104,7 +131,8 @@ func (s *sequencerService) Update(ctx context.Context, ID uuid.UUID, input model
 
 	validations.ApplySequencerUpdate(existingSequencer, &input)
 
-	duplicate, err := s.Repo.GetSequencerDuplicate(ctx, existingSequencer.Model, existingSequencer.ID)
+	duplicate, err := s.Repo.GetSequencerDuplicate(
+		ctx, existingSequencer.Model, existingSequencer.ID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrInternal
 	}
@@ -117,7 +145,8 @@ func (s *sequencerService) Update(ctx context.Context, ID uuid.UUID, input model
 		return nil, ErrInternal
 	}
 
-	return existingSequencer, nil
+	tableResponse := existingSequencer.ToAdminTableResponse()
+	return &tableResponse, nil
 }
 
 func (s *sequencerService) Delete(ctx context.Context, ID uuid.UUID) error {

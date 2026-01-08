@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLaboratoryToResponse(t *testing.T) {
+func TestLaboratoryToAdminTableResponse(t *testing.T) {
 	lab := models.Laboratory{
 		ID:           uuid.New(),
 		Name:         "Laboratorio Central do Rio de Janeiro",
@@ -16,12 +16,13 @@ func TestLaboratoryToResponse(t *testing.T) {
 		IsActive:     true,
 	}
 
-	expected := models.LaboratoryResponse{
+	expected := models.LaboratoryAdminTableResponse{
+		ID:           lab.ID,
 		Name:         lab.Name,
 		Abbreviation: lab.Abbreviation,
 		IsActive:     lab.IsActive,
 	}
-	result := lab.ToResponse()
+	result := lab.ToAdminTableResponse()
 
 	assert.Equal(t, expected, result)
 }
@@ -35,8 +36,9 @@ func TestLaboratoryToFormResponse(t *testing.T) {
 	}
 
 	expected := models.LaboratoryFormResponse{
-		ID:   lab.ID,
-		Name: lab.Name,
+		ID:           lab.ID,
+		Name:         lab.Name,
+		Abbreviation: lab.Abbreviation,
 	}
 	result := lab.ToFormResponse()
 

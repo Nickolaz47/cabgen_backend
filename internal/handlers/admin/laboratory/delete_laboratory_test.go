@@ -19,13 +19,12 @@ func TestDeleteLaboratory(t *testing.T) {
 	testutils.SetupTestContext()
 
 	t.Run("Success", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
+		svc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -44,9 +43,8 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		svc := testmodels.MockLaboratoryService{}
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -65,13 +63,12 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
+		svc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",
@@ -90,13 +87,12 @@ func TestDeleteLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
-		labSvc := testmodels.MockLaboratoryService{
+		svc := testmodels.MockLaboratoryService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
-
-		handler := laboratory.NewAdminLaboratoryHandler(&labSvc)
+		handler := laboratory.NewAdminLaboratoryHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/laboratory", "",

@@ -36,7 +36,7 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource/search?nameOrGroup=plas", "",
+			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=plas", "",
 			nil, nil,
 		)
 		handler.GetSampleSourcesByNameOrGroup(c)
@@ -62,7 +62,7 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource/search?nameOrGroup=", "",
+			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=", "",
 			nil, nil,
 		)
 		handler.GetSampleSourcesByNameOrGroup(c)
@@ -86,7 +86,7 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/sampleSource/search?nameOrGroup=blo", "",
+			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=blo", "",
 			nil, nil,
 		)
 		handler.GetSampleSourcesByNameOrGroup(c)

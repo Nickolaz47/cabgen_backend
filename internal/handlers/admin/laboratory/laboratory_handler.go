@@ -71,7 +71,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Cont
 	nameOrAbbreaviation := c.Query("nameOrAbbreaviation")
 
 	var (
-		labs []models.Laboratory
+		labs []models.LaboratoryAdminTableResponse
 		err  error
 	)
 
@@ -103,13 +103,8 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 		return
 	}
 
-	labToCreate := models.Laboratory{
-		Name:         newLaboratory.Name,
-		Abbreviation: newLaboratory.Abbreviation,
-		IsActive:     newLaboratory.IsActive,
-	}
-
-	if err := h.Service.Create(c.Request.Context(), &labToCreate); err != nil {
+	lab, err := h.Service.Create(c.Request.Context(), newLaboratory)
+	if err != nil {
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -120,7 +115,7 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
-		Data:    labToCreate.ToResponse(),
+		Data:    lab,
 		Message: responses.GetResponse(localizer, responses.LaboratoryCreationSuccess),
 	})
 }
@@ -159,7 +154,7 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: labUpdated.ToResponse(),
+		Data: labUpdated,
 	})
 }
 

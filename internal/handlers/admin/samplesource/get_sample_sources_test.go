@@ -34,7 +34,7 @@ func TestGetSampleSources(t *testing.T) {
 		}
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
-		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sampleSource", "", nil, nil)
+		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sample-source", "", nil, nil)
 		handler.GetSampleSources(c)
 
 		expected := testutils.ToJSON(
@@ -55,7 +55,7 @@ func TestGetSampleSources(t *testing.T) {
 		}
 		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
-		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sampleSource", "", nil, nil)
+		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/sample-source", "", nil, nil)
 		handler.GetSampleSources(c)
 
 		expected := testutils.ToJSON(map[string]any{

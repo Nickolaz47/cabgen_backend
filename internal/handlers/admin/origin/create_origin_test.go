@@ -18,27 +18,48 @@ import (
 
 func TestCreateOrigin(t *testing.T) {
 	testutils.SetupTestContext()
-	mockOrigin := testmodels.NewOrigin(uuid.NewString(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
+
+	names := map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}
+	isActive := true
+
+	createInput := models.OriginCreateInput{
+		Names:    names,
+		IsActive: isActive,
+	}
+
+	mockOrigin := testmodels.NewOrigin(
+		uuid.NewString(),
+		names,
+		isActive,
+	)
+
+	mockResponse := mockOrigin.ToAdminDetailResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
-				return nil
+		svc := testmodels.MockOriginService{
+			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
+				return &mockResponse, nil
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/origin", testutils.ToJSON(mockOrigin),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/origin",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
 
 		handler.CreateOrigin(c)
 
-		expected := testutils.ToJSON(map[string]any{
-			"message": "Origin created successfully.",
-			"data":    mockOrigin.ToResponse("en"),
-		})
+		expected := testutils.ToJSON(
+			map[string]any{
+				"message": "Origin created successfully.",
+				"data":    mockResponse,
+			},
+		)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
@@ -46,12 +67,15 @@ func TestCreateOrigin(t *testing.T) {
 
 	for _, tt := range data.CreateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			originSvc := testmodels.MockOriginService{}
-			handler := origin.NewAdminOriginHandler(&originSvc)
+			svc := testmodels.MockOriginService{}
+			handler := origin.NewAdminOriginHandler(&svc)
 
 			c, w := testutils.SetupGinContext(
-				http.MethodPost, "/api/admin/origin", tt.Body,
-				nil, nil,
+				http.MethodPost,
+				"/api/admin/origin",
+				tt.Body,
+				nil,
+				nil,
 			)
 
 			handler.CreateOrigin(c)
@@ -62,17 +86,22 @@ func TestCreateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
-				return services.ErrConflict
+		svc := testmodels.MockOriginService{
+			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
+				return nil, services.ErrConflict
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/origin", testutils.ToJSON(mockOrigin),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/origin",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
+
 		handler.CreateOrigin(c)
 
 		expected := testutils.ToJSON(
@@ -86,22 +115,29 @@ func TestCreateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originSvc := testmodels.MockOriginService{
-			CreateFunc: func(ctx context.Context, origin *models.Origin) error {
-				return gorm.ErrInvalidTransaction
+		svc := testmodels.MockOriginService{
+			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
+				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&originSvc)
+
+		handler := origin.NewAdminOriginHandler(&svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodPost, "/api/admin/origin", testutils.ToJSON(mockOrigin),
-			nil, nil,
+			http.MethodPost,
+			"/api/admin/origin",
+			testutils.ToJSON(createInput),
+			nil,
+			nil,
 		)
+
 		handler.CreateOrigin(c)
 
-		expected := testutils.ToJSON(map[string]any{
-			"error": "There was a server error. Please try again.",
-		})
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "There was a server error. Please try again.",
+			},
+		)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
