@@ -131,14 +131,15 @@ func (s *sequencerService) Update(
 
 	validations.ApplySequencerUpdate(existingSequencer, &input)
 
-	duplicate, err := s.Repo.GetSequencerDuplicate(
-		ctx, existingSequencer.Model, existingSequencer.ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrInternal
-	}
+	if input.Model != nil {
+		duplicate, err := s.Repo.GetSequencerDuplicate(ctx, *input.Model, ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInternal
+		}
 
-	if duplicate != nil {
-		return nil, ErrConflict
+		if duplicate != nil {
+			return nil, ErrConflict
+		}
 	}
 
 	if err := s.Repo.UpdateSequencer(ctx, existingSequencer); err != nil {

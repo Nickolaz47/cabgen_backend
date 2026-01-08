@@ -119,13 +119,15 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 
 	validations.ApplySampleSourceUpdate(existingSampleSource, &input)
 
-	duplicate, err := s.Repo.GetSampleSourceDuplicate(ctx, existingSampleSource.Names, ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrInternal
-	}
+	if input.Names != nil {
+		duplicate, err := s.Repo.GetSampleSourceDuplicate(ctx, input.Names, ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInternal
+		}
 
-	if duplicate != nil {
-		return nil, ErrConflict
+		if duplicate != nil {
+			return nil, ErrConflict
+		}
 	}
 
 	if err := s.Repo.UpdateSampleSource(ctx, existingSampleSource); err != nil {

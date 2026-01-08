@@ -130,13 +130,15 @@ func (s *laboratoryService) Update(
 
 	validations.ApplyLaboratoryUpdate(existingLab, &input)
 
-	duplicate, err := s.Repo.GetLaboratoryDuplicate(ctx, existingLab.Name, existingLab.ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrInternal
-	}
+	if input.Name != nil {
+		duplicate, err := s.Repo.GetLaboratoryDuplicate(ctx, *input.Name, ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInternal
+		}
 
-	if duplicate != nil {
-		return nil, ErrConflict
+		if duplicate != nil {
+			return nil, ErrConflict
+		}
 	}
 
 	if err := s.Repo.UpdateLaboratory(ctx, existingLab); err != nil {

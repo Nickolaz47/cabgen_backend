@@ -121,13 +121,15 @@ func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.O
 
 	validations.ApplyOriginUpdate(existingOrigin, &input)
 
-	duplicate, err := s.Repo.GetOriginDuplicate(ctx, existingOrigin.Names, existingOrigin.ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrInternal
-	}
+	if input.Names != nil {
+		duplicate, err := s.Repo.GetOriginDuplicate(ctx, input.Names, ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInternal
+		}
 
-	if duplicate != nil {
-		return nil, ErrConflict
+		if duplicate != nil {
+			return nil, ErrConflict
+		}
 	}
 
 	if err := s.Repo.UpdateOrigin(ctx, existingOrigin); err != nil {
