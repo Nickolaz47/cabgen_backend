@@ -1,31 +1,49 @@
 package models_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func SampleSourceToResponse(t *testing.T) {
+func TestSampleSourceToAdminDetailResponse(t *testing.T) {
 	mockSampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
 		map[string]string{"pt": "Aspirado", "en": "Aspirated", "es": "Aspirado"},
 		map[string]string{"pt": "Trato respiratório", "en": "Respiratory tract", "es": "Vías respiratorias"},
 		true,
 	)
-	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
-	expected := models.SampleSourceResponse{
-		Name:     mockSampleSource.Names["en"],
-		Group:    mockSampleSource.Groups["en"],
+	expected := models.SampleSourceAdminDetailResponse{
+		ID:       mockSampleSource.ID,
+		Names:    mockSampleSource.Names,
+		Groups:   mockSampleSource.Groups,
 		IsActive: mockSampleSource.IsActive,
 	}
-	result := mockSampleSource.ToResponse(c)
+	result := mockSampleSource.ToAdminDetailResponse()
+
+	assert.Equal(t, expected, result)
+}
+
+func TestSampleSourceToAdminTableResponse(t *testing.T) {
+	mockSampleSource := testmodels.NewSampleSource(
+		uuid.NewString(),
+		map[string]string{"pt": "Aspirado", "en": "Aspirated", "es": "Aspirado"},
+		map[string]string{"pt": "Trato respiratório", "en": "Respiratory tract", "es": "Vías respiratorias"},
+		true,
+	)
+
+	language := "en"
+	expected := models.SampleSourceAdminTableResponse{
+		ID:       mockSampleSource.ID,
+		Name:     mockSampleSource.Names[language],
+		Group:    mockSampleSource.Groups[language],
+		IsActive: mockSampleSource.IsActive,
+	}
+	result := mockSampleSource.ToAdminTableResponse(language)
 
 	assert.Equal(t, expected, result)
 }
@@ -37,13 +55,12 @@ func SampleSourceToFormResponse(t *testing.T) {
 		map[string]string{"pt": "Trato respiratório", "en": "Respiratory tract", "es": "Vías respiratorias"},
 		true,
 	)
-	c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
 	expected := models.SampleSourceFormResponse{
 		ID:   mockSampleSource.ID,
 		Name: mockSampleSource.Names["en"],
 	}
-	result := mockSampleSource.ToFormResponse(c)
+	result := mockSampleSource.ToFormResponse("en")
 
 	assert.Equal(t, expected, result)
 }

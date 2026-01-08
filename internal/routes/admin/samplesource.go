@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupAdminSampleSourceRoutes(r *gin.RouterGroup) {
+func SetupAdminSampleSourceRoutes(r *gin.RouterGroup, handler *samplesource.AdminSampleSourceHandler) {
 	sampleSourceRouter := r.Group("/sampleSource")
 
-	sampleSourceRouter.GET("", samplesource.GetSampleSources)
-	sampleSourceRouter.GET("/:sampleSourceId", samplesource.GetSampleSourceByID)
-	sampleSourceRouter.GET("/search", samplesource.GetSampleSourceByNameOrGroup)
-	sampleSourceRouter.POST("", samplesource.CreateSampleSource)
-	sampleSourceRouter.PUT("/:sampleSourceId", samplesource.UpdateSampleSource)
-	sampleSourceRouter.DELETE("/:sampleSourceId", samplesource.DeleteSampleSource)
+	sampleSourceRouter.GET("", handler.GetSampleSources)
+	sampleSourceRouter.GET("/:sampleSourceId", handler.GetSampleSourceByID)
+	sampleSourceRouter.GET("/search", handler.GetSampleSourcesByNameOrGroup)
+	sampleSourceRouter.POST("", handler.CreateSampleSource)
+	sampleSourceRouter.PUT("/:sampleSourceId", handler.UpdateSampleSource)
+	sampleSourceRouter.DELETE("/:sampleSourceId", handler.DeleteSampleSource)
 }

@@ -1,23 +1,21 @@
 package samplesource_test
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func TestCreateSampleSource(t *testing.T) {
 	testutils.SetupTestContext()
-	testutils.SetupTestRepos()
 
 	mockSampleSourceInput := models.SampleSourceCreateInput{
 		Names:    map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
@@ -26,66 +24,91 @@ func TestCreateSampleSource(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
+		svc := testmodels.MockSampleSourceService{
+			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
+				return &models.SampleSourceAdminDetailResponse{
+					Names:    mockSampleSourceInput.Names,
+					Groups:   mockSampleSourceInput.Groups,
+					IsActive: mockSampleSourceInput.IsActive,
+				}, nil
+			},
+		}
+		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/sampleSource", body,
 			nil, nil,
 		)
-
-		samplesource.CreateSampleSource(c)
+		handler.CreateSampleSource(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"message": "Sample source created successfully.",
-			"data": map[string]any{
-				"name":      mockSampleSourceInput.Names["en"],
-				"group":     mockSampleSourceInput.Groups["en"],
-				"is_active": mockSampleSourceInput.IsActive,
+			"data": models.SampleSourceAdminDetailResponse{
+				Names:    mockSampleSourceInput.Names,
+				Groups:   mockSampleSourceInput.Groups,
+				IsActive: mockSampleSourceInput.IsActive,
 			},
 		})
 
-		var result map[string]any
-		err := json.Unmarshal(w.Body.Bytes(), &result)
-		assert.NoError(t, err)
-
-		if data, ok := result["data"].(map[string]any); ok {
-			delete(data, "id")
-		}
-
 		assert.Equal(t, http.StatusCreated, w.Code)
-		assert.JSONEq(t, expected, testutils.ToJSON(result))
+		assert.JSONEq(t, expected, w.Body.String())
 	})
 
 	for _, tt := range data.CreateSampleSourceTests {
 		t.Run(tt.Name, func(t *testing.T) {
+			svc := testmodels.MockSampleSourceService{}
+			handler := samplesource.NewAdminSampleSourceHandler(&svc)
+
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/sampleSource", tt.Body,
 				nil, nil,
 			)
-
-			samplesource.CreateSampleSource(c)
+			handler.CreateSampleSource(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
-	t.Run("DB error", func(t *testing.T) {
-		origRepo := repository.SampleSourceRepo
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+	t.Run("Error - Conflict", func(t *testing.T) {
+		svc := testmodels.MockSampleSourceService{
+			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
+				return nil, services.ErrConflict
+			},
+		}
+		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
-		repository.SampleSourceRepo = repository.NewSampleSourceRepo(mockDB)
-		defer func() {
-			repository.SampleSourceRepo = origRepo
-		}()
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/admin/origin", testutils.ToJSON(mockSampleSourceInput),
+			nil, nil,
+		)
+		handler.CreateSampleSource(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Sample source already exists.",
+			},
+		)
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := testmodels.MockSampleSourceService{
+			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := samplesource.NewAdminSampleSourceHandler(&svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/sampleSource", body,
 			nil, nil,
 		)
-
-		samplesource.CreateSampleSource(c)
+		handler.CreateSampleSource(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"error": "There was a server error. Please try again.",

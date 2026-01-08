@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -12,19 +11,49 @@ type SampleSource struct {
 	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 
-type SampleSourceResponse struct {
-	Name     string `json:"name"`
-	Group    string `json:"group"`
-	IsActive bool   `json:"is_active"`
+type SampleSourceAdminDetailResponse struct {
+	ID       uuid.UUID         `json:"id"`
+	Names    map[string]string `json:"names"`
+	Groups   map[string]string `json:"groups"`
+	IsActive bool              `json:"is_active"`
+}
+
+type SampleSourceAdminTableResponse struct {
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Group    string    `json:"group"`
+	IsActive bool      `json:"is_active"`
 }
 
 type SampleSourceFormResponse struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Group string    `json:"group"`
 }
 
-func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
-	language := c.GetHeader("Accept-Language")
+func (s *SampleSource) ToAdminDetailResponse() SampleSourceAdminDetailResponse {
+	return SampleSourceAdminDetailResponse{
+		ID:       s.ID,
+		Names:    s.Names,
+		Groups:   s.Groups,
+		IsActive: s.IsActive,
+	}
+}
+
+func (s *SampleSource) ToAdminTableResponse(language string) SampleSourceAdminTableResponse {
+	if language == "" {
+		language = "en"
+	}
+
+	return SampleSourceAdminTableResponse{
+		ID:       s.ID,
+		Name:     s.Names[language],
+		Group:    s.Groups[language],
+		IsActive: s.IsActive,
+	}
+}
+
+func (s *SampleSource) ToFormResponse(language string) SampleSourceFormResponse {
 	if language == "" {
 		language = "en"
 	}
@@ -32,24 +61,10 @@ func (s *SampleSource) ToResponse(c *gin.Context) SampleSourceResponse {
 	name := s.Names[language]
 	group := s.Groups[language]
 
-	return SampleSourceResponse{
-		Name:     name,
-		Group:    group,
-		IsActive: s.IsActive,
-	}
-}
-
-func (s *SampleSource) ToFormResponse(c *gin.Context) SampleSourceFormResponse {
-	language := c.GetHeader("Accept-Language")
-	if language == "" {
-		language = "en"
-	}
-
-	name := s.Names[language]
-
 	return SampleSourceFormResponse{
-		ID:   s.ID,
-		Name: name,
+		ID:    s.ID,
+		Name:  name,
+		Group: group,
 	}
 }
 

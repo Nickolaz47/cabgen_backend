@@ -208,6 +208,9 @@ other = "The search parameter nameOrGroup is empty."
 [admin.sampleSource.notFound.error]
 other = "Sample source not found."
 
+[admin.sampleSource.alreadyExists.error]
+other = "Sample source already exists."
+
 [admin.sampleSource.delete.success]
 other = "Sample source deleted successfully."
 

@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -33,7 +34,7 @@ func TestGetSampleSources(t *testing.T) {
 	db.Create(&sampleSource)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSources, err := repo.GetSampleSources()
+		sampleSources, err := repo.GetSampleSources(context.Background())
 
 		expected := []models.SampleSource{sampleSource}
 
@@ -46,7 +47,7 @@ func TestGetSampleSources(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		sampleSources, err := mockCountryRepo.GetSampleSources()
+		sampleSources, err := mockCountryRepo.GetSampleSources(context.Background())
 
 		assert.Empty(t, sampleSources)
 		assert.Error(t, err)
@@ -73,7 +74,7 @@ func TestGetActiveSampleSources(t *testing.T) {
 	db.Create(&sampleSource2)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSources, err := repo.GetActiveSampleSources()
+		sampleSources, err := repo.GetActiveSampleSources(context.Background())
 
 		expected := []models.SampleSource{sampleSource}
 
@@ -86,7 +87,7 @@ func TestGetActiveSampleSources(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		sampleSources, err := mockCountryRepo.GetActiveSampleSources()
+		sampleSources, err := mockCountryRepo.GetActiveSampleSources(context.Background())
 
 		assert.Empty(t, sampleSources)
 		assert.Error(t, err)
@@ -106,7 +107,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 	db.Create(&sampleSource)
 
 	t.Run("Success", func(t *testing.T) {
-		result, err := repo.GetSampleSourceByID(sampleSource.ID)
+		result, err := repo.GetSampleSourceByID(context.Background(), sampleSource.ID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &sampleSource, result)
@@ -117,7 +118,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		result, err := mockCountryRepo.GetSampleSourceByID(uuid.UUID{})
+		result, err := mockCountryRepo.GetSampleSourceByID(context.Background(), uuid.UUID{})
 
 		assert.Empty(t, result)
 		assert.Error(t, err)
@@ -144,7 +145,7 @@ func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 	db.Create(&sampleSource2)
 
 	t.Run("Success - Name", func(t *testing.T) {
-		sampleSources, err := repo.GetSampleSourcesByNameOrGroup("plas", "en")
+		sampleSources, err := repo.GetSampleSourcesByNameOrGroup(context.Background(), "plas", "en")
 
 		expected := []models.SampleSource{sampleSource}
 
@@ -153,7 +154,7 @@ func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 	})
 
 	t.Run("Success - Group", func(t *testing.T) {
-		sampleSources, err := repo.GetSampleSourcesByNameOrGroup("blo", "en")
+		sampleSources, err := repo.GetSampleSourcesByNameOrGroup(context.Background(), "blo", "en")
 
 		expected := []models.SampleSource{sampleSource, sampleSource2}
 
@@ -166,10 +167,65 @@ func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		sampleSources, err := mockCountryRepo.GetSampleSourcesByNameOrGroup("resp", "en")
+		sampleSources, err := mockCountryRepo.GetSampleSourcesByNameOrGroup(context.Background(), "resp", "en")
 
 		assert.Empty(t, sampleSources)
 		assert.Error(t, err)
+	})
+}
+
+func TestGetSampleSourceDuplicate(t *testing.T) {
+	db := testutils.NewMockDB()
+	sampleSourceRepo := repository.NewSampleSourceRepo(db)
+
+	mockSampleSource := testmodels.NewSampleSource(
+		uuid.NewString(),
+		map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		false,
+	)
+	db.Create(&mockSampleSource)
+
+	t.Run("Success - With ID", func(t *testing.T) {
+		sampleSource, err := sampleSourceRepo.GetSampleSourceDuplicate(
+			context.Background(), mockSampleSource.Names, uuid.New(),
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, mockSampleSource, *sampleSource)
+	})
+
+	t.Run("Success - Without ID", func(t *testing.T) {
+		sampleSource, err := sampleSourceRepo.GetSampleSourceDuplicate(
+			context.Background(), mockSampleSource.Names, uuid.UUID{},
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, mockSampleSource, *sampleSource)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		names := map[string]string{"pt": "Coágulo sanguíneo", "en": "Blood clot", "es": "Coágulo de sangre"}
+		sampleSource, err := sampleSourceRepo.GetSampleSourceDuplicate(
+			context.Background(), names, uuid.UUID{},
+		)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+		assert.Empty(t, sampleSource)
+	})
+
+	t.Run("DB Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockSampleSourceRepo := repository.NewSampleSourceRepo(mockDB)
+		sampleSource, err := mockSampleSourceRepo.GetSampleSourceDuplicate(
+			context.Background(), mockSampleSource.Names, uuid.New(),
+		)
+
+		assert.Error(t, err)
+		assert.Empty(t, sampleSource)
 	})
 }
 
@@ -185,7 +241,7 @@ func TestCreateSampleSource(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		err := repo.CreateSampleSource(&sampleSource)
+		err := repo.CreateSampleSource(context.Background(), &sampleSource)
 		assert.NoError(t, err)
 
 		var result models.SampleSource
@@ -200,7 +256,7 @@ func TestCreateSampleSource(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		err = mockCountryRepo.CreateSampleSource(&sampleSource)
+		err = mockCountryRepo.CreateSampleSource(context.Background(), &sampleSource)
 
 		assert.Error(t, err)
 	})
@@ -228,7 +284,7 @@ func TestUpdateSampleSource(t *testing.T) {
 			IsActive: sampleSource.IsActive,
 		}
 
-		err := repo.UpdateSampleSource(&sampleSourceToUpdate)
+		err := repo.UpdateSampleSource(context.Background(), &sampleSourceToUpdate)
 		assert.NoError(t, err)
 
 		var result models.SampleSource
@@ -250,7 +306,7 @@ func TestUpdateSampleSource(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		err = mockCountryRepo.UpdateSampleSource(&models.SampleSource{})
+		err = mockCountryRepo.UpdateSampleSource(context.Background(), &models.SampleSource{})
 
 		assert.Error(t, err)
 	})
@@ -269,7 +325,7 @@ func TestDeleteSampleSource(t *testing.T) {
 	db.Create(&sampleSource)
 
 	t.Run("Success", func(t *testing.T) {
-		err := repo.DeleteSampleSource(&sampleSource)
+		err := repo.DeleteSampleSource(context.Background(), &sampleSource)
 		assert.NoError(t, err)
 
 		var result models.SampleSource
@@ -284,7 +340,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
-		err = mockCountryRepo.DeleteSampleSource(&models.SampleSource{})
+		err = mockCountryRepo.DeleteSampleSource(context.Background(), &models.SampleSource{})
 
 		assert.Error(t, err)
 	})

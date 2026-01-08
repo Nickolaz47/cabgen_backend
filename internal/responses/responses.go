@@ -45,6 +45,7 @@ const (
 	SampleSourceCreationSuccess              = "admin.sampleSource.create.success"
 	SampleSourceEmptyQueryError              = "admin.sampleSource.nameOrGroup.error"
 	SampleSourceNotFoundError                = "admin.sampleSource.notFound.error"
+	SampleSourceAlreadyExistsError           = "admin.sampleSource.alreadyExists.error"
 	SampleSourceDeleted                      = "admin.sampleSource.delete.success"
 	LaboratoryCreationSuccess                = "admin.laboratory.create.success"
 	LaboratoryNameAlreadyExistsError         = "admin.laboratory.nameAlreadyExists.error"

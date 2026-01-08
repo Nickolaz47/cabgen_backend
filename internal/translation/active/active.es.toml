@@ -208,6 +208,9 @@ other = "El parámetro de búsqueda nameOrGroup está vacío."
 [admin.sampleSource.notFound.error]
 other = "Fuente de muestra no encontrada."
 
+[admin.sampleSource.alreadyExists.error]
+other = "Fuente de muestra ya existe."
+
 [admin.sampleSource.delete.success]
 other = "Fuente de muestra eliminada con éxito."
 

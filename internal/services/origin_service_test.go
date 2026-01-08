@@ -293,7 +293,22 @@ func TestOriginCreate(t *testing.T) {
 }
 
 func TestOriginUpdate(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {})
+	t.Run("Success", func(t *testing.T) {
+		originRepo := mockOriginRepository{
+			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
+				return &models.Origin{ID: uuid.New()}, nil
+			},
+			UpdateOriginFunc: func(ctx context.Context, origin *models.Origin) error {
+				return nil
+			},
+		}
+
+		service := services.NewOriginService(&originRepo)
+		origin, err := service.Update(context.Background(), uuid.New(), models.OriginUpdateInput{})
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, origin)
+	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		originRepo := mockOriginRepository{
