@@ -321,13 +321,16 @@ func TestOriginCreate(t *testing.T) {
 func TestOriginUpdate(t *testing.T) {
 	id := uuid.New()
 
+	isActive := true
+	input := models.OriginUpdateInput{
+		Names:    map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
+		IsActive: &isActive,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		originRepo := mockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{ID: id}, nil
-			},
-			GetOriginDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
-				return nil, gorm.ErrRecordNotFound
 			},
 			UpdateOriginFunc: func(ctx context.Context, origin *models.Origin) error {
 				return nil
@@ -367,7 +370,7 @@ func TestOriginUpdate(t *testing.T) {
 		}
 
 		service := services.NewOriginService(&originRepo)
-		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
+		result, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)

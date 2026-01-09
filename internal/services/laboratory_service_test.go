@@ -373,7 +373,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 		}
 
 		service := services.NewLaboratoryService(&labRepo)
-		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
+		result, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)

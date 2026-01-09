@@ -365,6 +365,15 @@ func TestSampleSourceCreate(t *testing.T) {
 }
 
 func TestSampleSourceUpdate(t *testing.T) {
+	id := uuid.New()
+	isActive := true
+
+	input := models.SampleSourceUpdateInput{
+		Names:    map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
+		Groups:   map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		IsActive: &isActive,
+	}
+
 	t.Run("Success", func(t *testing.T) {
 		sampleSourceRepo := mockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
@@ -408,7 +417,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 		}
 
 		service := services.NewSampleSourceService(&sampleSourceRepo)
-		sampleSource, err := service.Update(context.Background(), uuid.New(), models.SampleSourceUpdateInput{})
+		sampleSource, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
