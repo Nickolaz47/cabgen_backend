@@ -6,6 +6,6 @@ import (
 )
 
 func SetupOriginRoutes(r *gin.RouterGroup, handler *origin.OriginHandler) {
-	originRouter := r.Group("/origin")
+	originRouter := r.Group("/origins")
 	originRouter.GET("", handler.GetActiveOrigins)
 }

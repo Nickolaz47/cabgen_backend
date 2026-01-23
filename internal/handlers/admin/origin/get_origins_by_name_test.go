@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -34,13 +35,13 @@ func TestGetOriginsByName(t *testing.T) {
 	mockResponse2 := mockOrigin2.ToAdminTableResponse(language)
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.OriginAdminTableResponse, error) {
 				return []models.OriginAdminTableResponse{mockResponse1}, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		name := "food"
 		c, w := testutils.SetupGinContext(
@@ -64,13 +65,13 @@ func TestGetOriginsByName(t *testing.T) {
 	})
 
 	t.Run("Success - Input Empty", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindAllFunc: func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
 				return []models.OriginAdminTableResponse{mockResponse1, mockResponse2}, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -93,13 +94,13 @@ func TestGetOriginsByName(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.OriginAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		name := "human"
 		c, w := testutils.SetupGinContext(

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUpdateInput) {
+func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUserUpdateInput) {
 	if input.Name != nil {
 		user.Name = *input.Name
 	}
@@ -18,6 +18,18 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUpdateInput) {
 
 	if input.Email != nil {
 		user.Email = *input.Email
+	}
+
+	if input.Password != nil {
+		user.Password = *input.Password
+	}
+
+	if input.UserRole != nil {
+		user.UserRole = *input.UserRole
+	}
+
+	if input.IsActive != nil {
+		user.IsActive = *input.IsActive
 	}
 
 	if input.Interest != nil {
@@ -43,6 +55,8 @@ func ValidateTranslationMap(c *gin.Context, model string, translations map[strin
 		missingLanguage, missingTranslation = responses.OriginValidationMissingLanguage, responses.OriginValidationMissingTranslation
 	case "sampleSource":
 		missingLanguage, missingTranslation = responses.SampleSourceValidationMissingLanguage, responses.SampleSourceValidationMissingTranslation
+	case "country":
+		missingLanguage, missingTranslation = responses.CountryValidationMissingLanguage, responses.CountryValidationMissingTranslation
 	default:
 		missingLanguage, missingTranslation = "", ""
 	}
@@ -118,5 +132,15 @@ func ApplyLaboratoryUpdate(laboratory *models.Laboratory, input *models.Laborato
 
 	if input.IsActive != nil {
 		laboratory.IsActive = *input.IsActive
+	}
+}
+
+func ApplyCountryUpdate(country *models.Country, input *models.CountryUpdateInput) {
+	if input.Code != nil {
+		country.Code = *input.Code
+	}
+
+	if input.Names != nil {
+		country.Names = input.Names
 	}
 }

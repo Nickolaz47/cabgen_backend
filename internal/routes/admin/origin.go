@@ -6,7 +6,7 @@ import (
 )
 
 func SetupAdminOriginRoutes(r *gin.RouterGroup, handler *origin.AdminOriginHandler) {
-	originRouter := r.Group("/origin")
+	originRouter := r.Group("/origins")
 
 	originRouter.GET("", handler.GetAllOrigins)
 	originRouter.GET("/:originId", handler.GetOriginByID)

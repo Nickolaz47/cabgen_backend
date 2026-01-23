@@ -8,7 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/laboratory"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -19,12 +19,12 @@ func TestGetActiveLaboratories(t *testing.T) {
 	mockLab := models.LaboratoryFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 				return []models.LaboratoryFormResponse{mockLab}, nil
 			},
 		}
-		handler := laboratory.NewLaboratoryHandler(&svc)
+		handler := laboratory.NewLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",
@@ -43,12 +43,12 @@ func TestGetActiveLaboratories(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := laboratory.NewLaboratoryHandler(&svc)
+		handler := laboratory.NewLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",

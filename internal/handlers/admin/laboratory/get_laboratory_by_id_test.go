@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -28,7 +29,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	adminResponse := lab.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindByIDFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -36,7 +37,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 				return &adminResponse, nil
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -58,8 +59,8 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		svc := &mocks.MockLaboratoryService{}
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -81,7 +82,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindByIDFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -89,7 +90,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -110,8 +111,8 @@ func TestGetLaboratoryByID(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Error - Internal Server Error", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := &mocks.MockLaboratoryService{
 			FindByIDFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -119,7 +120,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

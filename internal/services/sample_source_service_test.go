@@ -6,86 +6,12 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
-
-type mockSampleSourceRepository struct {
-	GetSampleSourcesFunc              func(ctx context.Context) ([]models.SampleSource, error)
-	GetActiveSampleSourcesFunc        func(ctx context.Context) ([]models.SampleSource, error)
-	GetSampleSourceByIDFunc           func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error)
-	GetSampleSourcesByNameOrGroupFunc func(ctx context.Context, input, language string) ([]models.SampleSource, error)
-	GetSampleSourceDuplicateFunc      func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.SampleSource, error)
-	CreateSampleSourceFunc            func(ctx context.Context, sampleSource *models.SampleSource) error
-	UpdateSampleSourceFunc            func(ctx context.Context, sampleSource *models.SampleSource) error
-	DeleteSampleSourceFunc            func(ctx context.Context, sampleSource *models.SampleSource) error
-}
-
-func (r *mockSampleSourceRepository) GetSampleSources(ctx context.Context) ([]models.SampleSource, error) {
-	if r.GetSampleSourcesFunc != nil {
-		return r.GetSampleSourcesFunc(ctx)
-	}
-
-	return nil, nil
-}
-
-func (r *mockSampleSourceRepository) GetActiveSampleSources(ctx context.Context) ([]models.SampleSource, error) {
-	if r.GetActiveSampleSourcesFunc != nil {
-		return r.GetActiveSampleSourcesFunc(ctx)
-	}
-
-	return nil, nil
-}
-
-func (r *mockSampleSourceRepository) GetSampleSourceByID(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
-	if r.GetSampleSourceByIDFunc != nil {
-		return r.GetSampleSourceByIDFunc(ctx, ID)
-	}
-
-	return nil, nil
-}
-
-func (r *mockSampleSourceRepository) GetSampleSourcesByNameOrGroup(ctx context.Context, input, language string) ([]models.SampleSource, error) {
-	if r.GetSampleSourcesByNameOrGroupFunc != nil {
-		return r.GetSampleSourcesByNameOrGroupFunc(ctx, input, language)
-	}
-
-	return nil, nil
-}
-
-func (r *mockSampleSourceRepository) GetSampleSourceDuplicate(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.SampleSource, error) {
-	if r.GetSampleSourceDuplicateFunc != nil {
-		return r.GetSampleSourceDuplicateFunc(ctx, names, ID)
-	}
-
-	return nil, nil
-}
-
-func (r *mockSampleSourceRepository) CreateSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	if r.CreateSampleSourceFunc != nil {
-		return r.CreateSampleSourceFunc(ctx, sampleSource)
-	}
-
-	return nil
-}
-
-func (r *mockSampleSourceRepository) UpdateSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	if r.UpdateSampleSourceFunc != nil {
-		return r.UpdateSampleSourceFunc(ctx, sampleSource)
-	}
-
-	return nil
-}
-
-func (r *mockSampleSourceRepository) DeleteSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	if r.DeleteSampleSourceFunc != nil {
-		return r.DeleteSampleSourceFunc(ctx, sampleSource)
-	}
-
-	return nil
-}
 
 func TestSampleSourceFindAll(t *testing.T) {
 	sampleSource := testmodels.NewSampleSource(
@@ -97,13 +23,13 @@ func TestSampleSourceFindAll(t *testing.T) {
 	language := "en"
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
 				return []models.SampleSource{sampleSource}, nil
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		expected := []models.SampleSourceAdminTableResponse{
 			sampleSource.ToAdminTableResponse(language),
 		}
@@ -115,13 +41,13 @@ func TestSampleSourceFindAll(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSources, err := service.FindAll(context.Background(), language)
 
 		assert.Error(t, err)
@@ -139,13 +65,13 @@ func TestSampleSourceFindAllActive(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetActiveSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
 				return []models.SampleSource{sampleSource}, nil
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		expected := []models.SampleSourceFormResponse{sampleSource.ToFormResponse("en")}
 
 		sampleSources, err := service.FindAllActive(context.Background(), "en")
@@ -155,13 +81,13 @@ func TestSampleSourceFindAllActive(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetActiveSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSources, err := service.FindAllActive(context.Background(), "en")
 
 		assert.Error(t, err)
@@ -179,14 +105,14 @@ func TestSampleSourceFindByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &sampleSource, nil
 			},
 		}
 
 		expected := sampleSource.ToAdminDetailResponse()
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSourceFound, err := service.FindByID(context.Background(), sampleSource.ID)
 
 		assert.NoError(t, err)
@@ -194,13 +120,13 @@ func TestSampleSourceFindByID(t *testing.T) {
 	})
 
 	t.Run("Record not found", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSourceFound, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -209,13 +135,13 @@ func TestSampleSourceFindByID(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSourceFound, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -234,7 +160,7 @@ func TestSampleSourceFindByNameOrGroup(t *testing.T) {
 	language := "en"
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourcesByNameOrGroupFunc: func(ctx context.Context, input, language string) ([]models.SampleSource, error) {
 				return []models.SampleSource{sampleSource}, nil
 			},
@@ -243,7 +169,7 @@ func TestSampleSourceFindByNameOrGroup(t *testing.T) {
 		expected := []models.SampleSourceAdminTableResponse{
 			sampleSource.ToAdminTableResponse(language),
 		}
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSources, err := service.FindByNameOrGroup(context.Background(), "plasma", language)
 
 		assert.NoError(t, err)
@@ -251,13 +177,13 @@ func TestSampleSourceFindByNameOrGroup(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourcesByNameOrGroupFunc: func(ctx context.Context, input, language string) ([]models.SampleSource, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSources, err := service.FindByNameOrGroup(context.Background(), "plasma", "en")
 
 		assert.Error(t, err)
@@ -275,14 +201,14 @@ func TestSampleSourceCreate(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			CreateSampleSourceFunc: func(ctx context.Context, sampleSource *models.SampleSource) error {
 				return nil
 			},
 		}
 
 		expected := sampleSource.ToAdminDetailResponse()
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		result, err := service.Create(
 			context.Background(),
 			models.SampleSourceCreateInput{
@@ -298,13 +224,13 @@ func TestSampleSourceCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.SampleSource, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		result, err := service.Create(
 			context.Background(),
 			models.SampleSourceCreateInput{
@@ -320,13 +246,13 @@ func TestSampleSourceCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{}, nil
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		result, err := service.Create(
 			context.Background(),
 			models.SampleSourceCreateInput{
@@ -342,13 +268,13 @@ func TestSampleSourceCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			CreateSampleSourceFunc: func(ctx context.Context, sampleSource *models.SampleSource) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		result, err := service.Create(
 			context.Background(),
 			models.SampleSourceCreateInput{
@@ -375,7 +301,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{ID: uuid.New()}, nil
 			},
@@ -384,7 +310,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSource, err := service.Update(context.Background(), uuid.New(), models.SampleSourceUpdateInput{})
 
 		assert.NoError(t, err)
@@ -392,13 +318,13 @@ func TestSampleSourceUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSource, err := service.Update(context.Background(), uuid.New(), models.SampleSourceUpdateInput{})
 
 		assert.Error(t, err)
@@ -407,7 +333,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{}, nil
 			},
@@ -416,7 +342,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSource, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
@@ -425,7 +351,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{}, nil
 			},
@@ -434,7 +360,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		sampleSource, err := service.Update(context.Background(), uuid.New(), models.SampleSourceUpdateInput{})
 
 		assert.Error(t, err)
@@ -445,7 +371,7 @@ func TestSampleSourceUpdate(t *testing.T) {
 
 func TestSampleSourceDelete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{}, nil
 			},
@@ -454,19 +380,19 @@ func TestSampleSourceDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
 	})
 	t.Run("Error - Not Found", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -474,7 +400,7 @@ func TestSampleSourceDelete(t *testing.T) {
 	})
 
 	t.Run("Error - Delete", func(t *testing.T) {
-		sampleSourceRepo := mockSampleSourceRepository{
+		sampleSourceRepo := &mocks.MockSampleSourceRepository{
 			GetSampleSourceByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 				return &models.SampleSource{}, nil
 			},
@@ -483,7 +409,7 @@ func TestSampleSourceDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSampleSourceService(&sampleSourceRepo)
+		service := services.NewSampleSourceService(sampleSourceRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)

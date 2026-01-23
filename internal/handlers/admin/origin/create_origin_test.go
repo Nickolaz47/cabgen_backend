@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -36,13 +37,13 @@ func TestCreateOrigin(t *testing.T) {
 	mockResponse := mockOrigin.ToAdminDetailResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
 				return &mockResponse, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -67,8 +68,8 @@ func TestCreateOrigin(t *testing.T) {
 
 	for _, tt := range data.CreateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockOriginService{}
-			handler := origin.NewAdminOriginHandler(&svc)
+			svc := &mocks.MockOriginService{}
+			handler := origin.NewAdminOriginHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost,
@@ -86,13 +87,13 @@ func TestCreateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -115,13 +116,13 @@ func TestCreateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			CreateFunc: func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,

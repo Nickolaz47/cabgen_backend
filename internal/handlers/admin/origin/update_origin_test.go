@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -37,13 +38,13 @@ func TestUpdateOrigin(t *testing.T) {
 	mockResponse := mockOrigin.ToAdminDetailResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return &mockResponse, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -67,8 +68,8 @@ func TestUpdateOrigin(t *testing.T) {
 
 	for _, tt := range data.UpdateOriginTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockOriginService{}
-			handler := origin.NewAdminOriginHandler(&svc)
+			svc := &mocks.MockOriginService{}
+			handler := origin.NewAdminOriginHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPut,
@@ -86,8 +87,8 @@ func TestUpdateOrigin(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockOriginService{}
-		handler := origin.NewAdminOriginHandler(&svc)
+		svc := &mocks.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -110,13 +111,13 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -137,13 +138,13 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -164,13 +165,13 @@ func TestUpdateOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,

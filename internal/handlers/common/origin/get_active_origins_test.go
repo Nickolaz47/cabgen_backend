@@ -7,7 +7,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -22,12 +22,12 @@ func TestGetActiveOrigins(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindAllActiveFunc: func(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
 				return []models.OriginFormResponse{mockOrigin.ToFormResponse(lang)}, nil
 			},
 		}
-		handler := NewOriginHandler(&svc)
+		handler := NewOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(http.MethodGet, "/api/origin", "",
 			nil, nil,
@@ -43,12 +43,12 @@ func TestGetActiveOrigins(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindAllActiveFunc: func(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := NewOriginHandler(&svc)
+		handler := NewOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(http.MethodGet, "/api/origin", "",
 			nil, nil,

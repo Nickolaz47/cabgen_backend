@@ -11,6 +11,7 @@ import (
 )
 
 func AuthMiddleware() gin.HandlerFunc {
+	tokenProvider := auth.NewTokenProvider()
 	return func(c *gin.Context) {
 		localizer := translation.GetLocalizerFromContext(c)
 
@@ -22,7 +23,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userToken, err := auth.ValidateToken(c, auth.Access, accessSecret)
+		tokenStr, err := auth.ExtractToken(c, auth.Access)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized,
+				responses.APIResponse{Error: responses.GetResponse(localizer, responses.UnauthorizedError)})
+			c.Abort()
+			return
+		}
+
+		userToken, err := tokenProvider.ValidateToken(tokenStr, accessSecret)
 		if err != nil && strings.Contains(err.Error(), "token expired:") {
 			c.JSON(http.StatusForbidden,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.TokenExpiredError)})

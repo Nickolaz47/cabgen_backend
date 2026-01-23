@@ -6,78 +6,12 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
-
-type mockOriginRepository struct {
-	GetOriginsFunc         func(ctx context.Context) ([]models.Origin, error)
-	GetActiveOriginsFunc   func(ctx context.Context) ([]models.Origin, error)
-	GetOriginByIDFunc      func(ctx context.Context, ID uuid.UUID) (*models.Origin, error)
-	GetOriginsByNameFunc   func(ctx context.Context, name, lang string) ([]models.Origin, error)
-	GetOriginDuplicateFunc func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error)
-	CreateOriginFunc       func(ctx context.Context, origin *models.Origin) error
-	UpdateOriginFunc       func(ctx context.Context, origin *models.Origin) error
-	DeleteOriginFunc       func(ctx context.Context, origin *models.Origin) error
-}
-
-func (r *mockOriginRepository) GetOrigins(ctx context.Context) ([]models.Origin, error) {
-	if r.GetOriginsFunc != nil {
-		return r.GetOriginsFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (r *mockOriginRepository) GetActiveOrigins(ctx context.Context) ([]models.Origin, error) {
-	if r.GetActiveOriginsFunc != nil {
-		return r.GetActiveOriginsFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (r *mockOriginRepository) GetOriginByID(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
-	if r.GetOriginByIDFunc != nil {
-		return r.GetOriginByIDFunc(ctx, ID)
-	}
-	return nil, nil
-}
-
-func (r *mockOriginRepository) GetOriginsByName(ctx context.Context, name, lang string) ([]models.Origin, error) {
-	if r.GetOriginsByNameFunc != nil {
-		return r.GetOriginsByNameFunc(ctx, name, lang)
-	}
-	return nil, nil
-}
-
-func (r *mockOriginRepository) GetOriginDuplicate(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
-	if r.GetOriginDuplicateFunc != nil {
-		return r.GetOriginDuplicateFunc(ctx, names, ID)
-	}
-	return nil, nil
-}
-
-func (r *mockOriginRepository) CreateOrigin(ctx context.Context, origin *models.Origin) error {
-	if r.CreateOriginFunc != nil {
-		return r.CreateOriginFunc(ctx, origin)
-	}
-	return nil
-}
-
-func (r *mockOriginRepository) UpdateOrigin(ctx context.Context, origin *models.Origin) error {
-	if r.UpdateOriginFunc != nil {
-		return r.UpdateOriginFunc(ctx, origin)
-	}
-	return nil
-}
-
-func (r *mockOriginRepository) DeleteOrigin(ctx context.Context, origin *models.Origin) error {
-	if r.DeleteOriginFunc != nil {
-		return r.DeleteOriginFunc(ctx, origin)
-	}
-	return nil
-}
 
 func TestOriginFindAll(t *testing.T) {
 	origin := testmodels.NewOrigin(
@@ -87,13 +21,13 @@ func TestOriginFindAll(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
 				return []models.Origin{origin}, nil
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.NoError(t, err)
@@ -102,13 +36,13 @@ func TestOriginFindAll(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.Error(t, err)
@@ -125,13 +59,13 @@ func TestOriginFindAllActive(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetActiveOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
 				return []models.Origin{origin}, nil
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindAllActive(context.Background(), "pt")
 
 		assert.NoError(t, err)
@@ -141,13 +75,13 @@ func TestOriginFindAllActive(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetActiveOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindAllActive(context.Background(), "pt")
 
 		assert.Error(t, err)
@@ -164,13 +98,13 @@ func TestOriginFindByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &origin, nil
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindByID(context.Background(), origin.ID)
 
 		assert.NoError(t, err)
@@ -178,13 +112,13 @@ func TestOriginFindByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -193,13 +127,13 @@ func TestOriginFindByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -216,13 +150,13 @@ func TestOriginFindByName(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginsByNameFunc: func(ctx context.Context, name, lang string) ([]models.Origin, error) {
 				return []models.Origin{origin}, nil
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindByName(context.Background(), "hum", "en")
 
 		assert.NoError(t, err)
@@ -231,13 +165,13 @@ func TestOriginFindByName(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginsByNameFunc: func(ctx context.Context, name, lang string) ([]models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.FindByName(context.Background(), "hum", "en")
 
 		assert.Error(t, err)
@@ -253,7 +187,7 @@ func TestOriginCreate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
@@ -262,7 +196,7 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.NoError(t, err)
@@ -270,13 +204,13 @@ func TestOriginCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -285,13 +219,13 @@ func TestOriginCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{}, nil
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -300,7 +234,7 @@ func TestOriginCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginDuplicateFunc: func(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
@@ -309,7 +243,7 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -328,7 +262,7 @@ func TestOriginUpdate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{ID: id}, nil
 			},
@@ -337,7 +271,7 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.NoError(t, err)
@@ -345,13 +279,13 @@ func TestOriginUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.Error(t, err)
@@ -360,7 +294,7 @@ func TestOriginUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{ID: id}, nil
 			},
@@ -369,7 +303,7 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
@@ -378,7 +312,7 @@ func TestOriginUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{ID: id}, nil
 			},
@@ -390,7 +324,7 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.Error(t, err)
@@ -401,7 +335,7 @@ func TestOriginUpdate(t *testing.T) {
 
 func TestOriginDelete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{}, nil
 			},
@@ -410,20 +344,20 @@ func TestOriginDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -431,7 +365,7 @@ func TestOriginDelete(t *testing.T) {
 	})
 
 	t.Run("Error - Delete", func(t *testing.T) {
-		originRepo := mockOriginRepository{
+		originRepo := &mocks.MockOriginRepository{
 			GetOriginByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Origin, error) {
 				return &models.Origin{}, nil
 			},
@@ -440,7 +374,7 @@ func TestOriginDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(&originRepo)
+		service := services.NewOriginService(originRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)

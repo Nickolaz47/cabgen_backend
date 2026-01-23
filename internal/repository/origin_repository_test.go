@@ -107,7 +107,7 @@ func TestGetOriginByID(t *testing.T) {
 	})
 }
 
-func TestGetOriginByName(t *testing.T) {
+func TestGetOriginsByName(t *testing.T) {
 	db := testutils.NewMockDB()
 	repo := repository.NewOriginRepo(db)
 
@@ -279,7 +279,6 @@ func TestDeleteOrigin(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		err := repo.DeleteOrigin(context.Background(), &origin)
-
 		assert.NoError(t, err)
 
 		var result models.Origin

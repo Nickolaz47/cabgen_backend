@@ -116,7 +116,42 @@ func TestDeleteCookie(t *testing.T) {
 	assert.Equal(t, http.SameSiteLaxMode, cookie.SameSite)
 }
 
+func TestExtractToken(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(
+			http.MethodGet, "/", "", nil, nil,
+		)
+
+		c.Request.AddCookie(&http.Cookie{
+			Name:     Access,
+			Value:    "accessToken",
+			Path:     "/",
+			Expires:  time.Now().Add(time.Second),
+			HttpOnly: true,
+		})
+
+		token, err := ExtractToken(c, Access)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "accessToken", token)
+	})
+
+	t.Run("Error - Missing cookie", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(
+			http.MethodGet, "/", "", nil, nil,
+		)
+
+		token, err := ExtractToken(c, Access)
+
+		assert.Empty(t, token)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "cookie not found")
+	})
+}
+
 func TestGenerateToken(t *testing.T) {
+	provider := NewTokenProvider()
+
 	mockToken := testmodels.NewUserToken(
 		uuid.UUID{},
 		"nick",
@@ -126,7 +161,7 @@ func TestGenerateToken(t *testing.T) {
 	expiration := 1 * time.Second
 
 	t.Run("Success", func(t *testing.T) {
-		token, err := GenerateToken(mockToken, secret, expiration)
+		token, err := provider.GenerateToken(mockToken, secret, expiration)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
@@ -144,7 +179,7 @@ func TestGenerateToken(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid expiration time", func(t *testing.T) {
-		token, err := GenerateToken(mockToken, secret, -expiration)
+		token, err := provider.GenerateToken(mockToken, secret, -expiration)
 
 		assert.Empty(t, token)
 		assert.Error(t, err)
@@ -152,7 +187,7 @@ func TestGenerateToken(t *testing.T) {
 	})
 
 	t.Run("Error - Empty secret", func(t *testing.T) {
-		token, err := GenerateToken(mockToken, nil, expiration)
+		token, err := provider.GenerateToken(mockToken, nil, expiration)
 
 		assert.Empty(t, token)
 		assert.Error(t, err)
@@ -161,186 +196,80 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	testutils.SetupTestContext()
-
-	origAccessKey := config.AccessKey
-	defer func() {
-		config.AccessKey = origAccessKey
-	}()
-
+	provider := NewTokenProvider()
 	secret := []byte("access_secret")
-	config.AccessKey = secret
+
+	mockUserToken := testmodels.NewUserToken(
+		uuid.UUID{}, "nick", models.Collaborator,
+	)
 
 	t.Run("Success", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil,
-		)
-
-		mockUserToken := testmodels.NewUserToken(
-			uuid.UUID{}, "nick", models.Collaborator,
-		)
-
-		mockToken, _ := GenerateToken(
+		tokenStr, err := provider.GenerateToken(
 			mockUserToken,
-			[]byte(secret),
-			AccessTokenExpiration)
+			secret,
+			time.Second,
+		)
+		assert.NoError(t, err)
 
-		c.Request.AddCookie(&http.Cookie{
-			Name:     Access,
-			Value:    mockToken,
-			Path:     "/",
-			Domain:   "localhost",
-			Expires:  time.Now().Add(1 * time.Second),
-			HttpOnly: true,
-			Secure:   false,
-			SameSite: http.SameSiteLaxMode,
-		})
-
-		resultUserToken, err := ValidateToken(c, Access, secret)
+		result, err := provider.ValidateToken(tokenStr, secret)
 
 		assert.NoError(t, err)
-		assert.Equal(t, mockUserToken.ID, resultUserToken.ID)
-		assert.Equal(t, mockUserToken.Username, resultUserToken.Username)
-		assert.Equal(t, mockUserToken.UserRole, resultUserToken.UserRole)
+		assert.Equal(t, mockUserToken.ID, result.ID)
+		assert.Equal(t, mockUserToken.Username, result.Username)
+		assert.Equal(t, mockUserToken.UserRole, result.UserRole)
 	})
 
-	t.Run("Missing cookie", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil)
-
-		token, err := extractToken(c, Access)
-
-		assert.Empty(t, token)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "cookie not found")
-	})
-
-	t.Run("Invalid signing method", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil,
-		)
-
-		claims := testmodels.NewUserToken(uuid.UUID{}, "nick", models.Collaborator)
-
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		tokenStr, _ := token.SignedString([]byte(secret))
+	t.Run("Error - Invalid signing method", func(t *testing.T) {
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, mockUserToken)
+		tokenStr, _ := token.SignedString(secret)
 
 		parts := strings.Split(tokenStr, ".")
 		header := `{"alg":"RS256","typ":"JWT"}`
 		encodedHeader := base64.RawURLEncoding.EncodeToString([]byte(header))
 		tokenStr = encodedHeader + "." + parts[1] + "." + parts[2]
 
-		c.Request.AddCookie(&http.Cookie{
-			Name:  Access,
-			Value: tokenStr,
-		})
+		result, err := provider.ValidateToken(tokenStr, secret)
 
-		resultUserToken, err := ValidateToken(c, Access, []byte(secret))
-
+		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.Nil(t, resultUserToken)
 		assert.Contains(t, err.Error(), "unexpected signing method")
 	})
 
-	t.Run("Token expired", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil,
-		)
-
-		expiredClaims := testmodels.NewUserToken(
-			uuid.UUID{}, "nick", models.Collaborator,
-		)
-		expiredClaims.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Hour))
+	t.Run("Error - Token expired", func(t *testing.T) {
+		expiredClaims := mockUserToken
+		expiredClaims.RegisteredClaims.ExpiresAt =
+			jwt.NewNumericDate(time.Now().Add(-time.Hour))
 
 		expiredToken, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, expiredClaims).
-			SignedString([]byte(secret))
+			SignedString(secret)
 
-		c.Request.AddCookie(&http.Cookie{
-			Name:  Access,
-			Value: expiredToken,
-		})
+		result, err := provider.ValidateToken(expiredToken, secret)
 
-		resultUserToken, err := ValidateToken(c, Access, []byte(secret))
-
+		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.Nil(t, resultUserToken)
 		assert.Contains(t, err.Error(), "token expired")
 	})
 
-	t.Run("Invalid token", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil,
-		)
+	t.Run("Error - Invalid token", func(t *testing.T) {
+		result, err := provider.ValidateToken("not.a.valid.token", secret)
 
-		c.Request.AddCookie(&http.Cookie{
-			Name:  Access,
-			Value: "not.a.valid.token",
-		})
-
-		resultUserToken, err := ValidateToken(c, Access, []byte(secret))
-
+		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.Nil(t, resultUserToken)
 		assert.Contains(t, err.Error(), "invalid token")
 	})
 
-	t.Run("Invalid or expired token", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil,
-		)
-
+	t.Run("Error - Invalid or expired token", func(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"ID":       []string{"invalid-uuid"},
 			"Username": 12345,
 			"UserRole": true,
 		})
-		tokenStr, _ := token.SignedString([]byte(secret))
+		tokenStr, _ := token.SignedString(secret)
 
-		c.Request.AddCookie(&http.Cookie{
-			Name:  Access,
-			Value: tokenStr,
-		})
+		result, err := provider.ValidateToken(tokenStr, secret)
 
-		resultUserToken, err := ValidateToken(c, Access, []byte(secret))
-
-		assert.Error(t, err)
-		assert.Nil(t, resultUserToken)
+		assert.Nil(t, result)
 		assert.EqualError(t, err, "invalid or expired token")
-	})
-}
-
-func TestExtractToken(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil)
-
-		c.Request.AddCookie(
-			&http.Cookie{
-				Name:     Access,
-				Value:    "accessToken",
-				Path:     "/",
-				Domain:   "localhost",
-				Expires:  time.Now().Add(1 * time.Second),
-				HttpOnly: true,
-				Secure:   false,
-				SameSite: http.SameSiteLaxMode,
-			})
-
-		token, err := extractToken(c, Access)
-
-		assert.NoError(t, err)
-		assert.Equal(t, "accessToken", token)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(
-			http.MethodGet, "/", "", nil, nil)
-
-		token, err := extractToken(c, Access)
-
-		assert.Empty(t, token)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "cookie not found")
 	})
 }
 

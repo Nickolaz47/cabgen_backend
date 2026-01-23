@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -26,14 +27,14 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 	lang := "en"
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindByNameOrGroupFunc: func(ctx context.Context, input, language string) ([]models.SampleSourceAdminTableResponse, error) {
 				return []models.SampleSourceAdminTableResponse{
 					mockSampleSource.ToAdminTableResponse(lang),
 				}, nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=plas", "",
@@ -52,14 +53,14 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 	})
 
 	t.Run("Input empty", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindAllFunc: func(ctx context.Context, language string) ([]models.SampleSourceAdminTableResponse, error) {
 				return []models.SampleSourceAdminTableResponse{
 					mockSampleSource.ToAdminTableResponse(lang),
 				}, nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=", "",
@@ -78,12 +79,12 @@ func TestGetSampleSourceByNameOrGroup(t *testing.T) {
 	})
 
 	t.Run("Database error", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindByNameOrGroupFunc: func(ctx context.Context, input, language string) ([]models.SampleSourceAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source/search?nameOrGroup=blo", "",

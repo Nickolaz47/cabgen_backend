@@ -20,6 +20,8 @@ import (
 func TestAuthMiddleware(t *testing.T) {
 	testutils.SetupTestContext()
 
+	tokenProvider := auth.NewTokenProvider()
+
 	mockLoginUser := testmodels.NewLoginUser()
 	mockToken := testmodels.NewUserToken(
 		mockLoginUser.ID,
@@ -63,7 +65,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		mockAccessToken, _ := auth.GenerateToken(
+		mockAccessToken, _ := tokenProvider.GenerateToken(
 			mockToken, secret, auth.AccessTokenExpiration,
 		)
 		mockAccessCookie := auth.CreateCookie(
@@ -100,7 +102,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		mockAccessToken, _ := auth.GenerateToken(
+		mockAccessToken, _ := tokenProvider.GenerateToken(
 			mockToken, secret, time.Microsecond,
 		)
 		mockAccessCookie := auth.CreateCookie(
@@ -124,7 +126,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		mockAccessToken, _ := auth.GenerateToken(
+		mockAccessToken, _ := tokenProvider.GenerateToken(
 			mockToken, secret[:10], auth.AccessTokenExpiration,
 		)
 		mockAccessCookie := auth.CreateCookie(

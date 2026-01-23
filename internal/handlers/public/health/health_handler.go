@@ -1,4 +1,4 @@
-package public
+package health
 
 import (
 	"net/http"
@@ -8,7 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Health(c *gin.Context) {
+type HealthHandler struct{}
+
+func NewHealthHandler() *HealthHandler {
+	return &HealthHandler{}
+}
+
+func (h *HealthHandler) Health(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
 	c.JSON(http.StatusOK,

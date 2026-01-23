@@ -6,89 +6,23 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-type mockSequencerRepository struct {
-	GetSequencersFunc               func(ctx context.Context) ([]models.Sequencer, error)
-	GetActiveSequencersFunc         func(ctx context.Context) ([]models.Sequencer, error)
-	GetSequencerByIDFunc            func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error)
-	GetSequencersByBrandOrModelFunc func(ctx context.Context, input string) ([]models.Sequencer, error)
-	GetSequencerDuplicateFunc       func(ctx context.Context, model string, ID uuid.UUID) (*models.Sequencer, error)
-	CreateSequencerFunc             func(ctx context.Context, sequencer *models.Sequencer) error
-	UpdateSequencerFunc             func(ctx context.Context, sequencer *models.Sequencer) error
-	DeleteSequencerFunc             func(ctx context.Context, sequencer *models.Sequencer) error
-}
-
-func (s *mockSequencerRepository) GetSequencers(ctx context.Context) ([]models.Sequencer, error) {
-	if s.GetSequencersFunc != nil {
-		return s.GetSequencersFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (s *mockSequencerRepository) GetActiveSequencers(ctx context.Context) ([]models.Sequencer, error) {
-	if s.GetActiveSequencersFunc != nil {
-		return s.GetActiveSequencersFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (s *mockSequencerRepository) GetSequencerByID(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
-	if s.GetSequencerByIDFunc != nil {
-		return s.GetSequencerByIDFunc(ctx, ID)
-	}
-	return nil, nil
-}
-
-func (s *mockSequencerRepository) GetSequencersByBrandOrModel(ctx context.Context, input string) ([]models.Sequencer, error) {
-	if s.GetSequencersByBrandOrModelFunc != nil {
-		return s.GetSequencersByBrandOrModelFunc(ctx, input)
-	}
-	return nil, nil
-}
-
-func (s *mockSequencerRepository) GetSequencerDuplicate(ctx context.Context, model string, ID uuid.UUID) (*models.Sequencer, error) {
-	if s.GetSequencerDuplicateFunc != nil {
-		return s.GetSequencerDuplicateFunc(ctx, model, ID)
-	}
-	return nil, nil
-}
-
-func (s *mockSequencerRepository) CreateSequencer(ctx context.Context, sequencer *models.Sequencer) error {
-	if s.CreateSequencerFunc != nil {
-		return s.CreateSequencerFunc(ctx, sequencer)
-	}
-	return nil
-}
-
-func (s *mockSequencerRepository) UpdateSequencer(ctx context.Context, sequencer *models.Sequencer) error {
-	if s.UpdateSequencerFunc != nil {
-		return s.UpdateSequencerFunc(ctx, sequencer)
-	}
-	return nil
-}
-
-func (s *mockSequencerRepository) DeleteSequencer(ctx context.Context, sequencer *models.Sequencer) error {
-	if s.DeleteSequencerFunc != nil {
-		return s.DeleteSequencerFunc(ctx, sequencer)
-	}
-	return nil
-}
-
 func TestSequencerFindAll(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 
 	t.Run("Success", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		sequencers, err := service.FindAll(context.Background())
@@ -98,12 +32,12 @@ func TestSequencerFindAll(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		sequencers, err := service.FindAll(context.Background())
 
@@ -117,12 +51,12 @@ func TestSequencerFindAllActive(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 
 	t.Run("Success", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := []models.SequencerFormResponse{sequencer.ToFormResponse()}
 		sequencers, err := service.FindAllActive(context.Background())
@@ -132,12 +66,12 @@ func TestSequencerFindAllActive(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		sequencers, err := service.FindAllActive(context.Background())
 
@@ -151,12 +85,12 @@ func TestSequencerFindByID(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 
 	t.Run("Success", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &sequencer, nil
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := sequencer.ToAdminTableResponse()
 		result, err := service.FindByID(context.Background(), sequencer.ID)
@@ -166,13 +100,13 @@ func TestSequencerFindByID(t *testing.T) {
 	})
 
 	t.Run("Record not found", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -181,12 +115,12 @@ func TestSequencerFindByID(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		seqRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(&seqRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		result, err := service.FindByID(context.Background(), sequencer.ID)
 
@@ -200,12 +134,12 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencersByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		result, err := service.FindByBrandOrModel(context.Background(), "illumin")
@@ -215,13 +149,13 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencersByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.FindByBrandOrModel(context.Background(), "illumin")
 
 		assert.Error(t, err)
@@ -238,12 +172,12 @@ func TestSequencerCreate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			CreateSequencerFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return nil
 			},
 		}
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := models.SequencerAdminTableResponse{
 			Model:    input.Model,
@@ -257,13 +191,13 @@ func TestSequencerCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerDuplicateFunc: func(ctx context.Context, model string, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -272,13 +206,13 @@ func TestSequencerCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerDuplicateFunc: func(ctx context.Context, model string, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{}, nil
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -287,13 +221,13 @@ func TestSequencerCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			CreateSequencerFunc: func(ctx context.Context, sequencer *models.Sequencer) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
@@ -312,7 +246,7 @@ func TestSequencerUpdate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{ID: id}, nil
 			},
@@ -320,7 +254,7 @@ func TestSequencerUpdate(t *testing.T) {
 				return nil
 			},
 		}
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 
 		expected := models.SequencerAdminTableResponse{
 			ID:       id,
@@ -335,13 +269,13 @@ func TestSequencerUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
@@ -350,7 +284,7 @@ func TestSequencerUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{ID: uuid.New()}, nil
 			},
@@ -359,7 +293,7 @@ func TestSequencerUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
@@ -368,7 +302,7 @@ func TestSequencerUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{ID: uuid.New()}, nil
 			},
@@ -377,7 +311,7 @@ func TestSequencerUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
@@ -388,7 +322,7 @@ func TestSequencerUpdate(t *testing.T) {
 
 func TestSequencerDelete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{}, nil
 			},
@@ -397,20 +331,20 @@ func TestSequencerDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -418,7 +352,7 @@ func TestSequencerDelete(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		sequencerRepo := mockSequencerRepository{
+		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return &models.Sequencer{}, nil
 			},
@@ -427,7 +361,7 @@ func TestSequencerDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(&sequencerRepo)
+		service := services.NewSequencerService(seqRepo)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)

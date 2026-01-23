@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -24,13 +25,13 @@ func TestGetSequencerByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
 				response := mockSequencer.ToAdminTableResponse()
 				return &response, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",
@@ -49,8 +50,8 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		svc := &mocks.MockSequencerService{}
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",
@@ -69,12 +70,12 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",
@@ -94,12 +95,12 @@ func TestGetSequencerByID(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",

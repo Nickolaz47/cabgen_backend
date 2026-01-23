@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -34,7 +35,7 @@ func TestUpdateSampleSource(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return &models.SampleSourceAdminDetailResponse{
 					ID:       mockSampleSource.ID,
@@ -44,7 +45,7 @@ func TestUpdateSampleSource(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
@@ -70,8 +71,8 @@ func TestUpdateSampleSource(t *testing.T) {
 
 	for _, tt := range data.UpdateSampleSourceTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockSampleSourceService{}
-			handler := samplesource.NewAdminSampleSourceHandler(&svc)
+			svc := &mocks.MockSampleSourceService{}
+			handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPut, "/api/admin/sample-source", tt.Body,
@@ -85,8 +86,8 @@ func TestUpdateSampleSource(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		svc := &mocks.MockSampleSourceService{}
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
@@ -106,12 +107,12 @@ func TestUpdateSampleSource(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
@@ -131,12 +132,12 @@ func TestUpdateSampleSource(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
@@ -156,12 +157,12 @@ func TestUpdateSampleSource(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SampleSourceUpdateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(

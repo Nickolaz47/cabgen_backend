@@ -64,8 +64,17 @@ other = "Password confirmation is required."
 [validation.passwordMismatch]  
 other = "Passwords must match."
 
+[validation.Code.required]
+other = "Country code is required."
+
+[validation.Code.len]
+other = "The country code must be 3 characters long."
+
 [validation.CountryCode.required]
 other = "Country code is required."
+
+[validation.CountryCode.len]
+other = "The country code must be 3 characters long."
 
 [validation.Interest.max]
 other = "Interest must be at most {{.Param}} characters long."
@@ -85,8 +94,23 @@ other = "Abbreviation must be at least {{.Param}} characters long."
 [validation.generic]
 other = "Invalid input. Please check the fields and try again."
 
-[country.notFound.error]
+[admin.country.notFound.error]
 other = "No country was found with this code."
+
+[admin.country.create.success]
+other = "Country created successfully."
+
+[admin.country.validation.missingLanguage]
+other = "Country missing translation for {{.Param}}."
+
+[admin.country.validation.missingTranslation]
+other = "Country has empty translation for {{.Param}}."
+
+[admin.country.alreadyExists.error]
+other = "Country already exists."
+
+[admin.country.delete.success]
+other = "Country deleted successfully."
 
 [validation.invalidCredentials]
 other = "Invalid credentials."
@@ -119,7 +143,10 @@ other = "Your account is not activated."
 other = "User role is required."
 
 [admin.user.register.invalidUserRole]
-other = "The user role is invalid."
+other = "The user role is invalid. Choose between Collaborator or Admin."
+
+[admin.user.search.invalidActiveQuery]
+other = "The activation state can only be true or false."
 
 [admin.user.register.success]
 other = "User created successfully."
@@ -147,9 +174,6 @@ other = "Origin not found."
 
 [admin.origin.alreadyExists.error]
 other = "Origin already exists."
-
-[admin.origin.emptyName.error]
-other = "The search parameter name is empty."
 
 [validation.Names.required]
 other = "The names parameter with translations for pt, en, and es is required."

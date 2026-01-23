@@ -5,13 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupAdminUserRoutes(r *gin.RouterGroup) {
-	userRouter := r.Group("/user")
+func SetupAdminUserRoutes(r *gin.RouterGroup, handler *user.AdminUserHandler) {
+	userRouter := r.Group("/users")
 
-	userRouter.GET("", user.GetAllUsers)
-	userRouter.GET("/:username", user.GetUserByUsername)
-	userRouter.POST("", user.CreateUser)
-	userRouter.PUT("/:username", user.UpdateUser)
-	userRouter.PUT("/activation/:username", user.UpdateUserActivation)
-	userRouter.DELETE("/:username", user.DeleteUser)
+	userRouter.GET("", handler.GetUsers)
+	userRouter.GET("/:userId", handler.GetUserByID)
+	userRouter.POST("", handler.CreateUser)
+	userRouter.PUT("/:userId", handler.UpdateUser)
+	userRouter.PATCH("/:userId/activate", handler.ActivateUser)
+	userRouter.PATCH("/:userId/deactivate", handler.DeactivateUser)
+	userRouter.DELETE("/:userId", handler.DeleteUser)
 }

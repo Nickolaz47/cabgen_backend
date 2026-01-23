@@ -22,14 +22,12 @@ func TestApplyAdminUpdateToUser(t *testing.T) {
 	interest := "Programming"
 	role := "Developer"
 
-	updateInput := models.AdminUpdateInput{
-		UpdateUserInput: models.UpdateUserInput{
-			Name:        &name,
-			Username:    &username,
-			Institution: &institution,
-			Interest:    &interest,
-			Role:        &role,
-		},
+	updateInput := models.AdminUserUpdateInput{
+		Name:        &name,
+		Username:    &username,
+		Institution: &institution,
+		Interest:    &interest,
+		Role:        &role,
 		Email: &email,
 	}
 
@@ -220,4 +218,27 @@ func TestApplyLaboratoryUpdate(t *testing.T) {
 	validations.ApplyLaboratoryUpdate(&laboratory, &laboratoryUpdate)
 
 	assert.Equal(t, expected, laboratory)
+}
+
+func TestApplyCountryUpdate(t *testing.T) {
+	country := testmodels.NewCountry("", nil)
+
+	code, names := "SPN", map[string]string{
+		"pt": "Espanha",
+		"en": "Spain",
+		"es": "España",
+	}
+	input := models.CountryUpdateInput{
+		Code:  &code,
+		Names: names,
+	}
+
+	expected := models.Country{
+		Code:  code,
+		Names: names,
+	}
+
+	validations.ApplyCountryUpdate(&country, &input)
+
+	assert.Equal(t, expected, country)
 }

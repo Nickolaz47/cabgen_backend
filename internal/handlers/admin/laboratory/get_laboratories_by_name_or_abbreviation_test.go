@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/laboratory"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +36,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	adminResponse2 := lab2.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindByNameOrAbbreviationFunc: func(
 				ctx context.Context,
 				input string,
@@ -45,7 +46,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -67,7 +68,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Success - Input Empty", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindAllFunc: func(
 				ctx context.Context,
 			) ([]models.LaboratoryAdminTableResponse, error) {
@@ -77,7 +78,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -99,7 +100,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			FindByNameOrAbbreviationFunc: func(
 				ctx context.Context,
 				input string,
@@ -107,7 +108,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

@@ -1,106 +1,114 @@
 package user_test
 
 import (
-	"bytes"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/responses"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetOwnUser(t *testing.T) {
 	testutils.SetupTestContext()
-	db := testutils.SetupTestRepos()
-
-	mockCountry := testmodels.NewCountry("", nil)
-	db.Create(&mockCountry)
+	lang := "en"
 
 	mockLoginUser := testmodels.NewLoginUser()
-	db.Create(&mockLoginUser)
+	mockToken := mockLoginUser.ToToken()
+
+	response := mockLoginUser.ToResponse(lang)
 
 	t.Run("Success", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(
-			http.MethodPost,
-			"/api/auth/login",
-			testutils.ToJSON(models.LoginInput{
-				Username: mockLoginUser.Username,
-				Password: "12345678"},
-			), nil, nil,
-		)
-
-		public.Login(c)
-		var accessCookie string
-
-		cookies := w.Result().Cookies()
-		for _, cookie := range cookies {
-			if cookie.Name == auth.Access {
-				accessCookie = cookie.Value
-			}
+		svc := &mocks.MockUserService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error) {
+				return &response, nil
+			},
 		}
+		handler := user.NewUserHandler(svc)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/user/me", bytes.NewBuffer(nil))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/users/me", "",
+			nil, nil,
+		)
+		c.Set("user", &mockToken)
+		handler.GetOwnUser(c)
 
-		w = httptest.NewRecorder()
-		c, _ = gin.CreateTestContext(w)
-		c.Request = req
-
-		c.Set("user", &models.UserToken{
-			ID:       mockLoginUser.ID,
-			Username: mockLoginUser.Username,
-			UserRole: mockLoginUser.UserRole,
-		})
-
-		user.GetOwnUser(c)
-
-		expected := testutils.ToJSON(responses.APIResponse{Data: mockLoginUser.ToResponse(c)})
+		expected := testutils.ToJSON(
+			map[string]models.UserResponse{
+				"data": response,
+			},
+		)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Missing user in context", func(t *testing.T) {
+	t.Run("Error - Missing user in context", func(t *testing.T) {
+		svc := &mocks.MockUserService{}
+		handler := user.NewUserHandler(svc)
+
 		c, w := testutils.SetupGinContext(
-			http.MethodGet,
-			"/api/user/me",
-			"", nil, nil,
+			http.MethodGet, "/api/users/me", "",
+			nil, nil,
 		)
+		handler.GetOwnUser(c)
 
-		user.GetOwnUser(c)
-
-		expected := `{"error": "Unauthorized. Please log in to continue."}`
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Unauthorized. Please log in to continue."},
+		)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("User not found", func(t *testing.T) {
-		c, w := testutils.SetupGinContext(
-			http.MethodGet,
-			"/api/user/me",
-			"", nil, nil,
-		)
-
-		mockUserToken := &models.UserToken{
-			ID:       uuid.UUID{},
-			Username: "nick",
-			UserRole: "Collaborator",
+	t.Run("Error - Not Found", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error) {
+				return nil, services.ErrNotFound
+			},
 		}
-		c.Set("user", mockUserToken)
+		handler := user.NewUserHandler(svc)
 
-		user.GetOwnUser(c)
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/users/me", "",
+			nil, nil,
+		)
+		c.Set("user", &mockToken)
+		handler.GetOwnUser(c)
 
-		expected := `{"error": "Unauthorized. Please log in to continue."}`
+		expected := testutils.ToJSON(map[string]string{
+			"error": "User not found.",
+		})
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := user.NewUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/users/me", "",
+			nil, nil,
+		)
+		c.Set("user", &mockToken)
+		handler.GetOwnUser(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "There was a server error. Please try again.",
+		})
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())

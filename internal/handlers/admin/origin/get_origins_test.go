@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -26,13 +27,13 @@ func TestGetAllOrigins(t *testing.T) {
 	mockResponse := mockOrigin.ToAdminTableResponse("pt")
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindAllFunc: func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
 				return []models.OriginAdminTableResponse{mockResponse}, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -55,13 +56,13 @@ func TestGetAllOrigins(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindAllFunc: func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

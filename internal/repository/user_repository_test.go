@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -16,14 +17,15 @@ import (
 
 func TestNewUserRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-
 	userRepo := repository.NewUserRepo(db)
 
 	assert.NotEmpty(t, userRepo)
 }
 
-func TestGetUsers(t *testing.T) {
+func TestGetAllUsers(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
+	filter := models.AdminUserFilter{}
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -37,21 +39,18 @@ func TestGetUsers(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		users, err := userRepo.GetUsers()
-
-		mockUser.CreatedAt = time.Time{}
-		mockUser.UpdatedAt = time.Time{}
-		mockUser2.CreatedAt = time.Time{}
-		mockUser2.UpdatedAt = time.Time{}
-		expected := []models.User{mockUser, mockUser2}
+		users, err := userRepo.GetUsers(ctx, filter)
 
 		for i := range users {
 			users[i].CreatedAt = time.Time{}
 			users[i].UpdatedAt = time.Time{}
 		}
+		mockUser.CreatedAt, mockUser.UpdatedAt = time.Time{}, time.Time{}
+		mockUser2.CreatedAt, mockUser2.UpdatedAt = time.Time{}, time.Time{}
+
+		expected := []models.User{mockUser, mockUser2}
 
 		assert.NoError(t, err)
-		assert.Len(t, users, 2)
 		assert.Equal(t, expected, users)
 	})
 
@@ -60,7 +59,7 @@ func TestGetUsers(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockUserRepo := repository.NewUserRepo(mockDB)
-		users, err := mockUserRepo.GetUsers()
+		users, err := mockUserRepo.GetUsers(ctx, filter)
 
 		assert.Empty(t, users)
 		assert.Error(t, err)
@@ -69,6 +68,7 @@ func TestGetUsers(t *testing.T) {
 
 func TestGetUserByID(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -79,7 +79,7 @@ func TestGetUserByID(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		user, err := userRepo.GetUserByID(mockUser.ID)
+		user, err := userRepo.GetUserByID(ctx, mockUser.ID)
 
 		user.CreatedAt = time.Time{}
 		user.UpdatedAt = time.Time{}
@@ -92,16 +92,16 @@ func TestGetUserByID(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		user, err := userRepo.GetUserByID(uuid.UUID{})
+		user, err := userRepo.GetUserByID(ctx, uuid.UUID{})
 
 		assert.Error(t, err)
 		assert.Empty(t, user)
-		assert.ErrorContains(t, err, "record not found")
 	})
 }
 
 func TestGetUserByUsername(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -112,7 +112,7 @@ func TestGetUserByUsername(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		user, err := userRepo.GetUserByUsername(mockUser.Username)
+		user, err := userRepo.GetUserByUsername(ctx, mockUser.Username)
 
 		user.CreatedAt = time.Time{}
 		user.UpdatedAt = time.Time{}
@@ -125,16 +125,16 @@ func TestGetUserByUsername(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		user, err := userRepo.GetUserByUsername("Gohan")
+		user, err := userRepo.GetUserByUsername(ctx, "Gohan")
 
 		assert.Error(t, err)
 		assert.Empty(t, user)
-		assert.ErrorContains(t, err, "record not found")
 	})
 }
 
 func TestGetUserByEmail(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -145,7 +145,7 @@ func TestGetUserByEmail(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		user, err := userRepo.GetUserByEmail(mockUser.Email)
+		user, err := userRepo.GetUserByEmail(ctx, mockUser.Email)
 
 		user.CreatedAt = time.Time{}
 		user.UpdatedAt = time.Time{}
@@ -158,16 +158,16 @@ func TestGetUserByEmail(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		user, err := userRepo.GetUserByEmail("i@mail.com")
+		user, err := userRepo.GetUserByEmail(ctx, "i@mail.com")
 
 		assert.Error(t, err)
 		assert.Empty(t, user)
-		assert.ErrorContains(t, err, "record not found")
 	})
 }
 
-func TestGetUserByUsernameOrEmail(t *testing.T) {
+func TestExistsByEmail(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -178,7 +178,9 @@ func TestGetUserByUsernameOrEmail(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		user, err := userRepo.GetUserByUsernameOrEmail(mockUser.Username, mockUser.Email)
+		user, err := userRepo.ExistsByEmail(
+			ctx, &mockUser.Email, uuid.New(),
+		)
 
 		user.CreatedAt = time.Time{}
 		user.UpdatedAt = time.Time{}
@@ -190,61 +192,84 @@ func TestGetUserByUsernameOrEmail(t *testing.T) {
 		assert.Equal(t, &mockUser, user)
 	})
 
-	t.Run("Error", func(t *testing.T) {
-		user, err := userRepo.GetUserByUsernameOrEmail("gohan", "g@mail.com")
+	t.Run("Error - Empty input", func(t *testing.T) {
+		user, err := userRepo.ExistsByEmail(
+			ctx, nil, uuid.New(),
+		)
 
 		assert.Error(t, err)
 		assert.Empty(t, user)
-		assert.ErrorContains(t, err, "record not found")
-	})
-}
-
-func TestGetAllAdminUsers(t *testing.T) {
-	db := testutils.NewMockDB()
-
-	mockCountry := testmodels.NewCountry("", nil)
-	db.Create(&mockCountry)
-
-	mockUser := testmodels.NewLoginUser()
-	db.Create(&mockUser)
-
-	mockAdminUser := testmodels.NewAdminLoginUser()
-	db.Create(&mockAdminUser)
-
-	userRepo := repository.NewUserRepo(db)
-
-	t.Run("Success", func(t *testing.T) {
-		users, err := userRepo.GetAllAdminUsers()
-
-		mockAdminUser.CreatedAt = time.Time{}
-		mockAdminUser.UpdatedAt = time.Time{}
-		expected := []models.User{mockAdminUser}
-
-		for i := range users {
-			users[i].CreatedAt = time.Time{}
-			users[i].UpdatedAt = time.Time{}
-		}
-
-		assert.NoError(t, err)
-		assert.Len(t, users, 1)
-		assert.Equal(t, expected, users)
+		assert.ErrorContains(t, err, "invalid value")
 	})
 
-	t.Run("Error", func(t *testing.T) {
+	t.Run("Error - DB", func(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
 		mockUserRepo := repository.NewUserRepo(mockDB)
+		users, err := mockUserRepo.ExistsByEmail(
+			ctx, &mockUser.Email, uuid.New())
 
-		users, err := mockUserRepo.GetAllAdminUsers()
+		assert.Empty(t, users)
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, gorm.ErrRecordNotFound)
+	})
+}
+
+func TestExistsByUsername(t *testing.T) {
+	db := testutils.NewMockDB()
+	ctx := context.Background()
+
+	mockCountry := testmodels.NewCountry("", nil)
+	db.Create(&mockCountry)
+
+	mockUser := testmodels.NewLoginUser()
+	db.Create(&mockUser)
+
+	userRepo := repository.NewUserRepo(db)
+
+	t.Run("Success", func(t *testing.T) {
+		user, err := userRepo.ExistsByUsername(
+			ctx, &mockUser.Username, uuid.New(),
+		)
+
+		user.CreatedAt = time.Time{}
+		user.UpdatedAt = time.Time{}
+
+		mockUser.CreatedAt = time.Time{}
+		mockUser.UpdatedAt = time.Time{}
+
+		assert.NoError(t, err)
+		assert.Equal(t, &mockUser, user)
+	})
+
+	t.Run("Error - Empty input", func(t *testing.T) {
+		user, err := userRepo.ExistsByUsername(
+			ctx, nil, uuid.New(),
+		)
 
 		assert.Error(t, err)
+		assert.Empty(t, user)
+		assert.ErrorContains(t, err, "invalid value")
+	})
+
+	t.Run("Error - DB", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockUserRepo := repository.NewUserRepo(mockDB)
+		users, err := mockUserRepo.ExistsByUsername(
+			ctx, &mockUser.Username, uuid.New())
+
 		assert.Empty(t, users)
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 }
 
 func TestCreateUser(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -254,7 +279,7 @@ func TestCreateUser(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		err := userRepo.CreateUser(&mockUser)
+		err := userRepo.CreateUser(ctx, &mockUser)
 
 		assert.NoError(t, err)
 	})
@@ -265,7 +290,7 @@ func TestCreateUser(t *testing.T) {
 
 		mockUserRepo := repository.NewUserRepo(mockDB)
 
-		err = mockUserRepo.CreateUser(&mockUser)
+		err = mockUserRepo.CreateUser(ctx, &mockUser)
 
 		assert.Error(t, err)
 	})
@@ -273,6 +298,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -283,15 +309,13 @@ func TestUpdateUser(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		mockUser.Username = "nikol"
-
-		err := userRepo.UpdateUser(&mockUser)
+		err := userRepo.UpdateUser(ctx, &mockUser)
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		err := userRepo.UpdateUser(&models.User{})
+		err := userRepo.UpdateUser(ctx, &models.User{})
 
 		assert.Error(t, err)
 	})
@@ -299,6 +323,7 @@ func TestUpdateUser(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	db := testutils.NewMockDB()
+	ctx := context.Background()
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -309,13 +334,13 @@ func TestDeleteUser(t *testing.T) {
 	userRepo := repository.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		err := userRepo.DeleteUser(&mockUser)
+		err := userRepo.DeleteUser(ctx, &mockUser)
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		err := userRepo.DeleteUser(&models.User{})
+		err := userRepo.DeleteUser(ctx, &models.User{})
 
 		assert.Error(t, err)
 	})

@@ -1,49 +1,107 @@
 package user_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteUser(t *testing.T) {
 	testutils.SetupTestContext()
 
-	db := testutils.SetupTestRepos()
-
 	mockLoginUser := testmodels.NewLoginUser()
-	db.Create(&mockLoginUser)
-
 	t.Run("Success", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return nil
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/user/nick", "",
-			nil, gin.Params{{Key: "username", Value: "nick"}},
+			http.MethodDelete, "/api/admin/users", "",
+			nil, gin.Params{{Key: "userId", Value: mockLoginUser.ID.String()}},
 		)
+		handler.DeleteUser(c)
 
-		user.DeleteUser(c)
-
-		expected := `{"message": "User deleted successfully."}`
+		expected := testutils.ToJSON(
+			map[string]string{
+				"message": "User deleted successfully.",
+			},
+		)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("User not found", func(t *testing.T) {
+	t.Run("Error - Invalid ID", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{}
+		handler := user.NewAdminUserHandler(svc)
+
 		c, w := testutils.SetupGinContext(
-			http.MethodDelete, "/api/admin/user/xxxx", "",
-			nil, gin.Params{{Key: "username", Value: "xxxx"}},
+			http.MethodDelete, "/api/admin/users", "",
+			nil, gin.Params{{Key: "userId", Value: "ifew90843"}},
 		)
+		handler.DeleteUser(c)
 
-		user.DeleteUser(c)
+		expected := testutils.ToJSON(map[string]string{
+			"error": "The URL ID is invalid.",
+		})
 
-		expected := `{"error": "User not found."}`
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - User Not Found", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return services.ErrNotFound
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodDelete, "/api/admin/users", "",
+			nil, gin.Params{{Key: "userId", Value: uuid.NewString()}},
+		)
+		handler.DeleteUser(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "User not found.",
+		})
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return services.ErrInternal
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodDelete, "/api/admin/users", "",
+			nil, gin.Params{{Key: "userId", Value: uuid.NewString()}},
+		)
+		handler.DeleteUser(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "There was a server error. Please try again.",
+		})
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 }

@@ -64,8 +64,17 @@ other = "La confirmación de contraseña es obligatoria."
 [validation.passwordMismatch]  
 other = "Las contraseñas deben coincidir."
 
+[validation.Code.required]
+other = "El código de país es obligatorio."
+
+[validation.Code.len]
+other = "El código del país debe tener 3 caracteres."
+
 [validation.CountryCode.required]
 other = "El código de país es obligatorio."
+
+[validation.CountryCode.len]
+other = "El código del país debe tener 3 caracteres."
 
 [validation.Interest.max]
 other = "El campo de interés debe tener como máximo {{.Param}} caracteres."
@@ -85,8 +94,23 @@ other = "Abreviatura debe tener al menos {{.Param}} caracteres."
 [validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
 
-[country.notFound.error]
+[admin.country.notFound.error]
 other = "No se encontró el país con este código."
+
+[admin.country.create.success]
+other = "País creado con éxito."
+
+[admin.country.validation.missingLanguage]
+other = "País sin traducción para {{.Param}}."
+
+[admin.country.validation.missingTranslation]
+other = "País con la traducción para {{.Param}} vacía."
+
+[admin.country.alreadyExists.error]
+other = "País ya existe."
+
+[admin.country.delete.success]
+other = "País eliminado con éxito."
 
 [validation.invalidCredentials]
 other = "Credenciales inválidas."
@@ -119,7 +143,10 @@ other = "Tu cuenta no está activada."
 other = "El cargo del usuario es obligatorio."
 
 [admin.user.register.invalidUserRole]
-other = "El rol de usuario no es válido."
+other = "El rol de usuario no es válido. Elija entre Collaborator o Admin."
+
+[admin.user.search.invalidActiveQuery]
+other = "El estado de activación solo puede ser true o false."
 
 [admin.user.register.success]
 other = "Usuario creado con éxito."
@@ -147,9 +174,6 @@ other = "Origen no encontrado."
 
 [admin.origin.alreadyExists.error]
 other = "Origen ya existe."
-
-[admin.origin.emptyName.error]
-other = "El parámetro de búsqueda name está vacío."
 
 [validation.Names.required]
 other = "El parámetro names con las traducciones para pt, en y es es obligatorio."

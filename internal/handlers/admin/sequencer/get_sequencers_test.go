@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -22,16 +23,16 @@ func TestGetAllSequencers(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
 				return []models.SequencerAdminTableResponse{
 					mockSequencer.ToAdminTableResponse(),
 				}, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
-		c, w := testutils.SetupGinContext(http.MethodGet, 
+		c, w := testutils.SetupGinContext(http.MethodGet,
 			"/api/admin/sequencer", "", nil, nil)
 		handler.GetSequencers(c)
 
@@ -46,12 +47,12 @@ func TestGetAllSequencers(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",

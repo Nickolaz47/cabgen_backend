@@ -6,6 +6,6 @@ import (
 )
 
 func SetupLaboratoryRoutes(r *gin.RouterGroup, handler *laboratory.LaboratoryHandler) {
-	laboratoryRouter := r.Group("/laboratory")
+	laboratoryRouter := r.Group("/laboratories")
 	laboratoryRouter.GET("", handler.GetActiveLaboratories)
 }

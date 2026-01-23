@@ -12,9 +12,9 @@ type User struct {
 	Name        string          `gorm:"not null" json:"name"`
 	Username    string          `gorm:"not null;uniqueIndex" json:"username"`
 	Email       string          `gorm:"not null;uniqueIndex" json:"email"`
-	Password    string          `gorm:"not null" json:"-"`
-	CountryCode string          `gorm:"type:string;not null" json:"country_code"`
-	Country     models.Country  `gorm:"foreignKey:CountryCode;references:Code"`
+	Password    string          `gorm:"not null" json:"-" `
+	CountryID   uint            `gorm:"type:uint;not null" json:"country_id" `
+	Country     models.Country  `gorm:"foreignKey:CountryID;references:ID" `
 	IsActive    bool            `gorm:"not null" json:"is_active"`
 	UserRole    models.UserRole `gorm:"type:varchar(20);not null" json:"user_role"`
 	Interest    *string         `gorm:"default:null" json:"interest,omitempty"`
@@ -28,74 +28,87 @@ type User struct {
 }
 
 var (
-	name        = "Nicolas"
-	username    = "nickol"
-	password    = "12345678"
-	email       = "nicolas@mail.com"
-	countryCode = "BRA"
-	interest    = "Bacterial resistance"
-	role        = "Researcher"
-	institution = "NCBI"
+	name             = "Nicolas"
+	username         = "nickol"
+	password         = "12345678"
+	email            = "nicolas@mail.com"
+	countryID   uint = 1
+	countryCode      = "BRA"
+	interest         = "Bacterial resistance"
+	role             = "Researcher"
+	institution      = "NCBI"
 )
 
 func NewLoginUser() models.User {
 	return models.User{
-		ID:          uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76c"),
-		Name:        "Nicolas",
-		Username:    "nick",
-		Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
-		Email:       "nick@mail.com",
-		CountryCode: "BRA",
+		ID:        uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76c"),
+		Name:      "Nicolas",
+		Username:  "nick",
+		Password:  "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
+		Email:     "nick@mail.com",
+		CountryID: countryID,
 		Country: models.Country{
-			Code: "BRA", Names: map[string]string{
+			ID:   countryID,
+			Code: "BRA",
+			Names: map[string]string{
 				"pt": "Brasil",
 				"en": "Brazil",
 				"es": "Brazil",
-			}},
+			},
+		},
 		IsActive: true,
+		UserRole: models.Collaborator,
 	}
 }
 
 func NewAdminLoginUser() models.User {
 	return models.User{
-		ID:          uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76d"),
-		Name:        "Cabgen Admin",
-		Username:    "admin",
-		Password:    "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
-		Email:       "cadmin@mail.com",
-		UserRole:    models.Admin,
-		CountryCode: "BRA",
-		Country: models.Country{Code: "BRA", Names: map[string]string{
-			"pt": "Brasil",
-			"en": "Brazil",
-			"es": "Brazil",
-		}},
-		IsActive: true,
+		ID:        uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76d"),
+		Name:      "Cabgen Admin",
+		Username:  "admin",
+		Password:  "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
+		Email:     "admin@mail.com",
+		UserRole:  models.Admin,
+		CountryID: countryID,
+		Country: models.Country{
+			ID:   countryID,
+			Code: "BRA",
+			Names: map[string]string{
+				"pt": "Brasil",
+				"en": "Brazil",
+				"es": "Brazil",
+			},
+		},
+		IsActive:  true,
+		CreatedBy: "system",
+		CreatedAt: time.Now(),
 	}
 }
 
-func NewRegisterUser(username, inputEmail string) models.RegisterInput {
-	if username == "" {
-		username = "nmfaraujo"
+func NewRegisterUser(inputUsername, inputEmail string) models.UserRegisterInput {
+	if inputUsername == "" {
+		inputUsername = username
 	}
-
 	if inputEmail == "" {
 		inputEmail = email
 	}
 
-	return models.RegisterInput{
+	return models.UserRegisterInput{
 		Name:            name,
-		Username:        username,
-		Password:        password,
-		ConfirmPassword: password,
+		Username:        inputUsername,
 		Email:           inputEmail,
 		ConfirmEmail:    inputEmail,
+		Password:        password,
+		ConfirmPassword: password,
 		CountryCode:     countryCode,
+		Interest:        &interest,
+		Role:            &role,
+		Institution:     &institution,
 	}
 }
 
-func NewUpdateUserInput() models.UpdateUserInput {
-	return models.UpdateUserInput{
+func NewUserUpdateInput() models.UserUpdateInput {
+	return models.UserUpdateInput{
 		Name:        &name,
 		Username:    &username,
 		CountryCode: &countryCode,
@@ -105,51 +118,49 @@ func NewUpdateUserInput() models.UpdateUserInput {
 	}
 }
 
-func NewUserToken(id uuid.UUID, username string, userRole models.UserRole) models.UserToken {
-	return models.UserToken{
-		ID:       id,
-		Username: username,
-		UserRole: userRole,
-	}
-}
-
-func NewAdminCreateUserInput(inputEmail, username string) models.AdminRegisterInput {
+func NewAdminCreateUserInput(inputEmail, inputUsername string) models.AdminUserCreateInput {
 	if inputEmail == "" {
 		inputEmail = "eddy@mail.com"
 	}
-
-	if username == "" {
-		username = "eddy"
+	if inputUsername == "" {
+		inputUsername = "eddy"
 	}
 
-	return models.AdminRegisterInput{
-		RegisterInput: models.RegisterInput{
-			Name:            "Eddie",
-			Username:        username,
-			Email:           inputEmail,
-			ConfirmEmail:    inputEmail,
-			Password:        "12345678",
-			ConfirmPassword: "12345678",
-			CountryCode:     "BRA",
-		},
-		UserRole: models.Collaborator,
+	return models.AdminUserCreateInput{
+		Name:        "Eddie",
+		Username:    inputUsername,
+		Email:       inputEmail,
+		Password:    password,
+		CountryCode: countryCode,
+		UserRole:    models.Collaborator,
+		IsActive:    true,
+		Interest:    &interest,
+		Role:        &role,
+		Institution: &institution,
 	}
 }
 
-func NewAdminUpdateUserInput() models.AdminUpdateInput {
+func NewAdminUpdateUserInput() models.AdminUserUpdateInput {
 	userRole := models.Collaborator
+	isActive := true
 
-	return models.AdminUpdateInput{
-		UpdateUserInput: models.UpdateUserInput{
-			Name:        &name,
-			Username:    &username,
-			CountryCode: &countryCode,
-			Interest:    &interest,
-			Role:        &role,
-			Institution: &institution,
-		},
-		Email:    &email,
-		Password: &password,
-		UserRole: &userRole,
+	return models.AdminUserUpdateInput{
+		Name:        &name,
+		Username:    &username,
+		Email:       &email,
+		CountryCode: &countryCode,
+		UserRole:    &userRole,
+		IsActive:    &isActive,
+		Interest:    &interest,
+		Role:        &role,
+		Institution: &institution,
+	}
+}
+
+func NewUserToken(id uuid.UUID, username string, role models.UserRole) models.UserToken {
+	return models.UserToken{
+		ID:       id,
+		Username: username,
+		UserRole: role,
 	}
 }

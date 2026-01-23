@@ -10,7 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +24,7 @@ func TestCreateSampleSource(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return &models.SampleSourceAdminDetailResponse{
 					Names:    mockSampleSourceInput.Names,
@@ -33,7 +33,7 @@ func TestCreateSampleSource(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(
@@ -57,8 +57,8 @@ func TestCreateSampleSource(t *testing.T) {
 
 	for _, tt := range data.CreateSampleSourceTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockSampleSourceService{}
-			handler := samplesource.NewAdminSampleSourceHandler(&svc)
+			svc := &mocks.MockSampleSourceService{}
+			handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/sample-source", tt.Body,
@@ -72,12 +72,12 @@ func TestCreateSampleSource(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost, "/api/admin/origin", testutils.ToJSON(mockSampleSourceInput),
@@ -96,12 +96,12 @@ func TestCreateSampleSource(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			CreateFunc: func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		body := testutils.ToJSON(mockSampleSourceInput)
 		c, w := testutils.SetupGinContext(

@@ -64,8 +64,17 @@ other = "A confirmação de senha é obrigatória."
 [validation.passwordMismatch]
 other = "As senhas devem ser iguais."
 
+[validation.Code.required]
+other = "O código do país é obrigatório."
+
+[validation.Code.len]
+other = "O código do país deve ter 3 caracteres."
+
 [validation.CountryCode.required]
 other = "O código do país é obrigatório."
+
+[validation.CountryCode.len]
+other = "O código do país deve ter 3 caracteres."
 
 [validation.Interest.max]
 other = "O campo de interesse deve ter no máximo {{.Param}} caracteres."
@@ -85,8 +94,23 @@ other = "Abreviação deve ter pelo menos {{.Param}} caracteres."
 [validation.generic]
 other = "Entrada inválida. Verifique os campos e tente novamente."
 
-[country.notFound.error]
+[admin.country.notFound.error]
 other = "O país com esse código não foi encontrado."
+
+[admin.country.create.success]
+other= "País criado com sucesso."
+
+[admin.country.validation.missingLanguage]
+other= "País sem tradução para {{.Param}}."
+
+[admin.country.validation.missingTranslation]
+other = "País com a tradução para {{.Param}} vazia."
+
+[admin.country.alreadyExists.error]
+other = "País já existe."
+
+[admin.country.delete.success]
+other = "País deletado com sucesso."
 
 [validation.invalidCredentials]
 other = "Credenciais inválidas."
@@ -119,7 +143,10 @@ other = "Seu usuário não está ativado."
 other = "O cargo do usuário é obrigatório."
 
 [admin.user.register.invalidUserRole]
-other = "O cargo do usuário não é válido."
+other = "O cargo do usuário não é válido. Escolha entre Collaborator ou Admin."
+
+[admin.user.search.invalidActiveQuery]
+other = "O estado de ativação só pode ser true ou false."
 
 [admin.user.register.success]
 other = "Usuário criado com sucesso."
@@ -147,9 +174,6 @@ other =  "Origem não encontrada."
 
 [admin.origin.alreadyExists.error]
 other = "Origem já existe."
-
-[admin.origin.emptyName.error]
-other = "O parâmetro de busca name está vazio."
 
 [validation.Names.required]
 other = "O parâmetro names com as traduções para pt, en e es é obrigatório."

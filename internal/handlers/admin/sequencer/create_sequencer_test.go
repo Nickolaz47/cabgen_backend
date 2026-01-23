@@ -10,7 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +24,7 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
 				return &models.SequencerAdminTableResponse{
 					Model:    input.Model,
@@ -33,7 +33,7 @@ func TestCreateSequencer(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		body := testutils.ToJSON(input)
 		c, w := testutils.SetupGinContext(
@@ -59,8 +59,8 @@ func TestCreateSequencer(t *testing.T) {
 
 	for _, tt := range data.CreateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			service := testmodels.MockSequencerService{}
-			handler := sequencer.NewAdminSequencerHandler(&service)
+			service := &mocks.MockSequencerService{}
+			handler := sequencer.NewAdminSequencerHandler(service)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost, "/api/admin/sequencer", tt.Body,
@@ -75,12 +75,12 @@ func TestCreateSequencer(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		body := testutils.ToJSON(input)
 		c, w := testutils.SetupGinContext(
@@ -98,12 +98,12 @@ func TestCreateSequencer(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			CreateFunc: func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		body := testutils.ToJSON(input)
 		c, w := testutils.SetupGinContext(

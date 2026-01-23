@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -31,7 +32,7 @@ func TestUpdateSequencer(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 				return &models.SequencerAdminTableResponse{
 					ID:       mockSequencer.ID,
@@ -41,7 +42,7 @@ func TestUpdateSequencer(t *testing.T) {
 				}, nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(mockSequencerInput),
@@ -66,8 +67,8 @@ func TestUpdateSequencer(t *testing.T) {
 
 	for _, tt := range data.UpdateSequencerTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockSequencerService{}
-			handler := sequencer.NewAdminSequencerHandler(&svc)
+			svc := &mocks.MockSequencerService{}
+			handler := sequencer.NewAdminSequencerHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPut, "/api/admin/sequencer", tt.Body,
@@ -81,8 +82,8 @@ func TestUpdateSequencer(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		svc := &mocks.MockSequencerService{}
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", "",
@@ -101,12 +102,12 @@ func TestUpdateSequencer(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(
@@ -127,12 +128,12 @@ func TestUpdateSequencer(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(
@@ -153,12 +154,12 @@ func TestUpdateSequencer(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			UpdateFunc: func(ctx context.Context, ID uuid.UUID, input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut, "/api/admin/sequencer", testutils.ToJSON(

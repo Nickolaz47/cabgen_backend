@@ -1,6 +1,8 @@
 package models
 
 import (
+	"net/http"
+
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -15,4 +17,9 @@ type UserToken struct {
 type LoginInput struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type Cookies struct {
+	AccessCookie  *http.Cookie
+	RefreshCookie *http.Cookie
 }

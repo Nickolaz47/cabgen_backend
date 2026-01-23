@@ -6,6 +6,6 @@ import (
 )
 
 func SetupSequencerRoutes(r *gin.RouterGroup, handler *sequencer.SequencerHandler) {
-	sequencerRouter := r.Group("/sequencer")
+	sequencerRouter := r.Group("/sequencers")
 	sequencerRouter.GET("", handler.GetActiveSequencers)
 }

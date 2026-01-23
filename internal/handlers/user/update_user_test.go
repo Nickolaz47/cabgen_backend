@@ -1,18 +1,16 @@
 package user_test
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,50 +19,85 @@ import (
 
 func TestUpdateUser(t *testing.T) {
 	testutils.SetupTestContext()
-	db := testutils.SetupTestRepos()
 
-	mockCountry := testmodels.NewCountry("", nil)
-	db.Create(&mockCountry)
-
-	mockLoginUser := testmodels.NewLoginUser()
-	db.Create(&mockLoginUser)
-
+	mockUser := testmodels.NewLoginUser()
 	mockUserToken := testmodels.NewUserToken(
-		mockLoginUser.ID, mockLoginUser.Username, mockLoginUser.UserRole,
+		mockUser.ID,
+		mockUser.Username,
+		mockUser.UserRole,
 	)
 
-	gc, gw := testutils.SetupGinContext(
-		http.MethodPost,
-		"/api/auth/login",
-		testutils.ToJSON(models.LoginInput{
-			Username: mockLoginUser.Username,
-			Password: "12345678"},
-		), nil, nil,
-	)
-
-	public.Login(gc)
-	var accessCookie string
-
-	cookies := gw.Result().Cookies()
-	for _, cookie := range cookies {
-		if cookie.Name == auth.Access {
-			accessCookie = cookie.Value
-		}
+	updateInput := testmodels.NewUserUpdateInput()
+	updateResponse := models.UserResponse{
+		Name:        *updateInput.Name,
+		Username:    *updateInput.Username,
+		Email:       mockUser.Email,
+		CountryCode: *updateInput.CountryCode,
+		Country:     "Brazil",
+		UserRole:    mockUser.UserRole,
+		Role:        updateInput.Role,
+		Interest:    updateInput.Interest,
+		Institution: updateInput.Institution,
 	}
 
-	t.Run("Missing user in context", func(t *testing.T) {
-		mockUpdateUserInput := testmodels.NewUpdateUserInput()
-		body := testutils.ToJSON(mockUpdateUserInput)
-		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
+	t.Run("Success", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				return &updateResponse, nil
+			},
+		}
+		handler := user.NewUserHandler(svc)
 
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/users",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "userId", Value: mockUser.ID.String()}},
+		)
+		c.Set("user", &mockUserToken)
+		handler.UpdateUser(c)
 
-		user.UpdateUser(c)
+		expected := testutils.ToJSON(map[string]any{
+			"data": map[string]any{
+				"name":         *updateInput.Name,
+				"username":     *updateInput.Username,
+				"email":        mockUser.Email,
+				"country_code": *updateInput.CountryCode,
+				"country":      "Brazil",
+				"user_role":    mockUser.UserRole,
+				"role":         *updateInput.Role,
+				"interest":     *updateInput.Interest,
+				"institution":  *updateInput.Institution,
+			},
+		})
 
-		expected := `{"error": "Unauthorized. Please log in to continue."}`
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Missing user in context", func(t *testing.T) {
+		svc := &mocks.MockUserService{}
+		handler := user.NewUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(updateInput),
+			nil,
+			nil,
+		)
+		handler.UpdateUser(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Unauthorized. Please log in to continue.",
+			})
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
@@ -72,118 +105,157 @@ func TestUpdateUser(t *testing.T) {
 
 	for _, tt := range data.UpdateUserTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(tt.Body))
-			req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
+			svc := &mocks.MockUserService{}
+			handler := user.NewUserHandler(svc)
 
-			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(w)
-			c.Request = req
-
+			c, w := testutils.SetupGinContext(
+				http.MethodPut,
+				"/api/users/me",
+				tt.Body,
+				nil,
+				nil,
+			)
 			c.Set("user", &mockUserToken)
-
-			user.UpdateUser(c)
+			handler.UpdateUser(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, tt.Expected, w.Body.String())
 		})
 	}
 
-	t.Run(data.CountryNotFoundTest.Name, func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(data.CountryNotFoundTest.Body))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
+	t.Run("Error - Username already exists", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error) {
+				return &models.UserResponse{}, nil
+			},
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				return nil, services.ErrConflictUsername
+			},
+		}
+		handler := user.NewUserHandler(svc)
 
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(updateInput),
+			nil,
+			gin.Params{{Key: "userId", Value: mockUser.ID.String()}},
+		)
 		c.Set("user", &mockUserToken)
+		handler.UpdateUser(c)
 
-		user.UpdateUser(c)
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Username already exists.",
+			},
+		)
 
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.JSONEq(t, data.CountryNotFoundTest.Expected, w.Body.String())
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	for _, tt := range data.UpdateUserConflictTests {
-		t.Run(tt.Name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(tt.Body))
-			req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
+	t.Run("Error - Invalid Country Code", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error) {
+				return &models.UserResponse{}, nil
+			},
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				return nil, services.ErrInvalidCountryCode
+			},
+		}
+		handler := user.NewUserHandler(svc)
 
-			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(w)
-			c.Request = req
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(updateInput),
+			nil,
+			nil,
+		)
+		c.Set("user", &mockUserToken)
+		handler.UpdateUser(c)
 
-			c.Set("user", &mockUserToken)
-
-			user.UpdateUser(c)
-
-			assert.Equal(t, http.StatusConflict, w.Code)
-			assert.JSONEq(t, tt.Expected, w.Body.String())
-		})
-	}
-
-	t.Run("User not found", func(t *testing.T) {
-		mockUpdateUserInput := testmodels.NewUpdateUserInput()
-		body := testutils.ToJSON(mockUpdateUserInput)
-		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
-
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-
-		c.Set("user", &models.UserToken{
-			ID:       uuid.UUID{},
-			Username: mockLoginUser.Username,
-			UserRole: mockLoginUser.UserRole,
-		})
-
-		user.UpdateUser(c)
-
-		expected := `{"error": "User not found."}`
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "No country was found with this code.",
+			},
+		)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Success", func(t *testing.T) {
-		mockUpdateUserInput := testmodels.NewUpdateUserInput()
-		body := testutils.ToJSON(mockUpdateUserInput)
-		req := httptest.NewRequest(http.MethodPut, "/api/user/me", bytes.NewBufferString(body))
-		req.AddCookie(&http.Cookie{Name: auth.Access, Value: accessCookie})
-
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-
-		c.Set("user", &mockUserToken)
-
-		user.UpdateUser(c)
-
-		expected := map[string]any{
-			"data": map[string]any{
-				"name":         *mockUpdateUserInput.Name,
-				"username":     *mockUpdateUserInput.Username,
-				"email":        mockLoginUser.Email,
-				"country_code": *mockUpdateUserInput.CountryCode,
-				"country":      "Brazil",
-				"user_role":    "",
-				"role":         *mockUpdateUserInput.Role,
-				"interest":     *mockUpdateUserInput.Interest,
-				"institution":  *mockUpdateUserInput.Institution,
+	t.Run("Error - User Not Found", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				userID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				return nil, services.ErrNotFound
 			},
 		}
+		handler := user.NewUserHandler(svc)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(updateInput),
+			nil,
+			nil,
+		)
+		c.Set("user", &mockUserToken)
+		handler.UpdateUser(c)
 
-		var got map[string]any
-		err := json.Unmarshal(w.Body.Bytes(), &got)
-		assert.NoError(t, err)
+		expected := testutils.ToJSON(
+			map[string]string{"error": "User not found."},
+		)
 
-		if data, ok := got["data"].(map[string]any); ok {
-			delete(data, "id")
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				userID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				return nil, services.ErrInternal
+			},
 		}
+		handler := user.NewUserHandler(svc)
 
-		assert.Equal(t, expected, got)
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(updateInput),
+			nil,
+			nil,
+		)
+		c.Set("user", &mockUserToken)
+		handler.UpdateUser(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "There was a server error. Please try again.",
+			},
+		)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
 	})
 }

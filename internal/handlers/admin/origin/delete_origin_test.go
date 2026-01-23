@@ -8,7 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/origin"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -19,12 +19,12 @@ func TestDeleteOrigin(t *testing.T) {
 	testutils.SetupTestContext()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
@@ -43,12 +43,12 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Origin not found", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",
@@ -67,8 +67,8 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockOriginService{}
-		handler := origin.NewAdminOriginHandler(&svc)
+		svc := &mocks.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/origin", "",
@@ -87,12 +87,12 @@ func TestDeleteOrigin(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/admin/origin", "",

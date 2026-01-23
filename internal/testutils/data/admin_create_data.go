@@ -66,11 +66,6 @@ var AdminCreateUserTests = []Body{
 		b["email"] = "invalid-email"
 		return b
 	}()), `{"error":"Invalid email format."}`},
-	{"Emails not match", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidAdminCreateUserBody)
-		b["confirm_email"] = "other@mail.com"
-		return b
-	}()), `{"error":"Emails must match."}`},
 
 	// Password
 	{"Password required", testutils.ToJSON(func() map[string]any {
@@ -88,11 +83,6 @@ var AdminCreateUserTests = []Body{
 		b["password"] = strings.Repeat("1234", 10)
 		return b
 	}()), `{"error":"Password must be at most 32 characters long."}`},
-	{"Passwords not match", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidAdminCreateUserBody)
-		b["confirm_password"] = "87654321"
-		return b
-	}()), `{"error":"Passwords must match."}`},
 
 	// Country code
 	{"Country code required", testutils.ToJSON(func() map[string]any {
@@ -100,11 +90,6 @@ var AdminCreateUserTests = []Body{
 		b["country_code"] = ""
 		return b
 	}()), `{"error":"Country code is required."}`},
-	{"Country code invalid", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidAdminCreateUserBody)
-		b["country_code"] = "XXX"
-		return b
-	}()), `{"error":"No country was found with this code."}`},
 
 	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {
@@ -128,5 +113,5 @@ var AdminCreateUserTests = []Body{
 		b := testutils.CopyMap(baseValidAdminCreateUserBody)
 		b["user_role"] = "Tester"
 		return b
-	}()), `{"error":"The user role is invalid."}`},
+	}()), `{"error":"The user role is invalid. Choose between Collaborator or Admin."}`},
 }

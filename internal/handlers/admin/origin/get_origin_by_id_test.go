@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -27,13 +28,13 @@ func TestGetOriginByID(t *testing.T) {
 	mockResponse := mockOrigin.ToAdminDetailResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 				return &mockResponse, nil
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -56,8 +57,8 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockOriginService{}
-		handler := origin.NewAdminOriginHandler(&svc)
+		svc := &mocks.MockOriginService{}
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -80,13 +81,13 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -109,13 +110,13 @@ func TestGetOriginByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockOriginService{
+		svc := &mocks.MockOriginService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
 
-		handler := origin.NewAdminOriginHandler(&svc)
+		handler := origin.NewAdminOriginHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

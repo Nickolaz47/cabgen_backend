@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -26,13 +27,13 @@ func TestGetSampleSourceByID(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error) {
 				response := mockSampleSource.ToAdminDetailResponse()
 				return &response, nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source", "",
@@ -51,8 +52,8 @@ func TestGetSampleSourceByID(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		svc := &mocks.MockSampleSourceService{}
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source", "",
@@ -71,12 +72,12 @@ func TestGetSampleSourceByID(t *testing.T) {
 	})
 
 	t.Run("Sample source not found", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source", "",
@@ -95,12 +96,12 @@ func TestGetSampleSourceByID(t *testing.T) {
 	})
 
 	t.Run("Database error", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sample-source", "",

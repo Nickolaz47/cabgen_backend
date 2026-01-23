@@ -23,7 +23,7 @@ func TestApplyUpdateToUser(t *testing.T) {
 	interest := "Programming"
 	role := "Developer"
 
-	updateInput := models.UpdateUserInput{
+	updateInput := models.UserUpdateInput{
 		Name:        &name,
 		Username:    &username,
 		Institution: &institution,

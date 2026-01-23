@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,7 +39,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	adminResponse := lab.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			UpdateFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -47,7 +48,7 @@ func TestUpdateLaboratory(t *testing.T) {
 				return &adminResponse, nil
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -70,8 +71,8 @@ func TestUpdateLaboratory(t *testing.T) {
 
 	for _, tt := range data.UpdateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockLaboratoryService{}
-			handler := laboratory.NewAdminLaboratoryHandler(&svc)
+			svc := &mocks.MockLaboratoryService{}
+			handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPut,
@@ -88,8 +89,8 @@ func TestUpdateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		svc := &mocks.MockLaboratoryService{}
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -111,7 +112,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			UpdateFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -120,7 +121,7 @@ func TestUpdateLaboratory(t *testing.T) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -142,7 +143,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			UpdateFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -151,7 +152,7 @@ func TestUpdateLaboratory(t *testing.T) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -173,7 +174,7 @@ func TestUpdateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			UpdateFunc: func(
 				ctx context.Context,
 				ID uuid.UUID,
@@ -182,7 +183,7 @@ func TestUpdateLaboratory(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,

@@ -8,7 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,12 +17,12 @@ import (
 func TestDeleteSampleSource(t *testing.T) {
 	testutils.SetupTestContext()
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sample-source", "",
@@ -41,8 +41,8 @@ func TestDeleteSampleSource(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		svc := &mocks.MockSampleSourceService{}
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sample-source", "",
@@ -61,12 +61,12 @@ func TestDeleteSampleSource(t *testing.T) {
 	})
 
 	t.Run("Sample source not found", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sample-source", "",
@@ -85,12 +85,12 @@ func TestDeleteSampleSource(t *testing.T) {
 	})
 
 	t.Run("DB error", func(t *testing.T) {
-		svc := testmodels.MockSampleSourceService{
+		svc := &mocks.MockSampleSourceService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrInternal
 			},
 		}
-		handler := samplesource.NewAdminSampleSourceHandler(&svc)
+		handler := samplesource.NewAdminSampleSourceHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sample-source", "",

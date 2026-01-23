@@ -6,6 +6,6 @@ import (
 )
 
 func SetupSampleSourceRoutes(r *gin.RouterGroup, handler *samplesource.SampleSourceHandler) {
-	sampleSourceRouter := r.Group("/sample-source")
+	sampleSourceRouter := r.Group("/sample-sources")
 	sampleSourceRouter.GET("", handler.GetActiveSampleSources)
 }

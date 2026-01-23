@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -8,13 +9,17 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"gorm.io/gorm"
 )
 
-func createAdminUser() error {
+func createAdminUser(ctx context.Context) error {
+	hasher := security.NewPasswordHasher()
+
 	var adminUser models.User
-	if err := db.DB.Where("username = ?", "admin").First(&adminUser).Error; err == nil {
+	if err := db.DB.WithContext(ctx).Where(
+		"username = ?", "admin").First(&adminUser).Error; err == nil {
 		return nil
 	}
 
@@ -23,38 +28,60 @@ func createAdminUser() error {
 		return errors.New("admin password is empty")
 	}
 
-	hashedPassword, err := security.Hash(adminPassword)
+	hashedPassword, err := hasher.Hash(adminPassword)
 	if err != nil {
 		return err
 	}
 
-	adminToCreate := models.User{
-		Name:        "Cabgen Admin",
-		Username:    "admin",
-		Email:       "admin@fiocruz.br",
-		Password:    hashedPassword,
-		CountryCode: "BRA",
-		IsActive:    true,
-		UserRole:    models.Admin,
-		CreatedBy:   "admin",
+	countryRepo := repository.NewCountryRepo(db.DB)
+	country, err := countryRepo.GetCountryByCode(ctx, "BRA")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("BRA country not found, did you run the country seed?")
+		}
+		return fmt.Errorf("cannot fetch country BRA: %w", err)
 	}
 
-	if err := db.DB.Create(&adminToCreate).Error; err != nil {
+	adminToCreate := models.User{
+		Name:      "Cabgen Admin",
+		Username:  "admin",
+		Email:     "admin@fiocruz.br",
+		Password:  hashedPassword,
+		CountryID: country.ID,
+		IsActive:  true,
+		UserRole:  models.Admin,
+		CreatedBy: "admin",
+	}
+
+	if err := db.DB.WithContext(ctx).Create(&adminToCreate).Error; err != nil {
 		return fmt.Errorf("cannot create admin user: %v", err)
 	}
 
 	return nil
 }
 
-func insertCountries() error {
-	var count int64
-	if err := db.DB.Model(&models.Country{}).Count(&count).Error; err != nil {
-		return fmt.Errorf("cannot access countries table: %v", err)
+func insertCountries(ctx context.Context, file string) error {
+	repo := repository.NewCountrySeedRepository(db.DB)
+
+	count, err := repo.Count(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot access countries table: %w", err)
 	}
 
 	if count > 0 {
 		return nil
 	}
+
+	countries, err := LoadJSONFile[models.Country](file)
+	if err != nil {
+		return err
+	}
+
+	return repo.BulkInsert(ctx, countries)
+}
+
+func Setup() error {
+	ctx := context.Background()
 
 	rootDir, err := GetProjectRoot()
 	if err != nil {
@@ -62,25 +89,11 @@ func insertCountries() error {
 	}
 
 	countriesJSON := filepath.Join(rootDir, "internal/data/countries.json")
-	data, err := LoadJSONFile[models.Country](countriesJSON)
-	if err != nil {
+	if err := insertCountries(ctx, countriesJSON); err != nil {
 		return err
 	}
 
-	return db.DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&data).Error; err != nil {
-			return fmt.Errorf("failed to insert countries data: %v", err)
-		}
-		return nil
-	})
-}
-
-func Setup() error {
-	if err := insertCountries(); err != nil {
-		return err
-	}
-
-	if err := createAdminUser(); err != nil {
+	if err := createAdminUser(ctx); err != nil {
 		return err
 	}
 

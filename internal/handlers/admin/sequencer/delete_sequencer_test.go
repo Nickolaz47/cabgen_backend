@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -22,12 +23,12 @@ func TestDeleteSequencer(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return nil
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
@@ -44,8 +45,8 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Invalid ID", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		svc := &mocks.MockSequencerService{}
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
@@ -64,12 +65,12 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("Sequencer not found", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",
@@ -86,12 +87,12 @@ func TestDeleteSequencer(t *testing.T) {
 	})
 
 	t.Run("DB Error", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
 				return services.ErrInternal
 			},
 		}
-		handler := sequencer.NewAdminSequencerHandler(&svc)
+		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete, "/api/admin/sequencer", "",

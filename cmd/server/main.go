@@ -8,7 +8,6 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/admin"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/common"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
@@ -32,7 +31,6 @@ func init() {
 		log.Fatal(err)
 	}
 
-	repository.InitRepositories(db.DB)
 	translation.LoadTranslation()
 
 	if err := utils.Setup(); err != nil {
@@ -61,46 +59,57 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
+	authSvc := container.BuildAuthService(db.DB)
+	userSvc := container.BuildUserService(db.DB)
+	admUserSvc := container.BuildAdminUserService(db.DB)
 	labSvc := container.BuildLaboratoryService(db.DB)
 	sequencerSvc := container.BuildSequencerService(db.DB)
 	originSvc := container.BuildOriginService(db.DB)
 	sampleSourceSvc := container.BuildSampleSourceService(db.DB)
+	countrySvc := container.BuildCountryService(db.DB)
 
 	// Public handlers
+	healthHandler := container.BuildHealthHandler()
+	authHandler := container.BuildAuthHandler(authSvc)
+	pubCountryHandler := container.BuildPublicCountryHandler(countrySvc)
 
 	// Common handlers
+	userHandler := container.BuildUserHandler(userSvc)
 	laboratoryHandler := container.BuildLaboratoryHandler(labSvc)
 	sequencerHandler := container.BuildSequencerHandler(sequencerSvc)
 	originHandler := container.BuildOriginHandler(originSvc)
 	sampleSourceHandler := container.BuildSampleSourceHandler(sampleSourceSvc)
 
 	// Admin handlers
+	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
 	adminLaboratoryHandler := container.BuildAdminLaboratoryHandler(labSvc)
 	adminSequencerHandler := container.BuildAdminSequencerHandler(sequencerSvc)
 	adminOriginHandler := container.BuildAdminOriginHandler(originSvc)
 	adminSampleSourceHandler := container.BuildAdminSampleSourceHandler(sampleSourceSvc)
+	adminCountryHandler := container.BuildAdminCountryHandler(countrySvc)
 
 	// Public routes
 	publicRouter := api.Group("")
-	public.SetupHealthRoute(publicRouter)
-	public.SetupCountryRoutes(publicRouter)
-	public.SetupAuthRoutes(publicRouter)
+	public.SetupCountryRoutes(publicRouter, pubCountryHandler)
+	public.SetupHealthRoute(publicRouter, healthHandler)
+	public.SetupAuthRoutes(publicRouter, authHandler)
 
 	// Common routes
 	commonRouter := api.Group("", middlewares.AuthMiddleware())
+	common.SetupUserRoutes(commonRouter, userHandler)
 	common.SetupSequencerRoutes(commonRouter, sequencerHandler)
 	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)
 	common.SetupOriginRoutes(commonRouter, originHandler)
 	common.SetupSampleSourceRoutes(commonRouter, sampleSourceHandler)
-	common.SetupUserRoutes(commonRouter)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
+	admin.SetupAdminUserRoutes(adminRouter, adminUserHandler)
 	admin.SetupAdminSequencerRoutes(adminRouter, adminSequencerHandler)
 	admin.SetupAdminLaboratoryRoutes(adminRouter, adminLaboratoryHandler)
 	admin.SetupAdminOriginRoutes(adminRouter, adminOriginHandler)
 	admin.SetupAdminSampleSourceRoutes(adminRouter, adminSampleSourceHandler)
-	admin.SetupAdminUserRoutes(adminRouter)
+	admin.SetupAdminCountryRoutes(adminRouter, adminCountryHandler)
 
 	r.Run()
 }

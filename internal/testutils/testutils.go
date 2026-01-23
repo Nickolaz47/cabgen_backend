@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
@@ -34,12 +33,6 @@ func NewMockDB() *gorm.DB {
 	db.AutoMigrate(&testmodels.SampleSource{})
 	db.AutoMigrate(&testmodels.Laboratory{})
 
-	return db
-}
-
-func SetupTestRepos() *gorm.DB {
-	db := NewMockDB()
-	repository.InitRepositories(db)
 	return db
 }
 

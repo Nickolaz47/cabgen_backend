@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupUserRoutes(r *gin.RouterGroup) {
-	userRouter := r.Group("/user")
+func SetupUserRoutes(r *gin.RouterGroup, handler *user.UserHandler) {
+	userRouter := r.Group("/users")
 
-	userRouter.GET("/me", user.GetOwnUser)
-	userRouter.PUT("/me", user.UpdateUser)
+	userRouter.GET("/me", handler.GetOwnUser)
+	userRouter.PUT("/me", handler.UpdateUser)
 }

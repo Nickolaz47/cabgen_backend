@@ -8,7 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -19,12 +19,12 @@ func TestGetActiveSequencers(t *testing.T) {
 	mockSequencer := models.SequencerFormResponse{ID: uuid.New()}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
 				return []models.SequencerFormResponse{mockSequencer}, nil
 			},
 		}
-		handler := sequencer.NewSequencerHandler(&svc)
+		handler := sequencer.NewSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/sequencer", "", nil, nil,
@@ -42,12 +42,12 @@ func TestGetActiveSequencers(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		svc := testmodels.MockSequencerService{
+		svc := &mocks.MockSequencerService{
 			FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := sequencer.NewSequencerHandler(&svc)
+		handler := sequencer.NewSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/laboratory", "",

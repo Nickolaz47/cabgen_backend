@@ -6,7 +6,7 @@ import (
 )
 
 func SetupAdminSequencerRoutes(r *gin.RouterGroup, handler *sequencer.AdminSequencerHandler) {
-	sequencerRouter := r.Group("/sequencer")
+	sequencerRouter := r.Group("/sequencers")
 
 	sequencerRouter.GET("", handler.GetSequencers)
 	sequencerRouter.GET("/:sequencerId", handler.GetSequencerByID)

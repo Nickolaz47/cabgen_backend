@@ -6,7 +6,7 @@ import (
 )
 
 func SetupAdminLaboratoryRoutes(r *gin.RouterGroup, handler *laboratory.AdminLaboratoryHandler) {
-	laboratoryRouter := r.Group("/laboratory")
+	laboratoryRouter := r.Group("/laboratories")
 
 	laboratoryRouter.GET("", handler.GetAllLaboratories)
 	laboratoryRouter.GET("/:laboratoryId", handler.GetLaboratoryByID)

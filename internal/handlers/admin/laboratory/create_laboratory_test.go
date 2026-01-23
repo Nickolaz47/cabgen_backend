@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +36,7 @@ func TestCreateLaboratory(t *testing.T) {
 	adminResponse := lab.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			CreateFunc: func(
 				ctx context.Context,
 				input models.LaboratoryCreateInput,
@@ -43,7 +44,7 @@ func TestCreateLaboratory(t *testing.T) {
 				return &adminResponse, nil
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -67,8 +68,8 @@ func TestCreateLaboratory(t *testing.T) {
 
 	for _, tt := range data.CreateLaboratoryTests {
 		t.Run(tt.Name, func(t *testing.T) {
-			svc := testmodels.MockLaboratoryService{}
-			handler := laboratory.NewAdminLaboratoryHandler(&svc)
+			svc := &mocks.MockLaboratoryService{}
+			handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 			c, w := testutils.SetupGinContext(
 				http.MethodPost,
@@ -85,7 +86,7 @@ func TestCreateLaboratory(t *testing.T) {
 	}
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			CreateFunc: func(
 				ctx context.Context,
 				input models.LaboratoryCreateInput,
@@ -93,7 +94,7 @@ func TestCreateLaboratory(t *testing.T) {
 				return nil, services.ErrConflict
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -115,7 +116,7 @@ func TestCreateLaboratory(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := testmodels.MockLaboratoryService{
+		svc := &mocks.MockLaboratoryService{
 			CreateFunc: func(
 				ctx context.Context,
 				input models.LaboratoryCreateInput,
@@ -123,7 +124,7 @@ func TestCreateLaboratory(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		handler := laboratory.NewAdminLaboratoryHandler(&svc)
+		handler := laboratory.NewAdminLaboratoryHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,

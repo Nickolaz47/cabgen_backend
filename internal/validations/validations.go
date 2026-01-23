@@ -11,13 +11,14 @@ import (
 )
 
 type Model interface {
-	models.RegisterInput | models.LoginInput |
-		models.UpdateUserInput | models.AdminRegisterInput |
-		models.AdminUpdateInput | models.OriginCreateInput |
+	models.UserRegisterInput | models.LoginInput |
+		models.UserUpdateInput | models.AdminUserCreateInput |
+		models.AdminUserUpdateInput | models.OriginCreateInput |
 		models.OriginUpdateInput | models.SequencerCreateInput |
 		models.SequencerUpdateInput | models.SampleSourceCreateInput |
 		models.SampleSourceUpdateInput | models.LaboratoryCreateInput |
-		models.LaboratoryUpdateInput
+		models.LaboratoryUpdateInput | models.CountryCreateInput |
+		models.CountryUpdateInput
 }
 
 func Validate[T Model](c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {
