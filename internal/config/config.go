@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	AppRoot                  = ""
 	DatabaseConnectionString = ""
 	AccessKey                = []byte{}
 	RefreshKey               = []byte{}
@@ -36,16 +37,17 @@ func LoadEnvVariables(envFile string) error {
 	var err error
 
 	if envFile != "" {
-		if err := godotenv.Overload(envFile); err != nil {
-			return err
-		}
+		godotenv.Overload(envFile)
 	} else {
-		if err := godotenv.Overload(); err != nil {
-			return err
-		}
+		godotenv.Overload()
 	}
 
-	Port, err = strconv.Atoi(os.Getenv("PORT"))
+	portStr := os.Getenv("PORT")
+	if portStr == "" {
+		return fmt.Errorf("port variable is missing")
+	}
+
+	Port, err = strconv.Atoi(portStr)
 	if err != nil {
 		return err
 	}
@@ -56,9 +58,11 @@ func LoadEnvVariables(envFile string) error {
 	}
 
 	DatabaseConnectionString = fmt.Sprintf(
-		"host=localhost user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=America/Sao_Paulo",
-		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+		"host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable",
+		os.Getenv("DB_HOST"), os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 
+	AppRoot = os.Getenv("APP_ROOT")
 	AccessKey = []byte(os.Getenv("SECRET_ACCESS_KEY"))
 	RefreshKey = []byte(os.Getenv("SECRET_REFRESH_KEY"))
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")

@@ -77,6 +77,7 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
 ```env
 # Banco de dados
+DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
@@ -130,16 +131,26 @@ cmd = "go build -o ./tmp/main ./cmd/server/main.go"
 
 ### Ambiente de Produção
 
+#### Execução Manual
+
 1. Compile o binário:
 
 ```bash
 go build -o cabgen-backend ./cmd/server
 ```
 
-1. Execute a aplicação:
+2. Execute a aplicação:
 
 ```bash
 ./cabgen-backend
+```
+
+#### Docker
+
+1. Após configurar o `.env`, suba o compose:
+
+```bash
+docker compose up -d
 ```
 
 ## Internacionalização (i18n)

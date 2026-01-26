@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 )
 
 /*
@@ -17,30 +17,25 @@ Returns:
     the executable is not running from within a Go module project).
 */
 func GetProjectRoot() (string, error) {
-	goMod := "go.mod"
-
-	// Get the current file path
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return "", fmt.Errorf("failed to get caller information")
+	if config.AppRoot != "" {
+		return config.AppRoot, nil
 	}
 
-	rootDir := filepath.Dir(filename)
-	for rootDir != "/" {
-		files, err := os.ReadDir(rootDir)
-		if err != nil {
-			return "", err
-		}
-
-		for _, file := range files {
-			if file.Name() == goMod {
-				return rootDir, nil
+	if cwd, err := os.Getwd(); err == nil {
+		current := cwd
+		for {
+			if _, err := os.Stat(
+				filepath.Join(current, "go.mod")); err == nil {
+				return current, nil
 			}
-		}
 
-		// Remove the last path
-		rootDir = filepath.Dir(rootDir)
+			parent := filepath.Dir(current)
+			if parent == current {
+				break
+			}
+			current = parent
+		}
 	}
 
-	return rootDir, nil
+	return os.Getwd()
 }

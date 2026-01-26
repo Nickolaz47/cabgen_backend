@@ -1,0 +1,57 @@
+# --- Source Control ---
+.git
+.gitignore
+.github
+.gitattributes
+
+# --- Secrets and Configs ---
+.env
+*.env
+auth.json
+secrets.yaml
+
+# Ignore any credentials generated locally
+.aws
+.docker
+.ssh
+
+# --- Go Specifics ---
+
+# Binaries and object files
+api
+bin/
+*.exe
+*.test
+*.prof
+*.out
+
+# Dependency directories (we use 'go mod download' in Docker)
+vendor/
+
+# Go build cache (highly recommended for faster builds)
+.cache/
+go-build/
+
+# --- Development Tools ---
+.air.toml
+.vscode/
+
+# Temp files from editors
+*~
+
+# --- Docker & CI/CD ---
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.sh
+
+# Avoid copying documentation and logs into the final image
+*.md
+LICENSE
+logs/
+*.log
+tmp/
+
+# --- OS Specific Files ---
+.DS_Store
+Thumbs.db
