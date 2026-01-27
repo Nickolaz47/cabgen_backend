@@ -54,7 +54,6 @@ func Migrate() error {
 	if DB == nil {
 		return errors.New("DB was not initialized")
 	}
-	DB.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 
 	err := DB.AutoMigrate(
 		&models.User{},
