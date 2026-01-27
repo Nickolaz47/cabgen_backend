@@ -30,7 +30,7 @@ func NewSampleSourceRepo(db *gorm.DB) SampleSourceRepository {
 
 func (r *sampleSourceRepo) GetSampleSources(ctx context.Context) ([]models.SampleSource, error) {
 	var sampleSources []models.SampleSource
-	if err := r.DB.Find(&sampleSources).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Find(&sampleSources).Error; err != nil {
 		return nil, err
 	}
 
@@ -39,7 +39,7 @@ func (r *sampleSourceRepo) GetSampleSources(ctx context.Context) ([]models.Sampl
 
 func (r *sampleSourceRepo) GetActiveSampleSources(ctx context.Context) ([]models.SampleSource, error) {
 	var sampleSources []models.SampleSource
-	if err := r.DB.Where("is_active = true").Find(&sampleSources).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("is_active = true").Find(&sampleSources).Error; err != nil {
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func (r *sampleSourceRepo) GetActiveSampleSources(ctx context.Context) ([]models
 
 func (r *sampleSourceRepo) GetSampleSourceByID(ctx context.Context, ID uuid.UUID) (*models.SampleSource, error) {
 	var sampleSource models.SampleSource
-	if err := r.DB.Where("id = ?", ID).First(&sampleSource).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("id = ?", ID).First(&sampleSource).Error; err != nil {
 		return nil, err
 	}
 
@@ -58,7 +58,7 @@ func (r *sampleSourceRepo) GetSampleSourceByID(ctx context.Context, ID uuid.UUID
 func (r *sampleSourceRepo) GetSampleSourcesByNameOrGroup(ctx context.Context, input, lang string) ([]models.SampleSource, error) {
 	var sampleSources []models.SampleSource
 	query := "LOWER(names->>'" + lang + "') LIKE LOWER(?) OR LOWER(groups->>'" + lang + "') LIKE LOWER(?)"
-	if err := r.DB.Where(query, "%"+input+"%", "%"+input+"%").Find(&sampleSources).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where(query, "%"+input+"%", "%"+input+"%").Find(&sampleSources).Error; err != nil {
 		return nil, err
 	}
 
@@ -92,13 +92,13 @@ func (r *sampleSourceRepo) GetSampleSourceDuplicate(ctx context.Context, names m
 }
 
 func (r *sampleSourceRepo) CreateSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	return r.DB.Create(sampleSource).Error
+	return r.DB.WithContext(ctx).Create(sampleSource).Error
 }
 
 func (r *sampleSourceRepo) UpdateSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	return r.DB.Save(sampleSource).Error
+	return r.DB.WithContext(ctx).Save(sampleSource).Error
 }
 
 func (r *sampleSourceRepo) DeleteSampleSource(ctx context.Context, sampleSource *models.SampleSource) error {
-	return r.DB.Delete(sampleSource).Error
+	return r.DB.WithContext(ctx).Delete(sampleSource).Error
 }

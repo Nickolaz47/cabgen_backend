@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/admin"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/common"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
@@ -16,31 +17,43 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func init() {
+func main() {
+	// Load env
 	if err := config.LoadEnvVariables(""); err != nil {
 		log.Fatal(err)
 	}
 
+	// Setup database
 	driver := "postgres"
 	dns := config.DatabaseConnectionString
-	if err := db.Connect(driver, dns); err != nil {
+	modelsToMigrate := []any{
+		&models.User{},
+		&models.Country{},
+		&models.Origin{},
+		&models.Sequencer{},
+		&models.SampleSource{},
+		&models.Laboratory{},
+	}
+
+	postdb, err := db.NewGormDatabase(driver, dns)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := db.Migrate(); err != nil {
+	if err := postdb.Migrate(modelsToMigrate...); err != nil {
 		log.Fatal(err)
 	}
 
+	// Load translations
 	translation.LoadTranslation()
 
-	if err := utils.Setup(); err != nil {
+	// Seeder
+	if err := utils.Setup(postdb.DB()); err != nil {
 		log.Fatal(err)
 	}
 
+	// Logs
 	logging.SetupLoggers("./logs/api.log")
-}
-
-func main() {
 	defer logging.ConsoleLogger.Sync()
 	defer logging.FileLogger.Sync()
 
@@ -59,14 +72,14 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(db.DB)
-	userSvc := container.BuildUserService(db.DB)
-	admUserSvc := container.BuildAdminUserService(db.DB)
-	labSvc := container.BuildLaboratoryService(db.DB)
-	sequencerSvc := container.BuildSequencerService(db.DB)
-	originSvc := container.BuildOriginService(db.DB)
-	sampleSourceSvc := container.BuildSampleSourceService(db.DB)
-	countrySvc := container.BuildCountryService(db.DB)
+	authSvc := container.BuildAuthService(postdb.DB())
+	userSvc := container.BuildUserService(postdb.DB())
+	admUserSvc := container.BuildAdminUserService(postdb.DB())
+	labSvc := container.BuildLaboratoryService(postdb.DB())
+	sequencerSvc := container.BuildSequencerService(postdb.DB())
+	originSvc := container.BuildOriginService(postdb.DB())
+	sampleSourceSvc := container.BuildSampleSourceService(postdb.DB())
+	countrySvc := container.BuildCountryService(postdb.DB())
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()

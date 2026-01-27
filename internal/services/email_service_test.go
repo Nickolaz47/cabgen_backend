@@ -1,64 +1,51 @@
 package services_test
 
-// import (
-// 	"errors"
-// 	"testing"
+import (
+	"context"
+	"testing"
 
-// 	"github.com/CABGenOrg/cabgen_backend/internal/config"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/email"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/services"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-// 	"github.com/stretchr/testify/assert"
-// 	"gorm.io/driver/sqlite"
-// 	"gorm.io/gorm"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
-// 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
-// 	gomail "gopkg.in/mail.v2"
-// )
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+)
 
-// type MockEmailSender struct {
-// 	ShouldFail bool
-// }
+func TestSendActivationUserEmail(t *testing.T) {
+	ctx := context.Background()
+	userToActivate := "johndoe"
+	adminUser := testmodels.NewAdminLoginUser()
 
-// func (m *MockEmailSender) Send(msg *gomail.Message) error {
-// 	if m.ShouldFail {
-// 		return errors.New("simulated send error")
-// 	}
-// 	return nil
-// }
+	t.Run("Success", func(t *testing.T) {
+		userRepo := mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return []models.User{adminUser}, nil
+			},
+		}
+		sender := mocks.MockEmailSender{}
 
-// func TestSendActivationUserEmail(t *testing.T) {
-// 	t.Run("Success", func(t *testing.T) {
-// 		db := testutils.SetupTestRepos()
-// 		repository.InitRepositories(db)
+		svc := services.NewEmailService(&userRepo, &sender)
+		err := svc.SendActivationUserEmail(ctx, userToActivate)
 
-// 		mockAdminUser := testmodels.NewAdminLoginUser()
-// 		mockAdminUser.Email = "yt4bdzmzze@bwmyga.com"
-// 		db.Create(&mockAdminUser)
+		assert.NoError(t, err)
+	})
 
-// 		userToActivate := "johndoe"
-// 		sender := MockEmailSender{}
+	t.Run("Error - Get Admins", func(t *testing.T) {
+		userRepo := mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+		sender := mocks.MockEmailSender{}
 
-// 		err := services.SendActivationUserEmail(userToActivate, &sender)
-// 		assert.NoError(t, err)
-// 	})
+		svc := services.NewEmailService(&userRepo, &sender)
+		err := svc.SendActivationUserEmail(ctx, userToActivate)
 
-// 	t.Run("Error", func(t *testing.T) {
-// 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-// 		assert.NoError(t, err)
-
-// 		repository.InitRepositories(mockDB)
-
-// 		userToActivate := "johndoe"
-// 		sender := email.SMTPEmailSender{
-// 			Username: config.SenderEmail,
-// 			Password: config.SenderPassword,
-// 			Host:     config.SMTPHost,
-// 			Port:     config.SMTPPort,
-// 		}
-
-// 		err = services.SendActivationUserEmail(userToActivate, &sender)
-// 		assert.Error(t, err)
-// 	})
-// }
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to get admins:")
+	})
+}

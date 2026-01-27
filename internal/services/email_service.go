@@ -1,57 +1,82 @@
 package services
 
-// import (
-// 	"fmt"
-// 	"sync"
+import (
+	"context"
+	"fmt"
+	"sync"
 
-// 	"github.com/CABGenOrg/cabgen_backend/internal/config"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/email"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
-// 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
-// )
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
+	"github.com/CABGenOrg/cabgen_backend/internal/email"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+)
 
-// func SendActivationUserEmail(userToActivate string, emailSender email.EmailSender) error {
-// 	admins, err := repository.UserRepo.GetAllAdminUsers()
-// 	if err != nil {
-// 		return err
-// 	}
+type EmailService interface {
+	SendActivationUserEmail(ctx context.Context, userToActivate string) error
+}
 
-// 	var adminEmailConfigs []email.EmailConfig
-// 	for _, a := range admins {
-// 		body := `
-// 		Prezados administradores,
-// 		<p>Um novo usuário foi criado no CAGBen.</p>
-// 		<p>Por favor, acesse o site e realize a ativação.</p>
-// 		Obrigado.
-// 		`
-// 		if a.Email != "" {
-// 			emailConfig := email.EmailConfig{
-// 				Sender:    config.SenderEmail,
-// 				Recipient: a.Email,
-// 				Subject:   "Novo Usuário Criado: " + userToActivate,
-// 				Body:      body,
-// 			}
-// 			adminEmailConfigs = append(adminEmailConfigs, emailConfig)
-// 		}
-// 	}
+type emailService struct {
+	UserRepo    repository.UserRepository
+	EmailSender email.EmailSender
+}
 
-// 	var wg sync.WaitGroup
+func NewEmailService(
+	userRepo repository.UserRepository, emailSender email.EmailSender) EmailService {
+	return &emailService{UserRepo: userRepo, EmailSender: emailSender}
+}
 
-// 	for _, emailConfig := range adminEmailConfigs {
-// 		wg.Add(1)
+func (s *emailService) SendActivationUserEmail(
+	ctx context.Context, userToActivate string) error {
+	admin, isActive := models.Admin, true
+	filter := models.AdminUserFilter{
+		UserRole: &admin,
+		Active:   &isActive,
+	}
 
-// 		go func(cfg email.EmailConfig) {
-// 			defer wg.Done()
+	admins, err := s.UserRepo.GetUsers(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("Failed to get admins: %v", err)
+	}
 
-// 			err := email.SendEmail(cfg, emailSender)
-// 			if err != nil {
-// 				logging.FileLogger.Error(
-// 					fmt.Sprintf("Failed to send activation user email to %s: %v", cfg.Recipient, err),
-// 				)
-// 			}
-// 		}(emailConfig)
-// 	}
-// 	wg.Wait()
+	var adminEmailConfigs []email.EmailConfig
+	for _, a := range admins {
+		body := `
+		Prezados administradores,
+		<p>Um novo usuário foi criado no CAGBen.</p>
+		<p>Por favor, acesse o site e realize a ativação do mesmo.</p>
+		Obrigado.
+		`
+		if a.Email != "" {
+			emailConfig := email.EmailConfig{
+				Sender:    config.SenderEmail,
+				Recipient: a.Email,
+				Subject:   "Novo Usuário Criado: " + userToActivate,
+				Body:      body,
+			}
+			adminEmailConfigs = append(adminEmailConfigs, emailConfig)
+		}
+	}
 
-// 	return nil
-// }
+	var wg sync.WaitGroup
+
+	for _, emailConfig := range adminEmailConfigs {
+		wg.Add(1)
+
+		go func(cfg email.EmailConfig) {
+			defer wg.Done()
+
+			err := email.SendEmail(cfg, s.EmailSender)
+			if err != nil {
+				logging.FileLogger.Error(
+					fmt.Sprintf(
+						"Failed to send activation user email to %s: %v",
+						cfg.Recipient, err),
+				)
+			}
+		}(emailConfig)
+	}
+	wg.Wait()
+
+	return nil
+}

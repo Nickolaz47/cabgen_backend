@@ -7,18 +7,17 @@ import (
 	"path/filepath"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
-	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repository"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"gorm.io/gorm"
 )
 
-func createAdminUser(ctx context.Context) error {
+func createAdminUser(ctx context.Context, db *gorm.DB) error {
 	hasher := security.NewPasswordHasher()
 
 	var adminUser models.User
-	if err := db.DB.WithContext(ctx).Where(
+	if err := db.WithContext(ctx).Where(
 		"username = ?", "admin").First(&adminUser).Error; err == nil {
 		return nil
 	}
@@ -33,7 +32,7 @@ func createAdminUser(ctx context.Context) error {
 		return err
 	}
 
-	countryRepo := repository.NewCountryRepo(db.DB)
+	countryRepo := repository.NewCountryRepo(db)
 	country, err := countryRepo.GetCountryByCode(ctx, "BRA")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -53,15 +52,15 @@ func createAdminUser(ctx context.Context) error {
 		CreatedBy: "admin",
 	}
 
-	if err := db.DB.WithContext(ctx).Create(&adminToCreate).Error; err != nil {
+	if err := db.WithContext(ctx).Create(&adminToCreate).Error; err != nil {
 		return fmt.Errorf("cannot create admin user: %v", err)
 	}
 
 	return nil
 }
 
-func insertCountries(ctx context.Context, file string) error {
-	repo := repository.NewCountrySeedRepository(db.DB)
+func insertCountries(ctx context.Context, db *gorm.DB, file string) error {
+	repo := repository.NewCountrySeedRepository(db)
 
 	count, err := repo.Count(ctx)
 	if err != nil {
@@ -80,7 +79,7 @@ func insertCountries(ctx context.Context, file string) error {
 	return repo.BulkInsert(ctx, countries)
 }
 
-func Setup() error {
+func Setup(db *gorm.DB) error {
 	ctx := context.Background()
 
 	rootDir, err := GetProjectRoot()
@@ -89,11 +88,11 @@ func Setup() error {
 	}
 
 	countriesJSON := filepath.Join(rootDir, "internal/data/countries.json")
-	if err := insertCountries(ctx, countriesJSON); err != nil {
+	if err := insertCountries(ctx, db, countriesJSON); err != nil {
 		return err
 	}
 
-	if err := createAdminUser(ctx); err != nil {
+	if err := createAdminUser(ctx, db); err != nil {
 		return err
 	}
 
