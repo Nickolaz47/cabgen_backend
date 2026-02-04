@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Setup database
+	// Setup main database
 	driver := "postgres"
 	dns := config.DatabaseConnectionString
 	modelsToMigrate := []any{
@@ -35,12 +35,12 @@ func main() {
 		&models.Laboratory{},
 	}
 
-	postdb, err := db.NewGormDatabase(driver, dns)
+	mainDB, err := db.NewGormDatabase(driver, dns)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := postdb.Migrate(modelsToMigrate...); err != nil {
+	if err := mainDB.Migrate(modelsToMigrate...); err != nil {
 		log.Fatal(err)
 	}
 
@@ -48,7 +48,7 @@ func main() {
 	translation.LoadTranslation()
 
 	// Seeder
-	if err := utils.Setup(postdb.DB()); err != nil {
+	if err := utils.Setup(mainDB.DB()); err != nil {
 		log.Fatal(err)
 	}
 
@@ -72,14 +72,14 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(postdb.DB())
-	userSvc := container.BuildUserService(postdb.DB())
-	admUserSvc := container.BuildAdminUserService(postdb.DB())
-	labSvc := container.BuildLaboratoryService(postdb.DB())
-	sequencerSvc := container.BuildSequencerService(postdb.DB())
-	originSvc := container.BuildOriginService(postdb.DB())
-	sampleSourceSvc := container.BuildSampleSourceService(postdb.DB())
-	countrySvc := container.BuildCountryService(postdb.DB())
+	authSvc := container.BuildAuthService(mainDB.DB())
+	userSvc := container.BuildUserService(mainDB.DB())
+	admUserSvc := container.BuildAdminUserService(mainDB.DB())
+	labSvc := container.BuildLaboratoryService(mainDB.DB())
+	sequencerSvc := container.BuildSequencerService(mainDB.DB())
+	originSvc := container.BuildOriginService(mainDB.DB())
+	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB())
+	countrySvc := container.BuildCountryService(mainDB.DB())
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
