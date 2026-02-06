@@ -8,7 +8,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"gorm.io/gorm"
 )
@@ -32,7 +32,7 @@ func createAdminUser(ctx context.Context, db *gorm.DB) error {
 		return err
 	}
 
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 	country, err := countryRepo.GetCountryByCode(ctx, "BRA")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -44,7 +44,7 @@ func createAdminUser(ctx context.Context, db *gorm.DB) error {
 	adminToCreate := models.User{
 		Name:      "Cabgen Admin",
 		Username:  "admin",
-		Email:     "admin@fiocruz.br",
+		Email:     "nicolasaraujo47@gmail.com",
 		Password:  hashedPassword,
 		CountryID: country.ID,
 		IsActive:  true,
@@ -60,7 +60,7 @@ func createAdminUser(ctx context.Context, db *gorm.DB) error {
 }
 
 func insertCountries(ctx context.Context, db *gorm.DB, file string) error {
-	repo := repository.NewCountrySeedRepository(db)
+	repo := repositories.NewCountrySeedRepository(db)
 
 	count, err := repo.Count(ctx)
 	if err != nil {

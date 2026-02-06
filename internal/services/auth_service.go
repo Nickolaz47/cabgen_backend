@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/events"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
@@ -22,21 +23,24 @@ type AuthService interface {
 }
 
 type authService struct {
-	UserRepo      repository.UserRepository
-	CountryRepo   repository.CountryRepository
+	UserRepo      repositories.UserRepository
+	CountryRepo   repositories.CountryRepository
+	EventEmitter  events.EventEmitter
 	Hasher        security.PasswordHasher
 	TokenProvider auth.TokenProvider
 }
 
 func NewAuthService(
-	userRepo repository.UserRepository,
-	countryRepo repository.CountryRepository,
+	userRepo repositories.UserRepository,
+	countryRepo repositories.CountryRepository,
+	emitter events.EventEmitter,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
 ) AuthService {
 	return &authService{
 		UserRepo:      userRepo,
 		CountryRepo:   countryRepo,
+		EventEmitter:  emitter,
 		Hasher:        hasher,
 		TokenProvider: tokenProvider,
 	}
@@ -107,6 +111,9 @@ func (s *authService) Register(
 	}
 
 	user.Country = *country
+
+	s.EventEmitter.Emit(ctx, events.EventUserRegistered,
+		events.UserRegisteredPayload{RegisteredUsername: user.Username})
 
 	response := user.ToResponse(language)
 	return &response, nil

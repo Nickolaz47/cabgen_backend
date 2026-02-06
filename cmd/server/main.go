@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -44,6 +45,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Event Database
+	eventDB, err := db.NewGormDatabase("sqlite", "events.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	modelsToMigrate = []any{
+		&models.Event{},
+	}
+
+	if err := eventDB.Migrate(modelsToMigrate...); err != nil {
+		log.Fatal(err)
+	}
+
+	eventRepo := container.BuildEventRepository(eventDB.DB())
+
 	// Load translations
 	translation.LoadTranslation()
 
@@ -72,7 +89,7 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(mainDB.DB())
+	authSvc := container.BuildAuthService(mainDB.DB(), eventDB.DB())
 	userSvc := container.BuildUserService(mainDB.DB())
 	admUserSvc := container.BuildAdminUserService(mainDB.DB())
 	labSvc := container.BuildLaboratoryService(mainDB.DB())
@@ -80,6 +97,7 @@ func main() {
 	originSvc := container.BuildOriginService(mainDB.DB())
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB())
 	countrySvc := container.BuildCountryService(mainDB.DB())
+	emailSvc := container.BuildEmailService(mainDB.DB())
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -123,6 +141,15 @@ func main() {
 	admin.SetupAdminOriginRoutes(adminRouter, adminOriginHandler)
 	admin.SetupAdminSampleSourceRoutes(adminRouter, adminSampleSourceHandler)
 	admin.SetupAdminCountryRoutes(adminRouter, adminCountryHandler)
+
+	// Event dispatcher
+	registry := container.BuildRegistry(emailSvc)
+	dispatcher := container.BuildEventDispatcher(eventRepo, registry)
+
+	ctx, stop := context.WithCancel(context.Background())
+	defer stop()
+
+	go dispatcher.Run(ctx)
 
 	r.Run()
 }

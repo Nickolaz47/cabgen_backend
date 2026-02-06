@@ -9,7 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/email"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 )
 
 type EmailService interface {
@@ -17,12 +17,12 @@ type EmailService interface {
 }
 
 type emailService struct {
-	UserRepo    repository.UserRepository
+	UserRepo    repositories.UserRepository
 	EmailSender email.EmailSender
 }
 
 func NewEmailService(
-	userRepo repository.UserRepository, emailSender email.EmailSender) EmailService {
+	userRepo repositories.UserRepository, emailSender email.EmailSender) EmailService {
 	return &emailService{UserRepo: userRepo, EmailSender: emailSender}
 }
 

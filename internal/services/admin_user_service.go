@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
@@ -26,14 +26,14 @@ type AdminUserService interface {
 }
 
 type adminUserService struct {
-	Repo        repository.UserRepository
-	CountryRepo repository.CountryRepository
+	Repo        repositories.UserRepository
+	CountryRepo repositories.CountryRepository
 	Hasher      security.PasswordHasher
 }
 
 func NewAdminUserService(
-	repo repository.UserRepository,
-	countryRepo repository.CountryRepository,
+	repo repositories.UserRepository,
+	countryRepo repositories.CountryRepository,
 	hasher security.PasswordHasher,
 ) AdminUserService {
 	return &adminUserService{

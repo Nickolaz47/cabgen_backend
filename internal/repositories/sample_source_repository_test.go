@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
@@ -16,14 +16,14 @@ import (
 
 func TestNewSampleSourceRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	result := repository.NewSampleSourceRepo(db)
+	result := repositories.NewSampleSourceRepo(db)
 
 	assert.NotEmpty(t, result)
 }
 
 func TestGetSampleSources(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -46,7 +46,7 @@ func TestGetSampleSources(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		sampleSources, err := mockCountryRepo.GetSampleSources(context.Background())
 
 		assert.Empty(t, sampleSources)
@@ -56,7 +56,7 @@ func TestGetSampleSources(t *testing.T) {
 
 func TestGetActiveSampleSources(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -86,7 +86,7 @@ func TestGetActiveSampleSources(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		sampleSources, err := mockCountryRepo.GetActiveSampleSources(context.Background())
 
 		assert.Empty(t, sampleSources)
@@ -96,7 +96,7 @@ func TestGetActiveSampleSources(t *testing.T) {
 
 func TestGetSampleSourceByID(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -117,7 +117,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		result, err := mockCountryRepo.GetSampleSourceByID(context.Background(), uuid.UUID{})
 
 		assert.Empty(t, result)
@@ -127,7 +127,7 @@ func TestGetSampleSourceByID(t *testing.T) {
 
 func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -166,7 +166,7 @@ func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		sampleSources, err := mockCountryRepo.GetSampleSourcesByNameOrGroup(context.Background(), "resp", "en")
 
 		assert.Empty(t, sampleSources)
@@ -176,7 +176,7 @@ func TestGetSampleSourcesByNameOrGroup(t *testing.T) {
 
 func TestGetSampleSourceDuplicate(t *testing.T) {
 	db := testutils.NewMockDB()
-	sampleSourceRepo := repository.NewSampleSourceRepo(db)
+	sampleSourceRepo := repositories.NewSampleSourceRepo(db)
 
 	mockSampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -219,7 +219,7 @@ func TestGetSampleSourceDuplicate(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSampleSourceRepo := repository.NewSampleSourceRepo(mockDB)
+		mockSampleSourceRepo := repositories.NewSampleSourceRepo(mockDB)
 		sampleSource, err := mockSampleSourceRepo.GetSampleSourceDuplicate(
 			context.Background(), mockSampleSource.Names, uuid.New(),
 		)
@@ -231,7 +231,7 @@ func TestGetSampleSourceDuplicate(t *testing.T) {
 
 func TestCreateSampleSource(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -255,7 +255,7 @@ func TestCreateSampleSource(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		err = mockCountryRepo.CreateSampleSource(context.Background(), &sampleSource)
 
 		assert.Error(t, err)
@@ -264,7 +264,7 @@ func TestCreateSampleSource(t *testing.T) {
 
 func TestUpdateSampleSource(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -305,7 +305,7 @@ func TestUpdateSampleSource(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		err = mockCountryRepo.UpdateSampleSource(context.Background(), &models.SampleSource{})
 
 		assert.Error(t, err)
@@ -314,7 +314,7 @@ func TestUpdateSampleSource(t *testing.T) {
 
 func TestDeleteSampleSource(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSampleSourceRepo(db)
+	repo := repositories.NewSampleSourceRepo(db)
 
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),
@@ -339,7 +339,7 @@ func TestDeleteSampleSource(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewSampleSourceRepo(mockDB)
+		mockCountryRepo := repositories.NewSampleSourceRepo(mockDB)
 		err = mockCountryRepo.DeleteSampleSource(context.Background(), &models.SampleSource{})
 
 		assert.Error(t, err)

@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"gorm.io/gorm"
 )
@@ -20,10 +20,10 @@ type CountryService interface {
 }
 
 type countryService struct {
-	Repo repository.CountryRepository
+	Repo repositories.CountryRepository
 }
 
-func NewCountryService(repo repository.CountryRepository) CountryService {
+func NewCountryService(repo repositories.CountryRepository) CountryService {
 	return &countryService{Repo: repo}
 }
 

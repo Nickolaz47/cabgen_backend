@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,14 +17,14 @@ import (
 
 func TestNewSequencerRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	result := repository.NewSequencerRepo(db)
+	result := repositories.NewSequencerRepo(db)
 
 	assert.NotEmpty(t, result)
 }
 
 func TestGetSequencers(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	db.Create(&sequencer)
@@ -41,7 +41,7 @@ func TestGetSequencers(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		sequencers, err := mockSequencerRepo.GetSequencers(context.Background())
 
 		assert.Error(t, err)
@@ -51,7 +51,7 @@ func TestGetSequencers(t *testing.T) {
 
 func TestGetActiveSequencers(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	sequencer2 := testmodels.NewSequencer(uuid.NewString(), "Nanopore", "MinION", false)
@@ -71,7 +71,7 @@ func TestGetActiveSequencers(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		sequencers, err := mockSequencerRepo.GetActiveSequencers(context.Background())
 
 		assert.Error(t, err)
@@ -81,7 +81,7 @@ func TestGetActiveSequencers(t *testing.T) {
 
 func TestGetSequencerByID(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	id := uuid.New()
 	sequencer := testmodels.NewSequencer(id.String(), "Illumina", "MiSeq", true)
@@ -98,7 +98,7 @@ func TestGetSequencerByID(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		sequencer, err := mockSequencerRepo.GetSequencerByID(context.Background(), uuid.UUID{})
 
 		assert.Error(t, err)
@@ -108,7 +108,7 @@ func TestGetSequencerByID(t *testing.T) {
 
 func TestGetSequencersByBrandOrModel(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	db.Create(&sequencer)
@@ -137,7 +137,7 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		sequencers, err := mockSequencerRepo.GetSequencersByBrandOrModel(context.Background(), "illumina")
 
 		assert.Error(t, err)
@@ -147,7 +147,7 @@ func TestGetSequencersByBrandOrModel(t *testing.T) {
 
 func TestGetSequencerDuplicate(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	mockSequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	db.Create(&mockSequencer)
@@ -179,7 +179,7 @@ func TestGetSequencerDuplicate(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		sequencer, err := mockSequencerRepo.GetSequencerDuplicate(context.Background(), "Mis", uuid.UUID{})
 
 		assert.Error(t, err)
@@ -189,7 +189,7 @@ func TestGetSequencerDuplicate(t *testing.T) {
 
 func TestCreateSequencer(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 	t.Run("Success", func(t *testing.T) {
@@ -207,7 +207,7 @@ func TestCreateSequencer(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		err = mockSequencerRepo.CreateSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)
@@ -216,7 +216,7 @@ func TestCreateSequencer(t *testing.T) {
 
 func TestUpdateSequencer(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MySeq", true)
 	db.Create(&sequencer)
@@ -242,7 +242,7 @@ func TestUpdateSequencer(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		err = mockSequencerRepo.UpdateSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)
@@ -251,7 +251,7 @@ func TestUpdateSequencer(t *testing.T) {
 
 func TestDeleteSequencer(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewSequencerRepo(db)
+	repo := repositories.NewSequencerRepo(db)
 
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MySeq", true)
 	db.Create(&sequencer)
@@ -271,7 +271,7 @@ func TestDeleteSequencer(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockSequencerRepo := repository.NewSequencerRepo(mockDB)
+		mockSequencerRepo := repositories.NewSequencerRepo(mockDB)
 		err = mockSequencerRepo.DeleteSequencer(context.Background(), &models.Sequencer{})
 
 		assert.Error(t, err)

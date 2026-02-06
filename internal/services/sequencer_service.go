@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,10 +22,10 @@ type SequencerService interface {
 }
 
 type sequencerService struct {
-	Repo repository.SequencerRepository
+	Repo repositories.SequencerRepository
 }
 
-func NewSequencerService(repo repository.SequencerRepository) SequencerService {
+func NewSequencerService(repo repositories.SequencerRepository) SequencerService {
 	return &sequencerService{Repo: repo}
 }
 

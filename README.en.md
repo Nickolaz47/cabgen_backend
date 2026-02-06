@@ -1,4 +1,3 @@
-
 # Cabgen Backend
 
 [Portuguese Version (Versão em Português)](./README.md)
@@ -38,11 +37,12 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 │   ├── data/                # Static data (ex: countries.json)
 │   ├── db/                  # Database configuration and connection
 │   ├── email/               # Email sending and configuration
+│   ├── events/              # Event management within the API
 │   ├── handlers/            # Controllers (Gin)
 │   ├── logging/             # Logging configuration and control
 │   ├── middlewares/         # Application middlewares
 │   ├── models/              # Models and database mapping
-│   ├── repository/          # Database access and queries
+│   ├── repositories/        # Database access and queries
 │   ├── responses/           # HTTP response standardization
 │   ├── routes/              # Route and endpoint definition
 │   ├── security/            # Password encryption and hashing
@@ -180,9 +180,9 @@ The API uses a standardized response format with the following fields:
 
 ```json
 {
-    "data": {},
-    "message": "",
-    "error": ""
+  "data": {},
+  "message": "",
+  "error": ""
 }
 ```
 
@@ -194,25 +194,25 @@ The API uses a standardized response format with the following fields:
 
 ### Behavior by HTTP Method
 
-| Method | Fields returned |
-| ------ | --------------- |
-| GET    | `data`          |
+| Method | Fields returned   |
+| ------ | ----------------- |
+| GET    | `data`            |
 | POST   | `data`, `message` |
-| PUT    | `data`          |
-| DELETE | `message`       |
+| PUT    | `data`            |
+| DELETE | `message`         |
 
 ### HTTP Status Codes
 
-| Code | Description                                                      |
-| ---- | ---------------------------------------------------------------- |
-| 200  | Request processed successfully                                    |
-| 201  | Resource created successfully                                     |
+| Code | Description                                                           |
+| ---- | --------------------------------------------------------------------- |
+| 200  | Request processed successfully                                        |
+| 201  | Resource created successfully                                         |
 | 400  | Invalid input or route parameter in wrong format (e.g., invalid UUID) |
-| 401  | Request without authentication token                              |
-| 403  | User disabled or access token expired                             |
-| 404  | Resource not found                                                |
-| 409  | Attempt to create duplicate resource                              |
-| 500  | Unexpected internal error                                         |
+| 401  | Request without authentication token                                  |
+| 403  | User disabled or access token expired                                 |
+| 404  | Resource not found                                                    |
+| 409  | Attempt to create duplicate resource                                  |
+| 500  | Unexpected internal error                                             |
 
 ## Endpoints
 
@@ -226,34 +226,34 @@ Endpoints are organized in three access levels:
 
 #### Health Check
 
-| Method | Endpoint      | Description           |
-| ------ | ------------- | --------------------- |
-| GET    | `/api/health` | Check API status      |
+| Method | Endpoint      | Description      |
+| ------ | ------------- | ---------------- |
+| GET    | `/api/health` | Check API status |
 
 #### Authentication
 
-| Method | Endpoint             | Description                           |
-| ------ | -------------------- | ------------------------------------- |
+| Method | Endpoint             | Description                             |
+| ------ | -------------------- | --------------------------------------- |
 | POST   | `/api/auth/register` | User registration (requires activation) |
-| POST   | `/api/auth/login`    | Login and JWT token return via cookies |
-| POST   | `/api/auth/logout`   | User logout                           |
-| POST   | `/api/auth/refresh`  | Access token refresh                  |
+| POST   | `/api/auth/login`    | Login and JWT token return via cookies  |
+| POST   | `/api/auth/logout`   | User logout                             |
+| POST   | `/api/auth/refresh`  | Access token refresh                    |
 
 #### Countries
 
-| Method | Endpoint               | Description          |
-| ------ | ---------------------- | -------------------- |
-| GET    | `/api/countries`       | List all countries   |
+| Method | Endpoint               | Description            |
+| ------ | ---------------------- | ---------------------- |
+| GET    | `/api/countries`       | List all countries     |
 | GET    | `/api/countries/:code` | Get a specific country |
 
 ### Common
 
 #### User
 
-| Method | Endpoint        | Description              |
-| ------ | --------------- | ------------------------ |
+| Method | Endpoint        | Description                 |
+| ------ | --------------- | --------------------------- |
 | GET    | `/api/users/me` | Get authenticated user data |
-| PUT    | `/api/users/me` | Update user data         |
+| PUT    | `/api/users/me` | Update user data            |
 
 #### Origin
 
@@ -263,9 +263,9 @@ Endpoints are organized in three access levels:
 
 #### Sequencer
 
-| Method | Endpoint          | Description              |
-| ------ | ----------------- | ------------------------ |
-| GET    | `/api/sequencers` | List active sequencers   |
+| Method | Endpoint          | Description            |
+| ------ | ----------------- | ---------------------- |
+| GET    | `/api/sequencers` | List active sequencers |
 
 #### Sample Source
 
@@ -275,8 +275,8 @@ Endpoints are organized in three access levels:
 
 #### Laboratory
 
-| Method | Endpoint            | Description           |
-| ------ | ------------------- | --------------------- |
+| Method | Endpoint            | Description              |
+| ------ | ------------------- | ------------------------ |
 | GET    | `/api/laboratories` | List active laboratories |
 
 ### Admin
@@ -296,44 +296,44 @@ Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **S
 
 #### Origin
 
-| Method | Endpoint                         | Description              |
-| ------ | -------------------------------- | ------------------------ |
-| GET    | `/api/admin/origins`             | List all origins         |
-| GET    | `/api/admin/origins/:originId`   | Get a specific origin    |
-| PUT    | `/api/admin/origins/search`      | Search origins by name   |
-| POST   | `/api/admin/origins`             | Create a new origin      |
-| PUT    | `/api/admin/origins/:originId`   | Update an origin         |
-| DELETE | `/api/admin/origins/:originId`   | Delete an origin         |
+| Method | Endpoint                       | Description            |
+| ------ | ------------------------------ | ---------------------- |
+| GET    | `/api/admin/origins`           | List all origins       |
+| GET    | `/api/admin/origins/:originId` | Get a specific origin  |
+| PUT    | `/api/admin/origins/search`    | Search origins by name |
+| POST   | `/api/admin/origins`           | Create a new origin    |
+| PUT    | `/api/admin/origins/:originId` | Update an origin       |
+| DELETE | `/api/admin/origins/:originId` | Delete an origin       |
 
 #### Sequencer
 
-| Method | Endpoint                        | Description                        |
-| ------ | ------------------------------- | ---------------------------------- |
-| GET    | `/api/admin/sequencers`         | List all sequencers                |
-| GET    | `/api/admin/sequencers/:id`     | Get a specific sequencer           |
-| PUT    | `/api/admin/sequencers/search`  | Search sequencers by brand or model |
-| POST   | `/api/admin/sequencers`         | Create a new sequencer             |
-| PUT    | `/api/admin/sequencers/:id`     | Update a sequencer                 |
-| DELETE | `/api/admin/sequencers/:id`     | Delete a sequencer                 |
+| Method | Endpoint                       | Description                         |
+| ------ | ------------------------------ | ----------------------------------- |
+| GET    | `/api/admin/sequencers`        | List all sequencers                 |
+| GET    | `/api/admin/sequencers/:id`    | Get a specific sequencer            |
+| PUT    | `/api/admin/sequencers/search` | Search sequencers by brand or model |
+| POST   | `/api/admin/sequencers`        | Create a new sequencer              |
+| PUT    | `/api/admin/sequencers/:id`    | Update a sequencer                  |
+| DELETE | `/api/admin/sequencers/:id`    | Delete a sequencer                  |
 
 #### Sample Source
 
-| Method | Endpoint                       | Description                          |
-| ------ | ------------------------------ | ------------------------------------ |
-| GET    | `/api/admin/sample-sources`    | List all sample sources              |
-| GET    | `/api/admin/sample-sources/:id` | Get a specific sample source         |
+| Method | Endpoint                           | Description                            |
+| ------ | ---------------------------------- | -------------------------------------- |
+| GET    | `/api/admin/sample-sources`        | List all sample sources                |
+| GET    | `/api/admin/sample-sources/:id`    | Get a specific sample source           |
 | PUT    | `/api/admin/sample-sources/search` | Search sample sources by name or group |
-| POST   | `/api/admin/sample-sources`    | Create a new sample source           |
-| PUT    | `/api/admin/sample-sources/:id` | Update a sample source               |
-| DELETE | `/api/admin/sample-sources/:id` | Delete a sample source               |
+| POST   | `/api/admin/sample-sources`        | Create a new sample source             |
+| PUT    | `/api/admin/sample-sources/:id`    | Update a sample source                 |
+| DELETE | `/api/admin/sample-sources/:id`    | Delete a sample source                 |
 
 #### Laboratory
 
-| Method | Endpoint                        | Description                          |
-| ------ | ------------------------------- | ------------------------------------ |
-| GET    | `/api/admin/laboratories`       | List all laboratories                |
-| GET    | `/api/admin/laboratories/:id`   | Get a specific laboratory            |
+| Method | Endpoint                         | Description                                 |
+| ------ | -------------------------------- | ------------------------------------------- |
+| GET    | `/api/admin/laboratories`        | List all laboratories                       |
+| GET    | `/api/admin/laboratories/:id`    | Get a specific laboratory                   |
 | PUT    | `/api/admin/laboratories/search` | Search laboratories by name or abbreviation |
-| POST   | `/api/admin/laboratories`       | Create a new laboratory              |
-| PUT    | `/api/admin/laboratories/:id`   | Update a laboratory                  |
-| DELETE | `/api/admin/laboratories/:id`   | Delete a laboratory                  |
+| POST   | `/api/admin/laboratories`        | Create a new laboratory                     |
+| PUT    | `/api/admin/laboratories/:id`    | Update a laboratory                         |
+| DELETE | `/api/admin/laboratories/:id`    | Delete a laboratory                         |

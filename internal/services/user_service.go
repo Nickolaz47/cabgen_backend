@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,11 +17,11 @@ type UserService interface {
 }
 
 type userService struct {
-	Repo        repository.UserRepository
-	CountryRepo repository.CountryRepository
+	Repo        repositories.UserRepository
+	CountryRepo repositories.CountryRepository
 }
 
-func NewUserService(repo repository.UserRepository, countryRepo repository.CountryRepository) UserService {
+func NewUserService(repo repositories.UserRepository, countryRepo repositories.CountryRepository) UserService {
 	return &userService{Repo: repo, CountryRepo: countryRepo}
 }
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,10 +22,10 @@ type SampleSourceService interface {
 }
 
 type sampleSourceService struct {
-	Repo repository.SampleSourceRepository
+	Repo repositories.SampleSourceRepository
 }
 
-func NewSampleSourceService(repo repository.SampleSourceRepository) SampleSourceService {
+func NewSampleSourceService(repo repositories.SampleSourceRepository) SampleSourceService {
 	return &sampleSourceService{Repo: repo}
 }
 

@@ -19,7 +19,7 @@ COPY . .
 RUN go test -v ./...
 
 # Compilation
-RUN CGO_ENABLED=0 GOOS=linux go build -o api ./cmd/server
+RUN CGO_ENABLED=1 GOOS=linux go build -o api ./cmd/server
 
 # Runtime
 FROM alpine:latest

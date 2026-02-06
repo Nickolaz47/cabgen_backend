@@ -33,15 +33,16 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 ├── internal/                # Código interno (não exportável)
 │   ├── auth/                # Autenticação (JWT e Cookies)
 │   ├── config/              # Carregamento das variáveis de ambiente
-│   ├── container/           # Inicialização de services e handlers
+│   ├── container/           # Inicialização de repositórios, services e handlers
 │   ├── data/                # Dados estáticos (ex: countries.json)
 │   ├── db/                  # Configuração e conexão com o banco
 │   ├── email/               # Envio e configuração de emails
+│   ├── events/              # Gerenciamento de eventos dentro da API
 │   ├── handlers/            # Controllers (Gin)
 │   ├── logging/             # Configuração e controle de logs
 │   ├── middlewares/         # Middlewares da aplicação
 │   ├── models/              # Models e mapeamento do banco
-│   ├── repository/          # Acesso e queries ao banco de dados
+│   ├── repositories/         # Acesso e queries ao banco de dados
 │   ├── responses/           # Padronização de respostas HTTP
 │   ├── routes/              # Definição das rotas/endpoints
 │   ├── security/            # Criptografia e hashing de senhas
@@ -190,7 +191,6 @@ A API utiliza um formato de resposta padronizado, composto pelos seguintes campo
 - **data**
   Utilizado para retornar dados da API.
   Está presente nos seguintes casos:
-
   - Respostas de leitura (`GET`)
   - Criação de recursos (`POST`)
   - Atualização de recursos (`PUT`)
@@ -198,7 +198,6 @@ A API utiliza um formato de resposta padronizado, composto pelos seguintes campo
 - **message**
   Utilizado para mensagens informativas de sucesso.
   Está presente principalmente em:
-
   - Criação de recursos (`POST`)
   - Remoção de recursos (`DELETE`)
 
@@ -312,44 +311,50 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 #### Origem
 
-| Método | Endpoint                         | Descrição                     |
-| ------ | -------------------------------- | ----------------------------- |
-| GET    | `/api/admin/origins`             | Lista todas as origens        |
-| GET    | `/api/admin/origins/:originId`   | Retorna uma origem específica |
-| PUT    | `/api/admin/origins/search`      | Procura origens pelo nome     |
-| POST   | `/api/admin/origins`             | Cria uma nova origem          |
-| PUT    | `/api/admin/origins/:originId`   | Atualiza uma origem           |
-| DELETE | `/api/admin/origins/:originId`   | Deleta uma origem             |
+| Método | Endpoint                       | Descrição                     |
+| ------ | ------------------------------ | ----------------------------- |
+| GET    | `/api/admin/origins`           | Lista todas as origens        |
+| GET    | `/api/admin/origins/:originId` | Retorna uma origem específica |
+| PUT    | `/api/admin/origins/search`    | Procura origens pelo nome     |
+| POST   | `/api/admin/origins`           | Cria uma nova origem          |
+| PUT    | `/api/admin/origins/:originId` | Atualiza uma origem           |
+| DELETE | `/api/admin/origins/:originId` | Deleta uma origem             |
 
 #### Sequenciador
 
-| Método | Endpoint                        | Descrição                                   |
-| ------ | ------------------------------- | ------------------------------------------- |
-| GET    | `/api/admin/sequencers`         | Lista todos os sequenciadores               |
-| GET    | `/api/admin/sequencers/:id`     | Retorna um sequenciador específico          |
-| PUT    | `/api/admin/sequencers/search`  | Procura sequenciadores pela marca ou modelo |
-| POST   | `/api/admin/sequencers`         | Cria um novo sequenciador                   |
-| PUT    | `/api/admin/sequencers/:id`     | Atualiza um sequenciador                    |
-| DELETE | `/api/admin/sequencers/:id`     | Deleta um sequenciador                      |
+| Método | Endpoint                       | Descrição                                   |
+| ------ | ------------------------------ | ------------------------------------------- |
+| GET    | `/api/admin/sequencers`        | Lista todos os sequenciadores               |
+| GET    | `/api/admin/sequencers/:id`    | Retorna um sequenciador específico          |
+| PUT    | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
+| POST   | `/api/admin/sequencers`        | Cria um novo sequenciador                   |
+| PUT    | `/api/admin/sequencers/:id`    | Atualiza um sequenciador                    |
+| DELETE | `/api/admin/sequencers/:id`    | Deleta um sequenciador                      |
 
 #### Fonte da Amostra
 
-| Método | Endpoint                        | Descrição                                    |
-| ------ | ------------------------------- | -------------------------------------------- |
-| GET    | `/api/admin/sample-sources`     | Lista todas as fontes da amostra             |
-| GET    | `/api/admin/sample-sources/:id` | Retorna uma fonte da amostra específica      |
+| Método | Endpoint                           | Descrição                                    |
+| ------ | ---------------------------------- | -------------------------------------------- |
+| GET    | `/api/admin/sample-sources`        | Lista todas as fontes da amostra             |
+| GET    | `/api/admin/sample-sources/:id`    | Retorna uma fonte da amostra específica      |
 | PUT    | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
-| POST   | `/api/admin/sample-sources`     | Cria uma nova fonte da amostra               |
-| PUT    | `/api/admin/sample-sources/:id` | Atualiza uma fonte da amostra                |
-| DELETE | `/api/admin/sample-sources/:id` | Deleta uma fonte da amostra                  |
+| POST   | `/api/admin/sample-sources`        | Cria uma nova fonte da amostra               |
+| PUT    | `/api/admin/sample-sources/:id`    | Atualiza uma fonte da amostra                |
+| DELETE | `/api/admin/sample-sources/:id`    | Deleta uma fonte da amostra                  |
 
 #### Laboratório
 
-| Método | Endpoint                       | Descrição                                    |
-| ------ | ------------------------------ | -------------------------------------------- |
-| GET    | `/api/admin/laboratories`      | Lista todos os laboratórios                  |
-| GET    | `/api/admin/laboratories/:id`  | Retorna um laboratório específico            |
+| Método | Endpoint                         | Descrição                                    |
+| ------ | -------------------------------- | -------------------------------------------- |
+| GET    | `/api/admin/laboratories`        | Lista todos os laboratórios                  |
+| GET    | `/api/admin/laboratories/:id`    | Retorna um laboratório específico            |
 | PUT    | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
-| POST   | `/api/admin/laboratories`      | Cria um novo laboratório                     |
-| PUT    | `/api/admin/laboratories/:id`  | Atualiza um laboratório                      |
-| DELETE | `/api/admin/laboratories/:id`  | Deleta um laboratório                        |
+| POST   | `/api/admin/laboratories`        | Cria um novo laboratório                     |
+| PUT    | `/api/admin/laboratories/:id`    | Atualiza um laboratório                      |
+| DELETE | `/api/admin/laboratories/:id`    | Deleta um laboratório                        |
+
+## TODO
+
+- [ ] Implementar logger nos services;
+- [ ] Modelar Microorganism, HealthService e Sample;
+- [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;

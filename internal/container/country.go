@@ -3,13 +3,13 @@ package container
 import (
 	adminCountry "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/country"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public/country"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"gorm.io/gorm"
 )
 
 func BuildCountryService(db *gorm.DB) services.CountryService {
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 	countryService := services.NewCountryService(countryRepo)
 
 	return countryService

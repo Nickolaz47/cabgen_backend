@@ -1,4 +1,4 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
@@ -17,7 +17,7 @@ import (
 
 func TestNewUserRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	assert.NotEmpty(t, userRepo)
 }
@@ -36,7 +36,7 @@ func TestGetAllUsers(t *testing.T) {
 	mockUser2 := testmodels.NewAdminLoginUser()
 	db.Create(&mockUser2)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		users, err := userRepo.GetUsers(ctx, filter)
@@ -58,7 +58,7 @@ func TestGetAllUsers(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockUserRepo := repository.NewUserRepo(mockDB)
+		mockUserRepo := repositories.NewUserRepo(mockDB)
 		users, err := mockUserRepo.GetUsers(ctx, filter)
 
 		assert.Empty(t, users)
@@ -76,7 +76,7 @@ func TestGetUserByID(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		user, err := userRepo.GetUserByID(ctx, mockUser.ID)
@@ -109,7 +109,7 @@ func TestGetUserByUsername(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		user, err := userRepo.GetUserByUsername(ctx, mockUser.Username)
@@ -142,7 +142,7 @@ func TestGetUserByEmail(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		user, err := userRepo.GetUserByEmail(ctx, mockUser.Email)
@@ -175,7 +175,7 @@ func TestExistsByEmail(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		user, err := userRepo.ExistsByEmail(
@@ -206,7 +206,7 @@ func TestExistsByEmail(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockUserRepo := repository.NewUserRepo(mockDB)
+		mockUserRepo := repositories.NewUserRepo(mockDB)
 		users, err := mockUserRepo.ExistsByEmail(
 			ctx, &mockUser.Email, uuid.New())
 
@@ -226,7 +226,7 @@ func TestExistsByUsername(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		user, err := userRepo.ExistsByUsername(
@@ -257,7 +257,7 @@ func TestExistsByUsername(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockUserRepo := repository.NewUserRepo(mockDB)
+		mockUserRepo := repositories.NewUserRepo(mockDB)
 		users, err := mockUserRepo.ExistsByUsername(
 			ctx, &mockUser.Username, uuid.New())
 
@@ -276,7 +276,7 @@ func TestCreateUser(t *testing.T) {
 
 	mockUser := testmodels.NewLoginUser()
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		err := userRepo.CreateUser(ctx, &mockUser)
@@ -288,7 +288,7 @@ func TestCreateUser(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockUserRepo := repository.NewUserRepo(mockDB)
+		mockUserRepo := repositories.NewUserRepo(mockDB)
 
 		err = mockUserRepo.CreateUser(ctx, &mockUser)
 
@@ -306,7 +306,7 @@ func TestUpdateUser(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		err := userRepo.UpdateUser(ctx, &mockUser)
@@ -331,7 +331,7 @@ func TestDeleteUser(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	db.Create(&mockUser)
 
-	userRepo := repository.NewUserRepo(db)
+	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
 		err := userRepo.DeleteUser(ctx, &mockUser)

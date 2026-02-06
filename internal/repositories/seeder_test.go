@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func TestBulkInsert(t *testing.T) {
 	countries := []models.Country{country1, country2}
 
 	t.Run("Success", func(t *testing.T) {
-		repo := repository.NewCountrySeedRepository(db)
+		repo := repositories.NewCountrySeedRepository(db)
 
 		err := repo.BulkInsert(context.Background(), countries)
 
@@ -36,7 +36,7 @@ func TestBulkInsert(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		repo := repository.NewCountrySeedRepository(mockDB)
+		repo := repositories.NewCountrySeedRepository(mockDB)
 		err = repo.BulkInsert(context.Background(), countries)
 
 		assert.Error(t, err)
@@ -45,7 +45,7 @@ func TestBulkInsert(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountrySeedRepository(db)
+	repo := repositories.NewCountrySeedRepository(db)
 
 	country1 := testmodels.NewCountry("BRA", map[string]string{
 		"pt": "Brasil", "en": "Brazil", "es": "Brazil",
@@ -69,7 +69,7 @@ func TestCount(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockRepo := repository.NewCountrySeedRepository(mockDB)
+		mockRepo := repositories.NewCountrySeedRepository(mockDB)
 		count, err := mockRepo.Count(context.Background())
 
 		assert.Error(t, err)

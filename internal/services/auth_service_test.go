@@ -43,10 +43,11 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil)
 
 		result, err := svc.Register(ctx, input, lang)
 
@@ -63,7 +64,7 @@ func TestRegister(t *testing.T) {
 		}
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil,
+			userRepo, nil, nil, nil, nil,
 		)
 
 		result, err := svc.Register(ctx, input, lang)
@@ -80,7 +81,7 @@ func TestRegister(t *testing.T) {
 		}
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil)
+			userRepo, nil, nil, nil, nil)
 
 		result, err := svc.Register(ctx, input, lang)
 
@@ -98,7 +99,7 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(userRepo, nil, nil, nil)
+		svc := services.NewAuthService(userRepo, nil, nil, nil, nil)
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrConflictUsername, err)
@@ -116,7 +117,7 @@ func TestRegister(t *testing.T) {
 		}
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil)
+			userRepo, nil, nil, nil, nil)
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
@@ -130,7 +131,7 @@ func TestRegister(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{}
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil)
+			userRepo, nil, nil, nil, nil)
 		result, err := svc.Register(ctx, badInput, lang)
 
 		assert.Equal(t, services.ErrEmailMismatch, err)
@@ -144,7 +145,7 @@ func TestRegister(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{}
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil)
+			userRepo, nil, nil, nil, nil)
 		result, err := svc.Register(ctx, badInput, lang)
 
 		assert.Equal(t, services.ErrPasswordMismatch, err)
@@ -164,6 +165,7 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{
 			HashFunc: func(password string) (string, error) {
 				return "", bcrypt.ErrHashTooShort
@@ -171,7 +173,7 @@ func TestRegister(t *testing.T) {
 		}
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil)
 
 		result, err := svc.Register(ctx, input, lang)
 
@@ -196,10 +198,11 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, hasher, nil,
+			userRepo, countryRepo, emitter, hasher, nil,
 		)
 		result, err := svc.Register(ctx, input, lang)
 
@@ -223,9 +226,10 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 
-		service := services.NewAuthService(userRepo, countryRepo, hasher, nil)
+		service := services.NewAuthService(userRepo, countryRepo, emitter, hasher, nil)
 		result, err := service.Register(
 			context.Background(), input, lang)
 
@@ -247,10 +251,11 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil)
 
 		_, err := svc.Register(ctx, input, lang)
 
@@ -274,11 +279,11 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.NoError(t, err)
@@ -292,11 +297,11 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -311,11 +316,11 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -332,11 +337,11 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -351,15 +356,15 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{
 			CheckPasswordFunc: func(hashPassword, password string) error {
 				return bcrypt.ErrMismatchedHashAndPassword
 			},
 		}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -374,15 +379,15 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{
 			CheckPasswordFunc: func(hashPassword, password string) error {
 				return bcrypt.ErrPasswordTooLong
 			},
 		}
-
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -397,6 +402,7 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{
 			GenerateTokenFunc: func(user models.UserToken, secret []byte, expiresIn time.Duration) (string, error) {
@@ -404,7 +410,7 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -419,6 +425,7 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
+		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 		calls := 0
 		provider := &mocks.MockTokenProvider{
@@ -431,7 +438,7 @@ func TestLogin(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(userRepo, nil, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -457,7 +464,7 @@ func TestRefresh(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.NoError(t, err)
@@ -471,7 +478,7 @@ func TestRefresh(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
@@ -489,7 +496,7 @@ func TestRefresh(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)

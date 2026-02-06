@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,10 +22,10 @@ type LaboratoryService interface {
 }
 
 type laboratoryService struct {
-	Repo repository.LaboratoryRepository
+	Repo repositories.LaboratoryRepository
 }
 
-func NewLaboratoryService(repo repository.LaboratoryRepository) LaboratoryService {
+func NewLaboratoryService(repo repositories.LaboratoryRepository) LaboratoryService {
 	return &laboratoryService{Repo: repo}
 }
 

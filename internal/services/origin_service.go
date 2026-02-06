@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,10 +22,10 @@ type OriginService interface {
 }
 
 type originService struct {
-	Repo repository.OriginRepository
+	Repo repositories.OriginRepository
 }
 
-func NewOriginService(repo repository.OriginRepository) OriginService {
+func NewOriginService(repo repositories.OriginRepository) OriginService {
 	return &originService{Repo: repo}
 }
 

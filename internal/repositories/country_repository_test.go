@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -16,14 +16,14 @@ import (
 
 func TestNewCountryRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 
 	assert.NotEmpty(t, countryRepo)
 }
 
 func TestGetCountries(t *testing.T) {
 	db := testutils.NewMockDB()
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 
 	mockCountry := testmodels.NewCountry("", nil)
 	mockCountry2 := testmodels.NewCountry(
@@ -44,7 +44,7 @@ func TestGetCountries(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewCountryRepo(mockDB)
+		mockCountryRepo := repositories.NewCountryRepo(mockDB)
 		countries, err := mockCountryRepo.GetCountries(context.Background())
 
 		assert.Empty(t, countries)
@@ -54,7 +54,7 @@ func TestGetCountries(t *testing.T) {
 
 func TestGetCountryByID(t *testing.T) {
 	db := testutils.NewMockDB()
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -87,7 +87,7 @@ func TestGetCountryByID(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewCountryRepo(mockDB)
+		mockCountryRepo := repositories.NewCountryRepo(mockDB)
 		countries, err := mockCountryRepo.GetCountryByID(context.Background(), mockCountry.ID)
 
 		assert.Empty(t, countries)
@@ -97,7 +97,7 @@ func TestGetCountryByID(t *testing.T) {
 
 func TestGetCountryByCode(t *testing.T) {
 	db := testutils.NewMockDB()
-	countryRepo := repository.NewCountryRepo(db)
+	countryRepo := repositories.NewCountryRepo(db)
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -130,7 +130,7 @@ func TestGetCountryByCode(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewCountryRepo(mockDB)
+		mockCountryRepo := repositories.NewCountryRepo(mockDB)
 		countries, err := mockCountryRepo.GetCountryByCode(context.Background(), "BRA")
 
 		assert.Empty(t, countries)
@@ -140,7 +140,7 @@ func TestGetCountryByCode(t *testing.T) {
 
 func TestGetCountriesByName(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountryRepo(db)
+	repo := repositories.NewCountryRepo(db)
 
 	country := testmodels.NewCountry("", nil)
 	db.Create(&country)
@@ -175,7 +175,7 @@ func TestGetCountriesByName(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewCountryRepo(mockDB)
+		mockCountryRepo := repositories.NewCountryRepo(mockDB)
 		countries, err := mockCountryRepo.GetCountriesByName(context.Background(), "bra", "pt")
 
 		assert.Error(t, err)
@@ -185,7 +185,7 @@ func TestGetCountriesByName(t *testing.T) {
 
 func TestGetCountryDuplicate(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountryRepo(db)
+	repo := repositories.NewCountryRepo(db)
 
 	mockCountry := testmodels.NewCountry("", nil)
 	db.Create(&mockCountry)
@@ -230,7 +230,7 @@ func TestGetCountryDuplicate(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewCountryRepo(mockDB)
+		mockCountryRepo := repositories.NewCountryRepo(mockDB)
 		country, err := mockCountryRepo.GetCountryDuplicate(
 			context.Background(), mockCountry.Names, "",
 		)
@@ -242,7 +242,7 @@ func TestGetCountryDuplicate(t *testing.T) {
 
 func TestCreateCountry(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountryRepo(db)
+	repo := repositories.NewCountryRepo(db)
 
 	country := testmodels.NewCountry("", nil)
 
@@ -261,7 +261,7 @@ func TestCreateCountry(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"))
 		assert.NoError(t, err)
 
-		mockRepo := repository.NewCountryRepo(mockDB)
+		mockRepo := repositories.NewCountryRepo(mockDB)
 		err = mockRepo.CreateCountry(context.Background(), &country)
 
 		assert.Error(t, err)
@@ -270,7 +270,7 @@ func TestCreateCountry(t *testing.T) {
 
 func TestUpdateCountry(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountryRepo(db)
+	repo := repositories.NewCountryRepo(db)
 
 	country := testmodels.NewCountry(
 		"SPN",
@@ -314,7 +314,7 @@ func TestUpdateCountry(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockRepo := repository.NewCountryRepo(mockDB)
+		mockRepo := repositories.NewCountryRepo(mockDB)
 		err = mockRepo.UpdateCountry(context.Background(), &models.Country{})
 
 		assert.Error(t, err)
@@ -323,7 +323,7 @@ func TestUpdateCountry(t *testing.T) {
 
 func TestDeleteCountry(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewCountryRepo(db)
+	repo := repositories.NewCountryRepo(db)
 
 	country := testmodels.NewCountry("", nil)
 	country.ID = 1
@@ -344,7 +344,7 @@ func TestDeleteCountry(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockRepo := repository.NewCountryRepo(mockDB)
+		mockRepo := repositories.NewCountryRepo(mockDB)
 		err = mockRepo.DeleteCountry(context.Background(), &models.Country{})
 
 		assert.Error(t, err)

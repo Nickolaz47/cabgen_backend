@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,14 +17,14 @@ import (
 
 func TestNewOriginRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	originRepo := repository.NewOriginRepo(db)
+	originRepo := repositories.NewOriginRepo(db)
 
 	assert.NotEmpty(t, originRepo)
 }
 
 func TestGetOrigins(t *testing.T) {
 	db := testutils.NewMockDB()
-	originRepo := repository.NewOriginRepo(db)
+	originRepo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	db.Create(&origin)
@@ -42,7 +42,7 @@ func TestGetOrigins(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockOriginRepo := repository.NewOriginRepo(mockDB)
+		mockOriginRepo := repositories.NewOriginRepo(mockDB)
 		origins, err := mockOriginRepo.GetOrigins(context.Background())
 
 		assert.Empty(t, origins)
@@ -52,7 +52,7 @@ func TestGetOrigins(t *testing.T) {
 
 func TestGetActiveOrigins(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	origin2 := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Alimentar", "en": "Food", "es": "Alimentaria"}, false)
@@ -73,7 +73,7 @@ func TestGetActiveOrigins(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		origins, err := mockCountryRepo.GetActiveOrigins(context.Background())
 
 		assert.Empty(t, origins)
@@ -83,7 +83,7 @@ func TestGetActiveOrigins(t *testing.T) {
 
 func TestGetOriginByID(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.NewString(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 	db.Create(&origin)
@@ -99,7 +99,7 @@ func TestGetOriginByID(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		origin, err := mockCountryRepo.GetOriginByID(context.Background(), uuid.UUID{})
 
 		assert.Empty(t, origin)
@@ -109,7 +109,7 @@ func TestGetOriginByID(t *testing.T) {
 
 func TestGetOriginsByName(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(
 		uuid.New().String(),
@@ -148,7 +148,7 @@ func TestGetOriginsByName(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		origin, err := mockCountryRepo.GetOriginsByName(context.Background(), "", "")
 
 		assert.Empty(t, origin)
@@ -158,7 +158,7 @@ func TestGetOriginsByName(t *testing.T) {
 
 func TestGetOriginDuplicate(t *testing.T) {
 	db := testutils.NewMockDB()
-	originRepo := repository.NewOriginRepo(db)
+	originRepo := repositories.NewOriginRepo(db)
 
 	mockOrigin := testmodels.NewOrigin(
 		uuid.New().String(),
@@ -194,7 +194,7 @@ func TestGetOriginDuplicate(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockOriginRepo := repository.NewOriginRepo(mockDB)
+		mockOriginRepo := repositories.NewOriginRepo(mockDB)
 		origin, err := mockOriginRepo.GetOriginDuplicate(context.Background(), mockOrigin.Names, uuid.New())
 
 		assert.Empty(t, origin)
@@ -204,7 +204,7 @@ func TestGetOriginDuplicate(t *testing.T) {
 
 func TestCreateOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 
@@ -223,7 +223,7 @@ func TestCreateOrigin(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		err = mockCountryRepo.CreateOrigin(context.Background(), &models.Origin{})
 
 		assert.Error(t, err)
@@ -232,7 +232,7 @@ func TestCreateOrigin(t *testing.T) {
 
 func TestUpdateOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Hum", "en": "Human", "es": "Humanio"}, true)
 
@@ -264,7 +264,7 @@ func TestUpdateOrigin(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		err = mockCountryRepo.UpdateOrigin(context.Background(), &models.Origin{})
 
 		assert.Error(t, err)
@@ -273,7 +273,7 @@ func TestUpdateOrigin(t *testing.T) {
 
 func TestDeleteOrigin(t *testing.T) {
 	db := testutils.NewMockDB()
-	repo := repository.NewOriginRepo(db)
+	repo := repositories.NewOriginRepo(db)
 
 	origin := testmodels.NewOrigin(uuid.New().String(), map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"}, true)
 
@@ -293,7 +293,7 @@ func TestDeleteOrigin(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockCountryRepo := repository.NewOriginRepo(mockDB)
+		mockCountryRepo := repositories.NewOriginRepo(mockDB)
 		err = mockCountryRepo.DeleteOrigin(context.Background(), &models.Origin{})
 
 		assert.Error(t, err)

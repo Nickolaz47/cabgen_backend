@@ -3,13 +3,13 @@ package container
 import (
 	adminSequencer "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sequencer"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"gorm.io/gorm"
 )
 
 func BuildSequencerService(db *gorm.DB) services.SequencerService {
-	sequencerRepo := repository.NewSequencerRepo(db)
+	sequencerRepo := repositories.NewSequencerRepo(db)
 	sequencerService := services.NewSequencerService(sequencerRepo)
 
 	return sequencerService

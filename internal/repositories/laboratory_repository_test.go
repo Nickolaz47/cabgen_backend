@@ -1,11 +1,11 @@
-package repository_test
+package repositories_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
-	"github.com/CABGenOrg/cabgen_backend/internal/repository"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
@@ -16,14 +16,14 @@ import (
 
 func TestNewLaboratoryRepo(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	assert.NotEmpty(t, labRepo)
 }
 
 func TestGetLaboratories(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 	db.Create(&lab)
@@ -41,7 +41,7 @@ func TestGetLaboratories(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		labs, err := mockLabRepo.GetLaboratories(context.Background())
 
 		assert.Empty(t, labs)
@@ -51,7 +51,7 @@ func TestGetLaboratories(t *testing.T) {
 
 func TestGetActiveLaboratories(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 	lab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 2", "L2", false)
@@ -71,7 +71,7 @@ func TestGetActiveLaboratories(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		labs, err := mockLabRepo.GetActiveLaboratories(context.Background())
 
 		assert.Empty(t, labs)
@@ -81,7 +81,7 @@ func TestGetActiveLaboratories(t *testing.T) {
 
 func TestGetLaboratoryByID(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 	db.Create(&lab)
@@ -97,7 +97,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		lab, err := mockLabRepo.GetLaboratoryByID(context.Background(), uuid.New())
 
 		assert.Empty(t, lab)
@@ -107,7 +107,7 @@ func TestGetLaboratoryByID(t *testing.T) {
 
 func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 	lab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Para", "LACEN/PA", true)
@@ -136,7 +136,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		labs, err := mockLabRepo.GetLaboratoriesByNameOrAbbreviation(context.Background(), "Lab")
 
 		assert.Empty(t, labs)
@@ -146,7 +146,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 
 func TestGetLaboratoryDuplicate(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	mockLab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 	db.Create(&mockLab)
@@ -178,7 +178,7 @@ func TestGetLaboratoryDuplicate(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		lab, err := mockLabRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.New())
 
 		assert.Empty(t, lab)
@@ -188,7 +188,7 @@ func TestGetLaboratoryDuplicate(t *testing.T) {
 
 func TestCreateLaboratory(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 
@@ -207,7 +207,7 @@ func TestCreateLaboratory(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		err = mockLabRepo.CreateLaboratory(context.Background(), &lab)
 
 		assert.Error(t, err)
@@ -216,7 +216,7 @@ func TestCreateLaboratory(t *testing.T) {
 
 func TestUpdateLaboratory(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 
@@ -249,7 +249,7 @@ func TestUpdateLaboratory(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		err = mockLabRepo.UpdateLaboratory(context.Background(), &lab)
 
 		assert.Error(t, err)
@@ -258,7 +258,7 @@ func TestUpdateLaboratory(t *testing.T) {
 
 func TestDeleteLaboratory(t *testing.T) {
 	db := testutils.NewMockDB()
-	labRepo := repository.NewLaboratoryRepo(db)
+	labRepo := repositories.NewLaboratoryRepo(db)
 
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
 
@@ -279,7 +279,7 @@ func TestDeleteLaboratory(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
-		mockLabRepo := repository.NewLaboratoryRepo(mockDB)
+		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
 		err = mockLabRepo.DeleteLaboratory(context.Background(), &lab)
 
 		assert.Error(t, err)
