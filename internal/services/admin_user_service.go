@@ -5,11 +5,13 @@ import (
 	"errors"
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -29,15 +31,21 @@ type adminUserService struct {
 	Repo        repositories.UserRepository
 	CountryRepo repositories.CountryRepository
 	Hasher      security.PasswordHasher
+	Logger      *zap.Logger
 }
 
 func NewAdminUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
 	hasher security.PasswordHasher,
+	logger *zap.Logger,
 ) AdminUserService {
 	return &adminUserService{
-		Repo: repo, CountryRepo: countryRepo, Hasher: hasher}
+		Repo:        repo,
+		CountryRepo: countryRepo,
+		Hasher:      hasher,
+		Logger:      logger,
+	}
 }
 
 func (s *adminUserService) Find(
@@ -46,6 +54,10 @@ func (s *adminUserService) Find(
 	language string) ([]models.AdminUserResponse, error) {
 	users, err := s.Repo.GetUsers(ctx, filter)
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Find", logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -60,10 +72,18 @@ func (s *adminUserService) Find(
 func (s *adminUserService) FindByID(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error) {
 	user, err := s.Repo.GetUserByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByID", logging.DatabaseNotFoundError, err,
+			)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByID", logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -74,10 +94,18 @@ func (s *adminUserService) FindByID(ctx context.Context, ID uuid.UUID, language 
 func (s *adminUserService) FindByUsername(ctx context.Context, username, language string) (*models.AdminUserResponse, error) {
 	user, err := s.Repo.GetUserByUsername(ctx, username)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByUsername", logging.DatabaseNotFoundError, err,
+			)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByUsername", logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -88,10 +116,18 @@ func (s *adminUserService) FindByUsername(ctx context.Context, username, languag
 func (s *adminUserService) FindByEmail(ctx context.Context, email, language string) (*models.AdminUserResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, email)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByEmail", logging.DatabaseNotFoundError, err,
+			)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "FindByEmail", logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -105,30 +141,64 @@ func (s *adminUserService) Create(
 	adminName, language string) (*models.AdminUserResponse, error) {
 	existingUser, err := s.Repo.ExistsByEmail(ctx, &input.Email, uuid.Nil)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create", logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.DatabaseConflictEmailError, err,
+			)...)
 		return nil, ErrConflictEmail
 	}
 
 	existingUser, err = s.Repo.ExistsByUsername(ctx, &input.Username, uuid.Nil)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.DatabaseConflictUsernameError, err,
+			)...)
 		return nil, ErrConflictUsername
 	}
 
 	hashedPassword, err := s.Hasher.Hash(input.Password)
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.HasherError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
 	country, err := s.CountryRepo.GetCountryByCode(ctx, input.CountryCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Create",
+					logging.ExternalDatabaseNotFoundError, err,
+				)...)
 			return nil, ErrInvalidCountryCode
 		}
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.ExternalDatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -150,6 +220,11 @@ func (s *adminUserService) Create(
 	}
 
 	if err := s.Repo.CreateUser(ctx, &user); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Create",
+				logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -159,23 +234,46 @@ func (s *adminUserService) Create(
 	return &response, nil
 }
 
-func (s *adminUserService) Update(ctx context.Context, ID uuid.UUID, input models.AdminUserUpdateInput, language string) (*models.AdminUserResponse, error) {
+func (s *adminUserService) Update(
+	ctx context.Context, ID uuid.UUID,
+	input models.AdminUserUpdateInput,
+	language string) (*models.AdminUserResponse, error) {
 	existingUser, err := s.Repo.GetUserByID(
 		ctx, ID,
 	)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Update",
+				logging.DatabaseNotFoundError, err,
+			)...)
 		return nil, ErrNotFound
 	}
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Update",
+				logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
 	if input.Email != nil {
 		duplicate, err := s.Repo.ExistsByEmail(ctx, input.Email, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.DatabaseError, err,
+				)...)
 			return nil, ErrInternal
 		}
 		if duplicate != nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.DatabaseConflictEmailError, err,
+				)...)
 			return nil, ErrConflictEmail
 		}
 	}
@@ -183,9 +281,19 @@ func (s *adminUserService) Update(ctx context.Context, ID uuid.UUID, input model
 	if input.Username != nil {
 		duplicate, err := s.Repo.ExistsByUsername(ctx, input.Username, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.DatabaseError, err,
+				)...)
 			return nil, ErrInternal
 		}
 		if duplicate != nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.DatabaseConflictUsernameError, err,
+				)...)
 			return nil, ErrConflictUsername
 		}
 	}
@@ -194,6 +302,11 @@ func (s *adminUserService) Update(ctx context.Context, ID uuid.UUID, input model
 	if input.Password != nil {
 		hashedPassword, err = s.Hasher.Hash(*input.Password)
 		if err != nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.HasherError, err,
+				)...)
 			return nil, ErrInternal
 		}
 
@@ -204,8 +317,18 @@ func (s *adminUserService) Update(ctx context.Context, ID uuid.UUID, input model
 		country, err := s.CountryRepo.GetCountryByCode(ctx, *input.CountryCode)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
+				s.Logger.Error("Service Error",
+					logging.ServiceLogging(
+						"AdminUserService", "Update",
+						logging.ExternalDatabaseNotFoundError, err,
+					)...)
 				return nil, ErrInvalidCountryCode
 			}
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "Update",
+					logging.ExternalDatabaseError, err,
+				)...)
 			return nil, ErrInternal
 		}
 		existingUser.CountryID = country.ID
@@ -215,6 +338,11 @@ func (s *adminUserService) Update(ctx context.Context, ID uuid.UUID, input model
 	validations.ApplyAdminUpdateToUser(existingUser, &input)
 
 	if err := s.Repo.UpdateUser(ctx, existingUser); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Update",
+				logging.DatabaseError, err,
+			)...)
 		return nil, ErrInternal
 	}
 
@@ -226,8 +354,18 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID, admin
 	user, err := s.Repo.GetUserByID(ctx, ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "ActivateUser",
+					logging.DatabaseNotFoundError, err,
+				)...)
 			return ErrNotFound
 		}
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "ActivateUser",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 
@@ -241,6 +379,11 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID, admin
 	user.ActivatedOn = &activatedOn
 
 	if err := s.Repo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "ActivateUser",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 
@@ -251,8 +394,18 @@ func (s *adminUserService) DeactivateUser(ctx context.Context, ID uuid.UUID) err
 	user, err := s.Repo.GetUserByID(ctx, ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AdminUserService", "DeactivateUser",
+					logging.DatabaseNotFoundError, err,
+				)...)
 			return ErrNotFound
 		}
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "DeactivateUser",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 
@@ -265,6 +418,11 @@ func (s *adminUserService) DeactivateUser(ctx context.Context, ID uuid.UUID) err
 	user.ActivatedOn = nil
 
 	if err := s.Repo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "DeactivateUser",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 
@@ -274,14 +432,29 @@ func (s *adminUserService) DeactivateUser(ctx context.Context, ID uuid.UUID) err
 func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 	user, err := s.Repo.GetUserByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Delete",
+				logging.DatabaseNotFoundError, err,
+			)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Delete",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 
 	if err := s.Repo.DeleteUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AdminUserService", "Delete",
+				logging.DatabaseError, err,
+			)...)
 		return ErrInternal
 	}
 

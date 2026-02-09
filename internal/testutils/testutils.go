@@ -15,6 +15,9 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -106,4 +109,9 @@ func WriteMockEnvFile(t *testing.T, envFilePath, envContent string) {
 	if err := os.WriteFile(envFilePath, []byte(envContent), 0644); err != nil {
 		t.Errorf("failed to write mock env file: %v", err)
 	}
+}
+
+func NewMockLogger(level zapcore.Level) (*zap.Logger, *observer.ObservedLogs) {
+	observedCore, logs := observer.New(level)
+	return zap.New(observedCore), logs
 }

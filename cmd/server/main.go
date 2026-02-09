@@ -91,7 +91,7 @@ func main() {
 	// Services
 	authSvc := container.BuildAuthService(mainDB.DB(), eventDB.DB())
 	userSvc := container.BuildUserService(mainDB.DB())
-	admUserSvc := container.BuildAdminUserService(mainDB.DB())
+	admUserSvc := container.BuildAdminUserService(mainDB.DB(), logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB())
 	sequencerSvc := container.BuildSequencerService(mainDB.DB())
 	originSvc := container.BuildOriginService(mainDB.DB())

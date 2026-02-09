@@ -6,6 +6,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -17,12 +18,12 @@ func BuildUserService(db *gorm.DB) services.UserService {
 	return userService
 }
 
-func BuildAdminUserService(db *gorm.DB) services.AdminUserService {
+func BuildAdminUserService(db *gorm.DB, logger *zap.Logger) services.AdminUserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
 	hasher := security.NewPasswordHasher()
 	adminUserService := services.NewAdminUserService(
-		userRepo, countryRepo, hasher)
+		userRepo, countryRepo, hasher, logger)
 
 	return adminUserService
 }
