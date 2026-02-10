@@ -96,7 +96,7 @@ func main() {
 	sequencerSvc := container.BuildSequencerService(mainDB.DB())
 	originSvc := container.BuildOriginService(mainDB.DB())
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB())
-	countrySvc := container.BuildCountryService(mainDB.DB())
+	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
 	emailSvc := container.BuildEmailService(mainDB.DB())
 
 	// Public handlers

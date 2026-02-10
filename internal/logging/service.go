@@ -18,6 +18,7 @@ const (
 	GetSecretKeyError               = "GET_SECRET_KEY_ERROR"
 	GenerateTokenError              = "GENERATE_TOKEN_ERROR"
 	ValidateTokenError              = "VALIDATE_TOKEN_ERROR"
+	DatabaseConflictError           = "CONFLICT_RECORD"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {

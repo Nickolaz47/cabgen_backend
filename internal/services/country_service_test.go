@@ -6,9 +6,11 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +27,7 @@ func TestCountryFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.NoError(t, err)
@@ -40,12 +42,15 @@ func TestCountryFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -62,7 +67,7 @@ func TestCountryFindByCode(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		result, err := service.FindByCode(context.Background(), "BRA")
 
 		assert.NoError(t, err)
@@ -76,12 +81,15 @@ func TestCountryFindByCode(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.FindByCode(context.Background(), "BRA")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Internal", func(t *testing.T) {
@@ -91,12 +99,15 @@ func TestCountryFindByCode(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.FindByCode(context.Background(), "BRA")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -113,7 +124,7 @@ func TestCountriesFindByName(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		result, err := service.FindByName(context.Background(), "bra", "en")
 
 		assert.NoError(t, err)
@@ -128,12 +139,15 @@ func TestCountriesFindByName(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.FindByName(context.Background(), "bra", "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -153,7 +167,7 @@ func TestCountryCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		result, err := service.Create(context.Background(), input)
 
 		assert.NoError(t, err)
@@ -167,12 +181,15 @@ func TestCountryCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -185,12 +202,15 @@ func TestCountryCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -211,7 +231,7 @@ func TestCountryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		result, err := service.Update(context.Background(), "BRA", models.CountryUpdateInput{})
 
 		assert.NoError(t, err)
@@ -225,12 +245,15 @@ func TestCountryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Update(context.Background(), "BRA", models.CountryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Conflict (Code)", func(t *testing.T) {
@@ -243,12 +266,15 @@ func TestCountryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Update(context.Background(), "BRA", input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -261,12 +287,15 @@ func TestCountryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Update(context.Background(), "BRA", models.CountryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -281,7 +310,7 @@ func TestCountryDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		service := services.NewCountryService(repo, nil)
 		err := service.Delete(context.Background(), "BRA")
 
 		assert.NoError(t, err)
@@ -294,11 +323,14 @@ func TestCountryDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		err := service.Delete(context.Background(), "BRA")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Delete", func(t *testing.T) {
@@ -311,10 +343,13 @@ func TestCountryDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewCountryService(repo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewCountryService(repo, mockLogger)
 		err := service.Delete(context.Background(), "BRA")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
