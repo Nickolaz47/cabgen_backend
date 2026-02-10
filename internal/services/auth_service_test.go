@@ -51,11 +51,21 @@ func TestRegister(t *testing.T) {
 		svc := services.NewAuthService(
 			userRepo, countryRepo, emitter, hasher, nil, nil)
 
+		expected := models.UserResponse{
+			Name:        input.Name,
+			Username:    input.Username,
+			Email:       input.Email,
+			CountryCode: input.CountryCode,
+			Country:     validCountry.Names[lang],
+			UserRole:    models.Collaborator,
+			Interest:    input.Interest,
+			Role:        input.Role,
+			Institution: input.Institution,
+		}
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.NoError(t, err)
-		assert.Equal(t, input.Email, result.Email)
-		assert.Equal(t, "Brazil", result.Country)
+		assert.Equal(t, &expected, result)
 	})
 
 	t.Run("Error - Email already exists", func(t *testing.T) {
@@ -286,6 +296,54 @@ func TestRegister(t *testing.T) {
 		_, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Event Emitter", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			ExistsByEmailFunc: func(ctx context.Context, email *string, ID uuid.UUID) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+			ExistsByUsernameFunc: func(ctx context.Context, username *string, ID uuid.UUID) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+			CreateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
+		}
+
+		countryRepo := &mocks.MockCountryRepository{
+			GetCountryByCodeFunc: func(ctx context.Context, code string) (*models.Country, error) {
+				return &validCountry, nil
+			},
+		}
+
+		emitter := &mocks.MockEventEmitter{
+			EmitFunc: func(ctx context.Context, name string, payload any) error {
+				return errors.New("failed to emit")
+			},
+		}
+		hasher := &mocks.MockHasher{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAuthService(
+			userRepo, countryRepo, emitter, hasher, nil, mockLogger)
+
+		expected := models.UserResponse{
+			Name:        input.Name,
+			Username:    input.Username,
+			Email:       input.Email,
+			CountryCode: input.CountryCode,
+			Country:     validCountry.Names[lang],
+			UserRole:    models.Collaborator,
+			Interest:    input.Interest,
+			Role:        input.Role,
+			Institution: input.Institution,
+		}
+		result, err := svc.Register(ctx, input, lang)
+
+		assert.NoError(t, err)
+		assert.Equal(t, &expected, result)
 		assert.Equal(t, 1, logs.Len())
 	})
 }

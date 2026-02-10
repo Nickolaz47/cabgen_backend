@@ -147,8 +147,15 @@ func (s *authService) Register(
 
 	user.Country = *country
 
-	s.EventEmitter.Emit(ctx, events.EventUserRegistered,
-		events.UserRegisteredPayload{RegisteredUsername: user.Username})
+	if err := s.EventEmitter.Emit(
+		ctx, events.EventUserRegistered,
+		events.UserRegisteredPayload{
+			RegisteredUsername: user.Username,
+		}); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.EventEmitterError, err,
+		)...)
+	}
 
 	response := user.ToResponse(language)
 	return &response, nil
