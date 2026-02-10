@@ -5,12 +5,14 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func BuildSampleSourceService(db *gorm.DB) services.SampleSourceService {
+func BuildSampleSourceService(db *gorm.DB, logger *zap.Logger) services.SampleSourceService {
 	sampleSourceRepo := repositories.NewSampleSourceRepo(db)
-	sampleSourceService := services.NewSampleSourceService(sampleSourceRepo)
+	sampleSourceService := services.NewSampleSourceService(
+		sampleSourceRepo, logger)
 
 	return sampleSourceService
 }
