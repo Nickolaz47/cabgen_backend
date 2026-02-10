@@ -51,7 +51,7 @@ func TestLaboratoryFindAll(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -91,7 +91,7 @@ func TestLaboratoryFindAllActive(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -128,7 +128,7 @@ func TestLaboratoryFindByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, lab)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -146,7 +146,7 @@ func TestLaboratoryFindByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, lab)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -183,7 +183,7 @@ func TestLaboratoryFindByNameOrAbbreviation(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -228,7 +228,7 @@ func TestLaboratoryCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -246,7 +246,7 @@ func TestLaboratoryCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -264,7 +264,7 @@ func TestLaboratoryCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -315,7 +315,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -336,7 +336,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -357,7 +357,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -392,7 +392,7 @@ func TestLaboratoryDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -409,6 +409,6 @@ func TestLaboratoryDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }

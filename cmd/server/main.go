@@ -94,7 +94,7 @@ func main() {
 	admUserSvc := container.BuildAdminUserService(mainDB.DB(), logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
 	sequencerSvc := container.BuildSequencerService(mainDB.DB())
-	originSvc := container.BuildOriginService(mainDB.DB())
+	originSvc := container.BuildOriginService(mainDB.DB(), logging.FileLogger)
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB())
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
 	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)

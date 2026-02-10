@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -22,17 +24,23 @@ type OriginService interface {
 }
 
 type originService struct {
-	Repo repositories.OriginRepository
+	Repo   repositories.OriginRepository
+	Logger *zap.Logger
 }
 
-func NewOriginService(repo repositories.OriginRepository) OriginService {
-	return &originService{Repo: repo}
+func NewOriginService(repo repositories.OriginRepository,
+	logger *zap.Logger) OriginService {
+	return &originService{Repo: repo, Logger: logger}
 }
 
 func (s *originService) FindAll(ctx context.Context, language string) ([]models.OriginAdminTableResponse, error) {
 	origins, err := s.Repo.GetOrigins(ctx)
 
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "FindAll",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -47,6 +55,10 @@ func (s *originService) FindAll(ctx context.Context, language string) ([]models.
 func (s *originService) FindAllActive(ctx context.Context, language string) ([]models.OriginFormResponse, error) {
 	origins, err := s.Repo.GetActiveOrigins(ctx)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "FindAllActive",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -61,10 +73,18 @@ func (s *originService) FindAllActive(ctx context.Context, language string) ([]m
 func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {
 	origin, err := s.Repo.GetOriginByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "FindByID",
+			logging.DatabaseNotFoundError, err,
+		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "FindByID",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -75,6 +95,10 @@ func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.Ori
 func (s *originService) FindByName(ctx context.Context, name, language string) ([]models.OriginAdminTableResponse, error) {
 	origins, err := s.Repo.GetOriginsByName(ctx, name, language)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "FindByName",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -94,14 +118,26 @@ func (s *originService) Create(ctx context.Context, input models.OriginCreateInp
 
 	existingOrigin, err := s.Repo.GetOriginDuplicate(ctx, origin.Names, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Create",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	if existingOrigin != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Create",
+			logging.DatabaseConflictError, err,
+		)...)
 		return nil, ErrConflict
 	}
 
 	if err := s.Repo.CreateOrigin(ctx, &origin); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Create",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -112,10 +148,18 @@ func (s *originService) Create(ctx context.Context, input models.OriginCreateInp
 func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error) {
 	existingOrigin, err := s.Repo.GetOriginByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Update",
+			logging.DatabaseNotFoundError, err,
+		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Update",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -124,15 +168,27 @@ func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.O
 	if input.Names != nil {
 		duplicate, err := s.Repo.GetOriginDuplicate(ctx, input.Names, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"OriginService", "Update",
+				logging.DatabaseError, err,
+			)...)
 			return nil, ErrInternal
 		}
 
 		if duplicate != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"OriginService", "Update",
+				logging.DatabaseConflictError, err,
+			)...)
 			return nil, ErrConflict
 		}
 	}
 
 	if err := s.Repo.UpdateOrigin(ctx, existingOrigin); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Update",
+			logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -143,14 +199,26 @@ func (s *originService) Update(ctx context.Context, ID uuid.UUID, input models.O
 func (s *originService) Delete(ctx context.Context, ID uuid.UUID) error {
 	origin, err := s.Repo.GetOriginByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Delete",
+			logging.DatabaseNotFoundError, err,
+		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Delete",
+			logging.DatabaseError, err,
+		)...)
 		return ErrInternal
 	}
 
 	if err := s.Repo.DeleteOrigin(ctx, origin); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"OriginService", "Delete",
+			logging.DatabaseError, err,
+		)...)
 		return ErrInternal
 	}
 

@@ -6,10 +6,12 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +29,7 @@ func TestOriginFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.NoError(t, err)
@@ -42,12 +44,15 @@ func TestOriginFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.FindAll(context.Background(), "pt")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -65,7 +70,7 @@ func TestOriginFindAllActive(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.FindAllActive(context.Background(), "pt")
 
 		assert.NoError(t, err)
@@ -81,12 +86,15 @@ func TestOriginFindAllActive(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.FindAllActive(context.Background(), "pt")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -104,7 +112,7 @@ func TestOriginFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.FindByID(context.Background(), origin.ID)
 
 		assert.NoError(t, err)
@@ -118,12 +126,15 @@ func TestOriginFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -133,12 +144,15 @@ func TestOriginFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -156,7 +170,7 @@ func TestOriginFindByName(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.FindByName(context.Background(), "hum", "en")
 
 		assert.NoError(t, err)
@@ -171,12 +185,15 @@ func TestOriginFindByName(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.FindByName(context.Background(), "hum", "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -196,7 +213,7 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.Create(context.Background(), input)
 
 		assert.NoError(t, err)
@@ -210,12 +227,15 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -225,12 +245,15 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -243,12 +266,15 @@ func TestOriginCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -271,7 +297,7 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.NoError(t, err)
@@ -285,12 +311,15 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -303,12 +332,15 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -324,12 +356,15 @@ func TestOriginUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		result, err := service.Update(context.Background(), id, models.OriginUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -344,7 +379,7 @@ func TestOriginDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		service := services.NewOriginService(originRepo, nil)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
@@ -357,11 +392,14 @@ func TestOriginDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Delete", func(t *testing.T) {
@@ -374,10 +412,13 @@ func TestOriginDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewOriginService(originRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewOriginService(originRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
