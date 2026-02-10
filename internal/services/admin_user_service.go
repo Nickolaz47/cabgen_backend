@@ -190,14 +190,14 @@ func (s *adminUserService) Create(
 			s.Logger.Error("Service Error",
 				logging.ServiceLogging(
 					"AdminUserService", "Create",
-					logging.ExternalDatabaseNotFoundError, err,
+					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrInvalidCountryCode
 		}
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
 				"AdminUserService", "Create",
-				logging.ExternalDatabaseError, err,
+				logging.ExternalRepositoryError, err,
 			)...)
 		return nil, ErrInternal
 	}
@@ -320,14 +320,14 @@ func (s *adminUserService) Update(
 				s.Logger.Error("Service Error",
 					logging.ServiceLogging(
 						"AdminUserService", "Update",
-						logging.ExternalDatabaseNotFoundError, err,
+						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrInvalidCountryCode
 			}
 			s.Logger.Error("Service Error",
 				logging.ServiceLogging(
 					"AdminUserService", "Update",
-					logging.ExternalDatabaseError, err,
+					logging.ExternalRepositoryError, err,
 				)...)
 			return nil, ErrInternal
 		}

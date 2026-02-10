@@ -7,11 +7,13 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/events"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -28,6 +30,7 @@ type authService struct {
 	EventEmitter  events.EventEmitter
 	Hasher        security.PasswordHasher
 	TokenProvider auth.TokenProvider
+	Logger        *zap.Logger
 }
 
 func NewAuthService(
@@ -36,6 +39,7 @@ func NewAuthService(
 	emitter events.EventEmitter,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
+	logger *zap.Logger,
 ) AuthService {
 	return &authService{
 		UserRepo:      userRepo,
@@ -43,6 +47,7 @@ func NewAuthService(
 		EventEmitter:  emitter,
 		Hasher:        hasher,
 		TokenProvider: tokenProvider,
+		Logger:        logger,
 	}
 }
 
@@ -55,41 +60,68 @@ func (s *authService) Register(
 		ctx, &input.Email, uuid.Nil,
 	)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.DatabaseConflictEmailError, err,
+		)...)
 		return nil, ErrConflictEmail
 	}
 
 	existingUser, err = s.UserRepo.ExistsByUsername(ctx, &input.Username, uuid.Nil)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.DatabaseConflictUsernameError, err,
+		)...)
 		return nil, ErrConflictUsername
 	}
 
 	if ok := validations.IsEmailMatch(
 		input.Email, input.ConfirmEmail); !ok {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.EmailMismatchError, err,
+		)...)
 		return nil, ErrEmailMismatch
 	}
 
 	if ok := validations.IsPasswordMatch(
 		input.Password, input.ConfirmPassword,
 	); !ok {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.PasswordMismatchError, err,
+		)...)
 		return nil, ErrPasswordMismatch
 	}
 
 	hashedPassword, err := s.Hasher.Hash(input.Password)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.HasherError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	country, err := s.CountryRepo.GetCountryByCode(ctx, input.CountryCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "Register", logging.ExternalRepositoryNotFoundError, err,
+			)...)
 			return nil, ErrInvalidCountryCode
 		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.ExternalRepositoryError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -107,6 +139,9 @@ func (s *authService) Register(
 	}
 
 	if err := s.UserRepo.CreateUser(ctx, &user); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -124,42 +159,69 @@ func (s *authService) Login(
 	existingUser, err := s.UserRepo.GetUserByUsername(ctx, input.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "Login", logging.UsernameNotFoundError, err,
+			)...)
 			return nil, ErrInvalidCredentials
 		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.DatabaseError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	if !existingUser.IsActive {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.DisabledUserError, err,
+		)...)
 		return nil, ErrDisabledUser
 	}
 
 	if err = s.Hasher.CheckPassword(existingUser.Password,
 		input.Password); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "Login", logging.WrongPasswordError, err,
+			)...)
 			return nil, ErrInvalidCredentials
 		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.HasherError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	accessKey, err := auth.GetSecretKey(auth.Access)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.GetSecretKeyError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	refreshKey, err := auth.GetSecretKey(auth.Refresh)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.GetSecretKeyError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	accessToken, err := s.TokenProvider.GenerateToken(
 		existingUser.ToToken(), accessKey, auth.AccessTokenExpiration)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.GenerateTokenError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	refreshToken, err := s.TokenProvider.GenerateToken(
 		existingUser.ToToken(), refreshKey, auth.RefreshTokenExpiration)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Login", logging.GenerateTokenError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
@@ -178,22 +240,34 @@ func (s *authService) Login(
 func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cookie, error) {
 	refreshSecret, err := auth.GetSecretKey(auth.Refresh)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Refresh", logging.GetSecretKeyError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	userToken, err := s.TokenProvider.ValidateToken(tokenStr, refreshSecret)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Refresh", logging.ValidateTokenError, err,
+		)...)
 		return nil, ErrUnauthorized
 	}
 
 	accessSecret, err := auth.GetSecretKey(auth.Access)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Refresh", logging.GetSecretKeyError, err,
+		)...)
 		return nil, ErrInternal
 	}
 
 	accessToken, err := s.TokenProvider.GenerateToken(
 		*userToken, accessSecret, auth.AccessTokenExpiration)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Refresh", logging.GenerateTokenError, err,
+		)...)
 		return nil, ErrInternal
 	}
 

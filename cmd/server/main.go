@@ -89,7 +89,7 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(mainDB.DB(), eventDB.DB())
+	authSvc := container.BuildAuthService(mainDB.DB(), eventDB.DB(), logging.FileLogger)
 	userSvc := container.BuildUserService(mainDB.DB())
 	admUserSvc := container.BuildAdminUserService(mainDB.DB(), logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB())

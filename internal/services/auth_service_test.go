@@ -8,11 +8,13 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -47,7 +49,7 @@ func TestRegister(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, emitter, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil, nil)
 
 		result, err := svc.Register(ctx, input, lang)
 
@@ -63,14 +65,17 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil, nil,
+			userRepo, nil, nil, nil, nil, mockLogger,
 		)
 
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrConflictEmail, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - ExistsByEmail Internal", func(t *testing.T) {
@@ -80,13 +85,16 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil, nil)
+			userRepo, nil, nil, nil, nil, mockLogger)
 
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Username already exists", func(t *testing.T) {
@@ -99,11 +107,14 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(userRepo, nil, nil, nil, nil)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAuthService(userRepo, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrConflictUsername, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - ExistsByUsername Internal", func(t *testing.T) {
@@ -116,12 +127,15 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil, nil)
+			userRepo, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Email Mismatch", func(t *testing.T) {
@@ -129,13 +143,15 @@ func TestRegister(t *testing.T) {
 		badInput.ConfirmEmail = "wrong@mail.com"
 
 		userRepo := &mocks.MockUserRepository{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil, nil)
+			userRepo, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, badInput, lang)
 
 		assert.Equal(t, services.ErrEmailMismatch, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Password Mismatch", func(t *testing.T) {
@@ -143,13 +159,15 @@ func TestRegister(t *testing.T) {
 		badInput.ConfirmPassword = "wrong"
 
 		userRepo := &mocks.MockUserRepository{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(
-			userRepo, nil, nil, nil, nil)
+			userRepo, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, badInput, lang)
 
 		assert.Equal(t, services.ErrPasswordMismatch, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Hash Internal", func(t *testing.T) {
@@ -172,14 +190,17 @@ func TestRegister(t *testing.T) {
 			},
 		}
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
 		svc := services.NewAuthService(
-			userRepo, countryRepo, emitter, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil, mockLogger)
 
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Invalid Country Code", func(t *testing.T) {
@@ -200,14 +221,16 @@ func TestRegister(t *testing.T) {
 
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, emitter, hasher, nil,
+			userRepo, countryRepo, emitter, hasher, nil, mockLogger,
 		)
 		result, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInvalidCountryCode, err)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - GetCountryByCode Internal", func(t *testing.T) {
@@ -228,14 +251,16 @@ func TestRegister(t *testing.T) {
 
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAuthService(userRepo, countryRepo, emitter, hasher, nil)
+		service := services.NewAuthService(userRepo, countryRepo, emitter, hasher, nil, mockLogger)
 		result, err := service.Register(
 			context.Background(), input, lang)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -253,13 +278,15 @@ func TestRegister(t *testing.T) {
 
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(
-			userRepo, countryRepo, emitter, hasher, nil)
+			userRepo, countryRepo, emitter, hasher, nil, mockLogger)
 
 		_, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -283,7 +310,7 @@ func TestLogin(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, nil)
 		result, err := svc.Login(ctx, input)
 
 		assert.NoError(t, err)
@@ -300,13 +327,15 @@ func TestLogin(t *testing.T) {
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - GetUserByUsername Internal", func(t *testing.T) {
@@ -319,13 +348,15 @@ func TestLogin(t *testing.T) {
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Disabled User", func(t *testing.T) {
@@ -340,13 +371,15 @@ func TestLogin(t *testing.T) {
 		emitter := &mocks.MockEventEmitter{}
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrDisabledUser)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Wrong Password", func(t *testing.T) {
@@ -363,13 +396,15 @@ func TestLogin(t *testing.T) {
 			},
 		}
 		provider := &mocks.MockTokenProvider{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - CheckPassword Internal", func(t *testing.T) {
@@ -386,13 +421,15 @@ func TestLogin(t *testing.T) {
 			},
 		}
 		provider := &mocks.MockTokenProvider{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Generate Access Token", func(t *testing.T) {
@@ -409,13 +446,15 @@ func TestLogin(t *testing.T) {
 				return "", jwt.ErrInvalidKey
 			},
 		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Generate Refresh Token", func(t *testing.T) {
@@ -437,13 +476,15 @@ func TestLogin(t *testing.T) {
 				return "", jwt.ErrInvalidKey
 			},
 		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider)
+		svc := services.NewAuthService(userRepo, nil, emitter, hasher, provider, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -464,7 +505,7 @@ func TestRefresh(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAuthService(nil, nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.NoError(t, err)
@@ -477,13 +518,15 @@ func TestRefresh(t *testing.T) {
 				return nil, errors.New("invalid token")
 			},
 		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(nil, nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider, mockLogger)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrUnauthorized)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - GenerateToken Internal", func(t *testing.T) {
@@ -495,12 +538,14 @@ func TestRefresh(t *testing.T) {
 				return "", jwt.ErrInvalidKey
 			},
 		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(nil, nil, nil, nil, provider)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider, mockLogger)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }

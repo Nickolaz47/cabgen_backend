@@ -3,13 +3,21 @@ package logging
 import "go.uber.org/zap"
 
 const (
-	DatabaseError                 = "DATABASE_ERROR"
-	DatabaseNotFoundError         = "DATABASE_NOT_FOUND"
-	DatabaseConflictEmailError    = "CONFLICT_EMAIL"
-	DatabaseConflictUsernameError = "CONFLICT_USERNAME"
-	HasherError                   = "HASHER_ERROR"
-	ExternalDatabaseError         = "EXTERNAL_DATABASE_ERROR"
-	ExternalDatabaseNotFoundError = "EXTERNAL_DATABASE_NOT_FOUND"
+	DatabaseError                   = "DATABASE_ERROR"
+	DatabaseNotFoundError           = "DATABASE_NOT_FOUND"
+	DatabaseConflictEmailError      = "CONFLICT_EMAIL"
+	DatabaseConflictUsernameError   = "CONFLICT_USERNAME"
+	HasherError                     = "HASHER_ERROR"
+	ExternalRepositoryError         = "EXTERNAL_REPOSITORY_ERROR"
+	ExternalRepositoryNotFoundError = "EXTERNAL_REPOSITORY_NOT_FOUND"
+	EmailMismatchError              = "EMAIL_MISMATCH"
+	PasswordMismatchError           = "PASSWORD_MISMATCH"
+	UsernameNotFoundError           = "USERNAME_NOT_FOUND"
+	WrongPasswordError              = "WRONG_PASSWORD"
+	DisabledUserError               = "DISABLED_USER"
+	GetSecretKeyError               = "GET_SECRET_KEY_ERROR"
+	GenerateTokenError              = "GENERATE_TOKEN_ERROR"
+	ValidateTokenError              = "VALIDATE_TOKEN_ERROR"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {
