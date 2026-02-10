@@ -7,6 +7,81 @@ import (
 	"github.com/google/uuid"
 )
 
+type MockLaboratoryRepository struct {
+	GetLaboratoriesFunc                     func(ctx context.Context) ([]models.Laboratory, error)
+	GetActiveLaboratoriesFunc               func(ctx context.Context) ([]models.Laboratory, error)
+	GetLaboratoryByIDFunc                   func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
+	GetLaboratoriesByNameOrAbbreviationFunc func(ctx context.Context, input string) ([]models.Laboratory, error)
+	GetLaboratoryDuplicateFunc              func(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error)
+	CreateLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
+	UpdateLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
+	DeleteLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
+}
+
+func (r *MockLaboratoryRepository) GetLaboratories(ctx context.Context) ([]models.Laboratory, error) {
+	if r.GetLaboratoriesFunc != nil {
+		return r.GetLaboratoriesFunc(ctx)
+	}
+
+	return nil, nil
+}
+
+func (r *MockLaboratoryRepository) GetActiveLaboratories(ctx context.Context) ([]models.Laboratory, error) {
+	if r.GetActiveLaboratoriesFunc != nil {
+		return r.GetActiveLaboratoriesFunc(ctx)
+	}
+
+	return nil, nil
+}
+
+func (r *MockLaboratoryRepository) GetLaboratoryByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
+	if r.GetLaboratoryByIDFunc != nil {
+		return r.GetLaboratoryByIDFunc(ctx, ID)
+	}
+
+	return nil, nil
+}
+
+func (r *MockLaboratoryRepository) GetLaboratoriesByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error) {
+	if r.GetLaboratoriesByNameOrAbbreviationFunc != nil {
+		return r.GetLaboratoriesByNameOrAbbreviationFunc(ctx, input)
+	}
+
+	return nil, nil
+}
+
+func (r *MockLaboratoryRepository) GetLaboratoryDuplicate(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
+	if r.GetLaboratoryDuplicateFunc != nil {
+		return r.GetLaboratoryDuplicateFunc(ctx, name, ID)
+	}
+
+	return nil, nil
+}
+
+func (r *MockLaboratoryRepository) CreateLaboratory(ctx context.Context, lab *models.Laboratory) error {
+	if r.CreateLaboratoryFunc != nil {
+		return r.CreateLaboratoryFunc(ctx, lab)
+	}
+
+	return nil
+}
+
+func (r *MockLaboratoryRepository) UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error {
+	if r.UpdateLaboratoryFunc != nil {
+		return r.UpdateLaboratoryFunc(ctx, lab)
+	}
+
+	return nil
+}
+
+func (r *MockLaboratoryRepository) DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error {
+	if r.DeleteLaboratoryFunc != nil {
+		return r.DeleteLaboratoryFunc(ctx, lab)
+	}
+
+	return nil
+}
+
 type MockLaboratoryService struct {
 	FindAllFunc                  func(ctx context.Context) ([]models.LaboratoryAdminTableResponse, error)
 	FindAllActiveFunc            func(ctx context.Context) ([]models.LaboratoryFormResponse, error)

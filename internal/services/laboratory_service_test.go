@@ -6,92 +6,20 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
-
-type mockLaboratoryRepository struct {
-	GetLaboratoriesFunc                     func(ctx context.Context) ([]models.Laboratory, error)
-	GetActiveLaboratoriesFunc               func(ctx context.Context) ([]models.Laboratory, error)
-	GetLaboratoryByIDFunc                   func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error)
-	GetLaboratoriesByNameOrAbbreviationFunc func(ctx context.Context, input string) ([]models.Laboratory, error)
-	GetLaboratoryDuplicateFunc              func(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error)
-	CreateLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
-	UpdateLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
-	DeleteLaboratoryFunc                    func(ctx context.Context, lab *models.Laboratory) error
-}
-
-func (r *mockLaboratoryRepository) GetLaboratories(ctx context.Context) ([]models.Laboratory, error) {
-	if r.GetLaboratoriesFunc != nil {
-		return r.GetLaboratoriesFunc(ctx)
-	}
-
-	return nil, nil
-}
-
-func (r *mockLaboratoryRepository) GetActiveLaboratories(ctx context.Context) ([]models.Laboratory, error) {
-	if r.GetActiveLaboratoriesFunc != nil {
-		return r.GetActiveLaboratoriesFunc(ctx)
-	}
-
-	return nil, nil
-}
-
-func (r *mockLaboratoryRepository) GetLaboratoryByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-	if r.GetLaboratoryByIDFunc != nil {
-		return r.GetLaboratoryByIDFunc(ctx, ID)
-	}
-
-	return nil, nil
-}
-
-func (r *mockLaboratoryRepository) GetLaboratoriesByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error) {
-	if r.GetLaboratoriesByNameOrAbbreviationFunc != nil {
-		return r.GetLaboratoriesByNameOrAbbreviationFunc(ctx, input)
-	}
-
-	return nil, nil
-}
-
-func (r *mockLaboratoryRepository) GetLaboratoryDuplicate(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
-	if r.GetLaboratoryDuplicateFunc != nil {
-		return r.GetLaboratoryDuplicateFunc(ctx, name, ID)
-	}
-
-	return nil, nil
-}
-
-func (r *mockLaboratoryRepository) CreateLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	if r.CreateLaboratoryFunc != nil {
-		return r.CreateLaboratoryFunc(ctx, lab)
-	}
-
-	return nil
-}
-
-func (r *mockLaboratoryRepository) UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	if r.UpdateLaboratoryFunc != nil {
-		return r.UpdateLaboratoryFunc(ctx, lab)
-	}
-
-	return nil
-}
-
-func (r *mockLaboratoryRepository) DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	if r.DeleteLaboratoryFunc != nil {
-		return r.DeleteLaboratoryFunc(ctx, lab)
-	}
-
-	return nil
-}
 
 func TestLaboratoryFindAll(t *testing.T) {
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return []models.Laboratory{
 					lab,
@@ -99,7 +27,7 @@ func TestLaboratoryFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 		expected := []models.LaboratoryAdminTableResponse{lab.ToAdminTableResponse()}
 
 		labs, err := service.FindAll(context.Background())
@@ -109,18 +37,21 @@ func TestLaboratoryFindAll(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		labs, err := service.FindAll(context.Background())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -128,7 +59,7 @@ func TestLaboratoryFindAllActive(t *testing.T) {
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return []models.Laboratory{
 					lab,
@@ -136,7 +67,7 @@ func TestLaboratoryFindAllActive(t *testing.T) {
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 		expected := []models.LaboratoryFormResponse{lab.ToFormResponse()}
 
 		labs, err := service.FindAllActive(context.Background())
@@ -146,30 +77,34 @@ func TestLaboratoryFindAllActive(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		labs, err := service.FindAllActive(context.Background())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
+
 func TestLaboratoryFindByID(t *testing.T) {
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &lab, nil
 			},
 		}
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 
 		expected := lab.ToAdminTableResponse()
 		labFound, err := service.FindByID(context.Background(), lab.ID)
@@ -179,33 +114,39 @@ func TestLaboratoryFindByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		lab, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, lab)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		lab, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, lab)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -213,12 +154,12 @@ func TestLaboratoryFindByNameOrAbbreviation(t *testing.T) {
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoriesByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
 				return []models.Laboratory{lab}, nil
 			},
 		}
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 
 		expected := []models.LaboratoryAdminTableResponse{lab.ToAdminTableResponse()}
 		labs, err := service.FindByNameOrAbbreviation(context.Background(), "lab")
@@ -228,18 +169,21 @@ func TestLaboratoryFindByNameOrAbbreviation(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoriesByNameOrAbbreviationFunc: func(ctx context.Context, input string) ([]models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		labs, err := service.FindByNameOrAbbreviation(context.Background(), "lab")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, labs)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -251,12 +195,12 @@ func TestLaboratoryCreate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			CreateLaboratoryFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return nil
 			},
 		}
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 
 		expected := models.LaboratoryAdminTableResponse{
 			Name:         input.Name,
@@ -270,48 +214,57 @@ func TestLaboratoryCreate(t *testing.T) {
 	})
 
 	t.Run("Error - Find duplicate", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryDuplicateFunc: func(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryDuplicateFunc: func(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
 				return &models.Laboratory{}, nil
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			CreateLaboratoryFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
@@ -325,7 +278,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &models.Laboratory{ID: id}, nil
 			},
@@ -333,7 +286,7 @@ func TestLaboratoryUpdate(t *testing.T) {
 				return nil
 			},
 		}
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 
 		expected := models.LaboratoryAdminTableResponse{
 			ID:           id,
@@ -348,22 +301,25 @@ func TestLaboratoryUpdate(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &models.Laboratory{}, nil
 			},
@@ -372,16 +328,19 @@ func TestLaboratoryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Update(context.Background(), id, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &models.Laboratory{}, nil
 			},
@@ -390,18 +349,21 @@ func TestLaboratoryUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		result, err := service.Update(context.Background(), uuid.New(), models.LaboratoryUpdateInput{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
 
 func TestLaboratoryDelete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return &models.Laboratory{}, nil
 			},
@@ -410,37 +372,43 @@ func TestLaboratoryDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		service := services.NewLaboratoryService(labRepo, nil)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			GetLaboratoryByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, logs.Len(), 1)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		labRepo := mockLaboratoryRepository{
+		labRepo := &mocks.MockLaboratoryRepository{
 			DeleteLaboratoryFunc: func(ctx context.Context, lab *models.Laboratory) error {
 				return gorm.ErrInvalidTransaction
 			},
 		}
 
-		service := services.NewLaboratoryService(&labRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewLaboratoryService(labRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, logs.Len(), 1)
 	})
 }
