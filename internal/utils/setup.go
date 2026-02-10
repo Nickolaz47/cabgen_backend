@@ -44,7 +44,7 @@ func createAdminUser(ctx context.Context, db *gorm.DB) error {
 	adminToCreate := models.User{
 		Name:      "Cabgen Admin",
 		Username:  "admin",
-		Email:     "nicolasaraujo47@gmail.com",
+		Email:     "admin@mail.com",
 		Password:  hashedPassword,
 		CountryID: country.ID,
 		IsActive:  true,

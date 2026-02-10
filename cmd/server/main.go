@@ -25,8 +25,8 @@ func main() {
 	}
 
 	// Setup main database
-	driver := "postgres"
-	dns := config.DatabaseConnectionString
+	mainDriver := "postgres"
+	mainDSN := config.DatabaseConnectionString
 	modelsToMigrate := []any{
 		&models.User{},
 		&models.Country{},
@@ -36,7 +36,7 @@ func main() {
 		&models.Laboratory{},
 	}
 
-	mainDB, err := db.NewGormDatabase(driver, dns)
+	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +46,8 @@ func main() {
 	}
 
 	// Event Database
-	eventDB, err := db.NewGormDatabase("sqlite", "events.db")
+	eventDSN := "events.db?_journal_mode=WAL&_busy_timeout=5000"
+	eventDB, err := db.NewGormDatabase("sqlite", eventDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
