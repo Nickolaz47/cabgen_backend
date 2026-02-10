@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func BuildUserService(db *gorm.DB) services.UserService {
+func BuildUserService(db *gorm.DB, logger *zap.Logger) services.UserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
-	userService := services.NewUserService(userRepo, countryRepo)
+	userService := services.NewUserService(userRepo, countryRepo, logger)
 
 	return userService
 }
