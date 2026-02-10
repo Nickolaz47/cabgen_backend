@@ -355,6 +355,8 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 ## TODO
 
-- [ ] Implementar logger nos services;
-- [ ] Modelar Microorganism, HealthService e Sample;
+- [x] Implementar logger nos services;
+- [ ] Modelar Microorganism;
+- [ ] Modelar HealthService;
+- [ ] Modelar Sample;
 - [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;
