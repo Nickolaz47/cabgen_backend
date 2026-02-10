@@ -34,6 +34,7 @@ func main() {
 		&models.Sequencer{},
 		&models.SampleSource{},
 		&models.Laboratory{},
+		&models.Microorganism{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)

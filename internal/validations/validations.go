@@ -18,7 +18,8 @@ type Model interface {
 		models.SequencerUpdateInput | models.SampleSourceCreateInput |
 		models.SampleSourceUpdateInput | models.LaboratoryCreateInput |
 		models.LaboratoryUpdateInput | models.CountryCreateInput |
-		models.CountryUpdateInput
+		models.CountryUpdateInput | models.MicroorganismCreateInput |
+		models.MicroorganismUpdateInput
 }
 
 func Validate[T Model](c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {

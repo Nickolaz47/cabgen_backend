@@ -1,0 +1,6177 @@
+[
+  {
+    "taxon": "Bacteria",
+    "species": "Abiotrophia defectiva",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acetobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Achromobacter cycloclastes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Achromobacter denitrificans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Achromobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Achromobacter xylosoxidans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acidaminococcus fermentans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acidaminococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acidiphilium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acidithiobacillus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter alcaligenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter anitratus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter baumannii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter baumannii",
+    "variety": {
+      "pt": "Complexo Acinetobacter baumannii",
+      "en": "Acinetobacter baumannii complex",
+      "es": "Complejo Acinetobacter baumannii"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter calcoaceticus",
+    "variety": {
+      "pt": "Complexo A. baumannii/calcoaceticus",
+      "en": "A. baumannii/calcoaceticus complex",
+      "es": "Complejo A. baumannii/calcoaceticus"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter haemolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter johnsonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter junii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter lwoffii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter radioresistens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter schindleri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Acinetobacter ursingii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus actinomycetemcomitans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus equuli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus hominis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus lignieresii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus seminis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus suis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinobacillus ureae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomadura madurae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomadura pelletieri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces bovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces denticolens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces gerencseriae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces hordeovulneris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces howellii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces humiferus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces israelii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces meyeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces naeslundii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces odontolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces pyogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces slackii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Actinomyces viscosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aerococcus christensenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aerococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aerococcus urinae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aerococcus viridans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonadaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas caviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas eucrenophila",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas hydrophila",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas hydrophila",
+    "variety": {
+      "pt": "Aeromonas hydrophila/Aeromonas caviae",
+      "en": "Aeromonas hydrophila/Aeromonas caviae",
+      "es": "Aeromonas hydrophila/Aeromonas caviae"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas media",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas salmonicida",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas schubertii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas sobria",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aeromonas veronii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aggregatibacter actinomycetemcomitans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aggregatibacter aphrophilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Aggregatibacter segnis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Agrobacterium radiobacter",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Agrobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alcaligenes faecalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alcaligenes faecalis subsp. faecalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alcaligenes piechaudii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alcaligenes sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alcaligenes xylosoxidans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alloiococcus otitis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alterococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Alteromonas putrefaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Amycolata autotrophica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Anaerobiospirilum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Anaerobiospirilum succiniciproducens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Anaplasma centrale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Anaplasma marginale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Anaplasma ovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Arcanobacterium haemolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Arcanobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Arsenophonus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Azospirillum lipoferum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus altitudinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus alvei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus anthracis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus brevis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus cereus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus cereus",
+    "variety": {
+      "pt": "Bacillus cereus/thuringiensis",
+      "en": "Bacillus cereus/thuringiensis",
+      "es": "Bacillus cereus/thuringiensis"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus circulans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus coagulans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus firmus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus fragilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus Gram Negativo",
+    "variety": {
+      "pt": "Não Fermentador",
+      "en": "Non-Fermenter",
+      "es": "No Fermentador"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus Gram Positivo",
+    "variety": {
+      "pt": "Não Identificável",
+      "en": "Unidentified",
+      "es": "No Identificable"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus laterosporus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus licheniformis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus macerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus megaterium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus mycoides",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus polymyxa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus pumilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus sphaericus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus stearothermophilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus subtilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacillus thuringiensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides cacae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides capillosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides distasonis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides eggerthii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides forsythus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides fragilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides galacturonicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides levii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides macacae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides merdae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides pectinophilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides putredinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides salivosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides splanchnicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides stercoris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides tectum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides thetaiotaomicron",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides uniformis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides ureolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bacteroides vulgatus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bartonella bacilliformis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bartonella henselae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bartonella quintana",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bartonella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bartonella vinsonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium adolecentis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium bifidum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium breve",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium catenulatum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium dentium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium globosum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium infantis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium longum/magnum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bifidobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bilophila sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella avium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella bronchiseptica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella parapertussis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella pertussis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bordetella trematum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia amenica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia anserina",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia brasilensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia burgdorferi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia caucasica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia coriaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia crocidurae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia dipodilli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia duttonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia graingeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia hermsii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia hispanica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia latyschewii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia mazzottii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia merionesi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia microti",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia parkeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia persica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia persicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia queenslandica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia recurrentis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia theileri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia tillae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia turicatae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia venezuelensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Borrelia vincenti",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Bradyrhizobiaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Branhamella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brenneria sp",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brevibacterium sanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brevibacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brevundimonas diminuta",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brevundimonas diminuta",
+    "variety": {
+      "pt": "vesicularis",
+      "en": "vesicularis",
+      "es": "vesicularis"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brevundimonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella abortus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella canis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella melitensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella neotomae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella ovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucella suis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Brucellaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Buchnera sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Budvicia aquatica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Budvicia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia cenocepacia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia cepacia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia cepacia",
+    "variety": {
+      "pt": "Complexo",
+      "en": "Complex",
+      "es": "Complejo"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia cepacia",
+    "variety": {
+      "pt": "Grupo",
+      "en": "Group",
+      "es": "Grupo"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia gladioli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia mallei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia multivorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia multivorans",
+    "variety": {
+      "pt": "cenocepacia",
+      "en": "cenocepacia",
+      "es": "cenocepacia"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia pseudomallei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Burkholderia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Buttiauxella agrestis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Buttiauxella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Butyrivibrio sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Calymmatobacterium granulomatis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Calymmatobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter cinaedi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter coli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter concisus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter cryaerophila",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter fennelliae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter fetus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter fetus subsp. fetus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter gracilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter hyintestinalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter jejuni",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter jejuni subsp. jejuni",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter lari",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter laridis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter mucosalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter nitrofigilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter rectus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter septicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter sputorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Campylobacter upsaliensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Capnocytophaga canimorsus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Capnocytophaga cynodegmi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Capnocytophaga sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cardiobacteriaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cardiobacterium hominis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Caulobacteraceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cedecea davisae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cedecea lapagei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cedecea neteri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cedecea sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chlamydia pneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chlamydia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chlamydia trachomatis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chlorobium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chloroflexi sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chloroflexus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chromobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chromobacterium violaceum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chryseobacterium gleum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chryseobacterium indologenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chryseobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Chryseomonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter amalonaticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter braakii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter diversus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter farmeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter freundii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter koseri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter rodentium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter sedlakii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Citrobacter youngae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium botulinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium chauvoei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium haemolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium histolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium novyi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium perfringens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium septicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium tertium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Clostridium tetani",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Comamonadaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Comamonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Comamonas testosteroni",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium accolens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium aurimucosum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium diphtheriae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium equi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium glucuronolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium haemolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium macginleyi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium minutissimum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium propinquum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium pseudotuberculosis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium pyogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium renale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium simulans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium striatum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium ulcerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Corynebacterium xerosis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Coxiella burnetii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Coxiella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Coxiellaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cupriavidus pauculus",
+    "variety": {
+      "pt": "anteriormente Wautersia paucula",
+      "en": "formerly Wautersia paucula",
+      "es": "anteriormente Wautersia paucula"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Cutibacterium acnes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Delftia acidovorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Delftia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Delftia tsuruhatensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Dermabacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Dermacoccus nishinomiyaensis",
+    "variety": {
+      "pt": "Kytococcus sedentarius",
+      "en": "Kytococcus sedentarius",
+      "es": "Kytococcus sedentarius"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Dermatophilus congolensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfitobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfotomaculum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfovibrio africanus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfovibrio desulfuricans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfovibrio gigas",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Desulfuromonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Dialister pneumosintes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ectothiorhodospiraceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Edwardsiella hoshinae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Edwardsiella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Edwardsiella tarda",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ehrlichia sennetsu",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ehrlichia sp.",
+    "variety": {
+      "pt": "Rickettsia sp.",
+      "en": "Rickettsia sp.",
+      "es": "Rickettsia sp."
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Eikenella corrodens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Eikenella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Elizabethkingia meningoseptica",
+    "variety": {
+      "pt": "Chryseobacterium meningosepticum",
+      "en": "Chryseobacterium meningosepticum",
+      "es": "Chryseobacterium meningosepticum"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Empedobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter aerogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter aglomerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter amnigenus 1",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter amnigenus 2",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter asburiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter cancerogenus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter cloacae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter cloacae",
+    "variety": {
+      "pt": "Complexo",
+      "en": "Complex",
+      "es": "Complejo"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter cowanii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter gergoviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter hormaechei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter hormaechei",
+    "variety": {
+      "pt": "cowanii",
+      "en": "cowanii",
+      "es": "cowanii"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter intermedius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter ludwigii",
+    "variety": {
+      "pt": "Complexo E. cloacae",
+      "en": "E. cloacae Complex",
+      "es": "Complejo E. cloacae"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter sakazakii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus avium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus casseliflavus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus cecorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus columbae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus durans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus faecalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus faecium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus gallinarum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus hirae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus mundtii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus raffinosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus saccharolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Enterococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Entomoplasmataceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Erysipelothrix rhusiopathiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "O157",
+      "en": "O157",
+      "es": "O157"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Cepas verotoxigênicas (como 0157:H7)",
+      "en": "Verotoxigenic strains (like 0157:H7)",
+      "es": "Cepas verotoxigénicas (como 0157:H7)"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Cepas verotoxigênicas (como O103)",
+      "en": "Verotoxigenic strains (like O103)",
+      "es": "Cepas verotoxigénicas (como O103)"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica C",
+      "en": "Enteropathogenic C",
+      "es": "Enteropatogénica C"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Antígeno K1",
+      "en": "K1 Antigen",
+      "es": "Antígeno K1"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora",
+      "en": "Enteroinvasive",
+      "es": "Enteroinvasiva"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica A O111",
+      "en": "Classic Enteropathogenic A O111",
+      "es": "Enteropatogénica Clásica A O111"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica B O114",
+      "en": "Classic Enteropathogenic B O114",
+      "es": "Enteropatogénica Clásica B O114"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica A O119",
+      "en": "Classic Enteropathogenic A O119",
+      "es": "Enteropatogénica Clásica A O119"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica B O125",
+      "en": "Classic Enteropathogenic B O125",
+      "es": "Enteropatogénica Clásica B O125"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica C O126",
+      "en": "Classic Enteropathogenic C O126",
+      "es": "Enteropatogénica Clásica C O126"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica C O127",
+      "en": "Classic Enteropathogenic C O127",
+      "es": "Enteropatogénica Clásica C O127"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica C O128",
+      "en": "Classic Enteropathogenic C O128",
+      "es": "Enteropatogénica Clásica C O128"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica B O142",
+      "en": "Classic Enteropathogenic B O142",
+      "es": "Enteropatogénica Clásica B O142"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica B O158",
+      "en": "Classic Enteropathogenic B O158",
+      "es": "Enteropatogénica Clásica B O158"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica A O55",
+      "en": "Classic Enteropathogenic A O55",
+      "es": "Enteropatogénica Clásica A O55"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica C O86",
+      "en": "Classic Enteropathogenic C O86",
+      "es": "Enteropatogénica Clásica C O86"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica A",
+      "en": "Enteropathogenic A",
+      "es": "Enteropatogénica A"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica B",
+      "en": "Enteropathogenic B",
+      "es": "Enteropatogénica B"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica",
+      "en": "Enteropathogenic",
+      "es": "Enteropatogénica"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enterotoxigênica",
+      "en": "Enterotoxigenic",
+      "es": "Enterotoxigénica"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A",
+      "en": "Enteroinvasive A",
+      "es": "Enteroinvasiva A"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A 0136",
+      "en": "Enteroinvasive A 0136",
+      "es": "Enteroinvasiva A 0136"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A 0152",
+      "en": "Enteroinvasive A 0152",
+      "es": "Enteroinvasiva A 0152"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A 028 ac",
+      "en": "Enteroinvasive A 028 ac",
+      "es": "Enteroinvasiva A 028 ac"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A O144",
+      "en": "Enteroinvasive A O144",
+      "es": "Enteroinvasiva A O144"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora A O29",
+      "en": "Enteroinvasive A O29",
+      "es": "Enteroinvasiva A O29"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B",
+      "en": "Enteroinvasive B",
+      "es": "Enteroinvasiva B"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B O112 ac",
+      "en": "Enteroinvasive B O112 ac",
+      "es": "Enteroinvasiva B O112 ac"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B O164",
+      "en": "Enteroinvasive B O164",
+      "es": "Enteroinvasiva B O164"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B O143",
+      "en": "Enteroinvasive B O143",
+      "es": "Enteroinvasiva B O143"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteropatogênica Clássica A O26",
+      "en": "Classic Enteropathogenic A O26",
+      "es": "Enteropatogénica Clásica A O26"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B O124",
+      "en": "Enteroinvasive B O124",
+      "es": "Enteroinvasiva B O124"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia coli",
+    "variety": {
+      "pt": "Enteroinvasora B O167",
+      "en": "Enteroinvasive B O167",
+      "es": "Enteroinvasiva B O167"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia fergusonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia hermannii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Escherichia vulneris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Eubacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ewingella americana",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ewingella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Exiguobacterium mexicanum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Facklamia hominis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Fibrobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Flavimonas sp",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Flavobacteriaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Flavobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Flexibacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Flexibacteraceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Francisella tularensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Francisella tularensis",
+    "variety": {
+      "pt": "Tipo A",
+      "en": "Type A",
+      "es": "Tipo A"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Fusobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gallionellaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gardnerella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gardnerella vaginalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gemella bergeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gemella haemolysans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gemella morbillorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gemella sanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gemella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Geobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Germes não patogênicos",
+    "variety": {
+      "pt": "Sem significação patogênica",
+      "en": "No pathogenic significance",
+      "es": "Sin importancia patógena"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Globicatella sanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Globicatella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Globicatella sulfidifaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gluconacetobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Gluconacetobacter xylinus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Granulicatella adiacens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Granulicatella elegans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Grimontia hollisae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus aegyptius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus ducreyi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus equigenitalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus haemolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo b",
+      "en": "type b",
+      "es": "tipo b"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo a",
+      "en": "type a",
+      "es": "tipo a"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo c",
+      "en": "type c",
+      "es": "tipo c"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo d",
+      "en": "type d",
+      "es": "tipo d"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo e",
+      "en": "type e",
+      "es": "tipo e"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "tipo f",
+      "en": "type f",
+      "es": "tipo f"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus influenzae",
+    "variety": {
+      "pt": "não capsulado",
+      "en": "non-encapsulated",
+      "es": "no capsulado"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus paragallinarum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus parahaemolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus parainfluenzae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus paraphrophilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus parasus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus somnus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Haemophilus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Hafnia alvei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Hafnia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Halomonadaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Halothiobacillus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Helcococcus kunzii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Helicobacter felis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Helicobacter hepaticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Helicobacter mustelae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Helicobacter pylori",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Herbaspirillum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Holosporaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Hydrogenophilaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Hyphomicrobiaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Janibacter sanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kingella denitrificans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kingella kingae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kingella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella aerogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella ornithinolytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella oxytoca",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella ozaenae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella planticola",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella pneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella pneumoniae subsp. ozaenae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella pneumoniae subsp. pneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella pneumoniae subsp. rhinoscleromatis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella rhinoscleromatis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Klebsiella terrigena",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kluyvera ascorbata",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kluyvera cryocrescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kluyvera intermedia",
+    "variety": {
+      "pt": "Enterobacter intermedius",
+      "en": "Enterobacter intermedius",
+      "es": "Enterobacter intermedius"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kluyvera sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kocuria kristinae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kocuria rosea",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Kocuria varians",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lactobacillus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lactococcus garvieae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lactococcus lactis subsp. Cremoris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lactococcus lactis subsp. lactis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lactococcus raffinolactis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leclercia adecarboxylata",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leclercia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Legionella longbeachae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Legionella pneumophila",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Legionella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leminorella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira alexanderi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira biflexa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira borgetersenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira fainei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira inadai",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira interrogans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira kirschneri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira meyeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira noguchi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira santarosai",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptospira weilli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptothrix sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leptotrichia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc citreum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc lactis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc mesenteroides subsp. cremoris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc mesenteroides subsp. dextranicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc mesenteroides subsp. mesenteroides",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc pseudomesenteroides",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Leuconostoc sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria grayi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria innocua",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria ivanovii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria monocytogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria seeligeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Listeria welshimeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Lysinibacillus fusiformis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Magnetospirillum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mannheimia haemolytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Megasphaera sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Methylobacteriaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Methylobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Methylocystaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Methylophilaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Microbacterium testaceum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Micrococcus luteus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Micrococcus luteus",
+    "variety": {
+      "pt": "Micrococcus luteus/lylae",
+      "en": "Micrococcus luteus/lylae",
+      "es": "Micrococcus luteus/lylae"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Micrococcus lylae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Micrococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moellerella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moellerella wisconsensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella atlantae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella canis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella catarrhalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella catarrhalis",
+    "variety": {
+      "pt": "Branhamella",
+      "en": "Branhamella",
+      "es": "Branhamella"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella nonliquefaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella osloensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Moraxella sp.",
+    "variety": {
+      "pt": "Grupo Moraxella",
+      "en": "Moraxella Group",
+      "es": "Grupo Moraxella"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Morganella morganii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Morganella morganii subsp. morganii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Morganella morganii subsp. sibonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Morganella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium abscessus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium africanum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium agri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium aichiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium algericum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium alsense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium alvei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium angelicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium anyangense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium aquaticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium arabiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium arcueilense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium aromaticivorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium arosiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium arupense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium asiaticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium aubagnense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium aurum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium austroafricanum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium avium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bacteremicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium boenickei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bohemicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bolletii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium botniense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bouchedurhonense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bourgelatii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium bovis",
+    "variety": {
+      "pt": "BCG vacinal",
+      "en": "BCG vaccine strain",
+      "es": "cepa vacunal BCG"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium branderi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium brisbanense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium brumae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium canariasense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium celatum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium celeriflavum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium chelonae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium chimaera",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium chitae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium chlorophenolicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium chubuense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium colombiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium conceptionense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium confluentis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium conspicuum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium cookii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium cosmeticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium crocinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium diernhoferi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium doricum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium duvalii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium eburneum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium elephantis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium engbaekii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium europaeum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium fallax",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium farcinogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium flavescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium florentinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium fluoranthenivorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium fortuitum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium fortuitum subsp. acetamidolyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium fragae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium franklinii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium frederiksbergense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium gadium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium gastri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium genavense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium gilvum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium goodii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium gordonae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium grossiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium haemophilum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium hassiacum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium heckeshornense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium heidelbergense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium helvum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium heraklionense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium hiberniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium hippocampi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium hodleri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium holsaticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium houstonense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium immunogenum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium insubricum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium interjectum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium intermedium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium intracellulare",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium iranicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium kansasii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium komossense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium koreense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium kubicae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium kumamotonense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium kyorinense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium lacus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium lehmannii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium lentiflavum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium leprae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium lepraemurium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium litorale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium llatzerense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium longobardum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium lutetiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium madagascariense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium mageritense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium malmesburyense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium malmoense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium mantenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium marinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium marseillense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium massiliense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium microti",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium minnesotense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium monacense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium montefiorense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium montmartrense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium moriokaense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium mucogenicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium murale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium nebraskense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium neoaurum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium neumannii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium neworleansense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium nonchromogenicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium noviomagense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium novocastrense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium obuense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium oryzae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium pallens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium palustre",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paraense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paraffinicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium parafortuitum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paragordonae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paraintracellulare",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium parakoreense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium parascrofulaceum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paraseoulense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paraterrae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium paratuberculosis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium parmense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium peregrinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium persicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium phlei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium phocaicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium pinnipedii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium porcinum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium poriferae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium pseudoshottsii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium psychrotolerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium pulveris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium pyrenivorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium rhodesiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium riyadhense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium rufum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium rutilum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium salmoniphilum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium saopaulense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium sarraceniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium saskatchewanense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium scrofulaceum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium sediminis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium senegalense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium senuense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium seoulense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium septicum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium setense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium sherrisii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium shimoidei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium shinjukuense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium shottsii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium simiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium sphagni",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium stephanolepidis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium stomatepiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium szulgai",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium talmoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium terrae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium thermoresistible",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium timonense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium tokaiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium triplex",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium triviale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium tuberculosis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium tusciae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium ulcerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium vaccae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium vanbaalenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium virginiense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium vulneris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium wolinskyi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium xenopi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycobacterium yongonense",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma agalactiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma arthritidis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma bovigenitalium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma bovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma capricolum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma caviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma conjunctivae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma dispar",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma gallisepticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma genitalium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma hominis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma hyopneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma hyorhinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma hyosynoviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma iowae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma meleagridis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma orale",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma ovipneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma pneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma pulmonis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma salivarium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Mycoplasma synoviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Myroides sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria animaloris",
+    "variety": {
+      "pt": "zoodegmatis (grupo CDC EF-4)",
+      "en": "zoodegmatis (group CDC EF-4)",
+      "es": "zoodegmatis (grupo CDC EF-4)"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria canis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria cinerea",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria cinereae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria denitrificans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria elongata",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria flavescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria gonorrhoeae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria lactamica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Poliaglutinante",
+      "en": "Polyagglutinable",
+      "es": "Poliaglutinable"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Sorogrupo E",
+      "en": "Serogroup E",
+      "es": "Serogrupo E"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Sorogrupo X",
+      "en": "Serogroup X",
+      "es": "Serogrupo X"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Sorogrupo Z",
+      "en": "Serogroup Z",
+      "es": "Serogrupo Z"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Não grupável",
+      "en": "Non-groupable",
+      "es": "No agrupable"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo A",
+      "en": "Group A",
+      "es": "Grupo A"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo B",
+      "en": "Group B",
+      "es": "Grupo B"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo C",
+      "en": "Group C",
+      "es": "Grupo C"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo Y/W",
+      "en": "Group Y/W",
+      "es": "Grupo Y/W"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo W",
+      "en": "Group W",
+      "es": "Grupo W"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria meningitidis",
+    "variety": {
+      "pt": "Grupo Y",
+      "en": "Group Y",
+      "es": "Grupo Y"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria mucosa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria perflava",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria perflava",
+    "variety": {
+      "pt": "flavescens",
+      "en": "flavescens",
+      "es": "flavescens"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria polysacchareae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria sicca",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria subflava",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Neisseria subflava flava",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nitrosomonadaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nitrosomonas europaea",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia asteroides",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia brasiliensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia farcinica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia nova",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia otitidiscaviarum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Nocardia transvalensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Obesumbacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Oceanospirillaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ochrobactrum anthropi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ochrobactrum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Oligella ureolytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Oligella urethralis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ornithobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Oxalobacteraceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Paenibacillus sp",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pandorea apista",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pantoea agglomerans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pantoea sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Paracoccus pantotrophus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Paracoccus yeei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella aerogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella canis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella multocida",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella multocida",
+    "variety": {
+      "pt": "tipo B",
+      "en": "type B",
+      "es": "tipo B"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella pneumotropica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pasteurella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pectinatus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pectobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pediococcus acidilactici",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pediococcus pentosaceus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pediococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Peptostreptococcus anaerobius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Photobacterium damselae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Photorhabdus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Phytobacter diazotrophicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Phytobacter palmae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Phytobacter spp",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Phytobacter ursingii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Phytoplasma sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Piscirickettsiaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Plesiomonas shigelloides",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Plesiomonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pluralibacter gergoviae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Porphyromonas endodontalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Porphyromonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pragia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella bivia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella heparinlytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella intermedia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella melaninogenica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella nigrescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella oulorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella ruminicola",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Prevotella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Propionibacterium acne",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Propionibacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Propionigenium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Proteus mirabilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Proteus penneri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Proteus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Proteus vulgaris",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Proteus vulgaris",
+    "variety": {
+      "pt": "Grupo P. vulgaris / P. penneri",
+      "en": "P. vulgaris / P. penneri Group",
+      "es": "Grupo P. vulgaris / P. penneri"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Protomonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Providencia alcalifaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Providencia rettgeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Providencia rustigianii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Providencia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Providencia stuartii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas aeruginosa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas alcaligenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas fluorescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas fragi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas luteola",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas mendocina",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas oleovorans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas oryzihabitans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas plecogossida",
+    "variety": {
+      "pt": "Complexo P. putida",
+      "en": "P. putida Complex",
+      "es": "Complejo P. putida"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas pseudoalcaligenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas putida",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas stutzeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Pseudomonas syringae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Psychrobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rahnella aquatilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rahnella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ralstonia mannitolilytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ralstonia pickettii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ralstonia solanacearum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ralstonia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ralstoniaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Raoultella ornithinolytica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Raoultella planticola",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhizobium etli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhizobium phaseoli",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhizobium radiobacter",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhizobium tropici",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodobacteraceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodococcus equi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodocyclaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodospirillum centenum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodothermus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rhodovulum sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia akari",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia australis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia bellii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia canadadensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia conorii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia felis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia montanensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia parkeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia prowazekii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia rickettsii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia sibirica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia tsutsugamushi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rickettsia typhi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Roseobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rothia amarae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Rothia mucilaginosa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ruminococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Saccharobacter sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Agona",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Anatum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella arizona",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella bongori",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Choleraesuis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Dublin",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. arizonae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. diarizonae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. enterica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. houtenae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. indica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella enterica subsp. salamae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Enteritidis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Gallinarum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella give",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Heidelberg",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Infantis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Kentucky",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Moscow",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Muenchen",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Newport",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Paratyphi A",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Paratyphi B",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Paratyphi C",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Pullorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Saintpaul",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella sp.",
+    "variety": {
+      "pt": "Grupo D (não Typhi)",
+      "en": "Group D (non-Typhi)",
+      "es": "Grupo D (no Typhi)"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella sp.",
+    "variety": {
+      "pt": "Grupo Salmonella",
+      "en": "Salmonella Group",
+      "es": "Grupo Salmonella"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Thompson",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Typhi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Typhimurium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Typhisuis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Salmonella Worthington",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serpulina sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia ficaria",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia fonticola",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia liquefaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia liquefaciens",
+    "variety": {
+      "pt": "Grupo",
+      "en": "Group",
+      "es": "Grupo"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia marcescens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia odorifera",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia odorifera 1",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia plymuthica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia rubidaea",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Serratia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shewanella algae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shewanella putrefaciens",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shewanella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella boydii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella dysenteriae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella flexneri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella sonnei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Shigella sp.",
+    "variety": {
+      "pt": "Grupo Shigella",
+      "en": "Shigella Group",
+      "es": "Grupo Shigella"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sinorhizobium fredii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphaerotilus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphingobacterium sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphingobacterium spiritivorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphingobacterium thalpophilum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphingomonas panni",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Sphingomonas paucimobilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Spirillaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Spiroplasma citri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus arlettae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus aureus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus auricularis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus capitis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus caprae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus carnosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus carnosus subsp. carnosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus caseolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus chromogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus coagulase-negativa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus cohnii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus cohnii subsp. cohnii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus cohnii subsp. urealyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus epidermidis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus equorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus gallinarum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus haemolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus hominis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus hyicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus hyicus",
+    "variety": {
+      "pt": "chromogenes",
+      "en": "chromogenes",
+      "es": "chromogenes"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus hyicus subspecies chromogenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus hyicus subspecies hyicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus intermedius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus kloosii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus lentus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus lugdunensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus saccharolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus saprophyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus schleiferi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus sciuri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus simulans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus vitulinus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus warneri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Staphylococcus xylosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Stenotrophomonas maltophilia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptobacillus moniliformis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus acidominimus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus agalactiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus agalactiae",
+    "variety": {
+      "pt": "hemolítico",
+      "en": "hemolytic",
+      "es": "hemolítico"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus agalactiae",
+    "variety": {
+      "pt": "não-hemolítico",
+      "en": "non-hemolytic",
+      "es": "no hemolítico"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus agalactiae",
+    "variety": {
+      "pt": "Beta hemolítico do grupo B",
+      "en": "Group B Beta-hemolytic",
+      "es": "Beta hemolítico del grupo B"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus alactolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus anginosus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus anginosus",
+    "variety": {
+      "pt": "milleri",
+      "en": "milleri",
+      "es": "milleri"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus anginosus-constellatus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus beta-hemolítico",
+    "variety": {
+      "pt": "Grupo G",
+      "en": "Group G",
+      "es": "Grupo G"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus beta-hemolítico",
+    "variety": {
+      "pt": "Grupo C",
+      "en": "Group C",
+      "es": "Grupo C"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus beta-hemolítico",
+    "variety": {
+      "pt": "Grupo F",
+      "en": "Group F",
+      "es": "Grupo F"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus Beta Hemolítico",
+    "variety": {
+      "pt": "Não do grupo A - Lancefield",
+      "en": "Non-Group A - Lancefield",
+      "es": "No del grupo A - Lancefield"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus bovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus canis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus constellatus",
+    "variety": {
+      "pt": "milleri",
+      "en": "milleri",
+      "es": "milleri"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus constellatus subsp. constellatus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus constellatus subsp. pharyngis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus cristatus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus downei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus dysgalactiae subsp. dysgalactiae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus dysgalactiae subsp. equisimilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus equi subsp. equi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus equi subsp. zooepidemicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus equinus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus equisimilis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus gallolyticus subsp. gallolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus gallolyticus subsp. pasteurianus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus gama-hemolítico",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus gordonii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus hyointestinalis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus infantarius subsp. coli",
+    "variety": {
+      "pt": "Streptococcus bovis",
+      "en": "Streptococcus bovis",
+      "es": "Streptococcus bovis"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus infantarius subsp. infantarius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus intermedius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus intermedius",
+    "variety": {
+      "pt": "milleri",
+      "en": "milleri",
+      "es": "milleri"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus mitis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus mitis",
+    "variety": {
+      "pt": "Streptococcus oralis",
+      "en": "Streptococcus oralis",
+      "es": "Streptococcus oralis"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus morbillorum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus mutans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus ovis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus parasanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus pluranimalium",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus pneumoniae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus porcinus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus pyogenes",
+    "variety": {
+      "pt": "Grupo A - Lancefield",
+      "en": "Group A - Lancefield",
+      "es": "Grupo A - Lancefield"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus pyogenes",
+    "variety": {
+      "pt": "Beta hemolítico grupo A",
+      "en": "Group A Beta-hemolytic",
+      "es": "Beta hemolítico grupo A"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus salivarius",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sanguinis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sanguis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sobrinus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sp.",
+    "variety": {
+      "pt": "Grupo D",
+      "en": "Group D",
+      "es": "Grupo D"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus sp.",
+    "variety": {
+      "pt": "Alfa-hemolítico",
+      "en": "Alpha-hemolytic",
+      "es": "Alfa-hemolítico"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus suis l",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus thermophilus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus thoraltensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus uberis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus vestibularis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus viridans",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Streptococcus zooepidemicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Succinivibrionaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Suttonella indologenes",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Tatumella ptyseos",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Tatumella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Taylorella",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Thiotrichaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Trabulsiella guamensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Trabulsiella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Treponema carateum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Treponema pallidum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Treponema pertenue",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Treponema sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Ureaplasma urealyticum",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vagococcus fluvialis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio alginolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "O1",
+      "en": "O1",
+      "es": "O1"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "O139",
+      "en": "O139",
+      "es": "O139"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "O1 sorotipo Inaba",
+      "en": "O1 serotype Inaba",
+      "es": "O1 serotipo Inaba"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "O1 sorotipo Ogawa",
+      "en": "O1 serotype Ogawa",
+      "es": "O1 serotipo Ogawa"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "não O1",
+      "en": "non-O1",
+      "es": "no O1"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "não O139",
+      "en": "non-O139",
+      "es": "no O139"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cholerae",
+    "variety": {
+      "pt": "O1 sorotipo Hikojima",
+      "en": "O1 serotype Hikojima",
+      "es": "O1 serotipo Hikojima"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio cincinnatiensis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio damsela",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio fluvialis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio furnissii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio harveyi",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio hollisae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio metschnikovii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio mimicus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio parahaemolyticus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio salmonicida",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Vibrio vulnificus",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Weissella confusa",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Wigglesworthia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Xanthomonadaceae",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Xanthomonas vesicatoria",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Xenorhabdus sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Xylella sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia enterocolitica",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia enterocolitica",
+    "variety": {
+      "pt": "Grupo",
+      "en": "Group",
+      "es": "Grupo"
+    },
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia frederiksenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia intermedia",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia kristensenii",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia pestis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia pseudotuberculosis",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia ruckeri",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yersinia sp.",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yokenella regensburgei",
+    "is_active": true
+  },
+  {
+    "taxon": "Bacteria",
+    "species": "Yokenella sp.",
+    "is_active": true
+  }
+]

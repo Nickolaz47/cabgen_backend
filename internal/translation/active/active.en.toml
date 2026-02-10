@@ -249,3 +249,21 @@ other = "Laboratory not found."
 
 [admin.laboratory.delete.success]
 other = "Laboratory deleted successfully."
+
+[admin.microorganism.validation.missingLanguage]
+other = "Microorganism variety missing translation for {{.Param}}."
+
+[admin.microorganism.validation.missingTranslation]
+other = "Microorganism variety has empty translation for {{.Param}}."
+
+[admin.microorganism.create.success]
+other = "Microorganism created successfully."
+
+[admin.microorganism.notFound.error]
+other = "Microorganism not found."
+
+[admin.microorganism.alreadyExists.error]
+other = "Microorganism already exists."
+
+[admin.microorganism.delete.success]
+other = "Microorganism deleted successfully."

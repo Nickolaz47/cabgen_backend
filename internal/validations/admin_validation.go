@@ -57,6 +57,8 @@ func ValidateTranslationMap(c *gin.Context, model string, translations map[strin
 		missingLanguage, missingTranslation = responses.SampleSourceValidationMissingLanguage, responses.SampleSourceValidationMissingTranslation
 	case "country":
 		missingLanguage, missingTranslation = responses.CountryValidationMissingLanguage, responses.CountryValidationMissingTranslation
+	case "microorganism":
+		missingLanguage, missingTranslation = responses.MicroorganismValidationMissingLanguage, responses.MicroorganismValidationMissingTranslation
 	default:
 		missingLanguage, missingTranslation = "", ""
 	}
