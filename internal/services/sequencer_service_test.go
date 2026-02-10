@@ -6,10 +6,12 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +24,7 @@ func TestSequencerFindAll(t *testing.T) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		sequencers, err := service.FindAll(context.Background())
@@ -37,13 +39,16 @@ func TestSequencerFindAll(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		sequencers, err := service.FindAll(context.Background())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, sequencers)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -56,7 +61,7 @@ func TestSequencerFindAllActive(t *testing.T) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := []models.SequencerFormResponse{sequencer.ToFormResponse()}
 		sequencers, err := service.FindAllActive(context.Background())
@@ -71,13 +76,16 @@ func TestSequencerFindAllActive(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		sequencers, err := service.FindAllActive(context.Background())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, sequencers)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -90,7 +98,7 @@ func TestSequencerFindByID(t *testing.T) {
 				return &sequencer, nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := sequencer.ToAdminTableResponse()
 		result, err := service.FindByID(context.Background(), sequencer.ID)
@@ -106,12 +114,15 @@ func TestSequencerFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.FindByID(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -120,13 +131,16 @@ func TestSequencerFindByID(t *testing.T) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
 
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.FindByID(context.Background(), sequencer.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -139,7 +153,7 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 				return []models.Sequencer{sequencer}, nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := []models.SequencerAdminTableResponse{sequencer.ToAdminTableResponse()}
 		result, err := service.FindByBrandOrModel(context.Background(), "illumin")
@@ -155,12 +169,15 @@ func TestSequencerFindByBrandOrModel(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.FindByBrandOrModel(context.Background(), "illumin")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -177,7 +194,7 @@ func TestSequencerCreate(t *testing.T) {
 				return nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := models.SequencerAdminTableResponse{
 			Model:    input.Model,
@@ -197,12 +214,15 @@ func TestSequencerCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -212,12 +232,15 @@ func TestSequencerCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -227,12 +250,15 @@ func TestSequencerCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Create(context.Background(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -254,7 +280,7 @@ func TestSequencerUpdate(t *testing.T) {
 				return nil
 			},
 		}
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 
 		expected := models.SequencerAdminTableResponse{
 			ID:       id,
@@ -275,12 +301,15 @@ func TestSequencerUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict", func(t *testing.T) {
@@ -293,12 +322,15 @@ func TestSequencerUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -311,12 +343,15 @@ func TestSequencerUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		result, err := service.Update(context.Background(), uuid.New(), input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -331,7 +366,7 @@ func TestSequencerDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		service := services.NewSequencerService(seqRepo, nil)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.NoError(t, err)
@@ -344,11 +379,14 @@ func TestSequencerDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -361,10 +399,13 @@ func TestSequencerDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewSequencerService(seqRepo)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewSequencerService(seqRepo, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
 	})
 }

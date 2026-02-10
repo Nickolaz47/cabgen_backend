@@ -37,7 +37,7 @@ func (s *sampleSourceService) FindAll(ctx context.Context, language string) ([]m
 	sampleSources, err := s.Repo.GetSampleSources(ctx)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindAll",
+			"SampleSourceService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -54,7 +54,7 @@ func (s *sampleSourceService) FindAllActive(ctx context.Context, language string
 	sampleSources, err := s.Repo.GetActiveSampleSources(ctx)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindAllActive",
+			"SampleSourceService", "FindAllActive",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -72,7 +72,7 @@ func (s *sampleSourceService) FindByID(ctx context.Context, ID uuid.UUID) (*mode
 	sampleSource, err := s.Repo.GetSampleSourceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindByID",
+			"SampleSourceService", "FindByID",
 			logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
@@ -80,7 +80,7 @@ func (s *sampleSourceService) FindByID(ctx context.Context, ID uuid.UUID) (*mode
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindByID",
+			"SampleSourceService", "FindByID",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -94,7 +94,7 @@ func (s *sampleSourceService) FindByNameOrGroup(ctx context.Context, input, lang
 	sampleSources, err := s.Repo.GetSampleSourcesByNameOrGroup(ctx, input, language)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindByNameOrGroup",
+			"SampleSourceService", "FindByNameOrGroup",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -117,7 +117,7 @@ func (s *sampleSourceService) Create(ctx context.Context, input models.SampleSou
 	existingSampleSource, err := s.Repo.GetSampleSourceDuplicate(ctx, sampleSource.Names, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Create",
+			"SampleSourceService", "Create",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -125,7 +125,7 @@ func (s *sampleSourceService) Create(ctx context.Context, input models.SampleSou
 
 	if existingSampleSource != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Create",
+			"SampleSourceService", "Create",
 			logging.DatabaseConflictError, err,
 		)...)
 		return nil, ErrConflict
@@ -133,7 +133,7 @@ func (s *sampleSourceService) Create(ctx context.Context, input models.SampleSou
 
 	if err := s.Repo.CreateSampleSource(ctx, &sampleSource); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Create",
+			"SampleSourceService", "Create",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -147,7 +147,7 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 	existingSampleSource, err := s.Repo.GetSampleSourceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Update",
+			"SampleSourceService", "Update",
 			logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
@@ -155,7 +155,7 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Update",
+			"SampleSourceService", "Update",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -167,7 +167,7 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 		duplicate, err := s.Repo.GetSampleSourceDuplicate(ctx, input.Names, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error", logging.ServiceLogging(
-				"OriginService", "Update",
+				"SampleSourceService", "Update",
 				logging.DatabaseError, err,
 			)...)
 			return nil, ErrInternal
@@ -175,7 +175,7 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 
 		if duplicate != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(
-				"OriginService", "Update",
+				"SampleSourceService", "Update",
 				logging.DatabaseConflictError, err,
 			)...)
 			return nil, ErrConflict
@@ -184,7 +184,7 @@ func (s *sampleSourceService) Update(ctx context.Context, ID uuid.UUID, input mo
 
 	if err := s.Repo.UpdateSampleSource(ctx, existingSampleSource); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Update",
+			"SampleSourceService", "Update",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -198,7 +198,7 @@ func (s *sampleSourceService) Delete(ctx context.Context, ID uuid.UUID) error {
 	sampleSource, err := s.Repo.GetSampleSourceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Delete",
+			"SampleSourceService", "Delete",
 			logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
@@ -206,7 +206,7 @@ func (s *sampleSourceService) Delete(ctx context.Context, ID uuid.UUID) error {
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Delete",
+			"SampleSourceService", "Delete",
 			logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -214,7 +214,7 @@ func (s *sampleSourceService) Delete(ctx context.Context, ID uuid.UUID) error {
 
 	if err := s.Repo.DeleteSampleSource(ctx, sampleSource); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "Delete",
+			"SampleSourceService", "Delete",
 			logging.DatabaseError, err,
 		)...)
 		return ErrInternal

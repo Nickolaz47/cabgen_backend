@@ -93,7 +93,7 @@ func main() {
 	userSvc := container.BuildUserService(mainDB.DB())
 	admUserSvc := container.BuildAdminUserService(mainDB.DB(), logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
-	sequencerSvc := container.BuildSequencerService(mainDB.DB())
+	sequencerSvc := container.BuildSequencerService(mainDB.DB(), logging.FileLogger)
 	originSvc := container.BuildOriginService(mainDB.DB(), logging.FileLogger)
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(), logging.FileLogger)
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)

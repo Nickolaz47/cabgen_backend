@@ -5,12 +5,13 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func BuildSequencerService(db *gorm.DB) services.SequencerService {
+func BuildSequencerService(db *gorm.DB, logger *zap.Logger) services.SequencerService {
 	sequencerRepo := repositories.NewSequencerRepo(db)
-	sequencerService := services.NewSequencerService(sequencerRepo)
+	sequencerService := services.NewSequencerService(sequencerRepo, logger)
 
 	return sequencerService
 }
