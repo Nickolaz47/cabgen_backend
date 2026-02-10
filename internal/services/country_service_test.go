@@ -50,7 +50,7 @@ func TestCountryFindAll(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -89,7 +89,7 @@ func TestCountryFindByCode(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal", func(t *testing.T) {
@@ -107,7 +107,7 @@ func TestCountryFindByCode(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -147,7 +147,7 @@ func TestCountriesFindByName(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -189,7 +189,7 @@ func TestCountryCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Create", func(t *testing.T) {
@@ -210,7 +210,7 @@ func TestCountryCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -253,7 +253,7 @@ func TestCountryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict (Code)", func(t *testing.T) {
@@ -274,7 +274,7 @@ func TestCountryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflict)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Update", func(t *testing.T) {
@@ -295,7 +295,7 @@ func TestCountryUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -330,7 +330,7 @@ func TestCountryDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Delete", func(t *testing.T) {
@@ -350,6 +350,6 @@ func TestCountryDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }

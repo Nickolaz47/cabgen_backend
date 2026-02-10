@@ -19,6 +19,7 @@ const (
 	GenerateTokenError              = "GENERATE_TOKEN_ERROR"
 	ValidateTokenError              = "VALIDATE_TOKEN_ERROR"
 	DatabaseConflictError           = "CONFLICT_RECORD"
+	SendEmailError                  = "SEND_EMAIL_ERROR"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {

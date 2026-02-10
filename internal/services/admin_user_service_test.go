@@ -54,7 +54,7 @@ func TestAdminUserFind(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -93,7 +93,7 @@ func TestAdminUserFindByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestAdminUserFindByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -150,7 +150,7 @@ func TestAdminUserFindByUsername(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -168,7 +168,7 @@ func TestAdminUserFindByUsername(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -207,7 +207,7 @@ func TestAdminUserFindByEmail(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -225,7 +225,7 @@ func TestAdminUserFindByEmail(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -300,7 +300,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflictUsername)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict Email", func(t *testing.T) {
@@ -321,7 +321,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflictEmail)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Country Not Found", func(t *testing.T) {
@@ -349,7 +349,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCountryCode)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Country Internal Server", func(t *testing.T) {
@@ -377,7 +377,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Password hash failed", func(t *testing.T) {
@@ -409,7 +409,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -440,7 +440,7 @@ func TestAdminUserCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -511,7 +511,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Get User Internal Server", func(t *testing.T) {
@@ -529,7 +529,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict Username", func(t *testing.T) {
@@ -553,7 +553,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflictUsername)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Conflict Email", func(t *testing.T) {
@@ -577,7 +577,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrConflictEmail)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Duplicate Username Internal Server", func(t *testing.T) {
@@ -601,7 +601,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Duplicate Email Internal Server", func(t *testing.T) {
@@ -625,7 +625,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Country Not Found", func(t *testing.T) {
@@ -656,7 +656,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCountryCode)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Country Internal Server", func(t *testing.T) {
@@ -687,7 +687,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Password hash failed", func(t *testing.T) {
@@ -722,7 +722,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Update Internal Server", func(t *testing.T) {
@@ -756,7 +756,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -791,7 +791,7 @@ func TestAdminActivateUser(t *testing.T) {
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.Error(t, err)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -811,7 +811,7 @@ func TestAdminActivateUser(t *testing.T) {
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.Error(t, err)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -845,7 +845,7 @@ func TestAdminDeactivateUser(t *testing.T) {
 		err := service.DeactivateUser(context.Background(), user.ID)
 
 		assert.Error(t, err)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -865,7 +865,7 @@ func TestAdminDeactivateUser(t *testing.T) {
 		err := service.DeactivateUser(context.Background(), user.ID)
 
 		assert.Error(t, err)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -902,7 +902,7 @@ func TestAdminUserDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -922,6 +922,6 @@ func TestAdminUserDelete(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }

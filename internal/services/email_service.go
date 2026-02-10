@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"go.uber.org/zap"
 )
 
 type EmailService interface {
@@ -19,11 +20,18 @@ type EmailService interface {
 type emailService struct {
 	UserRepo    repositories.UserRepository
 	EmailSender email.EmailSender
+	Logger      *zap.Logger
 }
 
 func NewEmailService(
-	userRepo repositories.UserRepository, emailSender email.EmailSender) EmailService {
-	return &emailService{UserRepo: userRepo, EmailSender: emailSender}
+	userRepo repositories.UserRepository,
+	emailSender email.EmailSender,
+	logger *zap.Logger) EmailService {
+	return &emailService{
+		UserRepo:    userRepo,
+		EmailSender: emailSender,
+		Logger:      logger,
+	}
 }
 
 func (s *emailService) SendActivationUserEmail(
@@ -36,6 +44,10 @@ func (s *emailService) SendActivationUserEmail(
 
 	admins, err := s.UserRepo.GetUsers(ctx, filter)
 	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendActivationUserEmail",
+			logging.DatabaseError, err,
+		)...)
 		return fmt.Errorf("Failed to get admins: %v", err)
 	}
 
@@ -68,11 +80,14 @@ func (s *emailService) SendActivationUserEmail(
 
 			err := email.SendEmail(cfg, s.EmailSender)
 			if err != nil {
-				logging.FileLogger.Error(
-					fmt.Sprintf(
-						"Failed to send activation user email to %s: %v",
-						cfg.Recipient, err),
-				)
+				s.Logger.Error(
+					"Service Error", logging.ServiceLogging(
+						"EmailService", "SendActivationUserEmail",
+						logging.SendEmailError,
+						fmt.Errorf(
+							"Failed to send activation user email to %s: %v",
+							cfg.Recipient, err),
+					)...)
 			}
 		}(emailConfig)
 	}

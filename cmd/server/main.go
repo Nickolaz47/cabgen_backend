@@ -97,7 +97,7 @@ func main() {
 	originSvc := container.BuildOriginService(mainDB.DB())
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB())
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
-	emailSvc := container.BuildEmailService(mainDB.DB())
+	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()

@@ -75,7 +75,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrConflictEmail, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - ExistsByEmail Internal", func(t *testing.T) {
@@ -94,7 +94,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrInternal, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Username already exists", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrConflictUsername, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - ExistsByUsername Internal", func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrInternal, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Email Mismatch", func(t *testing.T) {
@@ -151,7 +151,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrEmailMismatch, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Password Mismatch", func(t *testing.T) {
@@ -167,7 +167,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrPasswordMismatch, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Hash Internal", func(t *testing.T) {
@@ -200,7 +200,7 @@ func TestRegister(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Invalid Country Code", func(t *testing.T) {
@@ -230,7 +230,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Equal(t, services.ErrInvalidCountryCode, err)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - GetCountryByCode Internal", func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestRegister(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
@@ -286,7 +286,7 @@ func TestRegister(t *testing.T) {
 		_, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -335,7 +335,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - GetUserByUsername Internal", func(t *testing.T) {
@@ -356,7 +356,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Disabled User", func(t *testing.T) {
@@ -379,7 +379,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrDisabledUser)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Wrong Password", func(t *testing.T) {
@@ -404,7 +404,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - CheckPassword Internal", func(t *testing.T) {
@@ -429,7 +429,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Generate Access Token", func(t *testing.T) {
@@ -454,7 +454,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Generate Refresh Token", func(t *testing.T) {
@@ -484,7 +484,7 @@ func TestLogin(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
 
@@ -526,7 +526,7 @@ func TestRefresh(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrUnauthorized)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - GenerateToken Internal", func(t *testing.T) {
@@ -546,6 +546,6 @@ func TestRefresh(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
-		assert.Equal(t, logs.Len(), 1)
+		assert.Equal(t, 1, logs.Len())
 	})
 }
