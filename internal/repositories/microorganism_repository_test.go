@@ -220,7 +220,16 @@ func TestGetMicroorganismDuplicate(t *testing.T) {
 	)
 	db.Create(&mockMicro)
 
-	t.Run("Success - With ID", func(t *testing.T) {
+	mockSimpleMicro := testmodels.NewMicroorganism(
+		uuid.NewString(),
+		models.Bacteria,
+		"Escherichia coli",
+		nil,
+		true,
+	)
+	db.Create(&mockSimpleMicro)
+
+	t.Run("Success - With ID and Variety", func(t *testing.T) {
 		micro, err := repo.GetMicroorganismDuplicate(
 			context.Background(), mockMicro.Species,
 			mockMicro.Variety, uuid.New(),
@@ -230,7 +239,7 @@ func TestGetMicroorganismDuplicate(t *testing.T) {
 		assert.Equal(t, &mockMicro, micro)
 	})
 
-	t.Run("Success - Without ID", func(t *testing.T) {
+	t.Run("Success - Without ID and Variety", func(t *testing.T) {
 		micro, err := repo.GetMicroorganismDuplicate(
 			context.Background(), mockMicro.Species,
 			mockMicro.Variety, uuid.UUID{},
@@ -238,6 +247,16 @@ func TestGetMicroorganismDuplicate(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, &mockMicro, micro)
+	})
+
+	t.Run("Success - Variety Nil", func(t *testing.T) {
+		micro, err := repo.GetMicroorganismDuplicate(
+			context.Background(), "Escherichia coli", nil, 
+			uuid.New(),
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, mockSimpleMicro.ID, micro.ID)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {

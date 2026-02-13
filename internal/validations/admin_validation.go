@@ -146,3 +146,22 @@ func ApplyCountryUpdate(country *models.Country, input *models.CountryUpdateInpu
 		country.Names = input.Names
 	}
 }
+
+func ApplyMicroorganismUpdate(microorganism *models.Microorganism,
+	input *models.MicroorganismUpdateInput) {
+	if input.Taxon != nil {
+		microorganism.Taxon = *input.Taxon
+	}
+
+	if input.Species != nil {
+		microorganism.Species = *input.Species
+	}
+
+	if input.Variety != nil {
+		microorganism.Variety = input.Variety
+	}
+
+	if input.IsActive != nil {
+		microorganism.IsActive = *input.IsActive
+	}
+}

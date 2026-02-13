@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -83,9 +81,14 @@ func (m *Microorganism) ToFormResponse(language string) MicroorganismFormRespons
 		language = "en"
 	}
 
+	species := m.Species
+	if m.Variety != nil {
+		species = species + " " + m.Variety[language]
+	}
+
 	return MicroorganismFormResponse{
 		ID:      m.ID,
-		Species: fmt.Sprintf("%s %s", m.Species, m.Variety[language]),
+		Species: species,
 	}
 }
 

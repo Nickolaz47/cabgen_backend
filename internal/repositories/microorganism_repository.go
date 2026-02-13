@@ -81,13 +81,17 @@ func (r *microorganismRepo) GetMicroorganismDuplicate(
 	var microorganism models.Microorganism
 
 	conditions := r.DB.WithContext(ctx)
-	for lang, value := range variety {
-		conditions = conditions.Or(
-			fmt.Sprintf(
-				"LOWER(species) = LOWER(?) AND LOWER(variety->>'%s') = LOWER(?)",
-				lang,
-			), species, value,
-		)
+	if len(variety) != 0 {
+		for lang, value := range variety {
+			conditions = conditions.Or(
+				fmt.Sprintf(
+					"LOWER(species) = LOWER(?) AND LOWER(variety->>'%s') = LOWER(?)",
+					lang,
+				), species, value,
+			)
+		}
+	} else {
+		conditions = conditions.Where("LOWER(species) = LOWER(?)", species)
 	}
 
 	query := r.DB.WithContext(ctx).Where(conditions)
