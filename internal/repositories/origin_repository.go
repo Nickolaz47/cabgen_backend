@@ -68,17 +68,18 @@ func (r *originRepo) GetOriginsByName(ctx context.Context, name, lang string) ([
 func (r *originRepo) GetOriginDuplicate(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.Origin, error) {
 	var origin models.Origin
 
-	query := r.DB.WithContext(ctx)
-
+	conditions := r.DB.WithContext(ctx)
 	for lang, value := range names {
-		query = query.Or(
+		conditions = conditions.Or(
 			fmt.Sprintf(
-				"LOWER(names->>'%s') LIKE LOWER(?)",
+				"LOWER(names->>'%s') = LOWER(?)",
 				lang,
 			),
 			value,
 		)
 	}
+
+	query := r.DB.WithContext(ctx).Where(conditions)
 
 	if ID != uuid.Nil {
 		query = query.Where("id != ?", ID)

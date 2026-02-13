@@ -67,17 +67,18 @@ func (r *countryRepo) GetCountriesByName(ctx context.Context, name, lang string)
 func (r *countryRepo) GetCountryDuplicate(ctx context.Context, names models.JSONMap, code string) (*models.Country, error) {
 	var country models.Country
 
-	query := r.DB.WithContext(ctx)
-
+	conditions := r.DB.WithContext(ctx)
 	for lang, value := range names {
-		query = query.Or(
+		conditions = conditions.Or(
 			fmt.Sprintf(
-				"LOWER(names->>'%s') LIKE LOWER(?)",
+				"LOWER(names->>'%s') = LOWER(?)",
 				lang,
 			),
 			value,
 		)
 	}
+
+	query := r.DB.WithContext(ctx).Where(conditions)
 
 	if code != "" {
 		query = query.Where("code != ?", code)

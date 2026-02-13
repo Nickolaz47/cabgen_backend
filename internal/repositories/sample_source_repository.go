@@ -68,17 +68,18 @@ func (r *sampleSourceRepo) GetSampleSourcesByNameOrGroup(ctx context.Context, in
 func (r *sampleSourceRepo) GetSampleSourceDuplicate(ctx context.Context, names models.JSONMap, ID uuid.UUID) (*models.SampleSource, error) {
 	var sampleSource models.SampleSource
 
-	query := r.DB.WithContext(ctx)
-
+	conditions := r.DB.WithContext(ctx)
 	for lang, value := range names {
-		query = query.Or(
+		conditions = conditions.Or(
 			fmt.Sprintf(
-				"LOWER(names->>'%s') LIKE LOWER(?)",
+				"LOWER(names->>'%s') = LOWER(?)",
 				lang,
 			),
 			value,
 		)
 	}
+
+	query := r.DB.WithContext(ctx).Where(conditions)
 
 	if ID != uuid.Nil {
 		query = query.Where("id != ?", ID)
