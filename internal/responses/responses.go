@@ -57,6 +57,7 @@ const (
 	MicroorganismValidationMissingLanguage    = "admin.microorganism.validation.missingLanguage"
 	MicroorganismValidationMissingTranslation = "admin.microorganism.validation.missingTranslation"
 	MicroorganismCreationSuccess              = "admin.microorganism.create.success"
+	MicroorganismInvalidTaxon                 = "admin.microorganism.create.invalidTaxon"
 	MicroorganismNotFoundError                = "admin.microorganism.notFound.error"
 	MicroorganismAlreadyExistsError           = "admin.microorganism.alreadyExists.error"
 	MicroorganismDeleted                      = "admin.microorganism.delete.success"

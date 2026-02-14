@@ -1,6 +1,8 @@
 package validations
 
 import (
+	"slices"
+
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -61,6 +63,12 @@ func ValidateTranslationMap(c *gin.Context, model string, translations map[strin
 		missingLanguage, missingTranslation = responses.MicroorganismValidationMissingLanguage, responses.MicroorganismValidationMissingTranslation
 	default:
 		missingLanguage, missingTranslation = "", ""
+	}
+
+	for key := range translations {
+		if !slices.Contains(defaultLanguages, key) {
+			delete(translations, key)
+		}
 	}
 
 	for _, l := range defaultLanguages {

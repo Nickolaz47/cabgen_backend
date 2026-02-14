@@ -259,6 +259,12 @@ other = "Microorganism variety has empty translation for {{.Param}}."
 [admin.microorganism.create.success]
 other = "Microorganism created successfully."
 
+[validation.Variety.required]
+other = "The variety parameter with translations for pt, en, and es is required."
+
+[validation.Variety.min]
+other = "The variety parameter must contain at least 3 keys (pt, en, es)."
+
 [admin.microorganism.notFound.error]
 other = "Microorganism not found."
 
@@ -267,3 +273,12 @@ other = "Microorganism already exists."
 
 [admin.microorganism.delete.success]
 other = "Microorganism deleted successfully."
+
+[admin.microorganism.create.invalidTaxon]
+other = "The microorganism taxon is invalid. Choose between Bacteria, Virus, Protozoa, or Fungi."
+
+[validation.Species.required]
+other = "Species is required."
+
+[validation.Taxon.required]
+other = "Taxon is required."

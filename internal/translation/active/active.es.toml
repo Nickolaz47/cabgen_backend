@@ -259,6 +259,12 @@ other = "Variante del microorganismo con la traducción para {{.Param}} vacía."
 [admin.microorganism.create.success]
 other = "Microorganismo creado con éxito."
 
+[validation.Variety.required]
+other = "El parámetro variety con traducciones para pt, en y es es requerido."
+
+[validation.Variety.min]
+other = "El parámetro variety debe incluir al menos los idiomas pt, en y es."
+
 [admin.microorganism.notFound.error]
 other = "Microorganismo no encontrado."
 
@@ -267,3 +273,12 @@ other = "Microorganismo ya existe."
 
 [admin.microorganism.delete.success]
 other = "Microorganismo eliminado con éxito."
+
+[admin.microorganism.create.invalidTaxon]
+other = "El taxón del microorganismo no es válido. Elija entre Bacteria, Virus, Protozoa o Fungi."
+
+[validation.Species.required]
+other = "La especie es obligatoria."
+
+[validation.Taxon.required]
+other = "El taxón es obligatorio."
