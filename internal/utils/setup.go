@@ -79,6 +79,26 @@ func insertCountries(ctx context.Context, db *gorm.DB, file string) error {
 	return repo.BulkInsert(ctx, countries)
 }
 
+func insertMicroorganisms(ctx context.Context, db *gorm.DB, file string) error {
+	repo := repositories.NewMicroorganismSeedRepository(db)
+
+	count, err := repo.Count(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot access microorganisms table: %w", err)
+	}
+
+	if count > 0 {
+		return nil
+	}
+
+	micros, err := LoadJSONFile[models.Microorganism](file)
+	if err != nil {
+		return err
+	}
+
+	return repo.BulkInsert(ctx, micros)
+}
+
 func Setup(db *gorm.DB) error {
 	ctx := context.Background()
 
@@ -87,8 +107,13 @@ func Setup(db *gorm.DB) error {
 		return err
 	}
 
-	countriesJSON := filepath.Join(rootDir, "internal/data/countries.json")
+	countriesJSON := filepath.Join(rootDir, "data/countries.json")
 	if err := insertCountries(ctx, db, countriesJSON); err != nil {
+		return err
+	}
+
+	microJSON := filepath.Join(rootDir, "data/microorganisms.json")
+	if err := insertMicroorganisms(ctx, db, microJSON); err != nil {
 		return err
 	}
 

@@ -30,7 +30,7 @@ WORKDIR /app
 COPY --from=builder /app/api .
 
 COPY --from=builder /app/internal/translation/active ./internal/translation/active
-COPY --from=builder /app/internal/data ./internal/data
+COPY --from=builder /app/data ./data
 
 EXPOSE 8080
 
