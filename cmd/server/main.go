@@ -100,6 +100,7 @@ func main() {
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(), logging.FileLogger)
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
 	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
+	microSvc := container.BuildMicroorganismService(mainDB.DB(), logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -112,6 +113,7 @@ func main() {
 	sequencerHandler := container.BuildSequencerHandler(sequencerSvc)
 	originHandler := container.BuildOriginHandler(originSvc)
 	sampleSourceHandler := container.BuildSampleSourceHandler(sampleSourceSvc)
+	microHandler := container.BuildMicroorganismHandler(microSvc)
 
 	// Admin handlers
 	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
@@ -120,6 +122,7 @@ func main() {
 	adminOriginHandler := container.BuildAdminOriginHandler(originSvc)
 	adminSampleSourceHandler := container.BuildAdminSampleSourceHandler(sampleSourceSvc)
 	adminCountryHandler := container.BuildAdminCountryHandler(countrySvc)
+	adminMicroHandler := container.BuildAdminMicroorganismHandler(microSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -134,6 +137,7 @@ func main() {
 	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)
 	common.SetupOriginRoutes(commonRouter, originHandler)
 	common.SetupSampleSourceRoutes(commonRouter, sampleSourceHandler)
+	common.SetupMicroorganismRoutes(commonRouter, microHandler)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
@@ -143,6 +147,7 @@ func main() {
 	admin.SetupAdminOriginRoutes(adminRouter, adminOriginHandler)
 	admin.SetupAdminSampleSourceRoutes(adminRouter, adminSampleSourceHandler)
 	admin.SetupAdminCountryRoutes(adminRouter, adminCountryHandler)
+	admin.SetupAdminMicroorganismRoutes(adminRouter, adminMicroHandler)
 
 	// Event dispatcher
 	registry := container.BuildRegistry(emailSvc)

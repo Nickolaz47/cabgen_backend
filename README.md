@@ -42,7 +42,7 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 │   ├── logging/             # Configuração e controle de logs
 │   ├── middlewares/         # Middlewares da aplicação
 │   ├── models/              # Models e mapeamento do banco
-│   ├── repositories/         # Acesso e queries ao banco de dados
+│   ├── repositories/        # Acesso e queries ao banco de dados
 │   ├── responses/           # Padronização de respostas HTTP
 │   ├── routes/              # Definição das rotas/endpoints
 │   ├── security/            # Criptografia e hashing de senhas
@@ -294,31 +294,38 @@ Os endpoints estão organizados em três níveis de acesso:
 | ------ | ------------------- | ------------------------- |
 | GET    | `/api/laboratories` | Lista laboratórios ativos |
 
+#### Microrganismo
+
+| Método | Endpoint              | Descrição                   |
+| ------ | --------------------  | -------------------------   |
+| GET    | `/api/microorganisms` | Lista microrganismos ativos |
+
 ### Admin
 
-Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra** e **Laboratórios**:
+Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios** e **Microorganismos**:
 
 #### Usuário
 
 | Método | Endpoint                                | Descrição                     |
 | ------ | --------------------------------------- | ----------------------------- |
 | GET    | `/api/admin/users`                      | Lista todos os usuários       |
-| GET    | `/api/admin/users/:username`            | Retorna um usuário específico |
+| GET    | `/api/admin/users/:id`                  | Retorna um usuário específico |
 | POST   | `/api/admin/users`                      | Cria um usuário já ativado    |
-| PUT    | `/api/admin/users/:username`            | Atualiza um usuário           |
-| PUT    | `/api/admin/users/activation/:username` | Ativa/desativa um usuário     |
-| DELETE | `/api/admin/users/:username`            | Deleta um usuário             |
+| PUT    | `/api/admin/users/:id`                  | Atualiza um usuário           |
+| PATCH  | `/api/admin/users/activate/:id`         | Ativa um usuário              |
+| PATCH  | `/api/admin/users/deactivate/:id`       | Desativa um usuário           |
+| DELETE | `/api/admin/users/:id`                  | Deleta um usuário             |
 
 #### Origem
 
 | Método | Endpoint                       | Descrição                     |
 | ------ | ------------------------------ | ----------------------------- |
 | GET    | `/api/admin/origins`           | Lista todas as origens        |
-| GET    | `/api/admin/origins/:originId` | Retorna uma origem específica |
-| PUT    | `/api/admin/origins/search`    | Procura origens pelo nome     |
+| GET    | `/api/admin/origins/:id`       | Retorna uma origem específica |
+| GET    | `/api/admin/origins/search`    | Procura origens pelo nome     |
 | POST   | `/api/admin/origins`           | Cria uma nova origem          |
-| PUT    | `/api/admin/origins/:originId` | Atualiza uma origem           |
-| DELETE | `/api/admin/origins/:originId` | Deleta uma origem             |
+| PUT    | `/api/admin/origins/:id`       | Atualiza uma origem           |
+| DELETE | `/api/admin/origins/:id`       | Deleta uma origem             |
 
 #### Sequenciador
 
@@ -326,7 +333,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | ------ | ------------------------------ | ------------------------------------------- |
 | GET    | `/api/admin/sequencers`        | Lista todos os sequenciadores               |
 | GET    | `/api/admin/sequencers/:id`    | Retorna um sequenciador específico          |
-| PUT    | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
+| GET    | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
 | POST   | `/api/admin/sequencers`        | Cria um novo sequenciador                   |
 | PUT    | `/api/admin/sequencers/:id`    | Atualiza um sequenciador                    |
 | DELETE | `/api/admin/sequencers/:id`    | Deleta um sequenciador                      |
@@ -337,7 +344,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | ------ | ---------------------------------- | -------------------------------------------- |
 | GET    | `/api/admin/sample-sources`        | Lista todas as fontes da amostra             |
 | GET    | `/api/admin/sample-sources/:id`    | Retorna uma fonte da amostra específica      |
-| PUT    | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
+| GET    | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
 | POST   | `/api/admin/sample-sources`        | Cria uma nova fonte da amostra               |
 | PUT    | `/api/admin/sample-sources/:id`    | Atualiza uma fonte da amostra                |
 | DELETE | `/api/admin/sample-sources/:id`    | Deleta uma fonte da amostra                  |
@@ -348,15 +355,26 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | ------ | -------------------------------- | -------------------------------------------- |
 | GET    | `/api/admin/laboratories`        | Lista todos os laboratórios                  |
 | GET    | `/api/admin/laboratories/:id`    | Retorna um laboratório específico            |
-| PUT    | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
+| GET    | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
 | POST   | `/api/admin/laboratories`        | Cria um novo laboratório                     |
 | PUT    | `/api/admin/laboratories/:id`    | Atualiza um laboratório                      |
 | DELETE | `/api/admin/laboratories/:id`    | Deleta um laboratório                        |
 
+#### Microrganismo
+
+| Método | Endpoint                           | Descrição                                    |
+| ------ | ---------------------------------- | -------------------------------------------- |
+| GET    | `/api/admin/microorganisms`        | Lista todos os microrganismos                |
+| GET    | `/api/admin/microorganisms/:id`    | Retorna um microrganismo específico          |
+| GET    | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo    |
+| POST   | `/api/admin/microorganisms`        | Cria um novo microrganismo                   |
+| PUT    | `/api/admin/microorganisms/:id`    | Atualiza um microrganismo                    |
+| DELETE | `/api/admin/microorganisms/:id`    | Deleta um microrganismo                      |
+
 ## TODO
 
 - [x] Implementar logger nos services;
-- [ ] Modelar Microorganism;
+- [x] Modelar Microorganism;
 - [ ] Modelar HealthService;
 - [ ] Modelar Sample;
 - [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;

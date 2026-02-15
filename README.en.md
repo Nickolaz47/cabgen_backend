@@ -279,31 +279,37 @@ Endpoints are organized in three access levels:
 | ------ | ------------------- | ------------------------ |
 | GET    | `/api/laboratories` | List active laboratories |
 
+#### Microorganism
+
+| Method | Endpoint              | Description                |
+| ------ | --------------------- | -------------------------- |
+| GET    | `/api/microorganisms` | List active microorganisms |
+
 ### Admin
 
-Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, and **Laboratories**:
+Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, and **Microorganisms**:
 
 #### User
 
 | Method | Endpoint                                | Description              |
 | ------ | --------------------------------------- | ------------------------ |
 | GET    | `/api/admin/users`                      | List all users           |
-| GET    | `/api/admin/users/:username`            | Get a specific user      |
+| GET    | `/api/admin/users/:id`                  | Get a specific user      |
 | POST   | `/api/admin/users`                      | Create an activated user |
-| PUT    | `/api/admin/users/:username`            | Update a user            |
-| PUT    | `/api/admin/users/activation/:username` | Activate/deactivate user |
-| DELETE | `/api/admin/users/:username`            | Delete a user            |
+| PUT    | `/api/admin/users/:id`                  | Update a user            |
+| PUT    | `/api/admin/users/activation/:id`       | Activate/deactivate user |
+| DELETE | `/api/admin/users/:id`                  | Delete a user            |
 
 #### Origin
 
 | Method | Endpoint                       | Description            |
 | ------ | ------------------------------ | ---------------------- |
 | GET    | `/api/admin/origins`           | List all origins       |
-| GET    | `/api/admin/origins/:originId` | Get a specific origin  |
-| PUT    | `/api/admin/origins/search`    | Search origins by name |
+| GET    | `/api/admin/origins/:id`       | Get a specific origin  |
+| GET    | `/api/admin/origins/search`    | Search origins by name |
 | POST   | `/api/admin/origins`           | Create a new origin    |
-| PUT    | `/api/admin/origins/:originId` | Update an origin       |
-| DELETE | `/api/admin/origins/:originId` | Delete an origin       |
+| PUT    | `/api/admin/origins/:id`       | Update an origin       |
+| DELETE | `/api/admin/origins/:id`       | Delete an origin       |
 
 #### Sequencer
 
@@ -311,7 +317,7 @@ Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **S
 | ------ | ------------------------------ | ----------------------------------- |
 | GET    | `/api/admin/sequencers`        | List all sequencers                 |
 | GET    | `/api/admin/sequencers/:id`    | Get a specific sequencer            |
-| PUT    | `/api/admin/sequencers/search` | Search sequencers by brand or model |
+| GET    | `/api/admin/sequencers/search` | Search sequencers by brand or model |
 | POST   | `/api/admin/sequencers`        | Create a new sequencer              |
 | PUT    | `/api/admin/sequencers/:id`    | Update a sequencer                  |
 | DELETE | `/api/admin/sequencers/:id`    | Delete a sequencer                  |
@@ -322,7 +328,7 @@ Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **S
 | ------ | ---------------------------------- | -------------------------------------- |
 | GET    | `/api/admin/sample-sources`        | List all sample sources                |
 | GET    | `/api/admin/sample-sources/:id`    | Get a specific sample source           |
-| PUT    | `/api/admin/sample-sources/search` | Search sample sources by name or group |
+| GET    | `/api/admin/sample-sources/search` | Search sample sources by name or group |
 | POST   | `/api/admin/sample-sources`        | Create a new sample source             |
 | PUT    | `/api/admin/sample-sources/:id`    | Update a sample source                 |
 | DELETE | `/api/admin/sample-sources/:id`    | Delete a sample source                 |
@@ -333,7 +339,18 @@ Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **S
 | ------ | -------------------------------- | ------------------------------------------- |
 | GET    | `/api/admin/laboratories`        | List all laboratories                       |
 | GET    | `/api/admin/laboratories/:id`    | Get a specific laboratory                   |
-| PUT    | `/api/admin/laboratories/search` | Search laboratories by name or abbreviation |
+| GET    | `/api/admin/laboratories/search` | Search laboratories by name or abbreviation |
 | POST   | `/api/admin/laboratories`        | Create a new laboratory                     |
 | PUT    | `/api/admin/laboratories/:id`    | Update a laboratory                         |
 | DELETE | `/api/admin/laboratories/:id`    | Delete a laboratory                         |
+
+#### Microorganism
+
+| Method | Endpoint                           | Description                                 |
+| ------ | ---------------------------------- | ------------------------------------------- |
+| GET    | `/api/admin/microorganisms`        | Lists all microorganisms                    |
+| GET    | `/api/admin/microorganisms/:id`    | Returns a specific microorganism            |
+| GET    | `/api/admin/microorganisms/search` | Searches microorganisms by name or group    |
+| POST   | `/api/admin/microorganisms`        | Creates a new microorganism                 |
+| PUT    | `/api/admin/microorganisms/:id`    | Updates a microorganism                     |
+| DELETE | `/api/admin/microorganisms/:id`    | Deletes a microorganism                     |
