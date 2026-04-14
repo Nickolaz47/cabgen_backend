@@ -4,8 +4,8 @@ import "github.com/google/uuid"
 
 type Laboratory struct {
 	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Name         string    `gorm:"not null" json:"name"`
-	Abbreviation string    `gorm:"not null" json:"abbreviation"`
+	Name         string    `gorm:"type:varchar(255);not null" json:"name"`
+	Abbreviation string    `gorm:"type:varchar(255);not null" json:"abbreviation"`
 	IsActive     bool      `gorm:"not null" json:"is_active"`
 }
 

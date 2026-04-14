@@ -4,8 +4,8 @@ import "github.com/google/uuid"
 
 type Sequencer struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Model    string    `gorm:"not null" json:"model"`
-	Brand    string    `gorm:"not null" json:"brand"`
+	Model    string    `gorm:"type:varchar(255);not null" json:"model"`
+	Brand    string    `gorm:"type:varchar(255);not null" json:"brand"`
 	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 

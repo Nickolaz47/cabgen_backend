@@ -24,19 +24,19 @@ func (r UserRole) IsValid() bool {
 
 type User struct {
 	ID          uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Name        string     `gorm:"not null" json:"name"`
-	Username    string     `gorm:"not null;uniqueIndex" json:"username"`
-	Email       string     `gorm:"not null;uniqueIndex" json:"email"`
-	Password    string     `gorm:"not null" json:"-"`
+	Name        string     `gorm:"type:varchar(255);not null" json:"name"`
+	Username    string     `gorm:"type:varchar(255);not null;uniqueIndex" json:"username"`
+	Email       string     `gorm:"type:varchar(255);not null;uniqueIndex" json:"email"`
+	Password    string     `gorm:"type:varchar(255);not null" json:"-"`
 	CountryID   uint       `gorm:"not null" json:"-"`
 	Country     Country    `gorm:"foreignKey:CountryID;references:ID"`
 	IsActive    bool       `gorm:"not null" json:"is_active"`
 	UserRole    UserRole   `gorm:"type:varchar(20);not null" json:"user_role"`
-	Interest    *string    `gorm:"default:null" json:"interest,omitempty"`
-	Role        *string    `gorm:"default:null" json:"role,omitempty"`
-	Institution *string    `gorm:"default:null" json:"institution,omitempty"`
-	CreatedBy   string     `gorm:"not null" json:"created_by"`
-	ActivatedBy *string    `json:"activated_by"`
+	Interest    *string    `gorm:"type:varchar(255);default:null" json:"interest,omitempty"`
+	Role        *string    `gorm:"type:varchar(255);default:null" json:"role,omitempty"`
+	Institution *string    `gorm:"type:varchar(255);default:null" json:"institution,omitempty"`
+	CreatedBy   string     `gorm:"type:varchar(255);not null" json:"created_by"`
+	ActivatedBy *string    `gorm:"type:varchar(255);default:null" json:"activated_by"`
 	ActivatedOn *time.Time `json:"activated_on"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
