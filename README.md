@@ -25,6 +25,8 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 
 ## Estrutura do Projeto
 
+### Estrutura das Pastas
+
 ```bash
 .
 ├── cmd/                     # Ponto de entrada da aplicação
@@ -55,6 +57,13 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 ├── go.sum
 └── README.md
 ```
+
+### Estrutura do Código
+
+O código segue a arquitetura em camadas, onde cada camada tem sua responsabilidade. A camada base é a camada de models, que é responsável por mapear os dados do banco de dados. A camada de repositories é responsável por acessar e consultar o banco de dados. A camada de services é responsável por implementar as regras de negócio. A camada de handlers é responsável por receber as requisições HTTP e retornar as respostas. Por sua vez, a camada de routes é responsável por definir as rotas/endpoints.
+
+Logo para a construção de novos modelos, é necessário seguir essa ordem: 
+model -> repository -> service -> handler -> route
 
 ## Instalação
 

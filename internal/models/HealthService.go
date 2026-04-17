@@ -19,28 +19,28 @@ func (h HealthServiceType) IsValid() bool {
 }
 
 type HealthService struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Name         string    `gorm:"type:varchar(255);not null;uniqueIndex" json:"name"`
-	Type         string    `gorm:"type:varchar(255);not null" json:"type"`
-	CountryID    uint      `gorm:"not null" json:"-"`
-	Country      Country   `gorm:"foreignKey:CountryID;references:ID"`
-	City         string    `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
-	Contactant   string    `gorm:"type:varchar(255);default:null" json:"contactant,omitempty"`
-	ContactEmail string    `gorm:"type:varchar(255);default:null" json:"contact_email,omitempty"`
-	ContactPhone string    `gorm:"type:varchar(255);default:null" json:"contact_phone,omitempty"`
-	IsActive     bool      `gorm:"not null" json:"is_active"`
+	ID           uuid.UUID         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	Name         string            `gorm:"type:varchar(255);not null;uniqueIndex" json:"name"`
+	Type         HealthServiceType `gorm:"type:varchar(20);not null" json:"type"`
+	CountryID    uint              `gorm:"not null" json:"-"`
+	Country      Country           `gorm:"foreignKey:CountryID;references:ID"`
+	City         string            `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
+	Contactant   string            `gorm:"type:varchar(255);default:null" json:"contactant,omitempty"`
+	ContactEmail string            `gorm:"type:varchar(255);default:null" json:"contact_email,omitempty"`
+	ContactPhone string            `gorm:"type:varchar(255);default:null" json:"contact_phone,omitempty"`
+	IsActive     bool              `gorm:"not null" json:"is_active"`
 }
 
 type HealthServiceAdminTableResponse struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	Type         string    `json:"type"`
-	Country      string    `json:"country"`
-	City         string    `json:"city,omitempty"`
-	Contactant   string    `json:"contactant,omitempty"`
-	ContactEmail string    `json:"contact_email,omitempty"`
-	ContactPhone string    `json:"contact_phone,omitempty"`
-	IsActive     bool      `json:"is_active"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	Type         HealthServiceType `json:"type"`
+	Country      string            `json:"country"`
+	City         string            `json:"city,omitempty"`
+	Contactant   string            `json:"contactant,omitempty"`
+	ContactEmail string            `json:"contact_email,omitempty"`
+	ContactPhone string            `json:"contact_phone,omitempty"`
+	IsActive     bool              `json:"is_active"`
 }
 
 type HealthServiceFormResponse struct {

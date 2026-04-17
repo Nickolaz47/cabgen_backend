@@ -25,6 +25,8 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 
 ## Project Structure
 
+### Folder Structure
+
 ```bash
 .
 ├── cmd/                     # Application entry point
@@ -55,6 +57,13 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 ├── go.sum
 └── README.en.md
 ```
+
+### Code Structure
+
+The code follows a layered architecture, where each layer has its responsibility. The base layer is the models layer, which is responsible for mapping database data. The repositories layer is responsible for accessing and querying the database. The services layer is responsible for implementing business rules. The handlers layer is responsible for receiving HTTP requests and returning responses. In turn, the routes layer is responsible for defining the routes/endpoints.
+
+Therefore, for the creation of new models, it is necessary to follow this order: 
+model -> repository -> service -> handler -> route
 
 ## Installation
 
