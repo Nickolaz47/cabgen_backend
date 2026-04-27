@@ -28,7 +28,7 @@ func TestApplyAdminUpdateToUser(t *testing.T) {
 		Institution: &institution,
 		Interest:    &interest,
 		Role:        &role,
-		Email: &email,
+		Email:       &email,
 	}
 
 	validations.ApplyAdminUpdateToUser(&user, &updateInput)
@@ -241,4 +241,83 @@ func TestApplyCountryUpdate(t *testing.T) {
 	validations.ApplyCountryUpdate(&country, &input)
 
 	assert.Equal(t, expected, country)
+}
+
+func TestApplyMicroorganismUpdate(t *testing.T) {
+	microorganism := testmodels.NewMicroorganism(
+		uuid.NewString(), models.Virus, "Flavivirus",
+		nil, false)
+
+	taxon := models.Bacteria
+	species := "E. coli"
+	variety := map[string]string{
+		"pt": "Variedade",
+		"en": "Variety",
+		"es": "Variedad",
+	}
+	isActive := true
+
+	input := models.MicroorganismUpdateInput{
+		Taxon:    &taxon,
+		Species:  &species,
+		Variety:  variety,
+		IsActive: &isActive,
+	}
+
+	expected := models.Microorganism{
+		ID:       microorganism.ID,
+		Taxon:    *input.Taxon,
+		Species:  *input.Species,
+		Variety:  input.Variety,
+		IsActive: *input.IsActive,
+	}
+
+	validations.ApplyMicroorganismUpdate(&microorganism, &input)
+
+	assert.Equal(t, expected, microorganism)
+}
+
+func TestApplyHealthServiceUpdate(t *testing.T) {
+	country := testmodels.NewCountry("", nil)
+
+	healthService := testmodels.NewHealthService(
+		uuid.NewString(), "Hospital A", models.Public, country,
+		"Rio de Janeiro", "John Doe", "john@example.com", "123456789",
+		false,
+	)
+
+	name := "Hospital B"
+	typeStr := models.Private
+	city := "Sao Paulo"
+	contactant := "Jane Doe"
+	contactEmail := "jane@example.com"
+	contactPhone := "987654321"
+	isActive := true
+
+	input := models.HealthServiceUpdateInput{
+		Name:         &name,
+		Type:         &typeStr,
+		City:         &city,
+		Contactant:   &contactant,
+		ContactEmail: &contactEmail,
+		ContactPhone: &contactPhone,
+		IsActive:     &isActive,
+	}
+
+	expected := models.HealthService{
+		ID:           healthService.ID,
+		Name:         *input.Name,
+		Type:         *input.Type,
+		CountryID:    country.ID,
+		Country:      country,
+		City:         *input.City,
+		Contactant:   *input.Contactant,
+		ContactEmail: *input.ContactEmail,
+		ContactPhone: *input.ContactPhone,
+		IsActive:     *input.IsActive,
+	}
+
+	validations.ApplyHealthServiceUpdate(&healthService, &input)
+
+	assert.Equal(t, expected, healthService)
 }

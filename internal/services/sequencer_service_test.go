@@ -107,7 +107,7 @@ func TestSequencerFindByID(t *testing.T) {
 		assert.Equal(t, &expected, result)
 	})
 
-	t.Run("Record not found", func(t *testing.T) {
+	t.Run("Error - Record not found", func(t *testing.T) {
 		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrRecordNotFound
@@ -125,7 +125,7 @@ func TestSequencerFindByID(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error", func(t *testing.T) {
+	t.Run("Error - Internal", func(t *testing.T) {
 		seqRepo := &mocks.MockSequencerRepository{
 			GetSequencerByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.Sequencer, error) {
 				return nil, gorm.ErrInvalidTransaction

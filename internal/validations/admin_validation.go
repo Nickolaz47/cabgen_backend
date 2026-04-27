@@ -173,3 +173,34 @@ func ApplyMicroorganismUpdate(microorganism *models.Microorganism,
 		microorganism.IsActive = *input.IsActive
 	}
 }
+
+func ApplyHealthServiceUpdate(healthService *models.HealthService,
+	input *models.HealthServiceUpdateInput) {
+	if input.Name != nil {
+		healthService.Name = *input.Name
+	}
+
+	if input.Type != nil {
+		healthService.Type = *input.Type
+	}
+
+	if input.City != nil {
+		healthService.City = *input.City
+	}
+
+	if input.Contactant != nil {
+		healthService.Contactant = *input.Contactant
+	}
+
+	if input.ContactEmail != nil {
+		healthService.ContactEmail = *input.ContactEmail
+	}
+
+	if input.ContactPhone != nil {
+		healthService.ContactPhone = *input.ContactPhone
+	}
+
+	if input.IsActive != nil {
+		healthService.IsActive = *input.IsActive
+	}
+}
