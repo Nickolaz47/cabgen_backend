@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type HealthService interface {
+type HealthServiceService interface {
 	FindAll(ctx context.Context) ([]models.HealthServiceAdminTableResponse, error)
 	FindAllActive(ctx context.Context) ([]models.HealthServiceFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.HealthServiceAdminTableResponse, error)
@@ -33,7 +33,7 @@ func NewHealthServiceService(
 	repo repositories.HealthServiceRepository,
 	countryRepo repositories.CountryRepository,
 	logger *zap.Logger,
-) HealthService {
+) HealthServiceService {
 	return &healthServiceService{
 		Repo: repo, CountryRepo: countryRepo, Logger: logger,
 	}

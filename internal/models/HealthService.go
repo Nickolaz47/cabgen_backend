@@ -72,21 +72,21 @@ func (h *HealthService) ToFormResponse() HealthServiceFormResponse {
 type HealthServiceCreateInput struct {
 	Name         string            `json:"name" binding:"required,min=3"`
 	Type         HealthServiceType `json:"type" binding:"required,min=3"`
-	CountryCode  string            `json:"country_code" binding:"required"`
+	CountryCode  string            `json:"country_code" binding:"required,len=3"`
 	City         string            `json:"city,omitempty" binding:"omitempty,min=3"`
 	Contactant   string            `json:"contactant,omitempty" binding:"omitempty,min=3"`
 	ContactEmail string            `json:"contact_email,omitempty" binding:"omitempty,email"`
-	ContactPhone string            `json:"contact_phone,omitempty" binding:"omitempty,min=3"`
+	ContactPhone string            `json:"contact_phone,omitempty" binding:"omitempty,e164"`
 	IsActive     bool              `json:"is_active"`
 }
 
 type HealthServiceUpdateInput struct {
 	Name         *string            `json:"name,omitempty" binding:"omitempty,min=3"`
 	Type         *HealthServiceType `json:"type,omitempty" binding:"omitempty,min=3"`
-	CountryCode  *string            `json:"country_code,omitempty" binding:"omitempty"`
+	CountryCode  *string            `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	City         *string            `json:"city,omitempty" binding:"omitempty,min=3"`
 	Contactant   *string            `json:"contactant,omitempty" binding:"omitempty,min=3"`
 	ContactEmail *string            `json:"contact_email,omitempty" binding:"omitempty,email"`
-	ContactPhone *string            `json:"contact_phone,omitempty" binding:"omitempty,min=3"`
+	ContactPhone *string            `json:"contact_phone,omitempty" binding:"omitempty,e164"`
 	IsActive     *bool              `json:"is_active,omitempty" binding:"omitempty"`
 }

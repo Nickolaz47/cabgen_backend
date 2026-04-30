@@ -282,3 +282,30 @@ other = "La especie es obligatoria."
 
 [validation.Taxon.required]
 other = "El taxón es obligatorio."
+
+[validation.Type.required]
+other = "El tipo de servicio de salud es obligatorio."
+
+[validation.City.min]
+other = "La ciudad debe tener al menos 3 caracteres."
+
+[validation.Contactant.min]
+other = "El nombre del contacto debe tener al menos 3 caracteres."
+
+[validation.ContactPhone.e164]
+other = "El número de teléfono del contacto tiene un formato inválido."
+
+[admin.healthService.create.success]
+other = "Servicio de salud creado con éxito."
+
+[admin.healthService.create.invalidType]
+other = "Tipo de servicio de salud inválido."
+
+[admin.healthService.notFound.error]
+other = "Servicio de salud no encontrado."
+
+[admin.healthService.nameAlreadyExists.error]
+other = "Ya existe un servicio de salud con este nombre."
+
+[admin.healthService.delete.success]
+other = "Servicio de salud eliminado con éxito."

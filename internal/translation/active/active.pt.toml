@@ -282,3 +282,30 @@ other = "A espécie é obrigatória."
 
 [validation.Taxon.required]
 other = "O táxon é obrigatório."
+
+[validation.Type.required]
+other = "O tipo do serviço de saúde é obrigatório."
+
+[validation.City.min]
+other = "A cidade deve ter no mínimo 3 caracteres."
+
+[validation.Contactant.min]
+other = "O nome do contato deve ter no mínimo 3 caracteres."
+
+[validation.ContactPhone.e164]
+other = "O telefone do contato está no formato inválido."
+
+["admin.healthService.create.success"]
+other = "Serviço de saúde criado com sucesso."
+
+["admin.healthService.create.invalidType"]
+other = "Serviço de saúde com tipo inválido."
+
+["admin.healthService.notFound.error"]
+other = "Serviço de saúde não encontrado."
+
+["admin.healthService.nameAlreadyExists.error"]
+other = "Serviço de saúde com esse nome já existe."
+
+["admin.healthService.delete.success"]
+other = "Serviço de saúde deletado com sucesso."

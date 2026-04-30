@@ -282,3 +282,30 @@ other = "Species is required."
 
 [validation.Taxon.required]
 other = "Taxon is required."
+
+[validation.Type.required]
+other = "The health service type is required."
+
+[validation.City.min]
+other = "City must be at least 3 characters long."
+
+[validation.Contactant.min]
+other = "Contact name must be at least 3 characters long."
+
+[validation.ContactPhone.e164]
+other = "Contact phone number is in an invalid format."
+
+[admin.healthService.create.success]
+other = "Health service created successfully."
+
+[admin.healthService.create.invalidType]
+other = "Invalid health service type."
+
+[admin.healthService.notFound.error]
+other = "Health service not found."
+
+[admin.healthService.nameAlreadyExists.error]
+other = "A health service with this name already exists."
+
+[admin.healthService.delete.success]
+other = "Health service deleted successfully."

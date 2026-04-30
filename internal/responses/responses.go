@@ -61,6 +61,11 @@ const (
 	MicroorganismNotFoundError                = "admin.microorganism.notFound.error"
 	MicroorganismAlreadyExistsError           = "admin.microorganism.alreadyExists.error"
 	MicroorganismDeleted                      = "admin.microorganism.delete.success"
+	HealthServiceCreationSuccess              = "admin.healthService.create.success"
+	HealthServiceInvalidType                  = "admin.healthService.create.invalidType"
+	HealthServiceNotFoundError                = "admin.healthService.notFound.error"
+	HealthServiceNameAlreadyExistsError       = "admin.healthService.nameAlreadyExists.error"
+	HealthServiceDeleted                      = "admin.healthService.delete.success"
 )
 
 type APIResponse struct {
