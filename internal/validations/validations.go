@@ -19,10 +19,12 @@ type Model interface {
 		models.SampleSourceUpdateInput | models.LaboratoryCreateInput |
 		models.LaboratoryUpdateInput | models.CountryCreateInput |
 		models.CountryUpdateInput | models.MicroorganismCreateInput |
-		models.MicroorganismUpdateInput
+		models.MicroorganismUpdateInput | models.HealthServiceCreateInput |
+		models.HealthServiceUpdateInput
 }
 
-func Validate[T Model](c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {
+func Validate[T Model](
+	c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {
 	if err := c.ShouldBindJSON(model); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) && len(ve) > 0 {

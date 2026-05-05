@@ -1,0 +1,288 @@
+[
+  {
+    "name": "CBMERJ HOSP ARISTARCHO PESSOA HOSP DO CORPO DE BOMBEIROS",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "contact": "Juan Gonzalez",
+    "type": "Hospital",
+    "phone": "021751499",
+    "email": "hospital1@mspbs.gov.py"
+  },
+  {
+    "name": "HOSPITAL UNIMED VITÓRIA HU",
+    "country": "Brasil",
+    "city": "Vitória",
+    "contact": "Juan Gonzalez",
+    "type": "Hospital",
+    "phone": "555",
+    "email": "55@55.com"
+  },
+  {
+    "name": "SES RJ INST ESTADUAL DE HEMATOLOGIA ARTHUR SIQUEIRA CAVALCANTI",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ESTADUAL DE URGÊNCIA E EMERGÊNCIA",
+    "country": "Brasil",
+    "city": "Vitória",
+    "type": "Hospital"
+  },
+  {
+    "name": "LABORATÓRIO CENTRAL DE SAÚDE PÚBLICA PROF GONÇALO MUNIZ",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Laboratório"
+  },
+  {
+    "name": "HOSPITAL GERAL DE GUARUS",
+    "country": "Brasil",
+    "city": "Campos dos Goytacazes",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ESTADUAL DR JAYME SANTOS NEVES",
+    "country": "Brasil",
+    "city": "Serra",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ANTÔNIO BEZERRA DE FARIAS",
+    "country": "Brasil",
+    "city": "Vila Velha",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL SANTA CASA DE VITÓRIA",
+    "country": "Brasil",
+    "city": "Vitória",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL UNIVERSITÁRIO WALTER CANTÍDIO",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL DISTRITAL EDMILSON BARROS DE OLIVEIRA MESSEJANA",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "HGF HOSPITAL GERAL DE FORTALEZA",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL SÃO JOSÉ DE DOENÇAS INFECCIOSAS",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "COUTINHO PINHEIRO ANÁLISES CLÍNICAS",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Laboratório"
+  },
+  {
+    "name": "HOSPITAL SEMPER",
+    "country": "Brasil",
+    "city": "Belo Horizonte",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL DA BALEIA",
+    "country": "Brasil",
+    "city": "Belo Horizonte",
+    "type": "Hospital"
+  },
+  {
+    "name": "SANTA CASA DE BELO HORIZONTE",
+    "country": "Brasil",
+    "city": "Belo Horizonte",
+    "type": "Hospital"
+  },
+  {
+    "name": "LABCARE ANÁLISES CLÍNICAS",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Laboratório"
+  },
+  {
+    "name": "HOSPITAL GERAL DE PALMAS DR FRANCISCO AYRES",
+    "country": "Brasil",
+    "city": "Palmas",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL DOUTOR DÓRIO SILVA",
+    "country": "Brasil",
+    "city": "Serra",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL REGIONAL DEOCLÉCIO MARQUES DE LUCENA",
+    "country": "Brasil",
+    "city": "Parnamirim",
+    "type": "Hospital"
+  },
+  {
+    "name": "HIAS HOSPITAL INFANTIL ALBERT SABIN",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ESTADUAL",
+    "country": "Brasil",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL MUNICIPAL JAMEL CECÍLIO ANÁPOLIS",
+    "country": "Brasil",
+    "city": "Anápolis",
+    "type": "Hospital"
+  },
+  {
+    "name": "SECRETARIA MUNICIPAL DE SAÚDE DE GOIÂNIA",
+    "country": "Brasil",
+    "city": "Goiânia",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ESTADUAL DE DOENÇAS TROPICAIS DR ANUAR AUAD",
+    "country": "Brasil",
+    "city": "Goiânia",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL MATERNO INFANTIL",
+    "country": "Brasil",
+    "city": "Goiânia",
+    "type": "Hospital"
+  },
+  {
+    "name": "SANTA CASA DE MISERICÓRDIA DE PASSOS",
+    "country": "Brasil",
+    "city": "Passos",
+    "type": "Hospital"
+  },
+  {
+    "name": "LABORATÓRIO DE PATOLOGIA CLÍNICA DR GASPAR VIANA",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Laboratório"
+  },
+  {
+    "name": "VIGILÂNCIA EPIDEMIOLÓGICA",
+    "country": "Brasil",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL MERIDIONAL",
+    "country": "Brasil",
+    "city": "Cariacica",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL JOÃO XXIII",
+    "country": "Brasil",
+    "city": "Belo Horizonte",
+    "type": "Hospital"
+  },
+  {
+    "name": "IJF INSTITUTO DR JOSÉ FROTA CENTRAL",
+    "country": "Brasil",
+    "city": "Fortaleza",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL EVANGÉLICO DA BAHIA HEB",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL UNIVERSITÁRIO PROFESSOR EDGARD SANTOS",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "INSTITUTO ESTADUAL DE HEMATOLOGIA ARTHUR SIQUEIRA CAVALCANTI",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL GERAL CLÉRISTON ANDRADE",
+    "country": "Brasil",
+    "city": "Feira de Santana",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ALIANÇA",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL SANTA ISABEL",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL CENTRAL DA POLÍCIA MILITAR DO ESTADO DO RIO DE JANEIRO",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Hospital"
+  },
+  {
+    "name": "MS INC INSTITUTO NACIONAL DE CARDIOLOGIA",
+    "country": "Brasil",
+    "city": "Rio de Janeiro",
+    "type": "Hospital"
+  },
+  {
+    "name": "CARDIO PULMONAR DA BAHIA",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL GERAL DO ESTADO",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL ESPECIALIZADO OCTÁVIO MANGABEIRA",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL MERIDIONAL SÃO MATEUS",
+    "country": "Brasil",
+    "city": "São Mateus",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL PORTUGUÊS DA BAHIA",
+    "country": "Brasil",
+    "city": "Salvador",
+    "type": "Hospital"
+  },
+  {
+    "name": "HOSPITAL METROPOLITANO DOUTOR CÉLIO DE CASTRO HMDCC",
+    "country": "Brasil",
+    "city": "Belo Horizonte",
+    "type": "Hospital"
+  }
+]
