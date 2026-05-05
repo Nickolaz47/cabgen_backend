@@ -292,6 +292,9 @@ other = "City must be at least 3 characters long."
 [validation.Contactant.min]
 other = "Contact name must be at least 3 characters long."
 
+[validation.ContactEmail.email]
+other = "The contact email format is invalid."
+
 [validation.ContactPhone.e164]
 other = "Contact phone number is in an invalid format."
 

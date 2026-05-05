@@ -7,6 +7,6 @@ import (
 
 func SetupHealthServiceRoutes(
 	r *gin.RouterGroup, handler *healthservice.HealthServiceHandler) {
-	sampleSourceRouter := r.Group("/health-service")
-	sampleSourceRouter.GET("", handler.GetActiveHealthServices)
+	healthServiceRouter := r.Group("/health-services")
+	healthServiceRouter.GET("", handler.GetActiveHealthServices)
 }

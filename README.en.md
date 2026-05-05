@@ -1,9 +1,13 @@
+Here is the updated English version of your README, synchronized with the latest changes made to the Portuguese version.
+
+---
+
 # Cabgen Backend
 
 [Portuguese Version (Versão em Português)](./README.md)
 
 Backend of the **CABGen** platform, developed in **Go** using the **Gin** framework.
-This project is a rewrite of the original backend for the [CABGen](https://cabgen.fiocruz.br/pt) website, with focus on performance, maintainability, and code organization.
+This project is a rewrite of the original backend for the [CABGen](https://cabgen.fiocruz.br/pt) website, focusing on performance, maintainability, and code organization.
 
 ## Table of Contents
 
@@ -35,8 +39,8 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 ├── internal/                # Internal code (non-exportable)
 │   ├── auth/                # Authentication (JWT and Cookies)
 │   ├── config/              # Environment variables loading
-│   ├── container/           # Services and handlers initialization
-│   ├── data/                # Static data (ex: countries.json)
+│   ├── container/           # Repositories, services, and handlers initialization
+│   ├── data/                # Static data (e.g., countries.json)
 │   ├── db/                  # Database configuration and connection
 │   ├── email/               # Email sending and configuration
 │   ├── events/              # Event management within the API
@@ -55,14 +59,14 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 │   └── validations/         # Input validation
 ├── go.mod
 ├── go.sum
-└── README.en.md
+└── README.md
 ```
 
 ### Code Structure
 
-The code follows a layered architecture, where each layer has its responsibility. The base layer is the models layer, which is responsible for mapping database data. The repositories layer is responsible for accessing and querying the database. The services layer is responsible for implementing business rules. The handlers layer is responsible for receiving HTTP requests and returning responses. In turn, the routes layer is responsible for defining the routes/endpoints.
+The code follows a layered architecture where each layer has its own responsibility. The base layer is **Models**, responsible for mapping database data. The **Repositories** layer handles database access and queries. The **Services** layer implements business logic. The **Handlers** layer receives HTTP requests and returns responses. Finally, the **Routes** layer defines the endpoints.
 
-Therefore, for the creation of new models, it is necessary to follow this order: 
+To build new features, the following order should be followed:
 model -> repository -> service -> handler -> route
 
 ## Installation
@@ -97,14 +101,14 @@ SECRET_ACCESS_KEY=
 SECRET_REFRESH_KEY=
 
 # Frontend
-FRONTEND_URL=          # Ex: http://localhost:3000
+FRONTEND_URL=          # e.g., http://localhost:3000
 
 # API
-PORT=                  # Ex: 8080
+PORT=                  # e.g., 8080
 ENVIRONMENT=           # dev | prod
-API_HOST=              # Ex: http://localhost:8080
+API_HOST=              # e.g., http://localhost:8080
 
-# Default admin user
+# Default administrator
 ADMIN_PASSWORD=
 
 # Email configuration
@@ -118,7 +122,7 @@ SMTP_PORT=
 
 ### Development Environment
 
-The project uses **Air** for hot reload.
+The project uses **Air** for hot reloading.
 
 #### Air Installation
 
@@ -132,7 +136,7 @@ go install github.com/cosmtrek/air@latest
 air
 ```
 
-In the `air.toml` file, ensure the build command is configured correctly:
+Ensure the build command in `air.toml` is correctly configured:
 
 ```toml
 [build]
@@ -157,7 +161,7 @@ go build -o cabgen-backend ./cmd/server
 
 #### Docker
 
-1. After configuring the `.env`, start the compose:
+1. After configuring the `.env`, start the containers:
 
 ```bash
 docker compose up -d
@@ -171,21 +175,21 @@ Supported languages:
 - en-US
 - es-ES
 
-Language is detected via the `Accept-Language` header. If not provided, the default language is en-US.
+The language is detected via the `Accept-Language` header. If missing, the default is `en-US`.
 
-### Behavior in lists and searches
+### Behavior in Lists and Searches
 
-For resources with translated data (such as **origins** and **sample sources**), the specified language directly influences **list** and **search** operations.
+For resources containing translated data (such as **origins** and **sample sources**), the requested language directly influences **list** and **search** results.
 
 In these cases:
 
-- Only the translation for the requested language is returned
-- Other translations are not included in the response
-- Text searches consider only the active language
+- Only the translation corresponding to the requested language is returned;
+- Other translations are excluded from the response;
+- Text searches consider only the active language.
 
 ## Response Format and HTTP Status Codes
 
-The API uses a standardized response format with the following fields:
+The API uses a standardized response format:
 
 ```json
 {
@@ -197,13 +201,13 @@ The API uses a standardized response format with the following fields:
 
 ### Response Fields
 
-- **data**: Used to return API data. Present in: GET requests, resource creation (POST), resource updates (PUT)
-- **message**: Used for success informative messages. Mainly present in: resource creation (POST), resource deletion (DELETE)
-- **error**: Present **exclusively** when an error occurs during request processing. Contains a descriptive problem message.
+- **data**: Used to return API data. Present in `GET` responses, resource creation (`POST`), and updates (`PUT`).
+- **message**: Used for informative success messages. Primarily present in resource creation (`POST`) and deletion (`DELETE`).
+- **error**: Present **exclusively** when an error occurs. Contains a descriptive message of the problem.
 
 ### Behavior by HTTP Method
 
-| Method | Fields returned   |
+| Method | Fields Returned   |
 | ------ | ----------------- |
 | GET    | `data`            |
 | POST   | `data`, `message` |
@@ -212,146 +216,153 @@ The API uses a standardized response format with the following fields:
 
 ### HTTP Status Codes
 
-| Code | Description                                                           |
-| ---- | --------------------------------------------------------------------- |
-| 200  | Request processed successfully                                        |
-| 201  | Resource created successfully                                         |
-| 400  | Invalid input or route parameter in wrong format (e.g., invalid UUID) |
-| 401  | Request without authentication token                                  |
-| 403  | User disabled or access token expired                                 |
-| 404  | Resource not found                                                    |
-| 409  | Attempt to create duplicate resource                                  |
-| 500  | Unexpected internal error                                             |
+| Code | Description                                                               |
+| ---- | ------------------------------------------------------------------------- |
+| 200  | Request processed successfully                                            |
+| 201  | Resource created successfully                                             |
+| 400  | Invalid input or route parameter in wrong format (e.g., invalid UUID)     |
+| 401  | Request missing authentication token                                      |
+| 403  | User disabled or access token expired                                     |
+| 404  | Resource not found                                                        |
+| 409  | Attempt to create a duplicate resource                                    |
+| 500  | Unexpected internal error                                                 |
 
 ## Endpoints
 
-Endpoints are organized in three access levels:
+Endpoints are organized into three access levels:
 
-- **Public**: no authentication required
-- **Common**: authentication required
-- **Admin**: restricted to administrators
+- **Public**: No authentication required.
+- **Common**: Requires authentication.
+- **Admin**: Restricted to administrators.
 
 ### Public
 
 #### Health Check
 
-| Method | Endpoint      | Description      |
-| ------ | ------------- | ---------------- |
-| GET    | `/api/health` | Check API status |
+| Method | Endpoint      | Description           |
+| ------ | ------------- | --------------------- |
+| GET    | `/api/health` | Checks the API status |
 
 #### Authentication
 
-| Method | Endpoint             | Description                             |
-| ------ | -------------------- | --------------------------------------- |
-| POST   | `/api/auth/register` | User registration (requires activation) |
-| POST   | `/api/auth/login`    | Login and JWT token return via cookies  |
-| POST   | `/api/auth/logout`   | User logout                             |
-| POST   | `/api/auth/refresh`  | Access token refresh                    |
+| Method | Endpoint             | Description                                 |
+| ------ | -------------------- | ------------------------------------------- |
+| POST   | `/api/auth/register` | User registration (requires activation)     |
+| POST   | `/api/auth/login`    | Login and returns JWT tokens via cookies    |
+| POST   | `/api/auth/logout`   | User logout                                 |
+| POST   | `/api/auth/refresh`  | Access token renewal                        |
 
 #### Countries
 
-| Method | Endpoint               | Description            |
-| ------ | ---------------------- | ---------------------- |
-| GET    | `/api/countries`       | List all countries     |
-| GET    | `/api/countries/:code` | Get a specific country |
+| Method | Endpoint               | Description                |
+| ------ | ---------------------- | ------------------------   |
+| GET    | `/api/countries`       | Lists all countries        |
+| GET    | `/api/countries/:code` | Returns a specific country |
 
 ### Common
 
 #### User
 
-| Method | Endpoint        | Description                 |
-| ------ | --------------- | --------------------------- |
-| GET    | `/api/users/me` | Get authenticated user data |
-| PUT    | `/api/users/me` | Update user data            |
+| Method | Endpoint        | Description                     |
+| ------ | --------------- | -----------------------------   |
+| GET    | `/api/users/me` | Authenticated user data         |
+| PUT    | `/api/users/me` | Updates authenticated user data |
 
 #### Origin
 
 | Method | Endpoint       | Description         |
 | ------ | -------------- | ------------------- |
-| GET    | `/api/origins` | List active origins |
+| GET    | `/api/origins` | Lists active origins|
 
 #### Sequencer
 
 | Method | Endpoint          | Description            |
 | ------ | ----------------- | ---------------------- |
-| GET    | `/api/sequencers` | List active sequencers |
+| GET    | `/api/sequencers` | Lists active sequencers|
 
 #### Sample Source
 
 | Method | Endpoint              | Description                |
 | ------ | --------------------- | -------------------------- |
-| GET    | `/api/sample-sources` | List active sample sources |
+| GET    | `/api/sample-sources` | Lists active sample sources|
 
 #### Laboratory
 
-| Method | Endpoint            | Description              |
-| ------ | ------------------- | ------------------------ |
-| GET    | `/api/laboratories` | List active laboratories |
+| Method | Endpoint            | Description               |
+| ------ | ------------------- | ------------------------  |
+| GET    | `/api/laboratories` | Lists active laboratories |
 
 #### Microorganism
 
-| Method | Endpoint              | Description                |
-| ------ | --------------------- | -------------------------- |
-| GET    | `/api/microorganisms` | List active microorganisms |
+| Method | Endpoint              | Description                 |
+| ------ | --------------------- | --------------------------  |
+| GET    | `/api/microorganisms` | Lists active microorganisms |
+
+#### Health Service
+
+| Method | Endpoint               | Description                  |
+| ------ | ---------------------- | --------------------------   |
+| GET    | `/api/health-services` | Lists active health services |
 
 ### Admin
 
-Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, and **Microorganisms**:
+Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, **Microorganisms**, and **Health Services**:
 
 #### User
 
-| Method | Endpoint                                | Description              |
-| ------ | --------------------------------------- | ------------------------ |
-| GET    | `/api/admin/users`                      | List all users           |
-| GET    | `/api/admin/users/:id`                  | Get a specific user      |
-| POST   | `/api/admin/users`                      | Create an activated user |
-| PUT    | `/api/admin/users/:id`                  | Update a user            |
-| PUT    | `/api/admin/users/activation/:id`       | Activate/deactivate user |
-| DELETE | `/api/admin/users/:id`                  | Delete a user            |
+| Method | Endpoint                          | Description              |
+| ------ | --------------------------------- | ------------------------ |
+| GET    | `/api/admin/users`                | Lists all users          |
+| GET    | `/api/admin/users/:id`            | Returns a specific user  |
+| POST   | `/api/admin/users`                | Creates a pre-activated user |
+| PUT    | `/api/admin/users/:id`            | Updates a user           |
+| PATCH  | `/api/admin/users/activate/:id`   | Activates a user         |
+| PATCH  | `/api/admin/users/deactivate/:id` | Deactivates a user       |
+| DELETE | `/api/admin/users/:id`            | Deletes a user           |
 
 #### Origin
 
-| Method | Endpoint                       | Description            |
-| ------ | ------------------------------ | ---------------------- |
-| GET    | `/api/admin/origins`           | List all origins       |
-| GET    | `/api/admin/origins/:id`       | Get a specific origin  |
-| GET    | `/api/admin/origins/search`    | Search origins by name |
-| POST   | `/api/admin/origins`           | Create a new origin    |
-| PUT    | `/api/admin/origins/:id`       | Update an origin       |
-| DELETE | `/api/admin/origins/:id`       | Delete an origin       |
+| Method | Endpoint                    | Description              |
+| ------ | --------------------------- | ------------------------ |
+| GET    | `/api/admin/origins`        | Lists all origins        |
+| GET    | `/api/admin/origins/:id`    | Returns a specific origin |
+| GET    | `/api/admin/origins/search` | Searches origins by name |
+| POST   | `/api/admin/origins`        | Creates a new origin     |
+| PUT    | `/api/admin/origins/:id`    | Updates an origin        |
+| DELETE | `/api/admin/origins/:id`    | Deletes an origin        |
 
 #### Sequencer
 
-| Method | Endpoint                       | Description                         |
-| ------ | ------------------------------ | ----------------------------------- |
-| GET    | `/api/admin/sequencers`        | List all sequencers                 |
-| GET    | `/api/admin/sequencers/:id`    | Get a specific sequencer            |
-| GET    | `/api/admin/sequencers/search` | Search sequencers by brand or model |
-| POST   | `/api/admin/sequencers`        | Create a new sequencer              |
-| PUT    | `/api/admin/sequencers/:id`    | Update a sequencer                  |
-| DELETE | `/api/admin/sequencers/:id`    | Delete a sequencer                  |
+| Method | Endpoint                       | Description                          |
+| ------ | ------------------------------ | ------------------------------------ |
+| GET    | `/api/admin/sequencers`        | Lists all sequencers                 |
+| GET    | `/api/admin/sequencers/:id`    | Returns a specific sequencer          |
+| GET    | `/api/admin/sequencers/search` | Searches sequencers by brand or model |
+| POST   | `/api/admin/sequencers`        | Creates a new sequencer              |
+| PUT    | `/api/admin/sequencers/:id`    | Updates a sequencer                  |
+| DELETE | `/api/admin/sequencers/:id`    | Deletes a sequencer                  |
 
 #### Sample Source
 
 | Method | Endpoint                           | Description                            |
 | ------ | ---------------------------------- | -------------------------------------- |
-| GET    | `/api/admin/sample-sources`        | List all sample sources                |
-| GET    | `/api/admin/sample-sources/:id`    | Get a specific sample source           |
-| GET    | `/api/admin/sample-sources/search` | Search sample sources by name or group |
-| POST   | `/api/admin/sample-sources`        | Create a new sample source             |
-| PUT    | `/api/admin/sample-sources/:id`    | Update a sample source                 |
-| DELETE | `/api/admin/sample-sources/:id`    | Delete a sample source                 |
+| GET    | `/api/admin/sample-sources`        | Lists all sample sources               |
+| GET    | `/api/admin/sample-sources/:id`    | Returns a specific sample source        |
+| GET    | `/api/admin/sample-sources/search` | Searches sample sources by name or group|
+| POST   | `/api/admin/sample-sources`        | Creates a new sample source            |
+| PUT    | `/api/admin/sample-sources/:id`    | Updates a sample source                |
+| DELETE | `/api/admin/sample-sources/:id`    | Deletes a sample source                |
 
 #### Laboratory
 
 | Method | Endpoint                         | Description                                 |
 | ------ | -------------------------------- | ------------------------------------------- |
-| GET    | `/api/admin/laboratories`        | List all laboratories                       |
-| GET    | `/api/admin/laboratories/:id`    | Get a specific laboratory                   |
-| GET    | `/api/admin/laboratories/search` | Search laboratories by name or abbreviation |
-| POST   | `/api/admin/laboratories`        | Create a new laboratory                     |
-| PUT    | `/api/admin/laboratories/:id`    | Update a laboratory                         |
-| DELETE | `/api/admin/laboratories/:id`    | Delete a laboratory                         |
+| GET    | `/api/admin/laboratories`        | Lists all laboratories                      |
+| GET    | `/api/admin/laboratories/:id`    | Returns a specific laboratory               |
+| GET    | `/api/admin/laboratories/search` | Searches laboratories by name or abbreviation|
+| POST   | `/api/admin/laboratories`        | Creates a new laboratory                    |
+| PUT    | `/api/admin/laboratories/:id`    | Updates a laboratory                        |
+| DELETE | `/api/admin/laboratories/:id`    | Deletes a laboratory                        |
 
 #### Microorganism
 
@@ -363,3 +374,22 @@ Admin endpoints follow the complete CRUD pattern for **Users**, **Origins**, **S
 | POST   | `/api/admin/microorganisms`        | Creates a new microorganism                 |
 | PUT    | `/api/admin/microorganisms/:id`    | Updates a microorganism                     |
 | DELETE | `/api/admin/microorganisms/:id`    | Deletes a microorganism                     |
+
+#### Health Service
+
+| Method | Endpoint                            | Description                                 |
+| ------ | ----------------------------------- | ------------------------------------------- |
+| GET    | `/api/admin/health-services`        | Lists all health services                   |
+| GET    | `/api/admin/health-services/:id`    | Returns a specific health service           |
+| GET    | `/api/admin/health-services/search` | Searches health services by name or group   |
+| POST   | `/api/admin/health-services`        | Creates a new health service                |
+| PUT    | `/api/admin/health-services/:id`    | Updates a health service                    |
+| DELETE | `/api/admin/health-services/:id`    | Deletes a health service                    |
+
+## TODO
+
+- [x] Implement logger in services;
+- [x] Model Microorganism;
+- [x] Model HealthService;
+- [ ] Model Sample;
+- [ ] Add a volume to store `events.db` and received samples;

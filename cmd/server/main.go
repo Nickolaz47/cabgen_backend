@@ -35,6 +35,7 @@ func main() {
 		&models.SampleSource{},
 		&models.Laboratory{},
 		&models.Microorganism{},
+		&models.HealthService{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
@@ -101,6 +102,7 @@ func main() {
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
 	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
 	microSvc := container.BuildMicroorganismService(mainDB.DB(), logging.FileLogger)
+	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(), logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -114,6 +116,7 @@ func main() {
 	originHandler := container.BuildOriginHandler(originSvc)
 	sampleSourceHandler := container.BuildSampleSourceHandler(sampleSourceSvc)
 	microHandler := container.BuildMicroorganismHandler(microSvc)
+	healthServiceHandler := container.BuildHealthServiceHandler(healthServiceSvc)
 
 	// Admin handlers
 	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
@@ -123,6 +126,7 @@ func main() {
 	adminSampleSourceHandler := container.BuildAdminSampleSourceHandler(sampleSourceSvc)
 	adminCountryHandler := container.BuildAdminCountryHandler(countrySvc)
 	adminMicroHandler := container.BuildAdminMicroorganismHandler(microSvc)
+	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(healthServiceSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -138,6 +142,7 @@ func main() {
 	common.SetupOriginRoutes(commonRouter, originHandler)
 	common.SetupSampleSourceRoutes(commonRouter, sampleSourceHandler)
 	common.SetupMicroorganismRoutes(commonRouter, microHandler)
+	common.SetupHealthServiceRoutes(commonRouter, healthServiceHandler)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
@@ -148,6 +153,7 @@ func main() {
 	admin.SetupAdminSampleSourceRoutes(adminRouter, adminSampleSourceHandler)
 	admin.SetupAdminCountryRoutes(adminRouter, adminCountryHandler)
 	admin.SetupAdminMicroorganismRoutes(adminRouter, adminMicroHandler)
+	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
 
 	// Event dispatcher
 	registry := container.BuildRegistry(emailSvc)

@@ -157,6 +157,16 @@ func (h *AdminHealthServiceHandler) UpdateHealthService(c *gin.Context) {
 		return
 	}
 
+	if healthServiceUpdateInput.Type != nil &&
+		!healthServiceUpdateInput.Type.IsValid() {
+		c.JSON(http.StatusBadRequest,
+			responses.APIResponse{
+				Error: responses.GetResponse(
+					localizer, responses.HealthServiceInvalidType),
+			})
+		return
+	}
+
 	healthServiceUpdated, err := h.Service.Update(
 		c.Request.Context(), id, healthServiceUpdateInput)
 	if err != nil {

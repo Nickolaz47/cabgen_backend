@@ -62,7 +62,7 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 
 O código segue a arquitetura em camadas, onde cada camada tem sua responsabilidade. A camada base é a camada de models, que é responsável por mapear os dados do banco de dados. A camada de repositories é responsável por acessar e consultar o banco de dados. A camada de services é responsável por implementar as regras de negócio. A camada de handlers é responsável por receber as requisições HTTP e retornar as respostas. Por sua vez, a camada de routes é responsável por definir as rotas/endpoints.
 
-Logo para a construção de novos modelos, é necessário seguir essa ordem: 
+Logo para a construção de novos modelos, é necessário seguir essa ordem:
 model -> repository -> service -> handler -> route
 
 ## Instalação
@@ -309,9 +309,15 @@ Os endpoints estão organizados em três níveis de acesso:
 | ------ | --------------------  | -------------------------   |
 | GET    | `/api/microorganisms` | Lista microrganismos ativos |
 
+#### Serviços de Saúde
+
+| Método | Endpoint               | Descrição                      |
+| ------ | --------------------   | -------------------------      |
+| GET    | `/api/health-services` | Lista serviços de saúde ativos |
+
 ### Admin
 
-Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios** e **Microorganismos**:
+Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos** e **Serviços de Saúde**:
 
 #### Usuário
 
@@ -380,10 +386,21 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | PUT    | `/api/admin/microorganisms/:id`    | Atualiza um microrganismo                    |
 | DELETE | `/api/admin/microorganisms/:id`    | Deleta um microrganismo                      |
 
+#### Serviços de Saúde
+
+| Método | Endpoint                            | Descrição                                    |
+| ------ | ----------------------------------  | -------------------------------------------- |
+| GET    | `/api/admin/health-services`        | Lista todos os serviços de saúde             |
+| GET    | `/api/admin/health-services/:id`    | Retorna um serviços de saúde específico      |
+| GET    | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
+| POST   | `/api/admin/health-services`        | Cria um novo serviços de saúde               |
+| PUT    | `/api/admin/health-services/:id`    | Atualiza um serviços de saúde                |
+| DELETE | `/api/admin/health-services/:id`    | Deleta um serviços de saúde                  |
+
 ## TODO
 
 - [x] Implementar logger nos services;
 - [x] Modelar Microorganism;
-- [ ] Modelar HealthService;
+- [x] Modelar HealthService;
 - [ ] Modelar Sample;
 - [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;

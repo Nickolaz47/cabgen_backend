@@ -292,6 +292,9 @@ other = "A cidade deve ter no mínimo 3 caracteres."
 [validation.Contactant.min]
 other = "O nome do contato deve ter no mínimo 3 caracteres."
 
+[validation.ContactEmail.email]
+other = "O formato do email do contato é inválido."
+
 [validation.ContactPhone.e164]
 other = "O telefone do contato está no formato inválido."
 
