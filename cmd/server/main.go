@@ -36,6 +36,7 @@ func main() {
 		&models.Laboratory{},
 		&models.Microorganism{},
 		&models.HealthService{},
+		&models.Sample{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
