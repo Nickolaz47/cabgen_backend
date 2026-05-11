@@ -42,16 +42,21 @@ func TestHealthServiceTypeIsValid(t *testing.T) {
 func TestHealthServiceToAdminTableResponse(t *testing.T) {
 	mockCountry := testmodels.NewCountry("", nil)
 
+	city := "Rio de Janeiro"
+	contactant := "John Doe"
+	contactEmail := "jonh@mail.com"
+	contactPhone := "123456789"
+
 	healthService := models.HealthService{
 		ID:           uuid.New(),
 		Name:         "Laboratorio Central do Rio de Janeiro",
 		Type:         "Public",
 		CountryID:    mockCountry.ID,
 		Country:      mockCountry,
-		City:         "Rio de Janeiro",
-		Contactant:   "John Doe",
-		ContactEmail: "jonh@mail.com",
-		ContactPhone: "123456789",
+		City:         &city,
+		Contactant:   &contactant,
+		ContactEmail: &contactEmail,
+		ContactPhone: &contactPhone,
 		IsActive:     true,
 	}
 
@@ -75,16 +80,21 @@ func TestHealthServiceToAdminTableResponse(t *testing.T) {
 func TestHealthServiceToFormResponse(t *testing.T) {
 	mockCountry := testmodels.NewCountry("", nil)
 
+	city := "Rio de Janeiro"
+	contactant := "John Doe"
+	contactEmail := "jonh@mail.com"
+	contactPhone := "123456789"
+
 	healthService := models.HealthService{
 		ID:           uuid.New(),
 		Name:         "Laboratorio Central do Rio de Janeiro",
 		Type:         "Public",
 		CountryID:    mockCountry.ID,
 		Country:      mockCountry,
-		City:         "Rio de Janeiro",
-		Contactant:   "John Doe",
-		ContactEmail: "jonh@mail.com",
-		ContactPhone: "123456789",
+		City:         &city,
+		Contactant:   &contactant,
+		ContactEmail: &contactEmail,
+		ContactPhone: &contactPhone,
 		IsActive:     true,
 	}
 

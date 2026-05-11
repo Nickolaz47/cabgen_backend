@@ -24,10 +24,10 @@ type HealthService struct {
 	Type         HealthServiceType `gorm:"type:varchar(20);not null" json:"type"`
 	CountryID    uint              `gorm:"not null" json:"-"`
 	Country      Country           `gorm:"foreignKey:CountryID;references:ID"`
-	City         string            `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
-	Contactant   string            `gorm:"type:varchar(255);default:null" json:"contactant,omitempty"`
-	ContactEmail string            `gorm:"type:varchar(255);default:null" json:"contact_email,omitempty"`
-	ContactPhone string            `gorm:"type:varchar(255);default:null" json:"contact_phone,omitempty"`
+	City         *string           `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
+	Contactant   *string           `gorm:"type:varchar(255);default:null" json:"contactant,omitempty"`
+	ContactEmail *string           `gorm:"type:varchar(255);default:null" json:"contact_email,omitempty"`
+	ContactPhone *string           `gorm:"type:varchar(255);default:null" json:"contact_phone,omitempty"`
 	IsActive     bool              `gorm:"not null" json:"is_active"`
 }
 
@@ -36,10 +36,10 @@ type HealthServiceAdminTableResponse struct {
 	Name         string            `json:"name"`
 	Type         HealthServiceType `json:"type"`
 	Country      string            `json:"country"`
-	City         string            `json:"city,omitempty"`
-	Contactant   string            `json:"contactant,omitempty"`
-	ContactEmail string            `json:"contact_email,omitempty"`
-	ContactPhone string            `json:"contact_phone,omitempty"`
+	City         *string           `json:"city,omitempty"`
+	Contactant   *string           `json:"contactant,omitempty"`
+	ContactEmail *string           `json:"contact_email,omitempty"`
+	ContactPhone *string           `json:"contact_phone,omitempty"`
 	IsActive     bool              `json:"is_active"`
 }
 
@@ -73,10 +73,10 @@ type HealthServiceCreateInput struct {
 	Name         string            `json:"name" binding:"required,min=3"`
 	Type         HealthServiceType `json:"type" binding:"required,min=3"`
 	CountryCode  string            `json:"country_code" binding:"required,len=3"`
-	City         string            `json:"city,omitempty" binding:"omitempty,min=3"`
-	Contactant   string            `json:"contactant,omitempty" binding:"omitempty,min=3"`
-	ContactEmail string            `json:"contact_email,omitempty" binding:"omitempty,email"`
-	ContactPhone string            `json:"contact_phone,omitempty" binding:"omitempty,e164"`
+	City         *string           `json:"city,omitempty" binding:"omitempty,min=3"`
+	Contactant   *string           `json:"contactant,omitempty" binding:"omitempty,min=3"`
+	ContactEmail *string           `json:"contact_email,omitempty" binding:"omitempty,email"`
+	ContactPhone *string           `json:"contact_phone,omitempty" binding:"omitempty,e164"`
 	IsActive     bool              `json:"is_active"`
 }
 

@@ -271,16 +271,20 @@ func TestUpdateHealthService(t *testing.T) {
 	hServicesRepo := repositories.NewHealthServiceRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
+		city := "Sao Paulo"
+		contactant := "Jose"
+		contactEmail := "jose@email.com"
+		contactPhone := "11999999999"
 		hServToUpdate := models.HealthService{
 			ID:           hServ.ID,
 			Name:         "HS Updated",
 			Type:         models.Private,
 			CountryID:    mockCountry.ID,
 			Country:      mockCountry,
-			City:         "Sao Paulo",
-			Contactant:   "Jose",
-			ContactEmail: "jose@email.com",
-			ContactPhone: "11999999999",
+			City:         &city,
+			Contactant:   &contactant,
+			ContactEmail: &contactEmail,
+			ContactPhone: &contactPhone,
 			IsActive:     true,
 		}
 

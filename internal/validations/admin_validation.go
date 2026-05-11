@@ -185,19 +185,19 @@ func ApplyHealthServiceUpdate(healthService *models.HealthService,
 	}
 
 	if input.City != nil {
-		healthService.City = *input.City
+		healthService.City = input.City
 	}
 
 	if input.Contactant != nil {
-		healthService.Contactant = *input.Contactant
+		healthService.Contactant = input.Contactant
 	}
 
 	if input.ContactEmail != nil {
-		healthService.ContactEmail = *input.ContactEmail
+		healthService.ContactEmail = input.ContactEmail
 	}
 
 	if input.ContactPhone != nil {
-		healthService.ContactPhone = *input.ContactPhone
+		healthService.ContactPhone = input.ContactPhone
 	}
 
 	if input.IsActive != nil {

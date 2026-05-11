@@ -218,14 +218,19 @@ func TestHealthServiceFindByName(t *testing.T) {
 
 func TestHealthServiceCreate(t *testing.T) {
 	country := testmodels.NewCountry("", nil)
+	city := "Rio de Janeiro"
+	contactant := "John Doe"
+	contactEmail := "john@example.com"
+	contactPhone := "123456789"
+
 	input := models.HealthServiceCreateInput{
 		Name:         "Hospital A",
 		Type:         models.Public,
 		CountryCode:  "BRA",
-		City:         "Rio de Janeiro",
-		Contactant:   "John Doe",
-		ContactEmail: "john@example.com",
-		ContactPhone: "123456789",
+		City:         &city,
+		Contactant:   &contactant,
+		ContactEmail: &contactEmail,
+		ContactPhone: &contactPhone,
 		IsActive:     true,
 	}
 

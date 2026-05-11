@@ -310,10 +310,10 @@ func TestApplyHealthServiceUpdate(t *testing.T) {
 		Type:         *input.Type,
 		CountryID:    country.ID,
 		Country:      country,
-		City:         *input.City,
-		Contactant:   *input.Contactant,
-		ContactEmail: *input.ContactEmail,
-		ContactPhone: *input.ContactPhone,
+		City:         input.City,
+		Contactant:   input.Contactant,
+		ContactEmail: input.ContactEmail,
+		ContactPhone: input.ContactPhone,
 		IsActive:     *input.IsActive,
 	}
 

@@ -11,10 +11,10 @@ type HealthService struct {
 	Type         models.HealthServiceType `gorm:"not null" json:"type"`
 	CountryID    uint                     `gorm:"not null" json:"-"`
 	Country      models.Country           `gorm:"foreignKey:CountryID;references:ID"`
-	City         string                   `gorm:"default:null" json:"city,omitempty"`
-	Contactant   string                   `gorm:"default:null" json:"contactant,omitempty"`
-	ContactEmail string                   `gorm:"default:null" json:"contact_email,omitempty"`
-	ContactPhone string                   `gorm:"default:null" json:"contact_phone,omitempty"`
+	City         *string                  `gorm:"default:null" json:"city,omitempty"`
+	Contactant   *string                  `gorm:"default:null" json:"contactant,omitempty"`
+	ContactEmail *string                  `gorm:"default:null" json:"contact_email,omitempty"`
+	ContactPhone *string                  `gorm:"default:null" json:"contact_phone,omitempty"`
 	IsActive     bool                     `gorm:"not null" json:"is_active"`
 }
 
@@ -28,10 +28,10 @@ func NewHealthService(
 		Type:         hServType,
 		CountryID:    country.ID,
 		Country:      country,
-		City:         city,
-		Contactant:   contactant,
-		ContactEmail: contactEmail,
-		ContactPhone: contactPhone,
+		City:         &city,
+		Contactant:   &contactant,
+		ContactEmail: &contactEmail,
+		ContactPhone: &contactPhone,
 		IsActive:     isActive,
 	}
 }
