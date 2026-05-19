@@ -55,7 +55,11 @@ func (d *dispatcher) poll(ctx context.Context) {
 			}
 
 			for _, ev := range events {
-				d.jobCh <- ev
+				select {
+				case d.jobCh <- ev:
+				case <-ctx.Done():
+					return
+				}
 			}
 		}
 	}
@@ -82,7 +86,9 @@ func (d *dispatcher) worker(ctx context.Context) {
 				return
 			}
 
-			err := handler(ctx, ev.Payload)
+			safeCtx := context.WithoutCancel(ctx)
+			err := handler(safeCtx, ev.Payload)
+
 			d.resultCh <- result{eventID: ev.ID, err: err}
 		}()
 	}
@@ -90,11 +96,13 @@ func (d *dispatcher) worker(ctx context.Context) {
 
 func (d *dispatcher) listenResults(ctx context.Context) {
 	for res := range d.resultCh {
+		safeCtx := context.WithoutCancel(ctx)
+
 		if res.err != nil {
-			d.eventRepo.MarkFailed(ctx, res.eventID, res.err.Error())
+			d.eventRepo.MarkFailed(safeCtx, res.eventID, res.err.Error())
 			continue
 		}
-		d.eventRepo.MarkDone(ctx, res.eventID)
+		d.eventRepo.MarkDone(safeCtx, res.eventID)
 	}
 }
 
