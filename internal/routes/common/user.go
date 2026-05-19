@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/user"
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,7 +2,7 @@ package container
 
 import (
 	adminUser "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/user"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"

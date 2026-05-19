@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/user"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/user"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
