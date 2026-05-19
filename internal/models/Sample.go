@@ -138,14 +138,16 @@ type SampleCreateInput struct {
 }
 
 type SampleUpdateInput struct {
-	RunNumber   *string    `json:"run_number,omitempty" binding:"omitempty"`
-	RunDate     *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
-	City        *string    `json:"city,omitempty" binding:"omitempty,max=255"`
-	OriginCode  *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender      *Gender    `json:"gender,omitempty" binding:"omitempty,max=255"`
-	DateOfBirth *time.Time `json:"date_of_birth,omitempty" binding:"omitempty,max=255"`
-	Fastq1      *string    `json:"fastq1,omitempty" binding:"omitempty,min=4,max=255"`
-	Fastq2      *string    `json:"fastq2,omitempty" binding:"omitempty,min=4,max=255"`
+	Name           string     `json:"name" binding:"omitempty,min=3,max=100"`
+	CollectionDate time.Time  `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
+	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty"`
+	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty,max=255"`
+	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty,max=255"`
+	Fastq1         *string    `json:"fastq1,omitempty" binding:"omitempty,min=4,max=255"`
+	Fastq2         *string    `json:"fastq2,omitempty" binding:"omitempty,min=4,max=255"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	UserID          *uuid.UUID `json:"user_id,omitempty" binding:"omitempty"`
