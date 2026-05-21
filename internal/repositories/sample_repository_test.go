@@ -88,7 +88,7 @@ func TestGetSamples(t *testing.T) {
 	db.Create(&mockSample)
 
 	t.Run("Success - All samples", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, "")
+		result, err := sampleRepo.GetSamples(ctx, "", uuid.Nil)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -96,7 +96,7 @@ func TestGetSamples(t *testing.T) {
 	})
 
 	t.Run("Success - Filtered samples", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, "neis")
+		result, err := sampleRepo.GetSamples(ctx, "neis", uuid.Nil)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -105,13 +105,21 @@ func TestGetSamples(t *testing.T) {
 			result[0].Microorganism.Species)
 	})
 
+	t.Run("Success - Filtered samples by user", func(t *testing.T) {
+		result, err := sampleRepo.GetSamples(ctx, "", mockSample.UserID)
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Equal(t, mockSample.ID, result[0].ID)
+	})
+
 	t.Run("Error", func(t *testing.T) {
 		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		assert.NoError(t, err)
 
 		mockSampleRepo := repositories.NewSampleRepo(mockDB)
 		samples, err := mockSampleRepo.GetSamples(
-			context.Background(), "")
+			context.Background(), "", uuid.Nil)
 
 		assert.Empty(t, samples)
 		assert.Error(t, err)

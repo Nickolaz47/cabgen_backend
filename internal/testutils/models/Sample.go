@@ -19,8 +19,8 @@ type Sample struct {
 	DateOfBirth    *time.Time     `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
-	Fastq1         string         `gorm:"type:varchar(255);default:not null" json:"fastq1"`
-	Fastq2         string         `gorm:"type:varchar(255);default:not null" json:"fastq2"`
+	Fastq1         *string        `gorm:"type:varchar(255);default:null" json:"fastq1,omitempty"`
+	Fastq2         *string        `gorm:"type:varchar(255);default:null" json:"fastq2,omitempty"`
 	Fasta          *string        `gorm:"type:varchar(255);default:null" json:"fasta,omitempty"`
 	// Foreign Keys
 	CountryID       uint                 `gorm:"not null" json:"-"`
@@ -59,8 +59,8 @@ func NewSample(
 		OriginCode:      &originCode,
 		Gender:          &gender,
 		DateOfBirth:     &dateOfBirth,
-		Fastq1:          fastq1,
-		Fastq2:          fastq2,
+		Fastq1:          &fastq1,
+		Fastq2:          &fastq2,
 		Fasta:           &fasta,
 		CountryID:       country.ID,
 		Country:         country,

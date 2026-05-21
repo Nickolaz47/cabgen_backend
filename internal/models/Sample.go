@@ -2,8 +2,11 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 )
 
@@ -15,6 +18,33 @@ const (
 	Unspecified Gender = "Unspecified"
 )
 
+var (
+	genderTranslations = map[Gender]map[string]string{
+		Male: {
+			"en": "Male", "es": "Masculino", "pt": "Masculino",
+		},
+		Female: {
+			"en": "Female", "es": "Femenino", "pt": "Feminino",
+		},
+		Unspecified: {
+			"en": "Unspecified", "es": "No especificado", "pt": "Não especificado",
+		},
+	}
+)
+
+func ToGender(value string) Gender {
+	value = strings.ToLower(value)
+
+	switch value {
+	case "masculino", "male":
+		return Male
+	case "feminino", "female", "femenino":
+		return Female
+	default:
+		return Unspecified
+	}
+}
+
 func (g Gender) IsValid() bool {
 	switch g {
 	case Male, Female, Unspecified:
@@ -22,6 +52,23 @@ func (g Gender) IsValid() bool {
 	default:
 		return false
 	}
+}
+
+func (g *Gender) ToTranslatedString(language string) *string {
+	if g == nil {
+		return nil
+	}
+
+	language = translation.ParseLanguage(language)
+
+	translations, ok := genderTranslations[*g]
+	if !ok {
+		val := genderTranslations[Unspecified][language]
+		return &val
+	}
+
+	val := translations[language]
+	return &val
 }
 
 type Sample struct {
@@ -36,8 +83,8 @@ type Sample struct {
 	DateOfBirth    *time.Time `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
-	Fastq1         string     `gorm:"type:varchar(255);default:not null" json:"fastq1"`
-	Fastq2         string     `gorm:"type:varchar(255);default:not null" json:"fastq2"`
+	Fastq1         *string    `gorm:"type:varchar(255);default:null" json:"fastq1,omitempty"`
+	Fastq2         *string    `gorm:"type:varchar(255);default:null" json:"fastq2,omitempty"`
 	Fasta          *string    `gorm:"type:varchar(255);default:null" json:"fasta,omitempty"`
 	// Foreign Keys
 	CountryID       uint          `gorm:"not null" json:"-"`
@@ -66,10 +113,10 @@ type SampleResponse struct {
 	RunDate        time.Time  `json:"run_date"`
 	City           *string    `json:"city"`
 	OriginCode     *string    `json:"origin_code"`
-	Gender         *Gender    `json:"gender"`
+	Gender         *string    `json:"gender"`
 	DateOfBirth    *time.Time `json:"date_of_birth"`
-	Fastq1         string     `json:"fastq1"`
-	Fastq2         string     `json:"fastq2"`
+	Fastq1         *string    `json:"fastq1"`
+	Fastq2         *string    `json:"fastq2"`
 	Fasta          *string    `json:"fasta"`
 	// Foreign Keys
 	CountryCode   string `json:"country_code"`
@@ -83,13 +130,27 @@ type SampleResponse struct {
 }
 
 func (s *Sample) ToResponse(language string) SampleResponse {
-	if language == "" {
-		language = "en"
-	}
+	language = translation.ParseLanguage(language)
 
 	sequencer := fmt.Sprintf("%s - %s", s.Sequencer.Brand, s.Sequencer.Model)
 	species := fmt.Sprintf("%s %s", s.Microorganism.Species,
 		s.Microorganism.Variety[language])
+	gender := s.Gender.ToTranslatedString(language)
+
+	var fastq1Path, fastq2Path, fastaPath *string
+
+	if s.Fastq1 != nil {
+		path := filepath.Base(*s.Fastq1)
+		fastq1Path = &path
+	}
+	if s.Fastq2 != nil {
+		path := filepath.Base(*s.Fastq2)
+		fastq2Path = &path
+	}
+	if s.Fasta != nil {
+		path := filepath.Base(*s.Fasta)
+		fastaPath = &path
+	}
 
 	return SampleResponse{
 		ID:             s.ID,
@@ -99,11 +160,11 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 		RunDate:        s.RunDate,
 		City:           s.City,
 		OriginCode:     s.OriginCode,
-		Gender:         s.Gender,
+		Gender:         gender,
 		DateOfBirth:    s.DateOfBirth,
-		Fastq1:         s.Fastq1,
-		Fastq2:         s.Fastq2,
-		Fasta:          s.Fasta,
+		Fastq1:         fastq1Path,
+		Fastq2:         fastq2Path,
+		Fasta:          fastaPath,
 		CountryCode:    s.Country.Code,
 		User:           s.User.Username,
 		Origin:         s.Origin.Names[language],
@@ -122,10 +183,8 @@ type SampleCreateInput struct {
 	RunDate        time.Time  `json:"run_date" binding:"required" time_format:"2006-01-02"`
 	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
 	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty,max=255"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty,max=255"`
-	Fastq1         string     `json:"fastq1" binding:"required,min=4,max=255"`
-	Fastq2         string     `json:"fastq2" binding:"required,min=4,max=255"`
+	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
 	// Foreign Keys
 	CountryCode     string    `json:"country_code" binding:"required,len=3"`
 	UserID          uuid.UUID `json:"user_id" binding:"required"`
@@ -138,16 +197,14 @@ type SampleCreateInput struct {
 }
 
 type SampleUpdateInput struct {
-	Name           string     `json:"name" binding:"omitempty,min=3,max=100"`
-	CollectionDate time.Time  `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
+	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
+	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
 	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty"`
 	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
 	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
 	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty,max=255"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty,max=255"`
-	Fastq1         *string    `json:"fastq1,omitempty" binding:"omitempty,min=4,max=255"`
-	Fastq2         *string    `json:"fastq2,omitempty" binding:"omitempty,min=4,max=255"`
+	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	UserID          *uuid.UUID `json:"user_id,omitempty" binding:"omitempty"`
@@ -157,4 +214,10 @@ type SampleUpdateInput struct {
 	SequencerID     *uuid.UUID `json:"sequencer_id,omitempty" binding:"omitempty"`
 	LaboratoryID    *uuid.UUID `json:"laboratory_id,omitempty" binding:"omitempty"`
 	HealthServiceID *uuid.UUID `json:"health_service_id,omitempty" binding:"omitempty"`
+}
+
+type SampleAttachmentInput struct {
+	Fastq1 *string `json:"fastq1" binding:"max=255"`
+	Fastq2 *string `json:"fastq2" binding:"max=255"`
+	Fasta  *string `json:"fasta" binding:"max=255"`
 }

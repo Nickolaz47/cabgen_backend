@@ -69,3 +69,40 @@ func TestGetLanguageFromContext(t *testing.T) {
 		assert.Equal(t, expectedLanguage, language)
 	})
 }
+
+func TestParseLanguage(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Valid Language",
+			input:    "pt",
+			expected: "pt",
+		},
+		{
+			name:     "Valid Uppercase Language",
+			input:    "ES",
+			expected: "es",
+		},
+		{
+			name:     "Invalid Language",
+			input:    "an",
+			expected: "en",
+		},
+		{
+			name:     "Empty Language",
+			input:    "",
+			expected: "en",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := translation.ParseLanguage(tt.input)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

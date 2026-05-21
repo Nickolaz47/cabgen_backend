@@ -3,6 +3,8 @@ package translation
 import (
 	"embed"
 	"log"
+	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -61,4 +63,13 @@ func GetLanguageFromContext(c *gin.Context) string {
 	}
 
 	return language
+}
+
+func ParseLanguage(language string) string {
+	language = strings.ToLower(language)
+	if slices.Contains(Languages, language) {
+		return language
+	}
+
+	return "en"
 }

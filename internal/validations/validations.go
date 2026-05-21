@@ -20,7 +20,8 @@ type Model interface {
 		models.LaboratoryUpdateInput | models.CountryCreateInput |
 		models.CountryUpdateInput | models.MicroorganismCreateInput |
 		models.MicroorganismUpdateInput | models.HealthServiceCreateInput |
-		models.HealthServiceUpdateInput
+		models.HealthServiceUpdateInput | models.SampleCreateInput |
+		models.SampleUpdateInput
 }
 
 func Validate[T Model](

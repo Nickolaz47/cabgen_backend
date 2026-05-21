@@ -1,6 +1,7 @@
 package models_test
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -9,6 +10,86 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestToGender(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected models.Gender
+	}{
+		{
+			name:     "String to Male",
+			input:    "masculino",
+			expected: models.Male,
+		},
+		{
+			name:     "String to Female",
+			input:    "femenino",
+			expected: models.Female,
+		},
+		{
+			name:     "String to Unspecified",
+			input:    "any string",
+			expected: models.Unspecified,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := models.ToGender(tt.input)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestToTranslatedString(t *testing.T) {
+	tests := []struct {
+		name     string
+		language string
+		gender   models.Gender
+		expected string
+	}{
+		{
+			name:     "Male to portuguese",
+			language: "pt",
+			gender:   models.Male,
+			expected: "Masculino",
+		},
+		{
+			name:     "Female to spanish",
+			language: "es",
+			gender:   models.Female,
+			expected: "Femenino",
+		},
+		{
+			name:     "Unspecified to english",
+			language: "en",
+			gender:   models.Unspecified,
+			expected: "Unspecified",
+		},
+		{
+			name:     "Invalid language",
+			language: "an",
+			gender:   models.Male,
+			expected: "Male",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.gender.ToTranslatedString(tt.language)
+			assert.Equal(t, &tt.expected, result)
+		})
+	}
+
+	t.Run("Gender is nil", func(t *testing.T) {
+		var gender *models.Gender
+		result := gender.ToTranslatedString("en")
+
+		assert.Nil(t, result)
+	})
+}
 
 func TestSampleToResponse(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
@@ -57,12 +138,19 @@ func TestSampleToResponse(t *testing.T) {
 
 	id := uuid.New()
 	date := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
+
 	mockSample := testmodels.NewSample(
 		id.String(), "sample 1", date, "R1", date, "", "A01", models.Male, date,
-		"read1.fastq", "read2.fastq", "", mockCountry, mockUser, mockOrigin,
-		mockSampleSource, mockMicro, mockSequencer, mockLab, mockHealthService,
+		"sequences/read1.fastq", "sequences/read2.fastq",
+		"sequences/read.fasta", mockCountry,
+		mockUser, mockOrigin, mockSampleSource, mockMicro, mockSequencer,
+		mockLab, mockHealthService,
 	)
 	language := "en"
+
+	fastq1 := filepath.Base(*mockSample.Fastq1)
+	fastq2 := filepath.Base(*mockSample.Fastq2)
+	fasta := filepath.Base(*mockSample.Fasta)
 
 	expected := models.SampleResponse{
 		ID:             id,
@@ -72,11 +160,11 @@ func TestSampleToResponse(t *testing.T) {
 		RunDate:        mockSample.RunDate,
 		City:           mockSample.City,
 		OriginCode:     mockSample.OriginCode,
-		Gender:         mockSample.Gender,
+		Gender:         mockSample.Gender.ToTranslatedString(language),
 		DateOfBirth:    &date,
-		Fastq1:         mockSample.Fastq1,
-		Fastq2:         mockSample.Fastq2,
-		Fasta:          mockSample.Fasta,
+		Fastq1:         &fastq1,
+		Fastq2:         &fastq2,
+		Fasta:          &fasta,
 		CountryCode:    mockCountry.Code,
 		User:           mockUser.Username,
 		Origin:         mockOrigin.Names[language],

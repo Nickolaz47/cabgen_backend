@@ -404,3 +404,5 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar HealthService;
 - [ ] Modelar Sample;
 - [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;
+- [ ] Adicionar estado e cidade no cadastro;
+- [ ] Mostrar no resultado as versões de cada programa;

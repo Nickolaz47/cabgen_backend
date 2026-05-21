@@ -21,6 +21,10 @@ const (
 	DatabaseConflictError           = "CONFLICT_RECORD"
 	SendEmailError                  = "SEND_EMAIL_ERROR"
 	EventEmitterError               = "EVENT_EMITTER_ERROR"
+	Unauthorized                    = "UNAUTHORIZED"
+	CreateFolderError               = "CREATE_FOLDER_ERROR"
+	DeleteFolderError               = "DELETE_FOLDER_ERROR"
+	DeleteFileError                 = "DELETE_FILE_ERROR"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {
