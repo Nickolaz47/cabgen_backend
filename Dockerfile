@@ -16,9 +16,12 @@ COPY cmd/ ./cmd
 COPY . .
 
 # Tests
+RUN adduser -D testuser && chown -R testuser /app
+USER testuser
 RUN go test -v ./...
 
 # Compilation
+USER root
 RUN CGO_ENABLED=1 GOOS=linux go build -o api ./cmd/server
 
 # Runtime

@@ -3,7 +3,6 @@ package repositories_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
@@ -14,62 +13,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-
-func createMockSample() models.Sample {
-	mockUser := testmodels.NewLoginUser()
-	mockCountry := mockUser.Country
-	mockOrigin := testmodels.NewOrigin(uuid.New().String(),
-		map[string]string{"pt": "Humano", "en": "Human", "es": "Humano"},
-		true,
-	)
-	mockSampleSource := testmodels.NewSampleSource(
-		uuid.NewString(),
-		map[string]string{"pt": "Aspirado",
-			"en": "Aspirated", "es": "Aspirado"},
-		map[string]string{"pt": "Trato respiratório",
-			"en": "Respiratory tract", "es": "Vías respiratorias"},
-		true,
-	)
-	mockMicro := testmodels.NewMicroorganism(
-		uuid.NewString(), models.Bacteria, "Neisseria meningitidis",
-		map[string]string{
-			"pt": "Sorogrupo B", "en": "Serogroup B", "es": "Serogrupo B"}, true,
-	)
-	mockSequencer := models.Sequencer{
-		ID:       uuid.New(),
-		Brand:    "Illumina",
-		Model:    "MySeq",
-		IsActive: true,
-	}
-	mockLab := models.Laboratory{
-		ID:           uuid.New(),
-		Name:         "Laboratorio Central do Rio de Janeiro",
-		Abbreviation: "LACEN/RJ",
-		IsActive:     true,
-	}
-	mockHealthService := models.HealthService{
-		ID:           uuid.New(),
-		Name:         "Laboratorio Central do Rio de Janeiro",
-		Type:         "Public",
-		CountryID:    mockCountry.ID,
-		Country:      mockCountry,
-		City:         nil,
-		Contactant:   nil,
-		ContactEmail: nil,
-		ContactPhone: nil,
-		IsActive:     true,
-	}
-
-	id := uuid.New()
-	date := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
-	mockSample := testmodels.NewSample(
-		id.String(), "sample 1", date, "R1", date, "", "A01", models.Male, date,
-		"read1.fastq", "read2.fastq", "", mockCountry, mockUser, mockOrigin,
-		mockSampleSource, mockMicro, mockSequencer, mockLab, mockHealthService,
-	)
-
-	return mockSample
-}
 
 func TestNewSampleRepo(t *testing.T) {
 	db := testutils.NewMockDB()
@@ -84,7 +27,7 @@ func TestGetSamples(t *testing.T) {
 	db := testutils.NewMockDB()
 	sampleRepo := repositories.NewSampleRepo(db)
 
-	mockSample := createMockSample()
+	mockSample := testmodels.CreateMockSample()
 	db.Create(&mockSample)
 
 	t.Run("Success - All samples", func(t *testing.T) {
@@ -132,7 +75,7 @@ func TestGetSampleByID(t *testing.T) {
 	db := testutils.NewMockDB()
 	sampleRepo := repositories.NewSampleRepo(db)
 
-	mockSample := createMockSample()
+	mockSample := testmodels.CreateMockSample()
 	db.Create(&mockSample)
 
 	t.Run("Success", func(t *testing.T) {
@@ -169,7 +112,7 @@ func TestCreateSample(t *testing.T) {
 	db := testutils.NewMockDB()
 	sampleRepo := repositories.NewSampleRepo(db)
 
-	mockSample := createMockSample()
+	mockSample := testmodels.CreateMockSample()
 
 	t.Run("Success", func(t *testing.T) {
 		err := sampleRepo.CreateSample(ctx, &mockSample)
@@ -200,7 +143,7 @@ func TestUpdateSample(t *testing.T) {
 	db := testutils.NewMockDB()
 	sampleRepo := repositories.NewSampleRepo(db)
 
-	mockSample := createMockSample()
+	mockSample := testmodels.CreateMockSample()
 	db.Create(&mockSample)
 
 	t.Run("Success", func(t *testing.T) {
@@ -234,7 +177,7 @@ func TestDeleteSample(t *testing.T) {
 	db := testutils.NewMockDB()
 	sampleRepo := repositories.NewSampleRepo(db)
 
-	mockSample := createMockSample()
+	mockSample := testmodels.CreateMockSample()
 	db.Create(&mockSample)
 
 	t.Run("Success", func(t *testing.T) {
