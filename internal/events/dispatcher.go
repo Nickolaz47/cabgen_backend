@@ -8,6 +8,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/google/uuid"
 )
 
 type Dispatcher interface {
@@ -15,7 +16,7 @@ type Dispatcher interface {
 }
 
 type result struct {
-	eventID uint
+	eventID uuid.UUID
 	err     error
 }
 

@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type EventRepository interface {
 	GetEvents(ctx context.Context, limit int) ([]models.Event, error)
 	CreateEvent(ctx context.Context, event *models.Event) error
-	MarkProcessing(ctx context.Context, ID uint) error
-	MarkDone(ctx context.Context, ID uint) error
-	MarkFailed(ctx context.Context, ID uint, errorMessage string) error
+	MarkProcessing(ctx context.Context, ID uuid.UUID) error
+	MarkDone(ctx context.Context, ID uuid.UUID) error
+	MarkFailed(ctx context.Context, ID uuid.UUID, errorMessage string) error
 }
 
 type eventRepo struct {
@@ -23,29 +24,52 @@ func NewEventRepo(db *gorm.DB) EventRepository {
 	return &eventRepo{DB: db}
 }
 
-func (r *eventRepo) GetEvents(ctx context.Context, limit int) ([]models.Event, error) {
+func (r *eventRepo) GetEvents(ctx context.Context,
+	limit int) ([]models.Event, error) {
 	var events []models.Event
 
-	tx := r.DB.WithContext(ctx).Begin()
+	dialector := r.DB.Dialector.Name()
 
-	if err := tx.Where("status = ?", models.EventPending).
-		Order("created_at asc").
-		Limit(limit).
-		Find(&events).Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	if len(events) == 0 {
+	if dialector == "postgres" {
+		query := `
+            UPDATE events SET status = ?
+            WHERE id IN (
+                SELECT id FROM events
+                WHERE status = ?
+                ORDER BY created_at ASC
+                LIMIT ?
+                FOR UPDATE SKIP LOCKED
+            )
+            RETURNING *
+        `
+		err := r.DB.WithContext(ctx).
+			Raw(query, models.EventProcessing, models.EventPending, limit).
+			Scan(&events).Error
+		if err != nil {
+			return nil, err
+		}
 		return events, nil
 	}
 
-	if err := tx.Model(&events).
-		Update("status", models.EventProcessing).Error; err != nil {
-		return nil, err
-	}
+	// Test only
+	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.Event{}).
+			Where("status = ?", models.EventPending).
+			Order("created_at ASC").
+			Limit(limit).
+			Find(&events).Error; err != nil {
+			return err
+		}
 
-	if err := tx.Commit().Error; err != nil {
+		if len(events) == 0 {
+			return nil
+		}
+
+		return tx.Model(&events).
+			Update("status", models.EventProcessing).Error
+	})
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -56,17 +80,17 @@ func (r *eventRepo) CreateEvent(ctx context.Context, event *models.Event) error 
 	return r.DB.WithContext(ctx).Create(event).Error
 }
 
-func (r *eventRepo) MarkProcessing(ctx context.Context, ID uint) error {
+func (r *eventRepo) MarkProcessing(ctx context.Context, ID uuid.UUID) error {
 	return r.DB.WithContext(ctx).Model(&models.Event{}).Where("id = ?", ID).
 		Update("status", models.EventProcessing).Error
 }
 
-func (r *eventRepo) MarkDone(ctx context.Context, ID uint) error {
+func (r *eventRepo) MarkDone(ctx context.Context, ID uuid.UUID) error {
 	return r.DB.WithContext(ctx).Model(&models.Event{}).Where("id = ?", ID).
 		Update("status", models.EventDone).Error
 }
 
-func (r *eventRepo) MarkFailed(ctx context.Context, ID uint,
+func (r *eventRepo) MarkFailed(ctx context.Context, ID uuid.UUID,
 	errorMessage string) error {
 	return r.DB.WithContext(ctx).Model(&models.Event{}).Where("id = ?", ID).
 		Updates(map[string]any{

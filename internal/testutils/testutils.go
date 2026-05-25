@@ -35,7 +35,7 @@ func NewMockDB() *gorm.DB {
 	db.AutoMigrate(&testmodels.Sequencer{})
 	db.AutoMigrate(&testmodels.SampleSource{})
 	db.AutoMigrate(&testmodels.Laboratory{})
-	db.AutoMigrate(&models.Event{})
+	db.AutoMigrate(&testmodels.Event{})
 	db.AutoMigrate(&testmodels.Microorganism{})
 	db.AutoMigrate(&testmodels.HealthService{})
 	db.AutoMigrate(&testmodels.Sample{})
@@ -43,7 +43,8 @@ func NewMockDB() *gorm.DB {
 	return db
 }
 
-func SetupGinContext(method, URL, body string, headers map[string]string, params gin.Params) (*gin.Context, *httptest.ResponseRecorder) {
+func SetupGinContext(method, URL, body string, headers map[string]string,
+	params gin.Params) (*gin.Context, *httptest.ResponseRecorder) {
 	req := httptest.NewRequest(
 		method,
 		URL,

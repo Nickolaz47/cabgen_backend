@@ -12,7 +12,8 @@ type Laboratory struct {
 	IsActive     bool   `gorm:"not null" json:"is_active"`
 }
 
-func NewLaboratory(ID, name, abbreviation string, isActive bool) models.Laboratory {
+func NewLaboratory(ID, name, abbreviation string,
+	isActive bool) models.Laboratory {
 	return models.Laboratory{
 		ID:           uuid.MustParse(ID),
 		Name:         name,

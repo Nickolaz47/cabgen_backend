@@ -7,6 +7,8 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -24,55 +26,42 @@ func TestGetEvents(t *testing.T) {
 	eventRepo := repositories.NewEventRepo(db)
 	ctx := context.Background()
 
-	mockEvent := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "john"}`),
-		Status:  models.EventPending,
-	}
-	mockEvent2 := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "maria"}`),
-		Status:  models.EventDone,
-	}
-	mockEvent3 := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "ana"}`),
-		Status:  models.EventPending,
-	}
+	mockEvent1 := testmodels.NewEvent(
+		uuid.NewString(), "user.registered", []byte(`{"username": "john"}`),
+		models.EventPending, "",
+	)
+	mockEvent2 := testmodels.NewEvent(
+		uuid.NewString(), "user.registered", []byte(`{"username": "maria"}`),
+		models.EventDone, "",
+	)
+	mockEvent3 := testmodels.NewEvent(
+		uuid.NewString(), "user.registered", []byte(`{"username": "ana"}`),
+		models.EventPending, "",
+	)
 
-	db.Create(&mockEvent)
+	db.Create(&mockEvent1)
 	db.Create(&mockEvent2)
 	db.Create(&mockEvent3)
 
 	t.Run("Success", func(t *testing.T) {
 		result, err := eventRepo.GetEvents(ctx, 10)
 		assert.NoError(t, err)
+		assert.Len(t, result, 2)
 
-		var event1, event3 models.Event
-		err = db.Where("id = ?", 1).First(&event1).Error
-		assert.NoError(t, err)
+		var updated1, updated3 models.Event
+		assert.NoError(t, db.First(&updated1, "id = ?", mockEvent1.ID).Error)
+		assert.NoError(t, db.First(&updated3, "id = ?", mockEvent3.ID).Error)
 
-		err = db.Where("id = ?", 3).First(&event3).Error
-		assert.NoError(t, err)
+		assert.Equal(t, models.EventProcessing, updated1.Status)
+		assert.Equal(t, models.EventProcessing, updated3.Status)
 
-		expectedEvent1 := models.Event{
-			ID:        event1.ID,
-			Name:      mockEvent.Name,
-			Payload:   mockEvent.Payload,
-			Status:    models.EventProcessing,
-			CreatedAt: event1.CreatedAt,
+		ids := []uuid.UUID{result[0].ID, result[1].ID}
+		assert.Contains(t, ids, mockEvent1.ID)
+		assert.Contains(t, ids, mockEvent3.ID)
+
+		for _, e := range result {
+			assert.NotEqual(t, mockEvent2.ID, e.ID)
 		}
-		expectedEvent3 := models.Event{
-			ID:        event3.ID,
-			Name:      mockEvent3.Name,
-			Payload:   mockEvent3.Payload,
-			Status:    models.EventProcessing,
-			CreatedAt: event3.CreatedAt,
-		}
-
-		expected := []models.Event{expectedEvent1, expectedEvent3}
-
-		assert.Equal(t, expected, result)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -92,29 +81,24 @@ func TestCreateEvent(t *testing.T) {
 	eventRepo := repositories.NewEventRepo(db)
 	ctx := context.Background()
 
-	mockEvent := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "john"}`),
-		Status:  models.EventPending,
-	}
-
 	t.Run("Success", func(t *testing.T) {
+		mockEvent := testmodels.NewEvent(
+			uuid.NewString(), "user.registered", []byte(`{"username": "john"}`),
+			models.EventPending, "",
+		)
+
 		err := eventRepo.CreateEvent(ctx, &mockEvent)
 		assert.NoError(t, err)
+		assert.NotEqual(t, uuid.Nil, mockEvent.ID)
 
 		var result models.Event
-		err = db.Where("id = ?", 1).First(&result).Error
+		err = db.First(&result, "id = ?", mockEvent.ID).Error
 		assert.NoError(t, err)
 
-		expected := models.Event{
-			ID:        result.ID,
-			Name:      mockEvent.Name,
-			Payload:   mockEvent.Payload,
-			Status:    models.EventPending,
-			CreatedAt: result.CreatedAt,
-		}
-
-		assert.Equal(t, expected, result)
+		assert.Equal(t, mockEvent.ID, result.ID)
+		assert.Equal(t, mockEvent.Name, result.Name)
+		assert.Equal(t, mockEvent.Payload, result.Payload)
+		assert.Equal(t, models.EventPending, result.Status)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -133,30 +117,26 @@ func TestMarkProcessing(t *testing.T) {
 	eventRepo := repositories.NewEventRepo(db)
 	ctx := context.Background()
 
-	mockEvent := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "john"}`),
-		Status:  models.EventPending,
-	}
-	db.Create(&mockEvent)
-
 	t.Run("Success", func(t *testing.T) {
-		err := eventRepo.MarkProcessing(ctx, 1)
+		mockEvent := testmodels.NewEvent(
+			uuid.NewString(), "user.registered", []byte(`{"username": "john"}`),
+			models.EventPending, "",
+		)
+
+		db.Create(&mockEvent)
+		assert.NotEqual(t, uuid.Nil, mockEvent.ID)
+
+		err := eventRepo.MarkProcessing(ctx, mockEvent.ID)
 		assert.NoError(t, err)
 
 		var result models.Event
-		err = db.Where("id = ?", 1).First(&result).Error
+		err = db.First(&result, "id = ?", mockEvent.ID).Error
 		assert.NoError(t, err)
 
-		expected := models.Event{
-			ID:        result.ID,
-			Name:      mockEvent.Name,
-			Payload:   mockEvent.Payload,
-			Status:    models.EventProcessing,
-			CreatedAt: result.CreatedAt,
-		}
-
-		assert.Equal(t, expected, result)
+		assert.Equal(t, mockEvent.ID, result.ID)
+		assert.Equal(t, mockEvent.Name, result.Name)
+		assert.Equal(t, mockEvent.Payload, result.Payload)
+		assert.Equal(t, models.EventProcessing, result.Status)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -164,7 +144,7 @@ func TestMarkProcessing(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockEventRepo := repositories.NewEventRepo(mockDB)
-		err = mockEventRepo.MarkProcessing(ctx, 1)
+		err = mockEventRepo.MarkProcessing(ctx, uuid.New())
 
 		assert.Error(t, err)
 	})
@@ -175,30 +155,26 @@ func TestMarkDone(t *testing.T) {
 	eventRepo := repositories.NewEventRepo(db)
 	ctx := context.Background()
 
-	mockEvent := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "john"}`),
-		Status:  models.EventPending,
-	}
-	db.Create(&mockEvent)
-
 	t.Run("Success", func(t *testing.T) {
-		err := eventRepo.MarkDone(ctx, 1)
+		mockEvent := testmodels.NewEvent(
+			uuid.NewString(), "user.registered", []byte(`{"username": "john"}`),
+			models.EventPending, "",
+		)
+
+		db.Create(&mockEvent)
+		assert.NotEqual(t, uuid.Nil, mockEvent.ID)
+
+		err := eventRepo.MarkDone(ctx, mockEvent.ID)
 		assert.NoError(t, err)
 
 		var result models.Event
-		err = db.Where("id = ?", 1).First(&result).Error
+		err = db.First(&result, "id = ?", mockEvent.ID).Error
 		assert.NoError(t, err)
 
-		expected := models.Event{
-			ID:        result.ID,
-			Name:      mockEvent.Name,
-			Payload:   mockEvent.Payload,
-			Status:    models.EventDone,
-			CreatedAt: result.CreatedAt,
-		}
-
-		assert.Equal(t, expected, result)
+		assert.Equal(t, mockEvent.ID, result.ID)
+		assert.Equal(t, mockEvent.Name, result.Name)
+		assert.Equal(t, mockEvent.Payload, result.Payload)
+		assert.Equal(t, models.EventDone, result.Status)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -206,7 +182,7 @@ func TestMarkDone(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockEventRepo := repositories.NewEventRepo(mockDB)
-		err = mockEventRepo.MarkDone(ctx, 1)
+		err = mockEventRepo.MarkDone(ctx, uuid.New())
 
 		assert.Error(t, err)
 	})
@@ -217,31 +193,27 @@ func TestMarkFailed(t *testing.T) {
 	eventRepo := repositories.NewEventRepo(db)
 	ctx := context.Background()
 
-	mockEvent := models.Event{
-		Name:    "user.registered",
-		Payload: []byte(`{"username": "john"}`),
-		Status:  models.EventPending,
-	}
-	db.Create(&mockEvent)
-
 	t.Run("Success", func(t *testing.T) {
-		err := eventRepo.MarkFailed(ctx, 1, "error")
+		mockEvent := testmodels.NewEvent(
+			uuid.NewString(), "user.registered", []byte(`{"username": "john"}`),
+			models.EventPending, "",
+		)
+
+		db.Create(&mockEvent)
+		assert.NotEqual(t, uuid.Nil, mockEvent.ID)
+
+		err := eventRepo.MarkFailed(ctx, mockEvent.ID, "error")
 		assert.NoError(t, err)
 
 		var result models.Event
-		err = db.Where("id = ?", 1).First(&result).Error
+		err = db.First(&result, "id = ?", mockEvent.ID).Error
 		assert.NoError(t, err)
 
-		expected := models.Event{
-			ID:        result.ID,
-			Name:      mockEvent.Name,
-			Payload:   mockEvent.Payload,
-			Status:    models.EventFailed,
-			Error:     "error",
-			CreatedAt: result.CreatedAt,
-		}
-
-		assert.Equal(t, expected, result)
+		assert.Equal(t, mockEvent.ID, result.ID)
+		assert.Equal(t, mockEvent.Name, result.Name)
+		assert.Equal(t, mockEvent.Payload, result.Payload)
+		assert.Equal(t, models.EventFailed, result.Status)
+		assert.Equal(t, "error", result.Error)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -249,7 +221,7 @@ func TestMarkFailed(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockEventRepo := repositories.NewEventRepo(mockDB)
-		err = mockEventRepo.MarkFailed(ctx, 1, "error")
+		err = mockEventRepo.MarkFailed(ctx, uuid.New(), "error")
 
 		assert.Error(t, err)
 	})

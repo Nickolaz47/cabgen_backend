@@ -37,6 +37,7 @@ func main() {
 		&models.Microorganism{},
 		&models.HealthService{},
 		&models.Sample{},
+		&models.Event{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
@@ -47,23 +48,6 @@ func main() {
 	if err := mainDB.Migrate(modelsToMigrate...); err != nil {
 		log.Fatal(err)
 	}
-
-	// Event Database
-	eventDSN := "events.db?_journal_mode=WAL&_busy_timeout=5000"
-	eventDB, err := db.NewGormDatabase("sqlite", eventDSN)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	modelsToMigrate = []any{
-		&models.Event{},
-	}
-
-	if err := eventDB.Migrate(modelsToMigrate...); err != nil {
-		log.Fatal(err)
-	}
-
-	eventRepo := container.BuildEventRepository(eventDB.DB())
 
 	// Load translations
 	translation.LoadTranslation()
@@ -93,17 +77,23 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(mainDB.DB(), eventDB.DB(), logging.FileLogger)
+	authSvc := container.BuildAuthService(mainDB.DB(), logging.FileLogger)
+
 	userSvc := container.BuildUserService(mainDB.DB(), logging.FileLogger)
-	admUserSvc := container.BuildAdminUserService(mainDB.DB(), logging.FileLogger)
+	admUserSvc := container.BuildAdminUserService(mainDB.DB(),
+		logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
-	sequencerSvc := container.BuildSequencerService(mainDB.DB(), logging.FileLogger)
+	sequencerSvc := container.BuildSequencerService(mainDB.DB(),
+		logging.FileLogger)
 	originSvc := container.BuildOriginService(mainDB.DB(), logging.FileLogger)
-	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(), logging.FileLogger)
+	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(),
+		logging.FileLogger)
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
 	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
-	microSvc := container.BuildMicroorganismService(mainDB.DB(), logging.FileLogger)
-	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(), logging.FileLogger)
+	microSvc := container.BuildMicroorganismService(mainDB.DB(),
+		logging.FileLogger)
+	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(),
+		logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -124,10 +114,12 @@ func main() {
 	adminLaboratoryHandler := container.BuildAdminLaboratoryHandler(labSvc)
 	adminSequencerHandler := container.BuildAdminSequencerHandler(sequencerSvc)
 	adminOriginHandler := container.BuildAdminOriginHandler(originSvc)
-	adminSampleSourceHandler := container.BuildAdminSampleSourceHandler(sampleSourceSvc)
+	adminSampleSourceHandler := container.BuildAdminSampleSourceHandler(
+		sampleSourceSvc)
 	adminCountryHandler := container.BuildAdminCountryHandler(countrySvc)
 	adminMicroHandler := container.BuildAdminMicroorganismHandler(microSvc)
-	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(healthServiceSvc)
+	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(
+		healthServiceSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -146,7 +138,8 @@ func main() {
 	common.SetupHealthServiceRoutes(commonRouter, healthServiceHandler)
 
 	// Admin routes
-	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(), middlewares.AdminMiddleware())
+	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(),
+		middlewares.AdminMiddleware())
 	admin.SetupAdminUserRoutes(adminRouter, adminUserHandler)
 	admin.SetupAdminSequencerRoutes(adminRouter, adminSequencerHandler)
 	admin.SetupAdminLaboratoryRoutes(adminRouter, adminLaboratoryHandler)
@@ -157,6 +150,7 @@ func main() {
 	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
 
 	// Event dispatcher
+	eventRepo := container.BuildEventRepository(mainDB.DB())
 	registry := container.BuildRegistry(emailSvc)
 	dispatcher := container.BuildEventDispatcher(eventRepo, registry)
 

@@ -35,7 +35,7 @@ func TestEmit(t *testing.T) {
 		assert.NoError(t, err)
 
 		var result models.Event
-		err = db.Where("id = ?", 1).First(&result).Error
+		err = db.First(&result).Error
 		assert.NoError(t, err)
 
 		assert.Equal(t, events.EventUserRegistered, result.Name)

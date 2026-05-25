@@ -11,11 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func BuildAuthService(mainDB, eventDB *gorm.DB,
-	logger *zap.Logger) services.AuthService {
+func BuildAuthService(mainDB *gorm.DB, logger *zap.Logger) services.AuthService {
 	countryRepo := repositories.NewCountryRepo(mainDB)
 	userRepo := repositories.NewUserRepo(mainDB)
-	emitter := events.NewEventEmitter(repositories.NewEventRepo(eventDB))
+	emitter := events.NewEventEmitter(repositories.NewEventRepo(mainDB))
 	hasher := security.NewPasswordHasher()
 	provider := auth.NewTokenProvider()
 	authService := services.NewAuthService(

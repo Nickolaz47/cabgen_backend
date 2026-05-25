@@ -3,6 +3,8 @@ package models
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -13,12 +15,13 @@ const (
 )
 
 type Event struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `gorm:"not null;index"`
-	Payload   []byte `gorm:"not null"`
-	Status    string `gorm:"not null;index"`
-	Error     string
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	Name      string    `gorm:"not null;index" json:"name"`
+	Payload   []byte    `gorm:"not null" json:"payload"`
+	Status    string    `gorm:"not null;index" json:"status"`
+	Error     string    `gorm:"default:null" json:"error"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func NewEvent(name string, data any) (*Event, error) {
