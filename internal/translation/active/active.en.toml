@@ -191,10 +191,10 @@ other = "Sequencer brand is required."
 other = "Sequencer model is required."
 
 [validation.Brand.min]
-other = "Sequencer brand must contain at least 3 characters."
+other = "Sequencer brand must contain at least {{.Param}} characters."
 
 [validation.Model.min]
-other = "Sequencer model must contain at least 3 characters."
+other = "Sequencer model must contain at least {{.Param}} characters."
 
 [admin.sequencer.create.success]
 other = "Sequencer registered successfully."
@@ -287,10 +287,10 @@ other = "Taxon is required."
 other = "The health service type is required."
 
 [validation.City.min]
-other = "City must be at least 3 characters long."
+other = "City must be at least {{.Param}} characters long."
 
 [validation.Contactant.min]
-other = "Contact name must be at least 3 characters long."
+other = "Contact name must be at least {{.Param}} characters long."
 
 [validation.ContactEmail.email]
 other = "The contact email format is invalid."
@@ -312,3 +312,84 @@ other = "A health service with this name already exists."
 
 [admin.healthService.delete.success]
 other = "Health service deleted successfully."
+
+[validation.CollectionDate.required]
+other = "The collection date is required."
+
+[validation.CollectionDate.time_format]
+other = "The collection date must be in the RFC3339 format."
+
+[validation.RunNumber.required]
+other = "The run number is required."
+
+[validation.RunNumber.max]
+other = "The run number must have a maximum of {{.Param}} characters."
+
+[validation.RunDate.required]
+other = "The run date is required."
+
+[validation.RunDate.time_format]
+other = "The run date must be in the RFC3339 format."
+
+[validation.OriginCode.max]
+other = "The origin code must have a maximum of {{.Param}} characters."
+
+[validation.DateOfBirth.time_format]
+other = "The date of birth must be in the RFC3339 format."
+
+[validation.UserID.required]
+other = "The user ID is required."
+
+[validation.OriginID.required]
+other = "The origin ID is required."
+
+[validation.SampleSourceID.required]
+other = "The sample source ID is required."
+
+[validation.MicroorganismID.required]
+other = "The microorganism ID is required."
+
+[validation.SequencerID.required]
+other = "The sequencer ID is required."
+
+[validation.LaboratoryID.required]
+other = "The laboratory ID is required."
+
+[validation.HealthServiceID.required]
+other = "The health service ID is required."
+
+[validation.Fastq1.max]
+other = "The fastq1 name must have a maximum of {{.Param}} characters."
+
+[validation.Fastq2.max]
+other = "The fastq2 name must have a maximum of {{.Param}} characters."
+
+[validation.Fasta.max]
+other = "The fasta name must have a maximum of {{.Param}} characters."
+
+[admin.sample.create.success]
+other = "Sample created successfully."
+
+[admin.sample.upload.success]
+other = "Sample files submitted successfully."
+
+[admin.sample.create.invalidGender]
+other = "Invalid gender for sample."
+
+[admin.sample.missingFastq1]
+other = "The Fastq1 file was not sent."
+
+[admin.sample.missingFastq2]
+other = "The Fastq2 file was not sent."
+
+[admin.sample.missingFiles]
+other = "No files were sent for upload."
+
+[admin.sample.contentType.error]
+other = "The request must be multipart/form-data."
+
+[admin.sample.notFound.error]
+other = "Sample not found."
+
+[admin.sample.delete.success]
+other = "Sample deleted successfully."

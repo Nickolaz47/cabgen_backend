@@ -30,8 +30,10 @@ func TestGetMicroorganisms(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockMicroorganismService{
-			FindAllFunc: func(ctx context.Context, lang string) ([]models.MicroorganismAdminTableResponse, error) {
-				return []models.MicroorganismAdminTableResponse{mockResponse}, nil
+			FindAllFunc: func(ctx context.Context, lang string) (
+				[]models.MicroorganismAdminTableResponse, error) {
+				return []models.MicroorganismAdminTableResponse{
+					mockResponse}, nil
 			},
 		}
 
@@ -59,8 +61,9 @@ func TestGetMicroorganisms(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockMicroorganismService{
-			FindAllFunc: func(ctx context.Context, lang string) ([]models.MicroorganismAdminTableResponse, error) {
-				return nil, gorm.ErrInvalidTransaction // Simula erro interno
+			FindAllFunc: func(ctx context.Context, lang string) (
+				[]models.MicroorganismAdminTableResponse, error) {
+				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 

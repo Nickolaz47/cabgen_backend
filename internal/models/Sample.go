@@ -179,7 +179,7 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 type SampleCreateInput struct {
 	Name           string     `json:"name" binding:"required,min=3,max=100"`
 	CollectionDate time.Time  `json:"collection_date" binding:"required" time_format:"2006-01-02"`
-	RunNumber      string     `json:"run_number" binding:"required"`
+	RunNumber      string     `json:"run_number" binding:"required,max=50"`
 	RunDate        time.Time  `json:"run_date" binding:"required" time_format:"2006-01-02"`
 	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
 	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
@@ -199,7 +199,7 @@ type SampleCreateInput struct {
 type SampleUpdateInput struct {
 	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
 	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
-	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty"`
+	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty,max=50"`
 	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
 	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
 	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`

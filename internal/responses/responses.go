@@ -66,6 +66,15 @@ const (
 	HealthServiceNotFoundError                = "admin.healthService.notFound.error"
 	HealthServiceNameAlreadyExistsError       = "admin.healthService.nameAlreadyExists.error"
 	HealthServiceDeleted                      = "admin.healthService.delete.success"
+	SampleCreationSuccess                     = "admin.sample.create.success"
+	SampleUploadSuccess                       = "admin.sample.upload.success"
+	SampleInvalidGender                       = "admin.sample.create.invalidGender"
+	SampleMissingFastq1                       = "admin.sample.missingFastq1"
+	SampleMissingFastq2                       = "admin.sample.missingFastq2"
+	SampleMissingFiles                        = "admin.sample.missingFiles"
+	SampleContentTypeError                    = "admin.sample.contentType.error"
+	SampleNotFoundError                       = "admin.sample.notFound.error"
+	SampleDeleted                             = "admin.sample.delete.success"
 )
 
 type APIResponse struct {

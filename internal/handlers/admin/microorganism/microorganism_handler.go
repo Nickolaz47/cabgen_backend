@@ -195,7 +195,8 @@ func (h *AdminMicroorganismHandler) UpdateMicroorganism(c *gin.Context) {
 		return
 	}
 
-	microUpdated, err := h.Service.Update(c.Request.Context(), id, microUpdateInput)
+	microUpdated, err := h.Service.Update(c.Request.Context(), id,
+		microUpdateInput)
 	if err != nil {
 		code, errMsg := handlererrors.HandleMicroorganismError(err)
 		c.JSON(

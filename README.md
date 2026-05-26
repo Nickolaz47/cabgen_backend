@@ -400,9 +400,13 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 ## TODO
 
 - [x] Implementar logger nos services;
-- [x] Modelar Microorganism;
-- [x] Modelar HealthService;
-- [ ] Modelar Sample;
-- [ ] Adicionar um volume para armazenar o events.db e as amostras recebidas;
-- [ ] Adicionar estado e cidade no cadastro;
+- [x] Modelar Microorganism (Model + Repository + Service + Handler + Tests);
+- [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
+- [ ] Modelar Sample (Model + Repository + Service + Handler + Tests);
+- [ ] Modelar Analysis (Model + Repository + Service + Handler + Tests)
+- [ ] Adicionar cidade como select no cadastro da amostra;
 - [ ] Mostrar no resultado as versões de cada programa;
+- [ ] Permitir o download de vários resultados;
+- [ ] Migrar os dados do MongoDB para o Postgresql;
+- [ ] Integrar com a pipeline;
+- [ ] Integrar com o frontend;

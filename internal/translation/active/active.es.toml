@@ -191,10 +191,10 @@ other = "La marca del secuenciador es obligatoria."
 other = "El modelo del secuenciador es obligatorio."
 
 [validation.Brand.min]
-other = "La marca del secuenciador debe contener al menos 3 caracteres."
+other = "La marca del secuenciador debe contener al menos {{.Param}} caracteres."
 
 [validation.Model.min]
-other = "El modelo del secuenciador debe contener al menos 3 caracteres."
+other = "El modelo del secuenciador debe contener al menos {{.Param}} caracteres."
 
 [admin.sequencer.create.success]
 other = "Secuenciador registrado con éxito."
@@ -287,10 +287,10 @@ other = "El taxón es obligatorio."
 other = "El tipo de servicio de salud es obligatorio."
 
 [validation.City.min]
-other = "La ciudad debe tener al menos 3 caracteres."
+other = "La ciudad debe tener al menos {{.Param}} caracteres."
 
 [validation.Contactant.min]
-other = "El nombre del contacto debe tener al menos 3 caracteres."
+other = "El nombre del contacto debe tener al menos {{.Param}} caracteres."
 
 [validation.ContactEmail.email]
 other = "El formato del correo electrónico de contacto es inválido."
@@ -312,3 +312,84 @@ other = "Ya existe un servicio de salud con este nombre."
 
 [admin.healthService.delete.success]
 other = "Servicio de salud eliminado con éxito."
+
+[validation.CollectionDate.required]
+other = "La fecha de recolección es obligatoria."
+
+[validation.CollectionDate.time_format]
+other = "La fecha de recolección debe tener el formato RFC3339."
+
+[validation.RunNumber.required]
+other = "El número de corrida es obligatorio."
+
+[validation.RunNumber.max]
+other = "El número de corrida debe tener un máximo de {{.Param}} caracteres."
+
+[validation.RunDate.required]
+other = "La fecha de corrida es obligatoria."
+
+[validation.RunDate.time_format]
+other = "La fecha de corrida debe tener el formato RFC3339."
+
+[validation.OriginCode.max]
+other = "El código de origen debe tener un máximo de {{.Param}} caracteres."
+
+[validation.DateOfBirth.time_format]
+other = "La fecha de nacimiento debe tener el formato RFC3339."
+
+[validation.UserID.required]
+other = "El ID del usuario es obligatorio."
+
+[validation.OriginID.required]
+other = "El ID del origen es obligatorio."
+
+[validation.SampleSourceID.required]
+other = "El ID de la fuente de la muestra es obligatorio."
+
+[validation.MicroorganismID.required]
+other = "El ID del microorganismo es obligatorio."
+
+[validation.SequencerID.required]
+other = "El ID del secuenciador es obligatorio."
+
+[validation.LaboratoryID.required]
+other = "El ID del laboratorio es obligatorio."
+
+[validation.HealthServiceID.required]
+other = "El ID del servicio de salud es obligatorio."
+
+[validation.Fastq1.max]
+other = "El nombre del fastq1 debe tener un máximo de {{.Param}} caracteres."
+
+[validation.Fastq2.max]
+other = "El nombre del fastq2 debe tener un máximo de {{.Param}} caracteres."
+
+[validation.Fasta.max]
+other = "El nombre del fasta debe tener un máximo de {{.Param}} caracteres."
+
+[admin.sample.create.success]
+other = "Muestra creada con éxito."
+
+[admin.sample.upload.success]
+other = "Archivos de la muestra enviados con éxito."
+
+[admin.sample.create.invalidGender]
+other = "Género inválido para la muestra."
+
+[admin.sample.missingFastq1]
+other = "El archivo Fastq1 no fue enviado."
+
+[admin.sample.missingFastq2]
+other = "El archivo Fastq2 no fue enviado."
+
+[admin.sample.missingFiles]
+other = "No se enviaron archivos para la carga."
+
+[admin.sample.contentType.error]
+other = "La solicitud debe ser multipart/form-data."
+
+[admin.sample.notFound.error]
+other = "Muestra no encontrada."
+
+[admin.sample.delete.success]
+other = "Muestra eliminada con éxito."

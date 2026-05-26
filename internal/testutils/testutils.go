@@ -65,6 +65,32 @@ func SetupGinContext(method, URL, body string, headers map[string]string,
 	return c, w
 }
 
+func SetupGinMultipartContext(
+	method, URL string,
+	body *bytes.Buffer,
+	contentType string,
+	headers map[string]string,
+	params gin.Params,
+) (*gin.Context, *httptest.ResponseRecorder) {
+	c, w := SetupGinContext(method, URL, "", nil, params)
+
+	req := httptest.NewRequest(method, URL, body)
+
+	for k, vals := range c.Request.Header {
+		for _, v := range vals {
+			req.Header.Set(k, v)
+		}
+	}
+
+	req.Header.Set("Content-Type", contentType)
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	c.Request = req
+	return c, w
+}
 func SetupTestContext() {
 	gin.SetMode(gin.TestMode)
 	translation.LoadTranslation()

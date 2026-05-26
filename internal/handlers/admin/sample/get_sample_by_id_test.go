@@ -1,11 +1,11 @@
-package microorganism_test
+package sample_test
 
 import (
 	"context"
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/microorganism"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -16,37 +16,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetMicroorganismByID(t *testing.T) {
+func TestGetSampleByID(t *testing.T) {
 	testutils.SetupTestContext()
 
-	mockMicro := testmodels.NewMicroorganism(
-		uuid.NewString(),
-		models.Bacteria,
-		"Salmonella",
-		map[string]string{"pt": "ssp", "en": "ssp", "es": "ssp"},
-		true,
-	)
-
-	mockResponse := mockMicro.ToAdminDetailResponse()
+	mockSample := testmodels.CreateMockSample()
+	mockResponse := mockSample.ToResponse("")
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockMicroorganismService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.MicroorganismAdminDetailResponse, error) {
+		svc := &mocks.MockSampleService{
+			FindByIDFunc: func(ctx context.Context, sampleID,
+				userID uuid.UUID, language string) (
+				*models.SampleResponse, error) {
 				return &mockResponse, nil
 			},
 		}
-
-		handler := microorganism.NewAdminMicroorganismHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/microorganism",
+			"/api/admin/sample",
 			"",
 			nil,
-			gin.Params{{Key: "microorganismId", Value: mockMicro.ID.String()}},
+			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
-		handler.GetMicroorganismByID(c)
+		handler.GetSampleByID(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
@@ -59,18 +53,18 @@ func TestGetMicroorganismByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := &mocks.MockMicroorganismService{}
-		handler := microorganism.NewAdminMicroorganismHandler(svc)
+		svc := &mocks.MockSampleService{}
+		handler := sample.NewAdminSampleHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/microorganism",
+			"/api/admin/sample",
 			"",
 			nil,
 			nil,
 		)
 
-		handler.GetMicroorganismByID(c)
+		handler.GetSampleByID(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
@@ -83,27 +77,29 @@ func TestGetMicroorganismByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		svc := &mocks.MockMicroorganismService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.MicroorganismAdminDetailResponse, error) {
+		svc := &mocks.MockSampleService{
+			FindByIDFunc: func(ctx context.Context, sampleID,
+				userID uuid.UUID, language string) (
+				*models.SampleResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
 
-		handler := microorganism.NewAdminMicroorganismHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/microorganism",
+			"/api/admin/sample",
 			"",
 			nil,
-			gin.Params{{Key: "microorganismId", Value: uuid.NewString()}},
+			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
-		handler.GetMicroorganismByID(c)
+		handler.GetSampleByID(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
-				"error": "Microorganism not found.",
+				"error": "Sample not found.",
 			},
 		)
 
@@ -112,24 +108,25 @@ func TestGetMicroorganismByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockMicroorganismService{
-			FindByIDFunc: func(ctx context.Context, 
-				ID uuid.UUID) (*models.MicroorganismAdminDetailResponse, error) {
+		svc := &mocks.MockSampleService{
+			FindByIDFunc: func(ctx context.Context, sampleID,
+				userID uuid.UUID, language string) (
+				*models.SampleResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
 
-		handler := microorganism.NewAdminMicroorganismHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/microorganism",
+			"/api/admin/sample",
 			"",
 			nil,
-			gin.Params{{Key: "microorganismId", Value: mockMicro.ID.String()}},
+			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
-		handler.GetMicroorganismByID(c)
+		handler.GetSampleByID(c)
 
 		expected := testutils.ToJSON(
 			map[string]string{
