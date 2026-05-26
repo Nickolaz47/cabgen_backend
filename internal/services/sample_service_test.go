@@ -163,7 +163,7 @@ func TestSampleFindByID(t *testing.T) {
 
 func TestSampleCreate(t *testing.T) {
 	mock := testmodels.CreateMockSample()
-	input := testmodels.NewSampleCreateInput(mock)
+	input := testmodels.NewSampleCreateDTO(mock)
 
 	happyRepos := func() (
 		*mocks.MockCountryRepository,
@@ -896,7 +896,7 @@ func TestSampleUpdate(t *testing.T) {
 	mock := testmodels.CreateMockSample()
 
 	newName := "Updated Sample"
-	input := models.SampleUpdateInput{Name: &newName}
+	input := models.SampleUpdateDTO{Name: &newName}
 
 	t.Run("Success", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
@@ -985,7 +985,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Country Not Found", func(t *testing.T) {
 		code := "XX"
-		inputWithCountry := models.SampleUpdateInput{CountryCode: &code}
+		inputWithCountry := models.SampleUpdateDTO{CountryCode: &code}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1015,7 +1015,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Country Database", func(t *testing.T) {
 		code := "XX"
-		inputWithCountry := models.SampleUpdateInput{CountryCode: &code}
+		inputWithCountry := models.SampleUpdateDTO{CountryCode: &code}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1045,7 +1045,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - User Not Found", func(t *testing.T) {
 		userID := uuid.New()
-		inputWithUser := models.SampleUpdateInput{UserID: &userID}
+		inputWithUser := models.SampleUpdateDTO{UserID: &userID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1075,7 +1075,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - User Database", func(t *testing.T) {
 		userID := uuid.New()
-		inputWithUser := models.SampleUpdateInput{UserID: &userID}
+		inputWithUser := models.SampleUpdateDTO{UserID: &userID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1105,7 +1105,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Origin Not Found", func(t *testing.T) {
 		originID := uuid.New()
-		inputWithOrigin := models.SampleUpdateInput{OriginID: &originID}
+		inputWithOrigin := models.SampleUpdateDTO{OriginID: &originID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1135,7 +1135,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Origin Database", func(t *testing.T) {
 		originID := uuid.New()
-		inputWithOrigin := models.SampleUpdateInput{OriginID: &originID}
+		inputWithOrigin := models.SampleUpdateDTO{OriginID: &originID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1165,7 +1165,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - SampleSource Not Found", func(t *testing.T) {
 		ssID := uuid.New()
-		inputWithSS := models.SampleUpdateInput{SampleSourceID: &ssID}
+		inputWithSS := models.SampleUpdateDTO{SampleSourceID: &ssID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1195,7 +1195,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - SampleSource Database", func(t *testing.T) {
 		ssID := uuid.New()
-		inputWithSS := models.SampleUpdateInput{SampleSourceID: &ssID}
+		inputWithSS := models.SampleUpdateDTO{SampleSourceID: &ssID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1225,7 +1225,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Microorganism Not Found", func(t *testing.T) {
 		microID := uuid.New()
-		inputWithMicro := models.SampleUpdateInput{MicroorganismID: &microID}
+		inputWithMicro := models.SampleUpdateDTO{MicroorganismID: &microID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1255,7 +1255,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Microorganism Database", func(t *testing.T) {
 		microID := uuid.New()
-		inputWithMicro := models.SampleUpdateInput{MicroorganismID: &microID}
+		inputWithMicro := models.SampleUpdateDTO{MicroorganismID: &microID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1285,7 +1285,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Sequencer Not Found", func(t *testing.T) {
 		seqID := uuid.New()
-		inputWithSeq := models.SampleUpdateInput{SequencerID: &seqID}
+		inputWithSeq := models.SampleUpdateDTO{SequencerID: &seqID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1315,7 +1315,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Sequencer Database", func(t *testing.T) {
 		seqID := uuid.New()
-		inputWithSeq := models.SampleUpdateInput{SequencerID: &seqID}
+		inputWithSeq := models.SampleUpdateDTO{SequencerID: &seqID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1345,7 +1345,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Laboratory Not Found", func(t *testing.T) {
 		labID := uuid.New()
-		inputWithLab := models.SampleUpdateInput{LaboratoryID: &labID}
+		inputWithLab := models.SampleUpdateDTO{LaboratoryID: &labID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1375,7 +1375,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - Laboratory Database", func(t *testing.T) {
 		labID := uuid.New()
-		inputWithLab := models.SampleUpdateInput{LaboratoryID: &labID}
+		inputWithLab := models.SampleUpdateDTO{LaboratoryID: &labID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1405,7 +1405,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - HealthService Not Found", func(t *testing.T) {
 		hsID := uuid.New()
-		inputWithHS := models.SampleUpdateInput{HealthServiceID: &hsID}
+		inputWithHS := models.SampleUpdateDTO{HealthServiceID: &hsID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
@@ -1435,7 +1435,7 @@ func TestSampleUpdate(t *testing.T) {
 
 	t.Run("Error - HealthService Database", func(t *testing.T) {
 		hsID := uuid.New()
-		inputWithHS := models.SampleUpdateInput{HealthServiceID: &hsID}
+		inputWithHS := models.SampleUpdateDTO{HealthServiceID: &hsID}
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,

@@ -68,12 +68,12 @@ type MockSampleService struct {
 		userID uuid.UUID, language string) ([]models.SampleResponse, error)
 	FindByIDFunc func(ctx context.Context, sampleID, userID uuid.UUID,
 		language string) (*models.SampleResponse, error)
-	CreateFunc func(ctx context.Context, input models.SampleCreateInput,
+	CreateFunc func(ctx context.Context, input models.SampleCreateDTO,
 		language string) (*models.SampleResponse, error)
 	AttachFilesFunc func(ctx context.Context, sampleID, userID uuid.UUID,
 		input models.SampleAttachmentInput) error
 	UpdateFunc func(ctx context.Context, sampleID, userID uuid.UUID,
-		input models.SampleUpdateInput,
+		input models.SampleUpdateDTO,
 		language string) (*models.SampleResponse, error)
 	DeleteFunc func(ctx context.Context, sampleID, userID uuid.UUID) error
 }
@@ -105,7 +105,7 @@ func (r *MockSampleService) FindByID(ctx context.Context, sampleID,
 }
 
 func (r *MockSampleService) Create(ctx context.Context,
-	input models.SampleCreateInput, language string,
+	input models.SampleCreateDTO, language string,
 ) (*models.SampleResponse, error) {
 	if r.CreateFunc != nil {
 		return r.CreateFunc(ctx, input, language)
@@ -123,7 +123,7 @@ func (r *MockSampleService) AttachFiles(ctx context.Context,
 }
 
 func (r *MockSampleService) Update(ctx context.Context, sampleID,
-	userID uuid.UUID, input models.SampleUpdateInput, language string,
+	userID uuid.UUID, input models.SampleUpdateDTO, language string,
 ) (*models.SampleResponse, error) {
 	if r.UpdateFunc != nil {
 		return r.UpdateFunc(ctx, sampleID, userID, input, language)

@@ -32,7 +32,7 @@ func TestUpdateSample(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
-			UpdateFunc: func(ctx context.Context, sampleID, userID uuid.UUID, input models.SampleUpdateInput, language string) (*models.SampleResponse, error) {
+			UpdateFunc: func(ctx context.Context, sampleID, userID uuid.UUID, input models.SampleUpdateDTO, language string) (*models.SampleResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -108,7 +108,7 @@ func TestUpdateSample(t *testing.T) {
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			UpdateFunc: func(ctx context.Context, sampleID,
-				userID uuid.UUID, input models.SampleUpdateInput,
+				userID uuid.UUID, input models.SampleUpdateDTO,
 				language string) (*models.SampleResponse, error) {
 				return nil, services.ErrNotFound
 			},
@@ -139,7 +139,7 @@ func TestUpdateSample(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			UpdateFunc: func(ctx context.Context, sampleID,
-				userID uuid.UUID, input models.SampleUpdateInput,
+				userID uuid.UUID, input models.SampleUpdateDTO,
 				language string) (*models.SampleResponse, error) {
 				return nil, services.ErrInternal
 			},

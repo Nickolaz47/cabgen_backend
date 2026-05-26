@@ -20,7 +20,8 @@ type Model interface {
 		models.LaboratoryUpdateInput | models.CountryCreateInput |
 		models.CountryUpdateInput | models.MicroorganismCreateInput |
 		models.MicroorganismUpdateInput | models.HealthServiceCreateInput |
-		models.HealthServiceUpdateInput | models.SampleCreateInput |
+		models.HealthServiceUpdateInput | models.AdminSampleCreateInput |
+		models.AdminSampleUpdateInput | models.SampleCreateInput |
 		models.SampleUpdateInput | models.SampleAttachmentInput
 }
 

@@ -22,7 +22,7 @@ func TestApplySampleUpdate(t *testing.T) {
 	gender := models.Female
 	dateOfBirth := time.Date(1990, time.March, 15, 0, 0, 0, 0, time.UTC)
 
-	input := models.SampleUpdateInput{
+	input := models.SampleUpdateDTO{
 		Name:           &name,
 		CollectionDate: &collectionDate,
 		RunNumber:      &runNumber,

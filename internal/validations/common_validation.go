@@ -2,7 +2,7 @@ package validations
 
 import "github.com/CABGenOrg/cabgen_backend/internal/models"
 
-func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateInput) {
+func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 	if input.Name != nil {
 		sample.Name = *input.Name
 	}

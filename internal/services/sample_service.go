@@ -21,12 +21,12 @@ type SampleService interface {
 		language string) ([]models.SampleResponse, error)
 	FindByID(ctx context.Context, sampleID, userID uuid.UUID,
 		language string) (*models.SampleResponse, error)
-	Create(ctx context.Context, input models.SampleCreateInput,
+	Create(ctx context.Context, input models.SampleCreateDTO,
 		language string) (*models.SampleResponse, error)
 	AttachFiles(ctx context.Context, sampleID, userID uuid.UUID,
 		input models.SampleAttachmentInput) error
 	Update(ctx context.Context, sampleID, userID uuid.UUID,
-		input models.SampleUpdateInput,
+		input models.SampleUpdateDTO,
 		language string) (*models.SampleResponse, error)
 	Delete(ctx context.Context, sampleID, userID uuid.UUID) error
 }
@@ -146,7 +146,7 @@ func (s *sampleService) FindByID(
 
 func (s *sampleService) Create(
 	ctx context.Context,
-	input models.SampleCreateInput,
+	input models.SampleCreateDTO,
 	language string) (*models.SampleResponse, error) {
 	country, err := s.CountryRepo.GetCountryByCode(ctx, input.CountryCode)
 	if err != nil {
@@ -412,7 +412,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 
 func (s *sampleService) Update(
 	ctx context.Context, sampleID, userID uuid.UUID,
-	input models.SampleUpdateInput,
+	input models.SampleUpdateDTO,
 	language string) (*models.SampleResponse, error) {
 	existingSample, err := s.Repo.GetSampleByID(ctx, sampleID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {

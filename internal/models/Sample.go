@@ -176,7 +176,7 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 	}
 }
 
-type SampleCreateInput struct {
+type AdminSampleCreateInput struct {
 	Name           string     `json:"name" binding:"required,min=3,max=100"`
 	CollectionDate time.Time  `json:"collection_date" binding:"required" time_format:"2006-01-02"`
 	RunNumber      string     `json:"run_number" binding:"required,max=50"`
@@ -196,7 +196,45 @@ type SampleCreateInput struct {
 	HealthServiceID uuid.UUID `json:"health_service_id" binding:"required"`
 }
 
-type SampleUpdateInput struct {
+type SampleCreateInput struct {
+	Name           string     `json:"name" binding:"required,min=3,max=100"`
+	CollectionDate time.Time  `json:"collection_date" binding:"required" time_format:"2006-01-02"`
+	RunNumber      string     `json:"run_number" binding:"required,max=50"`
+	RunDate        time.Time  `json:"run_date" binding:"required" time_format:"2006-01-02"`
+	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	// Foreign Keys
+	CountryCode     string    `json:"country_code" binding:"required,len=3"`
+	OriginID        uuid.UUID `json:"origin_id" binding:"required"`
+	SampleSourceID  uuid.UUID `json:"sample_source_id" binding:"required"`
+	MicroorganismID uuid.UUID `json:"microorganism_id" binding:"required"`
+	SequencerID     uuid.UUID `json:"sequencer_id" binding:"required"`
+	LaboratoryID    uuid.UUID `json:"laboratory_id" binding:"required"`
+	HealthServiceID uuid.UUID `json:"health_service_id" binding:"required"`
+}
+
+type SampleCreateDTO struct {
+	Name            string
+	CollectionDate  time.Time
+	RunNumber       string
+	RunDate         time.Time
+	City            *string
+	OriginCode      *string
+	Gender          *Gender
+	DateOfBirth     *time.Time
+	CountryCode     string
+	UserID          uuid.UUID
+	OriginID        uuid.UUID
+	SampleSourceID  uuid.UUID
+	MicroorganismID uuid.UUID
+	SequencerID     uuid.UUID
+	LaboratoryID    uuid.UUID
+	HealthServiceID uuid.UUID
+}
+
+type AdminSampleUpdateInput struct {
 	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
 	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
 	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty,max=50"`
@@ -214,6 +252,86 @@ type SampleUpdateInput struct {
 	SequencerID     *uuid.UUID `json:"sequencer_id,omitempty" binding:"omitempty"`
 	LaboratoryID    *uuid.UUID `json:"laboratory_id,omitempty" binding:"omitempty"`
 	HealthServiceID *uuid.UUID `json:"health_service_id,omitempty" binding:"omitempty"`
+}
+
+type SampleUpdateInput struct {
+	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
+	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
+	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty,max=50"`
+	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	// Foreign Keys
+	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
+	OriginID        *uuid.UUID `json:"origin_id,omitempty" binding:"omitempty"`
+	SampleSourceID  *uuid.UUID `json:"sample_source_id,omitempty" binding:"omitempty"`
+	MicroorganismID *uuid.UUID `json:"microorganism_id,omitempty" binding:"omitempty"`
+	SequencerID     *uuid.UUID `json:"sequencer_id,omitempty" binding:"omitempty"`
+	LaboratoryID    *uuid.UUID `json:"laboratory_id,omitempty" binding:"omitempty"`
+	HealthServiceID *uuid.UUID `json:"health_service_id,omitempty" binding:"omitempty"`
+}
+
+type SampleUpdateDTO struct {
+	Name            *string
+	CollectionDate  *time.Time
+	RunNumber       *string
+	RunDate         *time.Time
+	City            *string
+	OriginCode      *string
+	Gender          *Gender
+	DateOfBirth     *time.Time
+	CountryCode     *string
+	UserID          *uuid.UUID
+	OriginID        *uuid.UUID
+	SampleSourceID  *uuid.UUID
+	MicroorganismID *uuid.UUID
+	SequencerID     *uuid.UUID
+	LaboratoryID    *uuid.UUID
+	HealthServiceID *uuid.UUID
+}
+
+func CreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateDTO {
+	return SampleCreateDTO{
+		Name:            input.Name,
+		CollectionDate:  input.CollectionDate,
+		RunNumber:       input.RunNumber,
+		RunDate:         input.RunDate,
+		City:            input.City,
+		OriginCode:      input.OriginCode,
+		Gender:          input.Gender,
+		DateOfBirth:     input.DateOfBirth,
+		CountryCode:     input.CountryCode,
+		UserID:          id,
+		OriginID:        input.OriginID,
+		SampleSourceID:  input.SampleSourceID,
+		MicroorganismID: input.MicroorganismID,
+		SequencerID:     input.SequencerID,
+		LaboratoryID:    input.LaboratoryID,
+		HealthServiceID: input.HealthServiceID,
+	}
+}
+
+func UpdateInputToDTO(input SampleUpdateInput, id uuid.UUID) SampleUpdateDTO {
+	return SampleUpdateDTO{
+		Name:            input.Name,
+		CollectionDate:  input.CollectionDate,
+		RunNumber:       input.RunNumber,
+		RunDate:         input.RunDate,
+		City:            input.City,
+		OriginCode:      input.OriginCode,
+		Gender:          input.Gender,
+		DateOfBirth:     input.DateOfBirth,
+		CountryCode:     input.CountryCode,
+		UserID:          &id,
+		OriginID:        input.OriginID,
+		SampleSourceID:  input.SampleSourceID,
+		MicroorganismID: input.MicroorganismID,
+		SequencerID:     input.SequencerID,
+		LaboratoryID:    input.LaboratoryID,
+		HealthServiceID: input.HealthServiceID,
+	}
 }
 
 type SampleAttachmentInput struct {

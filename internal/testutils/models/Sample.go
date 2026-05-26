@@ -149,6 +149,26 @@ func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 		Gender:          sample.Gender,
 		DateOfBirth:     sample.DateOfBirth,
 		CountryCode:     sample.Country.Code,
+		OriginID:        sample.OriginID,
+		SampleSourceID:  sample.SampleSourceID,
+		MicroorganismID: sample.MicroorganismID,
+		SequencerID:     sample.SequencerID,
+		LaboratoryID:    sample.LaboratoryID,
+		HealthServiceID: sample.HealthServiceID,
+	}
+}
+
+func NewSampleCreateDTO(sample rModels.Sample) rModels.SampleCreateDTO {
+	return rModels.SampleCreateDTO{
+		Name:            sample.Name,
+		CollectionDate:  sample.CollectionDate,
+		RunNumber:       sample.RunNumber,
+		RunDate:         sample.RunDate,
+		City:            sample.City,
+		OriginCode:      sample.OriginCode,
+		Gender:          sample.Gender,
+		DateOfBirth:     sample.DateOfBirth,
+		CountryCode:     sample.Country.Code,
 		UserID:          sample.UserID,
 		OriginID:        sample.OriginID,
 		SampleSourceID:  sample.SampleSourceID,

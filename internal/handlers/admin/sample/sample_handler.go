@@ -77,8 +77,7 @@ func (h *AdminSampleHandler) CreateSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 
-	var newSample models.SampleCreateInput
-
+	var newSample models.AdminSampleCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
@@ -93,7 +92,8 @@ func (h *AdminSampleHandler) CreateSample(c *gin.Context) {
 		return
 	}
 
-	sample, err := h.Service.Create(c.Request.Context(), newSample, language)
+	payload := models.SampleCreateDTO(newSample)
+	sample, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code,
@@ -235,7 +235,7 @@ func (h *AdminSampleHandler) UpdateSample(c *gin.Context) {
 		return
 	}
 
-	var sampleUpdateInput models.SampleUpdateInput
+	var sampleUpdateInput models.AdminSampleUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
 	if !ok {
 		c.JSON(http.StatusBadRequest,
@@ -257,8 +257,9 @@ func (h *AdminSampleHandler) UpdateSample(c *gin.Context) {
 		return
 	}
 
+	payload := models.SampleUpdateDTO(sampleUpdateInput)
 	sampleUpdated, err := h.Service.Update(c.Request.Context(), id, uuid.Nil,
-		sampleUpdateInput, language)
+		payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{

@@ -45,7 +45,7 @@ func TestCreateSample(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			CreateFunc: func(ctx context.Context,
-				input models.SampleCreateInput,
+				input models.SampleCreateDTO,
 				language string) (*models.SampleResponse, error) {
 				return &mockResponse, nil
 			},
@@ -77,7 +77,7 @@ func TestCreateSample(t *testing.T) {
 	t.Run("Success - Minimal Payload", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			CreateFunc: func(ctx context.Context,
-				input models.SampleCreateInput, language string) (
+				input models.SampleCreateDTO, language string) (
 				*models.SampleResponse, error) {
 				return &mockResponse, nil
 			},
@@ -163,7 +163,7 @@ func TestCreateSample(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			CreateFunc: func(ctx context.Context,
-				input models.SampleCreateInput,
+				input models.SampleCreateDTO,
 				language string) (*models.SampleResponse, error) {
 				return nil, services.ErrInternal
 			},
