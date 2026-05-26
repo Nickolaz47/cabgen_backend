@@ -116,6 +116,7 @@ func main() {
 	sampleSourceHandler := container.BuildSampleSourceHandler(sampleSourceSvc)
 	microHandler := container.BuildMicroorganismHandler(microSvc)
 	healthServiceHandler := container.BuildHealthServiceHandler(healthServiceSvc)
+	sampleHandler := container.BuildSampleHandler(sampleSvc)
 
 	// Admin handlers
 	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
@@ -145,6 +146,7 @@ func main() {
 	common.SetupSampleSourceRoutes(commonRouter, sampleSourceHandler)
 	common.SetupMicroorganismRoutes(commonRouter, microHandler)
 	common.SetupHealthServiceRoutes(commonRouter, healthServiceHandler)
+	common.SetupSampleRoutes(commonRouter, sampleHandler)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(),

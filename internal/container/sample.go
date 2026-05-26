@@ -2,6 +2,7 @@ package container
 
 import (
 	adminSample "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"go.uber.org/zap"
@@ -27,6 +28,10 @@ func BuildSampleService(db *gorm.DB, rootDir string,
 	)
 
 	return sampleService
+}
+
+func BuildSampleHandler(svc services.SampleService) *sample.SampleHandler {
+	return sample.NewSampleHandler(svc)
 }
 
 func BuildAdminSampleHandler(
