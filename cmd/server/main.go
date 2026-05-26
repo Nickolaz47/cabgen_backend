@@ -19,12 +19,18 @@ import (
 )
 
 func main() {
+	// Root dir
+	rootDir, err := utils.GetProjectRoot()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Load env
 	if err := config.LoadEnvVariables(""); err != nil {
 		log.Fatal(err)
 	}
 
-	// Setup main database
+	// Setup database
 	mainDriver := "postgres"
 	mainDSN := config.DatabaseConnectionString
 	modelsToMigrate := []any{
@@ -94,6 +100,8 @@ func main() {
 		logging.FileLogger)
 	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(),
 		logging.FileLogger)
+	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
+		logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -120,6 +128,7 @@ func main() {
 	adminMicroHandler := container.BuildAdminMicroorganismHandler(microSvc)
 	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(
 		healthServiceSvc)
+	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -148,6 +157,7 @@ func main() {
 	admin.SetupAdminCountryRoutes(adminRouter, adminCountryHandler)
 	admin.SetupAdminMicroorganismRoutes(adminRouter, adminMicroHandler)
 	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
+	admin.SetupAdminSampleRoutes(adminRouter, adminSampleHandler)
 
 	// Event dispatcher
 	eventRepo := container.BuildEventRepository(mainDB.DB())
