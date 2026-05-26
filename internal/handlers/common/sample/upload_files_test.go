@@ -6,6 +6,8 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
@@ -40,13 +42,13 @@ func TestUploadFiles(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
 				string, error) {
-			
+
 				assert.Equal(t, mockUserID, userID)
 				return dir, nil
 			},
 			AttachFilesFunc: func(ctx context.Context, sampleID,
 				userID uuid.UUID, input models.SampleAttachmentInput) error {
-			
+
 				assert.Equal(t, mockUserID, userID)
 				return nil
 			},
@@ -63,6 +65,12 @@ func TestUploadFiles(t *testing.T) {
 		)
 		c.Set("user", &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
+
+		expectedFilePath := filepath.Join(dir, "reads_R1.fastq.gz")
+		fileContent, err := os.ReadFile(expectedFilePath)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "dummy", string(fileContent))
 
 		expected := testutils.ToJSON(map[string]string{
 			"message": "Sample files submitted successfully.",
@@ -154,7 +162,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-	
+
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(map[string]string{

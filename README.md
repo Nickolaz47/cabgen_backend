@@ -402,7 +402,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Implementar logger nos services;
 - [x] Modelar Microorganism (Model + Repository + Service + Handler + Tests);
 - [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
-- [ ] Modelar Sample (Model + Repository + Service + Handler + Tests);
+- [x] Modelar Sample (Model + Repository + Service + Handler + Tests);
 - [ ] Modelar Analysis (Model + Repository + Service + Handler + Tests)
 - [ ] Adicionar cidade como select no cadastro da amostra;
 - [ ] Mostrar no resultado as versões de cada programa;

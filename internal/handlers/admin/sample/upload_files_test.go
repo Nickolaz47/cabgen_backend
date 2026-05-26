@@ -6,6 +6,8 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
@@ -66,6 +68,12 @@ func TestUploadFiles(t *testing.T) {
 		)
 		c.Set("user", &mockAdminUserToken)
 		handler.UploadFiles(c)
+
+		expectedFilePath := filepath.Join(dir, "reads_R1.fastq.gz")
+		fileContent, err := os.ReadFile(expectedFilePath)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "dummy", string(fileContent))
 
 		expected := testutils.ToJSON(map[string]string{
 			"message": "Sample files submitted successfully.",
