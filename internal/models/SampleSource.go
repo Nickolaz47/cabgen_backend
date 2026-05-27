@@ -5,10 +5,10 @@ import (
 )
 
 type SampleSource struct {
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Names    JSONMap   `gorm:"type:jsonb;not null" json:"names"`
-	Groups   JSONMap   `gorm:"type:jsonb;not null" json:"groups"`
-	IsActive bool      `gorm:"not null" json:"is_active"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Names    JSONMap   `gorm:"type:jsonb;not null"`
+	Groups   JSONMap   `gorm:"type:jsonb;not null"`
+	IsActive bool      `gorm:"not null"`
 }
 
 type SampleSourceAdminDetailResponse struct {

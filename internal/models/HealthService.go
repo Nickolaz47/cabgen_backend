@@ -19,16 +19,16 @@ func (h HealthServiceType) IsValid() bool {
 }
 
 type HealthService struct {
-	ID           uuid.UUID         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Name         string            `gorm:"type:varchar(255);not null;uniqueIndex" json:"name"`
-	Type         HealthServiceType `gorm:"type:varchar(20);not null" json:"type"`
-	CountryID    uint              `gorm:"not null" json:"-"`
+	ID           uuid.UUID         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Name         string            `gorm:"type:varchar(255);not null;uniqueIndex"`
+	Type         HealthServiceType `gorm:"type:varchar(20);not null"`
+	CountryID    uint              `gorm:"not null"`
 	Country      Country           `gorm:"foreignKey:CountryID;references:ID"`
-	City         *string           `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
-	Contactant   *string           `gorm:"type:varchar(255);default:null" json:"contactant,omitempty"`
-	ContactEmail *string           `gorm:"type:varchar(255);default:null" json:"contact_email,omitempty"`
-	ContactPhone *string           `gorm:"type:varchar(255);default:null" json:"contact_phone,omitempty"`
-	IsActive     bool              `gorm:"not null" json:"is_active"`
+	City         *string           `gorm:"type:varchar(255);default:null"`
+	Contactant   *string           `gorm:"type:varchar(255);default:null"`
+	ContactEmail *string           `gorm:"type:varchar(255);default:null"`
+	ContactPhone *string           `gorm:"type:varchar(255);default:null"`
+	IsActive     bool              `gorm:"not null"`
 }
 
 type HealthServiceAdminTableResponse struct {

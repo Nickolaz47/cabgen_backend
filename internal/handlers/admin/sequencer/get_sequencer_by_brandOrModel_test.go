@@ -21,11 +21,12 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	mockSequencer := testmodels.NewSequencer(
 		uuid.NewString(), "Illumina", "MiSeq", true,
 	)
+	mockResponse := mockSequencer.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSequencerService{
 			FindByBrandOrModelFunc: func(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error) {
-				return []models.SequencerAdminTableResponse{mockSequencer.ToAdminTableResponse()}, nil
+				return []models.SequencerAdminTableResponse{mockResponse}, nil
 			},
 		}
 		handler := sequencer.NewAdminSequencerHandler(svc)
@@ -38,7 +39,8 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": []models.Sequencer{mockSequencer},
+				"data": []models.SequencerAdminTableResponse{
+					mockResponse},
 			},
 		)
 
@@ -49,7 +51,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 	t.Run("Success - Input empty", func(t *testing.T) {
 		svc := &mocks.MockSequencerService{
 			FindAllFunc: func(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
-				return []models.SequencerAdminTableResponse{mockSequencer.ToAdminTableResponse()}, nil
+				return []models.SequencerAdminTableResponse{mockResponse}, nil
 			},
 		}
 		handler := sequencer.NewAdminSequencerHandler(svc)
@@ -61,7 +63,7 @@ func TestGetSequencerByBrandOrModel(t *testing.T) {
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": []models.Sequencer{mockSequencer},
+				"data": []models.SequencerAdminTableResponse{mockResponse},
 			},
 		)
 

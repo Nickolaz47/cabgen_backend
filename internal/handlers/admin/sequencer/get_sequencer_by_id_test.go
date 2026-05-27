@@ -23,25 +23,27 @@ func TestGetSequencerByID(t *testing.T) {
 	mockSequencer := testmodels.NewSequencer(
 		uuid.NewString(), "Illumina", "MiSeq", true,
 	)
+	mockResponse := mockSequencer.ToAdminTableResponse()
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSequencerService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
-				response := mockSequencer.ToAdminTableResponse()
-				return &response, nil
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.SequencerAdminTableResponse, error) {
+				return &mockResponse, nil
 			},
 		}
 		handler := sequencer.NewAdminSequencerHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/sequencer", "",
-			nil, gin.Params{{Key: "sequencerId", Value: mockSequencer.ID.String()}},
+			nil, gin.Params{{Key: "sequencerId",
+				Value: mockSequencer.ID.String()}},
 		)
 		handler.GetSequencerByID(c)
 
 		expected := testutils.ToJSON(
 			map[string]any{
-				"data": mockSequencer,
+				"data": mockResponse,
 			},
 		)
 
@@ -71,7 +73,8 @@ func TestGetSequencerByID(t *testing.T) {
 
 	t.Run("Sequencer not found", func(t *testing.T) {
 		svc := &mocks.MockSequencerService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.SequencerAdminTableResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -96,7 +99,8 @@ func TestGetSequencerByID(t *testing.T) {
 
 	t.Run("DB error", func(t *testing.T) {
 		svc := &mocks.MockSequencerService{
-			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
+			FindByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.SequencerAdminTableResponse, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}

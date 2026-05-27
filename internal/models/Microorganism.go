@@ -23,11 +23,11 @@ func (t Taxon) IsValid() bool {
 }
 
 type Microorganism struct {
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Taxon    Taxon     `gorm:"not null" json:"taxon"`
-	Species  string    `gorm:"type:varchar(255);not null" json:"species"`
-	Variety  JSONMap   `gorm:"type:jsonb" json:"variety"`
-	IsActive bool      `gorm:"not null" json:"is_active"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Taxon    Taxon     `gorm:"not null"`
+	Species  string    `gorm:"type:varchar(255);not null"`
+	Variety  JSONMap   `gorm:"type:jsonb"`
+	IsActive bool      `gorm:"not null"`
 }
 
 type MicroorganismAdminDetailResponse struct {

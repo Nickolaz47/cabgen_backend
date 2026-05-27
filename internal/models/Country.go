@@ -1,10 +1,10 @@
 package models
 
 type Country struct {
-	ID    uint    `gorm:"primaryKey" json:"-"`
-	Code  string  `gorm:"size:3;uniqueIndex;not null" json:"code"`
-	Names JSONMap `gorm:"type:jsonb;not null" json:"names"`
-	Users []User  `gorm:"foreignKey:CountryID" json:"-"`
+	ID    uint    `gorm:"primaryKey"`
+	Code  string  `gorm:"size:3;uniqueIndex;not null"`
+	Names JSONMap `gorm:"type:jsonb;not null"`
+	Users []User  `gorm:"foreignKey:CountryID"`
 }
 
 type CountryAdminDetailResponse struct {

@@ -5,9 +5,9 @@ import (
 )
 
 type Origin struct {
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Names    JSONMap   `gorm:"type:jsonb;not null" json:"names"`
-	IsActive bool      `gorm:"not null" json:"is_active"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Names    JSONMap   `gorm:"type:jsonb;not null"`
+	IsActive bool      `gorm:"not null"`
 }
 
 type OriginAdminDetailResponse struct {

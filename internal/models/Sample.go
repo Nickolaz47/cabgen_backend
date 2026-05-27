@@ -72,36 +72,36 @@ func (g *Gender) ToTranslatedString(language string) *string {
 }
 
 type Sample struct {
-	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Name           string     `gorm:"type:varchar(255);not null" json:"name"`
-	CollectionDate time.Time  `gorm:"type:date;not null" json:"collection_date"`
-	RunNumber      string     `gorm:"type:varchar(255);not null" json:"run_number"`
-	RunDate        time.Time  `gorm:"type:date;not null" json:"run_date"`
-	City           *string    `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
-	OriginCode     *string    `gorm:"type:varchar(255);default:null" json:"origin_code,omitempty"`
-	Gender         *Gender    `gorm:"type:varchar(15);default:null" json:"gender,omitempty"`
-	DateOfBirth    *time.Time `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
-	Fastq1         *string    `gorm:"type:varchar(255);default:null" json:"fastq1,omitempty"`
-	Fastq2         *string    `gorm:"type:varchar(255);default:null" json:"fastq2,omitempty"`
-	Fasta          *string    `gorm:"type:varchar(255);default:null" json:"fasta,omitempty"`
+	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Name           string     `gorm:"type:varchar(255);not null"`
+	CollectionDate time.Time  `gorm:"type:date;not null"`
+	RunNumber      string     `gorm:"type:varchar(255);not null"`
+	RunDate        time.Time  `gorm:"type:date;not null"`
+	City           *string    `gorm:"type:varchar(255);default:null"`
+	OriginCode     *string    `gorm:"type:varchar(255);default:null"`
+	Gender         *Gender    `gorm:"type:varchar(15);default:null"`
+	DateOfBirth    *time.Time `gorm:"type:date;default:null"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Fastq1         *string `gorm:"type:varchar(255);default:null"`
+	Fastq2         *string `gorm:"type:varchar(255);default:null"`
+	Fasta          *string `gorm:"type:varchar(255);default:null"`
 	// Foreign Keys
-	CountryID       uint          `gorm:"not null" json:"-"`
+	CountryID       uint          `gorm:"not null"`
 	Country         Country       `gorm:"foreignKey:CountryID;references:ID"`
-	UserID          uuid.UUID     `gorm:"not null" json:"-"`
+	UserID          uuid.UUID     `gorm:"not null"`
 	User            User          `gorm:"foreignKey:UserID;references:ID"`
-	OriginID        uuid.UUID     `gorm:"not null" json:"-"`
+	OriginID        uuid.UUID     `gorm:"not null"`
 	Origin          Origin        `gorm:"foreignKey:OriginID;references:ID"`
-	SampleSourceID  uuid.UUID     `gorm:"not null" json:"-"`
+	SampleSourceID  uuid.UUID     `gorm:"not null"`
 	SampleSource    SampleSource  `gorm:"foreignKey:SampleSourceID;references:ID"`
-	MicroorganismID uuid.UUID     `gorm:"not null" json:"-"`
+	MicroorganismID uuid.UUID     `gorm:"not null"`
 	Microorganism   Microorganism `gorm:"foreignKey:MicroorganismID;references:ID"`
-	SequencerID     uuid.UUID     `gorm:"not null" json:"-"`
+	SequencerID     uuid.UUID     `gorm:"not null"`
 	Sequencer       Sequencer     `gorm:"foreignKey:SequencerID;references:ID"`
-	LaboratoryID    uuid.UUID     `gorm:"not null" json:"-"`
+	LaboratoryID    uuid.UUID     `gorm:"not null"`
 	Laboratory      Laboratory    `gorm:"foreignKey:LaboratoryID;references:ID"`
-	HealthServiceID uuid.UUID     `gorm:"not null" json:"-"`
+	HealthServiceID uuid.UUID     `gorm:"not null"`
 	HealthService   HealthService `gorm:"foreignKey:HealthServiceID;references:ID"`
 }
 
