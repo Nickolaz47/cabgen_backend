@@ -116,7 +116,7 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 		return
 	}
 
-	payload := models.CreateInputToDTO(newSample, userToken.ID)
+	payload := models.SampleCreateInputToDTO(newSample, userToken.ID)
 	sample, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
@@ -285,7 +285,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 		return
 	}
 
-	payload := models.UpdateInputToDTO(sampleUpdateInput, userToken.ID)
+	payload := models.SampleUpdateInputToDTO(sampleUpdateInput, userToken.ID)
 	sampleUpdated, err := h.Service.Update(c.Request.Context(), id,
 		userToken.ID, payload, language)
 	if err != nil {

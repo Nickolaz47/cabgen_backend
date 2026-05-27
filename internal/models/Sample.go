@@ -292,7 +292,7 @@ type SampleUpdateDTO struct {
 	HealthServiceID *uuid.UUID
 }
 
-func CreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateDTO {
+func SampleCreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateDTO {
 	return SampleCreateDTO{
 		Name:            input.Name,
 		CollectionDate:  input.CollectionDate,
@@ -313,7 +313,7 @@ func CreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateDTO {
 	}
 }
 
-func UpdateInputToDTO(input SampleUpdateInput, id uuid.UUID) SampleUpdateDTO {
+func SampleUpdateInputToDTO(input SampleUpdateInput, id uuid.UUID) SampleUpdateDTO {
 	return SampleUpdateDTO{
 		Name:            input.Name,
 		CollectionDate:  input.CollectionDate,
