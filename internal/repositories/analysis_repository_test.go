@@ -30,12 +30,19 @@ func TestGetAnalyses(t *testing.T) {
 	analysis := testmodels.CreateMockAnalysis()
 	db.Create(&analysis)
 
-	t.Run("Success", func(t *testing.T) {
-		analyses, err := repo.GetAnalyses(ctx)
+	t.Run("Success - userID is nil", func(t *testing.T) {
+		analyses, err := repo.GetAnalyses(ctx, uuid.Nil)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
 		assert.Equal(t, analysis.ID, analyses[0].ID)
+	})
+
+	t.Run("Success - userID filter", func(t *testing.T) {
+		analyses, err := repo.GetAnalyses(ctx, uuid.New())
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 0)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -43,7 +50,7 @@ func TestGetAnalyses(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockAnalysisRepo := repositories.NewAnalysisRepository(mockDB)
-		analyses, err := mockAnalysisRepo.GetAnalyses(ctx)
+		analyses, err := mockAnalysisRepo.GetAnalyses(ctx, uuid.Nil)
 
 		assert.Error(t, err)
 		assert.Empty(t, analyses)

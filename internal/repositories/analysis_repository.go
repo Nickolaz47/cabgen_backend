@@ -9,7 +9,7 @@ import (
 )
 
 type AnalysisRepository interface {
-	GetAnalyses(ctx context.Context) ([]models.Analysis, error)
+	GetAnalyses(ctx context.Context, userID uuid.UUID) ([]models.Analysis, error)
 	GetAnalysisByID(ctx context.Context, ID uuid.UUID) (*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
 	UpdateAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -26,10 +26,16 @@ func NewAnalysisRepository(db *gorm.DB) AnalysisRepository {
 	}
 }
 
-func (r *analysisRepo) GetAnalyses(ctx context.Context) (
+func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID) (
 	[]models.Analysis, error) {
 	var analyses []models.Analysis
-	if err := r.DB.WithContext(ctx).Find(&analyses).Error; err != nil {
+
+	query := r.DB.WithContext(ctx)
+	if userID != uuid.Nil {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	if err := query.Find(&analyses).Error; err != nil {
 		return nil, err
 	}
 
