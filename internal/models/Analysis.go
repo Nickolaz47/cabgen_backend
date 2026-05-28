@@ -16,6 +16,16 @@ const (
 	AnalysisStatusFailed  AnalysisStatus = "FAILED"
 )
 
+func (a AnalysisStatus) IsValid() bool {
+	switch a {
+	case AnalysisStatusPending, AnalysisStatusRunning, AnalysisStatusDone,
+		AnalysisStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
 type AnalysisType string
 
 const (
@@ -23,6 +33,15 @@ const (
 	AnalysisTypeGenome   AnalysisType = "GENOME"
 	AnalysisTypeComplete AnalysisType = "COMPLETE"
 )
+
+func (a AnalysisType) IsValid() bool {
+	switch a {
+	case AnalysisTypeFastQC, AnalysisTypeGenome, AnalysisTypeComplete:
+		return true
+	default:
+		return false
+	}
+}
 
 type Analysis struct {
 	ID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
@@ -62,11 +81,30 @@ type AnalysisAdminResponse struct {
 	Sample       string         `json:"sample"`
 	SampleID     uuid.UUID      `json:"sample_id"`
 	User         string         `json:"user"`
+	UserID       uuid.UUID      `json:"user_id"`
 	Metrics      datatypes.JSON `json:"metrics"`
 	FastQC1      *string        `json:"fastqc1"`
 	FastQC2      *string        `json:"fastqc2"`
 	StartedAt    *time.Time     `json:"started_at"`
 	FinishedAt   *time.Time     `json:"finished_at"`
+}
+
+func (a *Analysis) ToAdminResponse() AnalysisAdminResponse {
+	return AnalysisAdminResponse{
+		ID:           a.ID,
+		Type:         a.Type,
+		Status:       a.Status,
+		ErrorMessage: a.ErrorMessage,
+		Sample:       a.Sample.Name,
+		SampleID:     a.Sample.ID,
+		User:         a.User.Username,
+		UserID:       a.UserID,
+		Metrics:      a.Metrics,
+		FastQC1:      a.FastQC1,
+		FastQC2:      a.FastQC2,
+		StartedAt:    a.StartedAt,
+		FinishedAt:   a.FinishedAt,
+	}
 }
 
 type AnalysisResponse struct {
@@ -83,14 +121,30 @@ type AnalysisResponse struct {
 	FinishedAt   *time.Time     `json:"finished_at"`
 }
 
+func (a *Analysis) ToResponse() AnalysisResponse {
+	return AnalysisResponse{
+		ID:           a.ID,
+		Type:         a.Type,
+		Status:       a.Status,
+		ErrorMessage: a.ErrorMessage,
+		Sample:       a.Sample.Name,
+		SampleID:     a.SampleID,
+		Metrics:      a.Metrics,
+		FastQC1:      a.FastQC1,
+		FastQC2:      a.FastQC2,
+		StartedAt:    a.StartedAt,
+		FinishedAt:   a.FinishedAt,
+	}
+}
+
 type AdminAnalysisCreateInput struct {
-	Type     AnalysisType `json:"type" binding:"required,oneof=FASTQC GENOME COMPLETE"`
+	Type     AnalysisType `json:"type" binding:"required"`
 	SampleID uuid.UUID    `json:"sample_id" binding:"required"`
 	UserID   uuid.UUID    `json:"user_id" binding:"required"`
 }
 
 type AnalysisCreateInput struct {
-	Type     AnalysisType `json:"type" binding:"required,oneof=FASTQC GENOME COMPLETE"`
+	Type     AnalysisType `json:"type" binding:"required"`
 	SampleID uuid.UUID    `json:"sample_id" binding:"required"`
 }
 
@@ -110,7 +164,7 @@ func AnalysisCreateInputToDTO(i AnalysisCreateInput,
 }
 
 type AdminAnalysisUpdateInput struct {
-	Status       *AnalysisStatus `json:"status" binding:"omitempty,oneof=PENDING RUNNING DONE FAILED"`
+	Status       *AnalysisStatus `json:"status" binding:"omitempty"`
 	ErrorMessage *string         `json:"error_message" binding:"omitempty"`
 	FastQC1      *string         `json:"fastqc1" binding:"omitempty"`
 	FastQC2      *string         `json:"fastqc2" binding:"omitempty"`

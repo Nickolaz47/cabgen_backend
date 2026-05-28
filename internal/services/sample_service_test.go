@@ -1585,9 +1585,14 @@ func TestSampleDelete(t *testing.T) {
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
-		mockRootDir := "/root"
-		if runtime.GOOS == "windows" {
+		var mockRootDir string
+		switch runtime.GOOS {
+		case "windows":
 			mockRootDir = "\\Windows\\System32"
+		case "darwin":
+			mockRootDir = "/var/root"
+		default:
+			mockRootDir = "/root"
 		}
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
