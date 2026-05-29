@@ -12,11 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 )
 
-func TestAnalysisFindAll(t *testing.T) {
+func TestAdminAnalysisFindAll(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 
@@ -28,15 +27,15 @@ func TestAnalysisFindAll(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil)
-		result, err := svc.FindAll(ctx, uuid.Nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		result, err := svc.FindAll(ctx)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, mock.ToResponse(), result[0])
+		assert.Equal(t, mock.ToAdminResponse(), result[0])
 	})
 
-	t.Run("Error", func(t *testing.T) {
+	t.Run("Error - DB Internal", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
 				userID uuid.UUID) ([]models.Analysis, error) {
@@ -44,10 +43,11 @@ func TestAnalysisFindAll(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		result, err := svc.FindAll(ctx, uuid.Nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.FindAll(ctx)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -56,7 +56,7 @@ func TestAnalysisFindAll(t *testing.T) {
 	})
 }
 
-func TestAnalysisFindByID(t *testing.T) {
+func TestAdminAnalysisFindByID(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 
@@ -68,13 +68,13 @@ func TestAnalysisFindByID(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil)
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		result, err := svc.FindByID(ctx, mock.ID)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 
-		expected := mock.ToResponse()
+		expected := mock.ToAdminResponse()
 		assert.Equal(t, expected, *result)
 	})
 
@@ -88,30 +88,12 @@ func TestAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.FindByID(ctx, mock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Nil(t, result)
-		assert.Equal(t, 1, logs.Len())
-	})
-
-	t.Run("Error - Unauthorized", func(t *testing.T) {
-		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysisByIDFunc: func(ctx context.Context,
-				analysisID uuid.UUID) (*models.Analysis, error) {
-				return &mock, nil
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		result, err := svc.FindByID(ctx, mock.ID, uuid.New())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrUnauthorized)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})
@@ -120,14 +102,15 @@ func TestAnalysisFindByID(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(ctx context.Context,
 				analysisID uuid.UUID) (*models.Analysis, error) {
-				return nil, services.ErrInternal
+				return nil, gorm.ErrInvalidTransaction
 			},
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.FindByID(ctx, mock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -136,7 +119,7 @@ func TestAnalysisFindByID(t *testing.T) {
 	})
 }
 
-func TestAnalysisCreate(t *testing.T) {
+func TestAdminAnalysisCreate(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 	input := testmodels.NewAnalysisCreateDTO(mock)
@@ -156,15 +139,17 @@ func TestAnalysisCreate(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
 			userRepo, nil)
 		result, err := svc.Create(ctx, input)
 
-		expected := models.AnalysisResponse{
+		expected := models.AnalysisAdminResponse{
 			Type:     input.Type,
 			Status:   models.AnalysisStatusPending,
 			Sample:   mock.Sample.Name,
 			SampleID: mock.Sample.ID,
+			User:     mock.Sample.User.Username,
+			UserID:   mock.Sample.User.ID,
 		}
 
 		assert.NoError(t, err)
@@ -183,8 +168,8 @@ func TestAnalysisCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
+			mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -204,8 +189,8 @@ func TestAnalysisCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
+			mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -214,64 +199,60 @@ func TestAnalysisCreate(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Sample Missing Fastq1 in FASTQC analysis",
-		func(t *testing.T) {
-			analysisRepo := &mocks.MockAnalysisRepository{}
-			sampleRepo := &mocks.MockSampleRepository{
-				GetSampleByIDFunc: func(ctx context.Context,
-					ID uuid.UUID) (*models.Sample, error) {
-					sample := &models.Sample{}
-					return sample, nil
-				},
-			}
+	t.Run("Error - Missing Fastq1 in FastQC Analysis", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &models.Sample{}, nil
+			},
+		}
 
-			mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
+			mockLogger)
 
-			errorInput := models.AnalysisCreateDTO{
-				Type:     models.AnalysisTypeFastQC,
-				SampleID: input.SampleID,
-				UserID:   input.UserID,
-			}
-			result, err := svc.Create(ctx, errorInput)
+		errorInput := models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeFastQC,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		}
+		result, err := svc.Create(ctx, errorInput)
 
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, services.ErrMissingFastq1)
-			assert.Nil(t, result)
-			assert.Equal(t, 1, logs.Len())
-		})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFastq1)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
 
-	t.Run("Error - Sample Missing Fastq2 in FASTQC analysis",
-		func(t *testing.T) {
-			analysisRepo := &mocks.MockAnalysisRepository{}
-			sampleRepo := &mocks.MockSampleRepository{
-				GetSampleByIDFunc: func(ctx context.Context,
-					ID uuid.UUID) (*models.Sample, error) {
-					fastq1 := "reads1.fastq"
-					sample := &models.Sample{Fastq1: &fastq1}
-					return sample, nil
-				},
-			}
+	t.Run("Error - Missing Fastq2 in FastQC Analysis", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				fastq1 := "reads1.fastq"
+				return &models.Sample{Fastq1: &fastq1}, nil
+			},
+		}
 
-			mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
+			mockLogger)
 
-			errorInput := models.AnalysisCreateDTO{
-				Type:     models.AnalysisTypeFastQC,
-				SampleID: input.SampleID,
-				UserID:   input.UserID,
-			}
-			result, err := svc.Create(ctx, errorInput)
+		errorInput := models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeFastQC,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		}
+		result, err := svc.Create(ctx, errorInput)
 
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, services.ErrMissingFastq2)
-			assert.Nil(t, result)
-			assert.Equal(t, 1, logs.Len())
-		})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFastq2)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
 
 	t.Run("Success - Change Analysis Type from Complete To Genome",
 		func(t *testing.T) {
@@ -280,12 +261,11 @@ func TestAnalysisCreate(t *testing.T) {
 				GetSampleByIDFunc: func(ctx context.Context,
 					ID uuid.UUID) (*models.Sample, error) {
 					fasta := "assembly.fasta"
-					sample := &models.Sample{
+					return &models.Sample{
 						ID:    mock.Sample.ID,
 						Name:  mock.Sample.Name,
 						Fasta: &fasta,
-					}
-					return sample, nil
+					}, nil
 				},
 			}
 			userRepo := &mocks.MockUserRepository{
@@ -295,16 +275,17 @@ func TestAnalysisCreate(t *testing.T) {
 				},
 			}
 
-			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
 				userRepo, nil)
-
 			result, err := svc.Create(ctx, input)
 
-			expected := models.AnalysisResponse{
+			expected := models.AnalysisAdminResponse{
 				Type:     models.AnalysisTypeGenome,
 				Status:   models.AnalysisStatusPending,
 				Sample:   mock.Sample.Name,
 				SampleID: mock.Sample.ID,
+				User:     mock.User.Username,
+				UserID:   mock.User.ID,
 			}
 
 			assert.NoError(t, err)
@@ -329,7 +310,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
 			userRepo, mockLogger)
 		result, err := svc.Create(ctx, input)
 
@@ -356,7 +337,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
 			userRepo, mockLogger)
 		result, err := svc.Create(ctx, input)
 
@@ -388,8 +369,8 @@ func TestAnalysisCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
-			mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
+			userRepo, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -399,7 +380,102 @@ func TestAnalysisCreate(t *testing.T) {
 	})
 }
 
-func TestAnalysisDelete(t *testing.T) {
+func TestAdminAnalysisUpdate(t *testing.T) {
+	ctx := context.Background()
+	mock := testmodels.CreateMockAnalysis()
+
+	status := models.AnalysisStatusRunning
+	updateInput := models.AdminAnalysisUpdateInput{
+		Status: &status,
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		result, err := svc.Update(ctx, mock.ID, updateInput)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusRunning, result.Status)
+		assert.NotNil(t, result.StartedAt)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInput)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal on Get", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInput)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal on Update", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInput)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAdminAnalysisDelete(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 
@@ -415,8 +491,8 @@ func TestAnalysisDelete(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil)
-		err := svc.Delete(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		err := svc.Delete(ctx, mock.ID)
 
 		assert.NoError(t, err)
 	})
@@ -431,29 +507,12 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		err := svc.Delete(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		err := svc.Delete(ctx, mock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
-		assert.Equal(t, 1, logs.Len())
-	})
-
-	t.Run("Error - Unauthorized", func(t *testing.T) {
-		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysisByIDFunc: func(ctx context.Context,
-				analysisID uuid.UUID) (*models.Analysis, error) {
-				return &mock, nil
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		err := svc.Delete(ctx, mock.ID, uuid.New())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrUnauthorized)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -467,8 +526,9 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		err := svc.Delete(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		err := svc.Delete(ctx, mock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -488,8 +548,9 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		err := svc.Delete(ctx, runningMock.ID, runningMock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		err := svc.Delete(ctx, runningMock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrDeleteRunningAnalysis)
@@ -510,8 +571,9 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, mockLogger)
-		err := svc.Delete(ctx, mock.ID, mock.UserID)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			mockLogger)
+		err := svc.Delete(ctx, mock.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

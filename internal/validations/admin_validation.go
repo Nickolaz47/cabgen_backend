@@ -2,6 +2,7 @@ package validations
 
 import (
 	"slices"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -202,5 +203,43 @@ func ApplyHealthServiceUpdate(healthService *models.HealthService,
 
 	if input.IsActive != nil {
 		healthService.IsActive = *input.IsActive
+	}
+}
+
+func ApplyAnalysisUpdate(analysis *models.Analysis,
+	input *models.AdminAnalysisUpdateInput) {
+	if input.Status != nil {
+		analysis.Status = *input.Status
+
+		if *input.Status == models.AnalysisStatusRunning {
+			startedAt := time.Now()
+			analysis.StartedAt = &startedAt
+		}
+
+		if *input.Status == models.AnalysisStatusDone ||
+			*input.Status == models.AnalysisStatusFailed {
+			finishedAt := time.Now()
+			analysis.FinishedAt = &finishedAt
+		}
+	}
+
+	if input.Metrics != nil {
+		analysis.Metrics = *input.Metrics
+	}
+
+	if input.FastQC1 != nil {
+		analysis.FastQC1 = input.FastQC1
+	}
+
+	if input.FastQC2 != nil {
+		analysis.FastQC2 = input.FastQC2
+	}
+
+	if input.ResultsZipPath != nil {
+		analysis.ResultsZipPath = input.ResultsZipPath
+	}
+
+	if input.ErrorMessage != nil {
+		analysis.ErrorMessage = input.ErrorMessage
 	}
 }
