@@ -21,6 +21,7 @@ var (
 	SenderPassword           = ""
 	SMTPHost                 = ""
 	SMTPPort                 = 0
+	RedisURL                 = ""
 )
 
 /*
@@ -71,6 +72,7 @@ func LoadEnvVariables(envFile string) error {
 	SenderEmail = os.Getenv("SENDER_EMAIL")
 	SenderPassword = os.Getenv("SENDER_PASSWORD")
 	SMTPHost = os.Getenv("SMTP_HOST")
+	RedisURL = os.Getenv("REDIS_URL")
 
 	return nil
 }
