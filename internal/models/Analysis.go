@@ -55,7 +55,8 @@ type Analysis struct {
 	FastQC2 *string `gorm:"type:varchar(255)"`
 
 	// Results
-	Metrics datatypes.JSON `gorm:"type:jsonb"`
+	Metrics        datatypes.JSON `gorm:"type:jsonb"`
+	ResultsZipPath *string        `gorm:"type:varchar(255)"`
 
 	// Run Metadata
 	ErrorMessage *string `gorm:"type:text"`
@@ -74,19 +75,20 @@ type Analysis struct {
 }
 
 type AnalysisAdminResponse struct {
-	ID           uuid.UUID      `json:"id"`
-	Type         AnalysisType   `json:"type"`
-	Status       AnalysisStatus `json:"status"`
-	ErrorMessage *string        `json:"error_message"`
-	Sample       string         `json:"sample"`
-	SampleID     uuid.UUID      `json:"sample_id"`
-	User         string         `json:"user"`
-	UserID       uuid.UUID      `json:"user_id"`
-	Metrics      datatypes.JSON `json:"metrics"`
-	FastQC1      *string        `json:"fastqc1"`
-	FastQC2      *string        `json:"fastqc2"`
-	StartedAt    *time.Time     `json:"started_at"`
-	FinishedAt   *time.Time     `json:"finished_at"`
+	ID             uuid.UUID      `json:"id"`
+	Type           AnalysisType   `json:"type"`
+	Status         AnalysisStatus `json:"status"`
+	ErrorMessage   *string        `json:"error_message"`
+	Sample         string         `json:"sample"`
+	SampleID       uuid.UUID      `json:"sample_id"`
+	User           string         `json:"user"`
+	UserID         uuid.UUID      `json:"user_id"`
+	Metrics        datatypes.JSON `json:"metrics"`
+	ResultsZipPath *string        `json:"results_zip_path"`
+	FastQC1        *string        `json:"fastqc1"`
+	FastQC2        *string        `json:"fastqc2"`
+	StartedAt      *time.Time     `json:"started_at"`
+	FinishedAt     *time.Time     `json:"finished_at"`
 }
 
 func (a *Analysis) ToAdminResponse() AnalysisAdminResponse {
@@ -108,17 +110,18 @@ func (a *Analysis) ToAdminResponse() AnalysisAdminResponse {
 }
 
 type AnalysisResponse struct {
-	ID           uuid.UUID      `json:"id"`
-	Type         AnalysisType   `json:"type"`
-	Status       AnalysisStatus `json:"status"`
-	ErrorMessage *string        `json:"error_message"`
-	Sample       string         `json:"sample"`
-	SampleID     uuid.UUID      `json:"sample_id"`
-	Metrics      datatypes.JSON `json:"metrics"`
-	FastQC1      *string        `json:"fastqc1"`
-	FastQC2      *string        `json:"fastqc2"`
-	StartedAt    *time.Time     `json:"started_at"`
-	FinishedAt   *time.Time     `json:"finished_at"`
+	ID             uuid.UUID      `json:"id"`
+	Type           AnalysisType   `json:"type"`
+	Status         AnalysisStatus `json:"status"`
+	ErrorMessage   *string        `json:"error_message"`
+	Sample         string         `json:"sample"`
+	SampleID       uuid.UUID      `json:"sample_id"`
+	Metrics        datatypes.JSON `json:"metrics"`
+	ResultsZipPath *string        `json:"results_zip_path"`
+	FastQC1        *string        `json:"fastqc1"`
+	FastQC2        *string        `json:"fastqc2"`
+	StartedAt      *time.Time     `json:"started_at"`
+	FinishedAt     *time.Time     `json:"finished_at"`
 }
 
 func (a *Analysis) ToResponse() AnalysisResponse {
@@ -164,8 +167,10 @@ func AnalysisCreateInputToDTO(i AnalysisCreateInput,
 }
 
 type AdminAnalysisUpdateInput struct {
-	Status       *AnalysisStatus `json:"status" binding:"omitempty"`
-	ErrorMessage *string         `json:"error_message" binding:"omitempty"`
-	FastQC1      *string         `json:"fastqc1" binding:"omitempty"`
-	FastQC2      *string         `json:"fastqc2" binding:"omitempty"`
+	Status         *AnalysisStatus `json:"status" binding:"omitempty"`
+	Metrics        *datatypes.JSON `json:"metrics" binding:"omitempty"`
+	FastQC1        *string         `json:"fastqc1" binding:"omitempty"`
+	FastQC2        *string         `json:"fastqc2" binding:"omitempty"`
+	ResultsZipPath *string         `json:"results_zip_path" binding:"omitempty"`
+	ErrorMessage   *string         `json:"error_message" binding:"omitempty"`
 }

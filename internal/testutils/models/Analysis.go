@@ -16,12 +16,11 @@ type Analysis struct {
 	Type   rModels.AnalysisType   `gorm:"type:varchar(20);not null"`
 	Status rModels.AnalysisStatus `gorm:"type:varchar(20);not null;default:'PENDING'"`
 
-	// Paths
-	FastQC1 *string `gorm:"type:varchar(255)"`
-	FastQC2 *string `gorm:"type:varchar(255)"`
-
 	// Results
-	Metrics datatypes.JSON `gorm:"type:jsonb"`
+	Metrics        datatypes.JSON `gorm:"type:jsonb"`
+	FastQC1        *string        `gorm:"type:varchar(255)"`
+	FastQC2        *string        `gorm:"type:varchar(255)"`
+	ResultsZipPath *string        `gorm:"type:varchar(255)"`
 
 	// Run Metadata
 	ErrorMessage *string `gorm:"type:text"`
@@ -41,9 +40,9 @@ type Analysis struct {
 
 func NewAnalysis(
 	id string, analysisType rModels.AnalysisType,
-	analysisStatus rModels.AnalysisStatus, fastqc1, fastqc2 string,
-	metrics map[string]any, errorMessage string, startedAt,
-	finishedAt time.Time, sample rModels.Sample,
+	analysisStatus rModels.AnalysisStatus, fastqc1, fastqc2,
+	resultZipPath string, metrics map[string]any, errorMessage string,
+	startedAt, finishedAt time.Time, sample rModels.Sample,
 	user rModels.User) rModels.Analysis {
 
 	var metricsBytes datatypes.JSON
@@ -56,19 +55,20 @@ func NewAnalysis(
 	}
 
 	return rModels.Analysis{
-		ID:           uuid.MustParse(id),
-		Type:         analysisType,
-		Status:       analysisStatus,
-		FastQC1:      &fastqc1,
-		FastQC2:      &fastqc2,
-		Metrics:      metricsBytes,
-		ErrorMessage: &errorMessage,
-		StartedAt:    &startedAt,
-		FinishedAt:   &finishedAt,
-		SampleID:     sample.ID,
-		Sample:       sample,
-		UserID:       user.ID,
-		User:         user,
+		ID:             uuid.MustParse(id),
+		Type:           analysisType,
+		Status:         analysisStatus,
+		FastQC1:        &fastqc1,
+		FastQC2:        &fastqc2,
+		Metrics:        metricsBytes,
+		ResultsZipPath: &resultZipPath,
+		ErrorMessage:   &errorMessage,
+		StartedAt:      &startedAt,
+		FinishedAt:     &finishedAt,
+		SampleID:       sample.ID,
+		Sample:         sample,
+		UserID:         user.ID,
+		User:           user,
 	}
 }
 
@@ -84,7 +84,7 @@ func CreateMockAnalysis() rModels.Analysis {
 		"mlst":                502,
 		"acquired_resistance": "fosA6_1 (resistance to fosfomycin) (allele confidence 98.81)",
 	}
-
+	resultZipPath := "result.zip"
 	var metricsBytes datatypes.JSON
 	bytes, err := json.Marshal(metrics)
 	if err != nil {
@@ -93,17 +93,18 @@ func CreateMockAnalysis() rModels.Analysis {
 	metricsBytes = datatypes.JSON(bytes)
 
 	return rModels.Analysis{
-		ID:        uuid.New(),
-		Type:      rModels.AnalysisTypeComplete,
-		Status:    rModels.AnalysisStatusDone,
-		Metrics:   metricsBytes,
-		FastQC1:   &fastqc1,
-		FastQC2:   &fastqc2,
-		StartedAt: &startedAt,
-		SampleID:  sample.ID,
-		Sample:    sample,
-		UserID:    user.ID,
-		User:      user,
+		ID:             uuid.New(),
+		Type:           rModels.AnalysisTypeComplete,
+		Status:         rModels.AnalysisStatusDone,
+		Metrics:        metricsBytes,
+		FastQC1:        &fastqc1,
+		FastQC2:        &fastqc2,
+		ResultsZipPath: &resultZipPath,
+		StartedAt:      &startedAt,
+		SampleID:       sample.ID,
+		Sample:         sample,
+		UserID:         user.ID,
+		User:           user,
 	}
 }
 
