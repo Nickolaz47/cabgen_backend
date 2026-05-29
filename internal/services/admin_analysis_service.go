@@ -15,6 +15,8 @@ import (
 
 type AdminAnalysisService interface {
 	FindAll(ctx context.Context) ([]models.AnalysisAdminResponse, error)
+	FindManyByIDs(ctx context.Context, analysisIDs []uuid.UUID) (
+		[]models.AnalysisAdminResponse, error)
 	FindByID(ctx context.Context, analysisID uuid.UUID) (
 		*models.AnalysisAdminResponse, error)
 	Create(ctx context.Context, input models.AnalysisCreateDTO) (
@@ -62,6 +64,37 @@ func (s *adminAnalysisService) FindAll(ctx context.Context) (
 		responses[i] = analysis.ToAdminResponse()
 	}
 
+	return responses, nil
+}
+
+func (s *adminAnalysisService) FindManyByIDs(ctx context.Context,
+	analysisIDs []uuid.UUID) (
+	[]models.AnalysisAdminResponse, error) {
+	if len(analysisIDs) > models.AnalysesByBatch {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AdminAnalysisService", "FindManyByIDs",
+			logging.ExceededDownloadLimitError, ErrExceededDownloadLimit,
+		)...)
+		return nil, ErrExceededDownloadLimit
+	}
+
+	if len(analysisIDs) == 0 {
+		return []models.AnalysisAdminResponse{}, nil
+	}
+
+	analyses, err := s.Repo.GetAnalysesByIDs(ctx, analysisIDs, uuid.Nil)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AdminAnalysisService", "FindManyByIDs",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	var responses []models.AnalysisAdminResponse
+	for _, a := range analyses {
+		responses = append(responses, a.ToAdminResponse())
+	}
 	return responses, nil
 }
 

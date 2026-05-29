@@ -30,13 +30,21 @@ func (s *sampleRepo) GetSamples(ctx context.Context,
 	input string, userID uuid.UUID) ([]models.Sample, error) {
 	var samples []models.Sample
 
-	query := s.DB.WithContext(ctx)
+	query := s.DB.WithContext(ctx).
+		Preload("Country").
+		Preload("User").
+		Preload("Origin").
+		Preload("SampleSource").
+		Preload("Microorganism").
+		Preload("Sequencer").
+		Preload("Laboratory").
+		Preload("HealthService")
 	// Name or Run number or Origin code or Microorganism species
 	if input != "" {
 		searchTerm := "%" + strings.ToLower(input) + "%"
 
-		query = query.Preload("Microorganism").
-			Joins("JOIN microorganisms ON microorganisms.id"+
+		query = query.Joins(
+			"JOIN microorganisms ON microorganisms.id"+
 				" = samples.microorganism_id").Where(
 			`
 			LOWER(samples.name) LIKE ? OR 
@@ -62,7 +70,16 @@ func (s *sampleRepo) GetSamples(ctx context.Context,
 func (s *sampleRepo) GetSampleByID(ctx context.Context,
 	ID uuid.UUID) (*models.Sample, error) {
 	var sample models.Sample
-	if err := s.DB.WithContext(ctx).Where("id = ?", ID).
+	if err := s.DB.WithContext(ctx).
+		Preload("Country").
+		Preload("User").
+		Preload("Origin").
+		Preload("SampleSource").
+		Preload("Microorganism").
+		Preload("Sequencer").
+		Preload("Laboratory").
+		Preload("HealthService").
+		Where("id = ?", ID).
 		First(&sample).Error; err != nil {
 		return nil, err
 	}

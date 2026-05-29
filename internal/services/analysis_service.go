@@ -17,6 +17,8 @@ type AnalysisService interface {
 		[]models.AnalysisResponse, error)
 	FindByID(ctx context.Context, analysisID, userID uuid.UUID) (
 		*models.AnalysisResponse, error)
+	FindManyByIDs(ctx context.Context, analysisIDs []uuid.UUID,
+		userID uuid.UUID) ([]models.AnalysisResponse, error)
 	Create(ctx context.Context, input models.AnalysisCreateDTO) (
 		*models.AnalysisResponse, error)
 	Delete(ctx context.Context, analysisID, userID uuid.UUID) error
@@ -59,6 +61,37 @@ func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID) (
 		responses[i] = analysis.ToResponse()
 	}
 
+	return responses, nil
+}
+
+func (s *analysisService) FindManyByIDs(ctx context.Context,
+	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	[]models.AnalysisResponse, error) {
+	if len(analysisIDs) > models.AnalysesByBatch {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "FindManyByIDs",
+			logging.ExceededDownloadLimitError, ErrExceededDownloadLimit,
+		)...)
+		return nil, ErrExceededDownloadLimit
+	}
+
+	if len(analysisIDs) == 0 {
+		return []models.AnalysisResponse{}, nil
+	}
+
+	analyses, err := s.Repo.GetAnalysesByIDs(ctx, analysisIDs, userID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "FindManyByIDs",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	var responses []models.AnalysisResponse
+	for _, a := range analyses {
+		responses = append(responses, a.ToResponse())
+	}
 	return responses, nil
 }
 
@@ -130,8 +163,7 @@ func (s *analysisService) Create(ctx context.Context,
 		return nil, ErrMissingFastq2
 	}
 
-	if input.Type == models.AnalysisTypeComplete && (
-		sample.Fastq1 == nil || sample.Fastq2 == nil) &&
+	if input.Type == models.AnalysisTypeComplete && (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
 		sample.Fasta != nil {
 		input.Type = models.AnalysisTypeGenome
 	}

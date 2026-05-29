@@ -7,6 +7,8 @@ import (
 	"gorm.io/datatypes"
 )
 
+const AnalysesByBatch = 50
+
 type AnalysisStatus string
 
 const (

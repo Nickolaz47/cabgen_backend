@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 )
 
@@ -48,6 +49,73 @@ func TestAdminAnalysisFindAll(t *testing.T) {
 		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
 			mockLogger)
 		result, err := svc.FindAll(ctx)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAdminAnalysisFindManyByIDs(t *testing.T) {
+	ctx := context.Background()
+	mock := testmodels.CreateMockAnalysis()
+
+	t.Run("Success", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesByIDsFunc: func(ctx context.Context,
+				analysisIDs []uuid.UUID, userID uuid.UUID) (
+				[]models.Analysis, error) {
+				return []models.Analysis{mock}, nil
+			},
+		}
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID})
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Equal(t, mock.ToAdminResponse(), result[0])
+	})
+
+	t.Run("Success - Empty Analysis IDs", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{})
+
+		assert.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("Error - Exceeded Limit", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, mockLogger)
+		result, err := svc.FindManyByIDs(ctx, make([]uuid.UUID,
+			models.AnalysesByBatch+1))
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrExceededDownloadLimit)
+		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesByIDsFunc: func(ctx context.Context,
+				analysisIDs []uuid.UUID, userID uuid.UUID) (
+				[]models.Analysis, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, mockLogger)
+		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

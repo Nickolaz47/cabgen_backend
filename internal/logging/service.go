@@ -26,6 +26,7 @@ const (
 	DeleteFolderError               = "DELETE_FOLDER_ERROR"
 	DeleteFileError                 = "DELETE_FILE_ERROR"
 	MissingFileError                = "MISSING_FILE_ERROR"
+	ExceededDownloadLimitError      = "EXCEEDED_DOWNLOAD_LIMIT"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {

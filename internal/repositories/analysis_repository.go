@@ -11,6 +11,8 @@ import (
 type AnalysisRepository interface {
 	GetAnalyses(ctx context.Context, userID uuid.UUID) (
 		[]models.Analysis, error)
+	GetAnalysesByIDs(ctx context.Context, analysisIDs []uuid.UUID,
+		userID uuid.UUID) ([]models.Analysis, error)
 	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -32,7 +34,26 @@ func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID) (
 	[]models.Analysis, error) {
 	var analyses []models.Analysis
 
-	query := r.DB.WithContext(ctx)
+	query := r.DB.WithContext(ctx).Preload("Sample").Preload("User")
+	if userID != uuid.Nil {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	if err := query.Find(&analyses).Error; err != nil {
+		return nil, err
+	}
+
+	return analyses, nil
+}
+
+func (r *analysisRepo) GetAnalysesByIDs(ctx context.Context,
+	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	[]models.Analysis, error) {
+	var analyses []models.Analysis
+
+	query := r.DB.WithContext(ctx).Preload("Sample").Preload("User").
+		Where("id in ?", analysisIDs)
+
 	if userID != uuid.Nil {
 		query = query.Where("user_id = ?", userID)
 	}
@@ -47,7 +68,8 @@ func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID) (
 func (r *analysisRepo) GetAnalysisByID(ctx context.Context,
 	analysisID uuid.UUID) (*models.Analysis, error) {
 	var analysis models.Analysis
-	if err := r.DB.WithContext(ctx).Where("id = ?", analysisID).First(
+	if err := r.DB.WithContext(ctx).Preload("Sample").Preload("User").
+	Where("id = ?", analysisID).First(
 		&analysis).Error; err != nil {
 		return nil, err
 	}
