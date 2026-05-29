@@ -9,8 +9,10 @@ import (
 )
 
 type AnalysisRepository interface {
-	GetAnalyses(ctx context.Context, userID uuid.UUID) ([]models.Analysis, error)
-	GetAnalysisByID(ctx context.Context, ID uuid.UUID) (*models.Analysis, error)
+	GetAnalyses(ctx context.Context, userID uuid.UUID) (
+		[]models.Analysis, error)
+	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
+		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
 	UpdateAnalysis(ctx context.Context, analysis *models.Analysis) error
 	DeleteAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -42,10 +44,10 @@ func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID) (
 	return analyses, nil
 }
 
-func (r *analysisRepo) GetAnalysisByID(ctx context.Context, ID uuid.UUID) (
-	*models.Analysis, error) {
+func (r *analysisRepo) GetAnalysisByID(ctx context.Context,
+	analysisID uuid.UUID) (*models.Analysis, error) {
 	var analysis models.Analysis
-	if err := r.DB.WithContext(ctx).Where("id = ?", ID).First(
+	if err := r.DB.WithContext(ctx).Where("id = ?", analysisID).First(
 		&analysis).Error; err != nil {
 		return nil, err
 	}

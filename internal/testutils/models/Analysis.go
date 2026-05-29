@@ -106,3 +106,11 @@ func CreateMockAnalysis() rModels.Analysis {
 		User:      user,
 	}
 }
+
+func NewAnalysisCreateDTO(analysis rModels.Analysis) rModels.AnalysisCreateDTO {
+	return rModels.AnalysisCreateDTO{
+		Type:     analysis.Type,
+		SampleID: analysis.Sample.ID,
+		UserID:   analysis.User.ID,
+	}
+}

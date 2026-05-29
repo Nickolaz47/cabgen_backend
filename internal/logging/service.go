@@ -25,6 +25,7 @@ const (
 	CreateFolderError               = "CREATE_FOLDER_ERROR"
 	DeleteFolderError               = "DELETE_FOLDER_ERROR"
 	DeleteFileError                 = "DELETE_FILE_ERROR"
+	MissingFileError                = "MISSING_FILE_ERROR"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {

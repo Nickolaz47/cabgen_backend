@@ -126,18 +126,18 @@ func (s *sampleService) FindByID(
 		return nil, ErrNotFound
 	}
 
-	if userID != uuid.Nil && userID != sample.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"SampleService", "FindByID", logging.Unauthorized, err,
-		)...)
-		return nil, ErrUnauthorized
-	}
-
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"SampleService", "FindByID",
 			logging.DatabaseError, err)...)
 		return nil, ErrInternal
+	}
+
+	if userID != uuid.Nil && userID != sample.UserID {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"SampleService", "FindByID", logging.Unauthorized, err,
+		)...)
+		return nil, ErrUnauthorized
 	}
 
 	response := sample.ToResponse(language)
