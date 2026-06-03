@@ -44,6 +44,7 @@ func main() {
 		&models.HealthService{},
 		&models.Sample{},
 		&models.Event{},
+		&models.Analysis{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
@@ -102,6 +103,10 @@ func main() {
 		logging.FileLogger)
 	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
 		logging.FileLogger)
+	analysisSvc := container.BuildAnalysisService(mainDB.DB(),
+		logging.FileLogger)
+	admAnalysisSvc := container.BuildAdminAnalysisService(mainDB.DB(),
+		logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -117,6 +122,7 @@ func main() {
 	microHandler := container.BuildMicroorganismHandler(microSvc)
 	healthServiceHandler := container.BuildHealthServiceHandler(healthServiceSvc)
 	sampleHandler := container.BuildSampleHandler(sampleSvc)
+	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
 
 	// Admin handlers
 	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
@@ -130,6 +136,7 @@ func main() {
 	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(
 		healthServiceSvc)
 	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc)
+	adminAnalysisHandler := container.BuildAdminAnalysisHandler(admAnalysisSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -147,6 +154,7 @@ func main() {
 	common.SetupMicroorganismRoutes(commonRouter, microHandler)
 	common.SetupHealthServiceRoutes(commonRouter, healthServiceHandler)
 	common.SetupSampleRoutes(commonRouter, sampleHandler)
+	common.SetupAnalysisRoutes(commonRouter, analysisHandler)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(),
@@ -160,6 +168,7 @@ func main() {
 	admin.SetupAdminMicroorganismRoutes(adminRouter, adminMicroHandler)
 	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
 	admin.SetupAdminSampleRoutes(adminRouter, adminSampleHandler)
+	admin.SetupAdminAnalysisRoutes(adminRouter, adminAnalysisHandler)
 
 	// Event dispatcher
 	eventRepo := container.BuildEventRepository(mainDB.DB())
