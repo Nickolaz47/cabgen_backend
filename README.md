@@ -17,7 +17,7 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 
 ## Tecnologias
 
-- [Go](https://go.dev/) `>= 1.23.0`
+- [Go](https://go.dev/) `>= 1.24.0`
 - [Gin](https://gin-gonic.com/)
 - [GORM](https://gorm.io/)
 - [PostgreSQL](https://www.postgresql.org/)
@@ -69,14 +69,14 @@ model -> repository -> service -> handler -> route
 
 ### Pré-requisitos
 
-- [Go](https://go.dev/dl/) `>= 1.23.0`
+- [Go](https://go.dev/dl/) `>= 1.24.0`
 - [PostgreSQL](https://www.postgresql.org/download/)
 - [SQLite](https://sqlite.org/) (utilizado nos testes)
 
 ### Passos
 
 ```bash
-git clone https://github.com/Nickolaz47/cabgen_backend.git
+git clone [https://github.com/Nickolaz47/cabgen_backend.git](https://github.com/Nickolaz47/cabgen_backend.git)
 cd cabgen_backend
 go mod tidy
 ```
@@ -123,7 +123,7 @@ O projeto utiliza **Air** para hot reload.
 #### Instalação do Air
 
 ```bash
-go install github.com/cosmtrek/air@latest
+go install [github.com/cosmtrek/air@latest](https://github.com/cosmtrek/air@latest)
 ```
 
 #### Execução
@@ -197,46 +197,50 @@ A API utiliza um formato de resposta padronizado, composto pelos seguintes campo
 
 ### Campos da Resposta
 
-- **data**
-  Utilizado para retornar dados da API.
-  Está presente nos seguintes casos:
-  - Respostas de leitura (`GET`)
-  - Criação de recursos (`POST`)
-  - Atualização de recursos (`PUT`)
+#### **data**
+Utilizado para retornar dados da API.
+Está presente nos seguintes casos:
 
-- **message**
-  Utilizado para mensagens informativas de sucesso.
-  Está presente principalmente em:
-  - Criação de recursos (`POST`)
-  - Remoção de recursos (`DELETE`)
+- Respostas de leitura (`GET`)
+- Criação de recursos (`POST`)
+- Atualização de recursos (`PUT`)
 
-- **error**
-  Presente **exclusivamente** quando ocorre algum erro durante o processamento da requisição.
-  Contém uma mensagem descritiva do problema.
+#### **message**
+
+Utilizado para mensagens informativas de sucesso.
+Está presente principalmente em:
+
+- Criação de recursos (`POST`)
+- Remoção de recursos (`DELETE`)
+
+#### **error**
+
+Presente **exclusivamente** quando ocorre algum erro durante o processamento da requisição.
+Contém uma mensagem descritiva do problema.
 
 ### Comportamento por Método HTTP
 
 | Método | Campos retornados |
-| ------ | ----------------- |
-| GET    | `data`            |
-| POST   | `data`, `message` |
-| PUT    | `data`            |
-| DELETE | `message`         |
+| --- | --- |
+| GET | `data` |
+| POST | `data`, `message` |
+| PUT | `data` |
+| DELETE | `message` |
 
 ### Códigos de Status HTTP
 
 A API utiliza os seguintes códigos de status HTTP:
 
-| Código | Descrição                                                                      |
-| ------ | ------------------------------------------------------------------------------ |
-| 200    | Requisição processada com sucesso                                              |
-| 201    | Recurso criado com sucesso                                                     |
-| 400    | Entrada inválida ou parâmetro de rota em formato incorreto (ex: UUID inválido) |
-| 401    | Requisição sem token de autenticação                                           |
-| 403    | Usuário desativado ou token de acesso expirado                                 |
-| 404    | Recurso não encontrado                                                         |
-| 409    | Tentativa de criação de recurso duplicado                                      |
-| 500    | Erro interno inesperado                                                        |
+| Código | Descrição |
+| --- | --- |
+| 200 | Requisição processada com sucesso |
+| 201 | Recurso criado com sucesso |
+| 400 | Entrada inválida ou parâmetro de rota em formato incorreto (ex: UUID inválido) |
+| 401 | Requisição sem token de autenticação |
+| 403 | Usuário desativado ou token de acesso expirado |
+| 404 | Recurso não encontrado |
+| 409 | Tentativa de criação de recurso duplicado |
+| 500 | Erro interno inesperado |
 
 ## Endpoints
 
@@ -250,152 +254,197 @@ Os endpoints estão organizados em três níveis de acesso:
 
 #### Health Check
 
-| Método | Endpoint      | Descrição                |
-| ------ | ------------- | ------------------------ |
-| GET    | `/api/health` | Verifica o status da API |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/health` | Verifica o status da API |
 
 #### Autenticação
 
-| Método | Endpoint             | Descrição                                 |
-| ------ | -------------------- | ----------------------------------------- |
-| POST   | `/api/auth/register` | Cadastro de usuário (necessita ativação)  |
-| POST   | `/api/auth/login`    | Login e retorno de tokens JWT via cookies |
-| POST   | `/api/auth/logout`   | Logout do usuário                         |
-| POST   | `/api/auth/refresh`  | Renovação do token de acesso              |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Cadastro de usuário (necessita ativação) |
+| POST | `/api/auth/login` | Login e retorno de tokens JWT via cookies |
+| POST | `/api/auth/logout` | Logout do usuário |
+| POST | `/api/auth/refresh` | Renovação do token de acesso |
 
 #### Países
 
-| Método | Endpoint               | Descrição                  |
-| ------ | ---------------------- | -------------------------- |
-| GET    | `/api/countries`       | Lista todos os países      |
-| GET    | `/api/countries/:code` | Retorna um país específico |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/countries` | Lista todos os países |
+| GET | `/api/countries/:code` | Retorna um país específico |
 
 ### Common
 
 #### Usuário
 
-| Método | Endpoint        | Descrição                    |
-| ------ | --------------- | ---------------------------- |
-| GET    | `/api/users/me` | Dados do usuário autenticado |
-| PUT    | `/api/users/me` | Atualiza dados do usuário    |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/users/me` | Dados do usuário autenticado |
+| PUT | `/api/users/me` | Atualiza dados do usuário |
 
 #### Origem
 
-| Método | Endpoint       | Descrição            |
-| ------ | -------------- | -------------------- |
-| GET    | `/api/origins` | Lista origens ativas |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/origins` | Lista origens ativas |
 
 #### Sequenciador
 
-| Método | Endpoint          | Descrição                   |
-| ------ | ----------------- | --------------------------- |
-| GET    | `/api/sequencers` | Lista sequenciadores ativos |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/sequencers` | Lista sequenciadores ativos |
 
 #### Fonte da Amostra
 
-| Método | Endpoint              | Descrição                      |
-| ------ | --------------------- | ------------------------------ |
-| GET    | `/api/sample-sources` | Lista fontes de amostra ativas |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/sample-sources` | Lista fontes de amostra ativas |
 
 #### Laboratório
 
-| Método | Endpoint            | Descrição                 |
-| ------ | ------------------- | ------------------------- |
-| GET    | `/api/laboratories` | Lista laboratórios ativos |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/laboratories` | Lista laboratórios ativos |
 
 #### Microrganismo
 
-| Método | Endpoint              | Descrição                   |
-| ------ | --------------------  | -------------------------   |
-| GET    | `/api/microorganisms` | Lista microrganismos ativos |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/microorganisms` | Lista microrganismos ativos |
 
 #### Serviços de Saúde
 
-| Método | Endpoint               | Descrição                      |
-| ------ | --------------------   | -------------------------      |
-| GET    | `/api/health-services` | Lista serviços de saúde ativos |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/health-services` | Lista serviços de saúde ativos |
+
+#### Amostra
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/samples` | Lista todas as amostras do usuário |
+| GET | `/api/samples/:sampleId` | Retorna uma amostra específica |
+| POST | `/api/samples` | Cria uma nova amostra |
+| PUT | `/api/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
+| PUT | `/api/samples/:sampleId` | Atualiza os dados de uma amostra |
+| DELETE | `/api/samples/:sampleId` | Deleta uma amostra |
+
+#### Análise
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/analyses` | Lista todas as análises do usuário |
+| GET | `/api/analyses/:analysisId` | Retorna uma análise específica |
+| GET | `/api/analyses/:analysisId/download/tsv` | Faz o download do arquivo ZIP da análise |
+| POST | `/api/analyses` | Cria e inicia uma nova análise |
+| POST | `/api/analyses/download/tsv` | Faz o download em lote (TSV) |
+| DELETE | `/api/analyses/:analysisId` | Deleta uma análise |
 
 ### Admin
 
-Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos** e **Serviços de Saúde**:
+Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos**, **Serviços de Saúde**, **Amostras** e **Análises**:
 
 #### Usuário
 
-| Método | Endpoint                                | Descrição                     |
-| ------ | --------------------------------------- | ----------------------------- |
-| GET    | `/api/admin/users`                      | Lista todos os usuários       |
-| GET    | `/api/admin/users/:id`                  | Retorna um usuário específico |
-| POST   | `/api/admin/users`                      | Cria um usuário já ativado    |
-| PUT    | `/api/admin/users/:id`                  | Atualiza um usuário           |
-| PATCH  | `/api/admin/users/activate/:id`         | Ativa um usuário              |
-| PATCH  | `/api/admin/users/deactivate/:id`       | Desativa um usuário           |
-| DELETE | `/api/admin/users/:id`                  | Deleta um usuário             |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/users` | Lista todos os usuários |
+| GET | `/api/admin/users/:id` | Retorna um usuário específico |
+| POST | `/api/admin/users` | Cria um usuário já ativado |
+| PUT | `/api/admin/users/:id` | Atualiza um usuário |
+| PATCH | `/api/admin/users/activate/:id` | Ativa um usuário |
+| PATCH | `/api/admin/users/deactivate/:id` | Desativa um usuário |
+| DELETE | `/api/admin/users/:id` | Deleta um usuário |
 
 #### Origem
 
-| Método | Endpoint                       | Descrição                     |
-| ------ | ------------------------------ | ----------------------------- |
-| GET    | `/api/admin/origins`           | Lista todas as origens        |
-| GET    | `/api/admin/origins/:id`       | Retorna uma origem específica |
-| GET    | `/api/admin/origins/search`    | Procura origens pelo nome     |
-| POST   | `/api/admin/origins`           | Cria uma nova origem          |
-| PUT    | `/api/admin/origins/:id`       | Atualiza uma origem           |
-| DELETE | `/api/admin/origins/:id`       | Deleta uma origem             |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/origins` | Lista todas as origens |
+| GET | `/api/admin/origins/:id` | Retorna uma origem específica |
+| GET | `/api/admin/origins/search` | Procura origens pelo nome |
+| POST | `/api/admin/origins` | Cria uma nova origem |
+| PUT | `/api/admin/origins/:id` | Atualiza uma origem |
+| DELETE | `/api/admin/origins/:id` | Deleta uma origem |
 
 #### Sequenciador
 
-| Método | Endpoint                       | Descrição                                   |
-| ------ | ------------------------------ | ------------------------------------------- |
-| GET    | `/api/admin/sequencers`        | Lista todos os sequenciadores               |
-| GET    | `/api/admin/sequencers/:id`    | Retorna um sequenciador específico          |
-| GET    | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
-| POST   | `/api/admin/sequencers`        | Cria um novo sequenciador                   |
-| PUT    | `/api/admin/sequencers/:id`    | Atualiza um sequenciador                    |
-| DELETE | `/api/admin/sequencers/:id`    | Deleta um sequenciador                      |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/sequencers` | Lista todos os sequenciadores |
+| GET | `/api/admin/sequencers/:id` | Retorna um sequenciador específico |
+| GET | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
+| POST | `/api/admin/sequencers` | Cria um novo sequenciador |
+| PUT | `/api/admin/sequencers/:id` | Atualiza um sequenciador |
+| DELETE | `/api/admin/sequencers/:id` | Deleta um sequenciador |
 
 #### Fonte da Amostra
 
-| Método | Endpoint                           | Descrição                                    |
-| ------ | ---------------------------------- | -------------------------------------------- |
-| GET    | `/api/admin/sample-sources`        | Lista todas as fontes da amostra             |
-| GET    | `/api/admin/sample-sources/:id`    | Retorna uma fonte da amostra específica      |
-| GET    | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
-| POST   | `/api/admin/sample-sources`        | Cria uma nova fonte da amostra               |
-| PUT    | `/api/admin/sample-sources/:id`    | Atualiza uma fonte da amostra                |
-| DELETE | `/api/admin/sample-sources/:id`    | Deleta uma fonte da amostra                  |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/sample-sources` | Lista todas as fontes da amostra |
+| GET | `/api/admin/sample-sources/:id` | Retorna uma fonte da amostra específica |
+| GET | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
+| POST | `/api/admin/sample-sources` | Cria uma nova fonte da amostra |
+| PUT | `/api/admin/sample-sources/:id` | Atualiza uma fonte da amostra |
+| DELETE | `/api/admin/sample-sources/:id` | Deleta uma fonte da amostra |
 
 #### Laboratório
 
-| Método | Endpoint                         | Descrição                                    |
-| ------ | -------------------------------- | -------------------------------------------- |
-| GET    | `/api/admin/laboratories`        | Lista todos os laboratórios                  |
-| GET    | `/api/admin/laboratories/:id`    | Retorna um laboratório específico            |
-| GET    | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
-| POST   | `/api/admin/laboratories`        | Cria um novo laboratório                     |
-| PUT    | `/api/admin/laboratories/:id`    | Atualiza um laboratório                      |
-| DELETE | `/api/admin/laboratories/:id`    | Deleta um laboratório                        |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/laboratories` | Lista todos os laboratórios |
+| GET | `/api/admin/laboratories/:id` | Retorna um laboratório específico |
+| GET | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
+| POST | `/api/admin/laboratories` | Cria um novo laboratório |
+| PUT | `/api/admin/laboratories/:id` | Atualiza um laboratório |
+| DELETE | `/api/admin/laboratories/:id` | Deleta um laboratório |
 
 #### Microrganismo
 
-| Método | Endpoint                           | Descrição                                    |
-| ------ | ---------------------------------- | -------------------------------------------- |
-| GET    | `/api/admin/microorganisms`        | Lista todos os microrganismos                |
-| GET    | `/api/admin/microorganisms/:id`    | Retorna um microrganismo específico          |
-| GET    | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo    |
-| POST   | `/api/admin/microorganisms`        | Cria um novo microrganismo                   |
-| PUT    | `/api/admin/microorganisms/:id`    | Atualiza um microrganismo                    |
-| DELETE | `/api/admin/microorganisms/:id`    | Deleta um microrganismo                      |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/microorganisms` | Lista todos os microrganismos |
+| GET | `/api/admin/microorganisms/:id` | Retorna um microrganismo específico |
+| GET | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo |
+| POST | `/api/admin/microorganisms` | Cria um novo microrganismo |
+| PUT | `/api/admin/microorganisms/:id` | Atualiza um microrganismo |
+| DELETE | `/api/admin/microorganisms/:id` | Deleta um microrganismo |
 
 #### Serviços de Saúde
 
-| Método | Endpoint                            | Descrição                                    |
-| ------ | ----------------------------------  | -------------------------------------------- |
-| GET    | `/api/admin/health-services`        | Lista todos os serviços de saúde             |
-| GET    | `/api/admin/health-services/:id`    | Retorna um serviços de saúde específico      |
-| GET    | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
-| POST   | `/api/admin/health-services`        | Cria um novo serviços de saúde               |
-| PUT    | `/api/admin/health-services/:id`    | Atualiza um serviços de saúde                |
-| DELETE | `/api/admin/health-services/:id`    | Deleta um serviços de saúde                  |
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/health-services` | Lista todos os serviços de saúde |
+| GET | `/api/admin/health-services/:id` | Retorna um serviços de saúde específico |
+| GET | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
+| POST | `/api/admin/health-services` | Cria um novo serviços de saúde |
+| PUT | `/api/admin/health-services/:id` | Atualiza um serviços de saúde |
+| DELETE | `/api/admin/health-services/:id` | Deleta um serviços de saúde |
+
+#### Amostra
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/samples` | Lista todas as amostras |
+| GET | `/api/admin/samples/:sampleId` | Retorna uma amostra específica |
+| POST | `/api/admin/samples` | Cria uma nova amostra |
+| PUT | `/api/admin/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
+| PUT | `/api/admin/samples/:sampleId` | Atualiza os dados de uma amostra |
+| DELETE | `/api/admin/samples/:sampleId` | Deleta uma amostra |
+
+#### Análise
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/analyses` | Lista todas as análises |
+| GET | `/api/admin/analyses/:analysisId` | Retorna uma análise específica |
+| GET | `/api/admin/analyses/:analysisId/download/tsv` | Faz o download do arquivo ZIP da análise |
+| POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
+| POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
+| PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
+| DELETE | `/api/admin/analyses/:analysisId` | Deleta uma análise |
 
 ## TODO
 
@@ -403,7 +452,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar Microorganism (Model + Repository + Service + Handler + Tests);
 - [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Sample (Model + Repository + Service + Handler + Tests);
-- [ ] Modelar Analysis (Model + Repository + Service + Handler + Tests)
+- [x] Modelar Analysis (Model + Repository + Service + Handler + Tests)
 - [ ] Adicionar rotas para select
 - [ ] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [ ] Adicionar cidade como select no cadastro da amostra;
