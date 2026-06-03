@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -43,7 +42,6 @@ func main() {
 		&models.Microorganism{},
 		&models.HealthService{},
 		&models.Sample{},
-		&models.Event{},
 		&models.Analysis{},
 	}
 
@@ -96,7 +94,7 @@ func main() {
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(),
 		logging.FileLogger)
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
-	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
+	// emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
 	microSvc := container.BuildMicroorganismService(mainDB.DB(),
 		logging.FileLogger)
 	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(),
@@ -169,16 +167,6 @@ func main() {
 	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
 	admin.SetupAdminSampleRoutes(adminRouter, adminSampleHandler)
 	admin.SetupAdminAnalysisRoutes(adminRouter, adminAnalysisHandler)
-
-	// Event dispatcher
-	eventRepo := container.BuildEventRepository(mainDB.DB())
-	registry := container.BuildRegistry(emailSvc)
-	dispatcher := container.BuildEventDispatcher(eventRepo, registry)
-
-	ctx, stop := context.WithCancel(context.Background())
-	defer stop()
-
-	go dispatcher.Run(ctx)
 
 	r.Run()
 }

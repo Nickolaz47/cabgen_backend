@@ -2,7 +2,6 @@ package container
 
 import (
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/events"
 	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
@@ -14,11 +13,10 @@ import (
 func BuildAuthService(mainDB *gorm.DB, logger *zap.Logger) services.AuthService {
 	countryRepo := repositories.NewCountryRepo(mainDB)
 	userRepo := repositories.NewUserRepo(mainDB)
-	emitter := events.NewEventEmitter(repositories.NewEventRepo(mainDB))
 	hasher := security.NewPasswordHasher()
 	provider := auth.NewTokenProvider()
 	authService := services.NewAuthService(
-		userRepo, countryRepo, emitter, hasher, provider, logger,
+		userRepo, countryRepo, hasher, provider, logger,
 	)
 
 	return authService

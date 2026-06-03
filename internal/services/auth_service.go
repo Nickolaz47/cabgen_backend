@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	"github.com/CABGenOrg/cabgen_backend/internal/events"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
@@ -27,7 +26,6 @@ type AuthService interface {
 type authService struct {
 	UserRepo      repositories.UserRepository
 	CountryRepo   repositories.CountryRepository
-	EventEmitter  events.EventEmitter
 	Hasher        security.PasswordHasher
 	TokenProvider auth.TokenProvider
 	Logger        *zap.Logger
@@ -36,7 +34,6 @@ type authService struct {
 func NewAuthService(
 	userRepo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
-	emitter events.EventEmitter,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
 	logger *zap.Logger,
@@ -44,7 +41,6 @@ func NewAuthService(
 	return &authService{
 		UserRepo:      userRepo,
 		CountryRepo:   countryRepo,
-		EventEmitter:  emitter,
 		Hasher:        hasher,
 		TokenProvider: tokenProvider,
 		Logger:        logger,
@@ -146,16 +142,6 @@ func (s *authService) Register(
 	}
 
 	user.Country = *country
-
-	if err := s.EventEmitter.Emit(
-		ctx, events.EventUserRegistered,
-		events.UserRegisteredPayload{
-			RegisteredUsername: user.Username,
-		}); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AuthService", "Register", logging.EventEmitterError, err,
-		)...)
-	}
 
 	response := user.ToResponse(language)
 	return &response, nil
