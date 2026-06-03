@@ -77,6 +77,7 @@ const (
 	SampleDeleted                             = "admin.sample.delete.success"
 	AnalysisCreationSuccess                   = "analysis.create.success"
 	AnalysisInvalidType                       = "analysis.invalidType.error"
+	AnalysisInvalidStatus                     = "analysis.invalidStatus.error"
 	AnalysisNotFoundError                     = "analysis.notFound.error"
 	AnalysisExceededLimitError                = "analysis.exceededLimit.error"
 	AnalysisZipNotFound                       = "analysis.zipNotFound.error"

@@ -47,7 +47,7 @@ var AnalysisCreateTests = []Body{
 }
 
 var baseAdminAnalysisUpdateBody = map[string]any{
-	"status":           "completed",
+	"status":           "Done",
 	"metrics":          map[string]any{"coverage": 98.5, "reads": 1500000},
 	"fastqc1":          "/app/uploads/fastqc1_report.html",
 	"fastqc2":          "/app/uploads/fastqc2_report.html",
@@ -60,7 +60,7 @@ var AdminAnalysisUpdateTests = []Body{
 		b := testutils.CopyMap(baseAdminAnalysisUpdateBody)
 		b["status"] = "invalid_status"
 		return b
-	}()), `{"error":"The analysis status is invalid."}`},
+	}()), `{"error":"This analysis status is invalid."}`},
 }
 
 var baseAnalysisTSVDownloadBody = map[string]any{

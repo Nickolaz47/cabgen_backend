@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/analysis"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/analysis"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -22,35 +22,35 @@ func TestCreateAnalysis(t *testing.T) {
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToAdminResponse()
 
 	mockUserID := uuid.New()
 
 	validInput := map[string]any{
 		"type":      models.AnalysisTypeFastQC,
 		"sample_id": validUUID,
+		"user_id":   mockUserID,
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{
+		svc := &mocks.MockAdminAnalysisService{
 			CreateFunc: func(ctx context.Context,
 				input models.AnalysisCreateDTO) (
-				*models.AnalysisResponse, error) {
+				*models.AnalysisAdminResponse, error) {
+				assert.Equal(t, mockUserID, input.UserID)
 				return &mockResponse, nil
 			},
 		}
 
-		handler := analysis.NewAnalysisHandler(svc)
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis",
+			"/api/admin/analysis",
 			testutils.ToJSON(validInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.CreateAnalysis(c)
 
 		expected := testutils.ToJSON(
@@ -65,21 +65,19 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid Type", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{}
-		handler := analysis.NewAnalysisHandler(svc)
+		svc := &mocks.MockAdminAnalysisService{}
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		invalidInput := testutils.CopyMap(validInput)
 		invalidInput["type"] = "invalid_type"
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis",
+			"/api/admin/analysis",
 			testutils.ToJSON(invalidInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.CreateAnalysis(c)
 
 		expected := testutils.ToJSON(
@@ -93,20 +91,18 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{}
-		handler := analysis.NewAnalysisHandler(svc)
+		svc := &mocks.MockAdminAnalysisService{}
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
-		for _, test := range data.AnalysisCreateTests {
+		for _, test := range data.AdminAnalysisCreateTests {
 			t.Run(test.Name, func(t *testing.T) {
 				c, w := testutils.SetupGinContext(
 					http.MethodPost,
-					"/api/analysis",
+					"/api/admin/analysis",
 					test.Body,
 					nil,
 					nil,
 				)
-				c.Set("user", &models.UserToken{ID: mockUserID})
-
 				handler.CreateAnalysis(c)
 
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -115,50 +111,24 @@ func TestCreateAnalysis(t *testing.T) {
 		}
 	})
 
-	t.Run("Error - Unauthorized", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{}
-		handler := analysis.NewAnalysisHandler(svc)
-
-		c, w := testutils.SetupGinContext(
-			http.MethodPost,
-			"/api/analysis",
-			testutils.ToJSON(validInput),
-			nil,
-			nil,
-		)
-
-		handler.CreateAnalysis(c)
-
-		expected := testutils.ToJSON(
-			map[string]string{
-				"error": "Unauthorized. Please log in to continue.",
-			},
-		)
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{
+		svc := &mocks.MockAdminAnalysisService{
 			CreateFunc: func(ctx context.Context,
 				input models.AnalysisCreateDTO) (
-				*models.AnalysisResponse, error) {
+				*models.AnalysisAdminResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
 
-		handler := analysis.NewAnalysisHandler(svc)
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis",
+			"/api/admin/analysis",
 			testutils.ToJSON(validInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.CreateAnalysis(c)
 
 		expected := testutils.ToJSON(

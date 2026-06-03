@@ -134,3 +134,76 @@ func (s *MockAnalysisService) Delete(ctx context.Context, analysisID,
 
 	return nil
 }
+
+type MockAdminAnalysisService struct {
+	FindAllFunc func(ctx context.Context) (
+		[]models.AnalysisAdminResponse, error)
+	FindByIDFunc func(ctx context.Context, analysisID uuid.UUID) (
+		*models.AnalysisAdminResponse, error)
+	FindManyByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID) (
+		[]models.AnalysisAdminResponse, error)
+	CreateFunc func(ctx context.Context, input models.AnalysisCreateDTO) (
+		*models.AnalysisAdminResponse, error)
+	UpdateFunc func(ctx context.Context, analysisID uuid.UUID,
+		input models.AdminAnalysisUpdateInput) (*models.AnalysisAdminResponse,
+		error)
+	DeleteFunc func(ctx context.Context, analysisID uuid.UUID) error
+}
+
+func (s *MockAdminAnalysisService) FindAll(ctx context.Context) (
+	[]models.AnalysisAdminResponse, error) {
+	if s.FindAllFunc != nil {
+		return s.FindAllFunc(ctx)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAdminAnalysisService) FindManyByIDs(ctx context.Context,
+	analysisIDs []uuid.UUID) (
+	[]models.AnalysisAdminResponse, error) {
+	if s.FindManyByIDsFunc != nil {
+		return s.FindManyByIDsFunc(ctx, analysisIDs)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAdminAnalysisService) FindByID(ctx context.Context,
+	analysisID uuid.UUID) (
+	*models.AnalysisAdminResponse, error) {
+	if s.FindByIDFunc != nil {
+		return s.FindByIDFunc(ctx, analysisID)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAdminAnalysisService) Create(ctx context.Context,
+	input models.AnalysisCreateDTO) (
+	*models.AnalysisAdminResponse, error) {
+	if s.CreateFunc != nil {
+		return s.CreateFunc(ctx, input)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAdminAnalysisService) Update(ctx context.Context,
+	analysisID uuid.UUID, input models.AdminAnalysisUpdateInput) (
+	*models.AnalysisAdminResponse, error) {
+	if s.UpdateFunc != nil {
+		return s.UpdateFunc(ctx, analysisID, input)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAdminAnalysisService) Delete(ctx context.Context,
+	analysisID uuid.UUID) error {
+	if s.DeleteFunc != nil {
+		return s.DeleteFunc(ctx, analysisID)
+	}
+
+	return nil
+}

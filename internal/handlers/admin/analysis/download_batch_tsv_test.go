@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/analysis"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/analysis"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -19,11 +19,10 @@ import (
 func TestDownloadBatchTSV(t *testing.T) {
 	testutils.SetupTestContext()
 
-	mockUserID := uuid.New()
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockAnalyses := []models.AnalysisResponse{
-		mockAnalysis.ToResponse(),
-		mockAnalysis.ToResponse(),
+	mockAnalyses := []models.AnalysisAdminResponse{
+		mockAnalysis.ToAdminResponse(),
+		mockAnalysis.ToAdminResponse(),
 	}
 
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
@@ -32,24 +31,22 @@ func TestDownloadBatchTSV(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) ([]models.AnalysisResponse, error) {
+		svc := &mocks.MockAdminAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
+				[]models.AnalysisAdminResponse, error) {
 				return mockAnalyses, nil
 			},
 		}
 
-		handler := analysis.NewAnalysisHandler(svc)
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis/download/tsv",
+			"/api/admin/analysis/download/tsv",
 			testutils.ToJSON(validInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.DownloadBatchTSV(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -75,20 +72,18 @@ func TestDownloadBatchTSV(t *testing.T) {
 	})
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{}
-		handler := analysis.NewAnalysisHandler(svc)
+		svc := &mocks.MockAdminAnalysisService{}
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		for _, test := range data.AnalysisTSVDownloadTests {
 			t.Run(test.Name, func(t *testing.T) {
 				c, w := testutils.SetupGinContext(
 					http.MethodPost,
-					"/api/analysis/download/tsv",
+					"/api/admin/analysis/download/tsv",
 					test.Body,
 					nil,
 					nil,
 				)
-				c.Set("user", &models.UserToken{ID: mockUserID})
-
 				handler.DownloadBatchTSV(c)
 
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -97,47 +92,23 @@ func TestDownloadBatchTSV(t *testing.T) {
 		}
 	})
 
-	t.Run("Error - Unauthorized", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{}
-		handler := analysis.NewAnalysisHandler(svc)
-
-		c, w := testutils.SetupGinContext(
-			http.MethodPost,
-			"/api/analysis/download/tsv",
-			testutils.ToJSON(validInput),
-			nil,
-			nil,
-		)
-
-		handler.DownloadBatchTSV(c)
-
-		expected := testutils.ToJSON(map[string]string{
-			"error": "Unauthorized. Please log in to continue.",
-		})
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, expected, w.Body.String())
-	})
-
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) ([]models.AnalysisResponse, error) {
+		svc := &mocks.MockAdminAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
+				[]models.AnalysisAdminResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
 
-		handler := analysis.NewAnalysisHandler(svc)
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis/download/tsv",
+			"/api/admin/analysis/download/tsv",
 			testutils.ToJSON(validInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.DownloadBatchTSV(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -149,24 +120,22 @@ func TestDownloadBatchTSV(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) ([]models.AnalysisResponse, error) {
+		svc := &mocks.MockAdminAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
+				[]models.AnalysisAdminResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
 
-		handler := analysis.NewAnalysisHandler(svc)
+		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
-			"/api/analysis/download/tsv",
+			"/api/admin/analysis/download/tsv",
 			testutils.ToJSON(validInput),
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
-
 		handler.DownloadBatchTSV(c)
 
 		expected := testutils.ToJSON(map[string]string{

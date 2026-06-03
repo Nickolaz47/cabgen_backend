@@ -409,6 +409,9 @@ other = "Análisis creado con éxito."
 [analysis.invalidType.error]
 other = "Este tipo de análisis es inválido."
 
+[analysis.invalidStatus.error]
+other = "Este status de análisis es inválido."
+
 [analysis.notFound.error]
 other = "Análisis no encontrado."
 
