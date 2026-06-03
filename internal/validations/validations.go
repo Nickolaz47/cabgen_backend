@@ -2,6 +2,7 @@ package validations
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -22,7 +23,9 @@ type Model interface {
 		models.MicroorganismUpdateInput | models.HealthServiceCreateInput |
 		models.HealthServiceUpdateInput | models.AdminSampleCreateInput |
 		models.AdminSampleUpdateInput | models.SampleCreateInput |
-		models.SampleUpdateInput | models.SampleAttachmentInput
+		models.SampleUpdateInput | models.SampleAttachmentInput |
+		models.AnalysisCreateInput | models.AdminAnalysisCreateInput |
+		models.AdminAnalysisUpdateInput | models.AnalysisTSVDownloadInput
 }
 
 func Validate[T Model](
@@ -31,11 +34,37 @@ func Validate[T Model](
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) && len(ve) > 0 {
 			validationErr := ve[0]
-			key := "validation." + validationErr.Field() + "." + validationErr.Tag()
+			tag := validationErr.Tag()
+			field := validationErr.Field()
 			data := map[string]any{"Param": validationErr.Param()}
-			return responses.GetResponseWithData(localizer, key, data), false
+
+			namespace := validationErr.StructNamespace()
+			structName := strings.SplitN(namespace, ".", 2)[0]
+
+			specificKey := "validation." + structName + "." + field + "." + tag
+			if msg := getResponseOrEmpty(localizer, specificKey,
+				data); msg != "" {
+				return msg, false
+			}
+
+			genericKey := "validation." + field + "." + tag
+			return responses.GetResponseWithData(localizer, genericKey, data),
+				false
 		}
-		return responses.GetResponse(localizer, responses.ValidationGeneric), false
+		return responses.GetResponse(localizer, responses.ValidationGeneric),
+			false
 	}
 	return "", true
+}
+
+func getResponseOrEmpty(localizer *i18n.Localizer, key string,
+	data map[string]any) string {
+	msg, err := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID:    key,
+		TemplateData: data,
+	})
+	if err != nil || msg == "" {
+		return ""
+	}
+	return msg
 }

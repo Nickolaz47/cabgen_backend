@@ -1,20 +1,14 @@
 package utils_test
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
-
-func writeMockFile(t *testing.T, filePath string, data []byte) {
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		t.Error("failed to write mock file")
-	}
-}
 
 func TestLoadJSONFile(t *testing.T) {
 	tempDir := t.TempDir()
@@ -24,8 +18,8 @@ func TestLoadJSONFile(t *testing.T) {
 	mockErrFile := filepath.Join(tempDir, "err.json")
 	mockErrContent := `[{"code": "ABW", "Names": {"pt": "Aruba", "en": "Aruba", "es": "Aruba"}},]`
 
-	writeMockFile(t, mockFile, []byte(mockContent))
-	writeMockFile(t, mockErrFile, []byte(mockErrContent))
+	testutils.WriteMockFile(t, mockFile, []byte(mockContent))
+	testutils.WriteMockFile(t, mockErrFile, []byte(mockErrContent))
 
 	t.Run("Success", func(t *testing.T) {
 		expected := []models.Country{

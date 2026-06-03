@@ -75,6 +75,13 @@ const (
 	SampleContentTypeError                    = "admin.sample.contentType.error"
 	SampleNotFoundError                       = "admin.sample.notFound.error"
 	SampleDeleted                             = "admin.sample.delete.success"
+	AnalysisCreationSuccess                   = "analysis.create.success"
+	AnalysisInvalidType                       = "analysis.invalidType.error"
+	AnalysisNotFoundError                     = "analysis.notFound.error"
+	AnalysisExceededLimitError                = "analysis.exceededLimit.error"
+	AnalysisZipNotFound                       = "analysis.zipNotFound.error"
+	AnalysisDeleted                           = "analysis.delete.success"
+	AnalysisDeleteRunningError                = "analysis.deleteRunning.error"
 )
 
 type APIResponse struct {

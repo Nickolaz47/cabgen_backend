@@ -146,3 +146,9 @@ func NewMockLogger(level zapcore.Level) (*zap.Logger, *observer.ObservedLogs) {
 	observedCore, logs := observer.New(level)
 	return zap.New(observedCore), logs
 }
+
+func WriteMockFile(t *testing.T, filePath string, data []byte) {
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		t.Error("failed to write mock file")
+	}
+}

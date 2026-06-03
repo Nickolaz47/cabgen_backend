@@ -385,11 +385,3 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | POST   | `/api/admin/health-services`        | Creates a new health service                |
 | PUT    | `/api/admin/health-services/:id`    | Updates a health service                    |
 | DELETE | `/api/admin/health-services/:id`    | Deletes a health service                    |
-
-## TODO
-
-- [x] Implement logger in services;
-- [x] Model Microorganism;
-- [x] Model HealthService;
-- [ ] Model Sample;
-- [ ] Add a volume to store `events.db` and received samples;

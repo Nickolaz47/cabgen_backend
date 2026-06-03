@@ -393,3 +393,39 @@ other = "Sample not found."
 
 [admin.sample.delete.success]
 other = "Sample deleted successfully."
+
+[validation.AnalysisCreateInput.Type.required]
+other = "The analysis type is required."
+
+[validation.AdminAnalysisCreateInput.Type.required]
+other = "The analysis type is required."
+
+[validation.SampleID.required]
+other = "The sample ID is required."
+
+[analysis.create.success]
+other = "Analysis created successfully."
+
+[analysis.invalidType.error]
+other = "This analysis type is invalid."
+
+[analysis.notFound.error]
+other = "Analysis not found."
+
+[analysis.exceededLimit.error]
+other = "Cannot download more than 50 results at once."
+
+[analysis.zipNotFound.error]
+other = "The zip file is not available for this analysis."
+
+[analysis.delete.success]
+other = "Analysis deleted successfully."
+
+[analysis.deleteRunning.error]
+other = "Cannot delete an analysis that is currently running. Please wait for it to finish."
+
+[validation.IDs.required]
+other = "IDs are required to download the result tables."
+
+[validation.IDs.min]
+other = "At least one ID is required to download the result table."

@@ -76,22 +76,21 @@ func (r *MockAnalysisRepository) DeleteAnalysis(ctx context.Context,
 }
 
 type MockAnalysisService struct {
-	FindAllFunc func(ctx context.Context, input string, userID uuid.UUID) (
+	FindAllFunc func(ctx context.Context, userID uuid.UUID) (
 		[]models.AnalysisResponse, error)
-	FindManyByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
-		userID uuid.UUID) ([]models.AnalysisResponse, error)
 	FindByIDFunc func(ctx context.Context, analysisID, userID uuid.UUID) (
 		*models.AnalysisResponse, error)
+	FindManyByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
+		userID uuid.UUID) ([]models.AnalysisResponse, error)
 	CreateFunc func(ctx context.Context, input models.AnalysisCreateDTO) (
 		*models.AnalysisResponse, error)
 	DeleteFunc func(ctx context.Context, analysisID, userID uuid.UUID) error
 }
 
-func (s *MockAnalysisService) FindAll(ctx context.Context, input string,
-	userID uuid.UUID) (
+func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID) (
 	[]models.AnalysisResponse, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx, input, userID)
+		return s.FindAllFunc(ctx, userID)
 	}
 
 	return nil, nil

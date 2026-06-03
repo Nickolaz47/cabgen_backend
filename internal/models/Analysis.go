@@ -176,3 +176,7 @@ type AdminAnalysisUpdateInput struct {
 	ResultsZipPath *string         `json:"results_zip_path" binding:"omitempty"`
 	ErrorMessage   *string         `json:"error_message" binding:"omitempty"`
 }
+
+type AnalysisTSVDownloadInput struct {
+	IDs []uuid.UUID `json:"ids" binding:"required,min=1"`
+}

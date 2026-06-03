@@ -393,3 +393,39 @@ other = "Amostra não encontrada."
 
 ["admin.sample.delete.success"]
 other = "Amostra deletada com sucesso."
+
+[validation.AnalysisCreateInput.Type.required]
+other = "O tipo da análise é obrigatório."
+
+[validation.AdminAnalysisCreateInput.Type.required]
+other = "O tipo da análise é obrigatório."
+
+[validation.SampleID.required]
+other = "O id da amostra é obrigatório."
+
+["analysis.create.success"]
+other = "Análise criada com sucesso."
+
+["analysis.invalidType.error"]
+other = "Esse tipo de análise é inválido."
+
+["analysis.notFound.error"]
+other = "Análise não encontrada."
+
+["analysis.exceededLimit.error"]
+other = "Não é possível baixar mais do que 50 resultados por vez."
+
+["analysis.zipNotFound.error"]
+other = "O arquivo zip não está disponível para essa análise."
+
+["analysis.delete.success"]
+other = "Análise deletada com sucesso."
+
+["analysis.deleteRunning.error"]
+other = "Não é possível deletar uma análise em execução, aguarde o término."
+
+["validation.IDs.required"]
+other = "Os IDs são necessários para fazer o download das tabelas de resultado."
+
+["validation.IDs.min"]
+other = "É necessário ao menos um ID para baixar a tabela de resultados."
