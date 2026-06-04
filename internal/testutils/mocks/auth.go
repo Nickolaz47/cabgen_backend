@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 )
 
 type MockHasher struct {
@@ -58,6 +59,20 @@ func (p *MockTokenProvider) ValidateToken(
 		return p.ValidateTokenFunc(tokenStr, secret)
 	}
 	return nil, nil
+}
+
+type MockTaskEnqueuer struct {
+	EnqueueContextFunc func(ctx context.Context, task *asynq.Task,
+		opts ...asynq.Option) (*asynq.TaskInfo, error)
+}
+
+func (m *MockTaskEnqueuer) EnqueueContext(ctx context.Context,
+	task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	if m.EnqueueContextFunc != nil {
+		return m.EnqueueContextFunc(ctx, task, opts...)
+	}
+
+	return &asynq.TaskInfo{ID: "mock-task-id", Queue: "emails"}, nil
 }
 
 type MockAuthService struct {

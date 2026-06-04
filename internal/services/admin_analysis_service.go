@@ -6,9 +6,11 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -28,23 +30,26 @@ type AdminAnalysisService interface {
 }
 
 type adminAnalysisService struct {
-	Repo       repositories.AnalysisRepository
-	SampleRepo repositories.SampleRepository
-	UserRepo   repositories.UserRepository
-	Logger     *zap.Logger
+	Repo        repositories.AnalysisRepository
+	SampleRepo  repositories.SampleRepository
+	UserRepo    repositories.UserRepository
+	AsynqClient TaskEnqueuer
+	Logger      *zap.Logger
 }
 
 func NewAdminAnalysisService(
 	repo repositories.AnalysisRepository,
 	sampleRepo repositories.SampleRepository,
 	userRepo repositories.UserRepository,
+	AsynqClient TaskEnqueuer,
 	logger *zap.Logger,
 ) AdminAnalysisService {
 	return &adminAnalysisService{
-		Repo:       repo,
-		SampleRepo: sampleRepo,
-		UserRepo:   userRepo,
-		Logger:     logger,
+		Repo:        repo,
+		SampleRepo:  sampleRepo,
+		UserRepo:    userRepo,
+		AsynqClient: AsynqClient,
+		Logger:      logger,
 	}
 }
 
@@ -53,7 +58,7 @@ func (s *adminAnalysisService) FindAll(ctx context.Context) (
 	analyses, err := s.Repo.GetAnalyses(ctx, uuid.Nil)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "FindAll",
+			"AdminAnalysisService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -103,14 +108,14 @@ func (s *adminAnalysisService) FindByID(ctx context.Context,
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "FindByID", logging.DatabaseNotFoundError, err,
+			"AdminAnalysisService", "FindByID", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "FindByID",
+			"AdminAnalysisService", "FindByID",
 			logging.DatabaseError, err)...)
 		return nil, ErrInternal
 	}
@@ -127,14 +132,14 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
 				logging.ServiceLogging(
-					"AnalysisService", "Create",
+					"AdminAnalysisService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrSampleNotFound
 		}
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Create",
+				"AdminAnalysisService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
 		return nil, ErrInternal
@@ -144,7 +149,7 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 		sample.Fastq1 == nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Create",
+				"AdminAnalysisService", "Create",
 				logging.MissingFileError, ErrMissingFastq1,
 			)...)
 		return nil, ErrMissingFastq1
@@ -152,7 +157,7 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 		sample.Fastq2 == nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Create",
+				"AdminAnalysisService", "Create",
 				logging.MissingFileError, ErrMissingFastq2,
 			)...)
 		return nil, ErrMissingFastq2
@@ -168,14 +173,14 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
 				logging.ServiceLogging(
-					"AnalysisService", "Create",
+					"AdminAnalysisService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrUserNotFound
 		}
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Create",
+				"AdminAnalysisService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
 		return nil, ErrInternal
@@ -194,10 +199,33 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Create",
+				"AdminAnalysisService", "Create",
 				logging.DatabaseError, err,
 			)...)
 		return nil, ErrInternal
+	}
+
+	task, err := tasks.NewProcessAnalysisTask(analysis.ID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AdminAnalysisService", "Create", logging.AsynqTaskError,
+			err,
+		)...)
+	} else {
+		info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueAnalysis))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AdminAnalysisService", "Create",
+				logging.RedisDispatchError, err,
+			)...)
+		} else {
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				"AdminAnalysisService", "Create",
+				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+				zap.String("queue", info.Queue),
+			)...)
+		}
 	}
 
 	response := analysis.ToAdminResponse()
@@ -210,14 +238,14 @@ func (s *adminAnalysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Update", logging.DatabaseNotFoundError, err,
+			"AdminAnalysisService", "Update", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Update", logging.DatabaseError, err,
+			"AdminAnalysisService", "Update", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
@@ -227,10 +255,36 @@ func (s *adminAnalysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
-				"AnalysisService", "Update",
+				"AdminAnalysisService", "Update",
 				logging.DatabaseError, err,
 			)...)
 		return nil, ErrInternal
+	}
+
+	if analysis.Status == models.AnalysisStatusDone ||
+		analysis.Status == models.AnalysisStatusFailed {
+		task, err := tasks.NewAnalysisDoneEmailTask(analysis.ID)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AdminAnalysisService", "Update", logging.AsynqTaskError,
+				err,
+			)...)
+		} else {
+			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+				asynq.Queue(tasks.QueueEmail))
+			if err != nil {
+				s.Logger.Error("Service Error", logging.ServiceLogging(
+					"AdminAnalysisService", "Update",
+					logging.RedisDispatchError, err,
+				)...)
+			} else {
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+					"AdminAnalysisService", "Update",
+					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+					zap.String("queue", info.Queue),
+				)...)
+			}
+		}
 	}
 
 	response := analysis.ToAdminResponse()
@@ -242,28 +296,28 @@ func (s *adminAnalysisService) Delete(ctx context.Context,
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Delete", logging.DatabaseNotFoundError, err,
+			"AdminAnalysisService", "Delete", logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Delete", logging.DatabaseError, err,
+			"AdminAnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if analysis.Status == models.AnalysisStatusRunning {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Delete", logging.DatabaseError, err,
+			"AdminAnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrDeleteRunningAnalysis
 	}
 
 	if err := s.Repo.DeleteAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisService", "Delete", logging.DatabaseError, err,
+			"AdminAnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}

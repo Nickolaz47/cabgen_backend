@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -28,7 +30,7 @@ func TestAdminAnalysisFindAll(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
 		result, err := svc.FindAll(ctx)
 
 		assert.NoError(t, err)
@@ -46,7 +48,7 @@ func TestAdminAnalysisFindAll(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		result, err := svc.FindAll(ctx)
 
@@ -70,7 +72,7 @@ func TestAdminAnalysisFindManyByIDs(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID})
 
 		assert.NoError(t, err)
@@ -81,7 +83,7 @@ func TestAdminAnalysisFindManyByIDs(t *testing.T) {
 	t.Run("Success - Empty Analysis IDs", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{})
 
 		assert.NoError(t, err)
@@ -93,7 +95,7 @@ func TestAdminAnalysisFindManyByIDs(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
 		result, err := svc.FindManyByIDs(ctx, make([]uuid.UUID,
 			models.AnalysesByBatch+1))
 
@@ -114,7 +116,7 @@ func TestAdminAnalysisFindManyByIDs(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, mockLogger)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID})
 
 		assert.Error(t, err)
@@ -136,7 +138,7 @@ func TestAdminAnalysisFindByID(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
 		result, err := svc.FindByID(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -156,7 +158,7 @@ func TestAdminAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		result, err := svc.FindByID(ctx, mock.ID)
 
@@ -176,7 +178,7 @@ func TestAdminAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		result, err := svc.FindByID(ctx, mock.ID)
 
@@ -207,8 +209,10 @@ func TestAdminAnalysisCreate(t *testing.T) {
 			},
 		}
 
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
-			userRepo, nil)
+			userRepo, enqueuer, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		expected := models.AnalysisAdminResponse{
@@ -223,7 +227,51 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, expected, *result)
+		assert.Equal(t, 1, logs.Len())
 	})
+
+	t.Run("Success - Change Analysis Type from Complete To Genome",
+		func(t *testing.T) {
+			analysisRepo := &mocks.MockAnalysisRepository{}
+			sampleRepo := &mocks.MockSampleRepository{
+				GetSampleByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.Sample, error) {
+					fasta := "assembly.fasta"
+					return &models.Sample{
+						ID:    mock.Sample.ID,
+						Name:  mock.Sample.Name,
+						Fasta: &fasta,
+					}, nil
+				},
+			}
+			userRepo := &mocks.MockUserRepository{
+				GetUserByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.User, error) {
+					return &mock.User, nil
+				},
+			}
+
+			enqueuer := &mocks.MockTaskEnqueuer{}
+			mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+			svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
+				userRepo, enqueuer, mockLogger)
+			result, err := svc.Create(ctx, input)
+
+			expected := models.AnalysisAdminResponse{
+				Type:     models.AnalysisTypeGenome,
+				Status:   models.AnalysisStatusPending,
+				Sample:   mock.Sample.Name,
+				SampleID: mock.Sample.ID,
+				User:     mock.User.Username,
+				UserID:   mock.User.ID,
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, result)
+			assert.Equal(t, expected, *result)
+			assert.Equal(t, 1, logs.Len())
+		})
 
 	t.Run("Error - Sample Not Found", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{}
@@ -237,7 +285,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
-			mockLogger)
+			nil, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -258,7 +306,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
-			mockLogger)
+			nil, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -279,7 +327,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
-			mockLogger)
+			nil, mockLogger)
 
 		errorInput := models.AnalysisCreateDTO{
 			Type:     models.AnalysisTypeFastQC,
@@ -307,7 +355,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo, nil,
-			mockLogger)
+			nil, mockLogger)
 
 		errorInput := models.AnalysisCreateDTO{
 			Type:     models.AnalysisTypeFastQC,
@@ -321,45 +369,6 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})
-
-	t.Run("Success - Change Analysis Type from Complete To Genome",
-		func(t *testing.T) {
-			analysisRepo := &mocks.MockAnalysisRepository{}
-			sampleRepo := &mocks.MockSampleRepository{
-				GetSampleByIDFunc: func(ctx context.Context,
-					ID uuid.UUID) (*models.Sample, error) {
-					fasta := "assembly.fasta"
-					return &models.Sample{
-						ID:    mock.Sample.ID,
-						Name:  mock.Sample.Name,
-						Fasta: &fasta,
-					}, nil
-				},
-			}
-			userRepo := &mocks.MockUserRepository{
-				GetUserByIDFunc: func(ctx context.Context,
-					ID uuid.UUID) (*models.User, error) {
-					return &mock.User, nil
-				},
-			}
-
-			svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
-				userRepo, nil)
-			result, err := svc.Create(ctx, input)
-
-			expected := models.AnalysisAdminResponse{
-				Type:     models.AnalysisTypeGenome,
-				Status:   models.AnalysisStatusPending,
-				Sample:   mock.Sample.Name,
-				SampleID: mock.Sample.ID,
-				User:     mock.User.Username,
-				UserID:   mock.User.ID,
-			}
-
-			assert.NoError(t, err)
-			assert.NotNil(t, result)
-			assert.Equal(t, expected, *result)
-		})
 
 	t.Run("Error - User Not Found", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{}
@@ -379,7 +388,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
-			userRepo, mockLogger)
+			userRepo, nil, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -406,7 +415,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
-			userRepo, mockLogger)
+			userRepo, nil, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -438,7 +447,7 @@ func TestAdminAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAdminAnalysisService(analysisRepo, sampleRepo,
-			userRepo, mockLogger)
+			userRepo, nil, mockLogger)
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -452,9 +461,19 @@ func TestAdminAnalysisUpdate(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 
-	status := models.AnalysisStatusRunning
-	updateInput := models.AdminAnalysisUpdateInput{
-		Status: &status,
+	statusRunning := models.AnalysisStatusRunning
+	updateInputRunning := models.AdminAnalysisUpdateInput{
+		Status: &statusRunning,
+	}
+
+	statusDone := models.AnalysisStatusDone
+	updateInputDone := models.AdminAnalysisUpdateInput{
+		Status: &statusDone,
+	}
+
+	statusFailed := models.AnalysisStatusFailed
+	updateInputFailed := models.AdminAnalysisUpdateInput{
+		Status: &statusFailed,
 	}
 
 	t.Run("Success", func(t *testing.T) {
@@ -469,13 +488,93 @@ func TestAdminAnalysisUpdate(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
-		result, err := svc.Update(ctx, mock.ID, updateInput)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, models.AnalysisStatusRunning, result.Status)
 		assert.NotNil(t, result.StartedAt)
+	})
+
+	t.Run("Success - Status Done Enqueues Email Task", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			enqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Status Failed Enqueues Email Task", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			enqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputFailed)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusFailed, result.Status)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Soft Fail Asynq Enqueue Error", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		failingEnqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
+				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return nil, errors.New("redis timeout")
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+			failingEnqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -488,9 +587,9 @@ func TestAdminAnalysisUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
-		result, err := svc.Update(ctx, mock.ID, updateInput)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -508,9 +607,9 @@ func TestAdminAnalysisUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
-		result, err := svc.Update(ctx, mock.ID, updateInput)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -532,9 +631,9 @@ func TestAdminAnalysisUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
-		result, err := svc.Update(ctx, mock.ID, updateInput)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -559,7 +658,7 @@ func TestAdminAnalysisDelete(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil)
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil, nil)
 		err := svc.Delete(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -575,7 +674,7 @@ func TestAdminAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		err := svc.Delete(ctx, mock.ID)
 
@@ -594,7 +693,7 @@ func TestAdminAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		err := svc.Delete(ctx, mock.ID)
 
@@ -616,7 +715,7 @@ func TestAdminAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		err := svc.Delete(ctx, runningMock.ID)
 
@@ -639,7 +738,7 @@ func TestAdminAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil,
+		svc := services.NewAdminAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger)
 		err := svc.Delete(ctx, mock.ID)
 

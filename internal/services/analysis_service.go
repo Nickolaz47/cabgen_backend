@@ -6,8 +6,10 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -25,23 +27,26 @@ type AnalysisService interface {
 }
 
 type analysisService struct {
-	Repo       repositories.AnalysisRepository
-	SampleRepo repositories.SampleRepository
-	UserRepo   repositories.UserRepository
-	Logger     *zap.Logger
+	Repo        repositories.AnalysisRepository
+	SampleRepo  repositories.SampleRepository
+	UserRepo    repositories.UserRepository
+	AsynqClient TaskEnqueuer
+	Logger      *zap.Logger
 }
 
 func NewAnalysisService(
 	repo repositories.AnalysisRepository,
 	sampleRepo repositories.SampleRepository,
 	userRepo repositories.UserRepository,
+	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 ) AnalysisService {
 	return &analysisService{
-		Repo:       repo,
-		SampleRepo: sampleRepo,
-		UserRepo:   userRepo,
-		Logger:     logger,
+		Repo:        repo,
+		SampleRepo:  sampleRepo,
+		UserRepo:    userRepo,
+		AsynqClient: asynqClient,
+		Logger:      logger,
 	}
 }
 
@@ -203,6 +208,29 @@ func (s *analysisService) Create(ctx context.Context,
 				logging.DatabaseError, err,
 			)...)
 		return nil, ErrInternal
+	}
+
+	task, err := tasks.NewProcessAnalysisTask(analysis.ID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "Create", logging.AsynqTaskError,
+			err,
+		)...)
+	} else {
+		info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueAnalysis))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AnalysisService", "Create",
+				logging.RedisDispatchError, err,
+			)...)
+		} else {
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				"AnalysisService", "Create",
+				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+				zap.String("queue", info.Queue),
+			)...)
+		}
 	}
 
 	response := analysis.ToResponse()

@@ -8,14 +8,20 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+type TaskEnqueuer interface {
+	EnqueueContext(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error)
+}
 
 type AuthService interface {
 	Register(ctx context.Context, input models.UserRegisterInput, language string) (*models.UserResponse, error)
@@ -28,6 +34,7 @@ type authService struct {
 	CountryRepo   repositories.CountryRepository
 	Hasher        security.PasswordHasher
 	TokenProvider auth.TokenProvider
+	AsynqClient   TaskEnqueuer
 	Logger        *zap.Logger
 }
 
@@ -36,6 +43,7 @@ func NewAuthService(
 	countryRepo repositories.CountryRepository,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
+	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 ) AuthService {
 	return &authService{
@@ -43,6 +51,7 @@ func NewAuthService(
 		CountryRepo:   countryRepo,
 		Hasher:        hasher,
 		TokenProvider: tokenProvider,
+		AsynqClient:   asynqClient,
 		Logger:        logger,
 	}
 }
@@ -142,6 +151,26 @@ func (s *authService) Register(
 	}
 
 	user.Country = *country
+
+	task, err := tasks.NewRegisterUserEmailTask(user.ID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "Register", logging.AsynqTaskError, err,
+		)...)
+	} else {
+		info, err := s.AsynqClient.EnqueueContext(ctx, task, asynq.Queue(tasks.QueueEmail))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "Register", logging.RedisDispatchError, err,
+			)...)
+		} else {
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				"AuthService", "Register", logging.TaskEnqueuedSuccess,
+				zap.String("task_id", info.ID),
+				zap.String("queue", info.Queue),
+			)...)
+		}
+	}
 
 	response := user.ToResponse(language)
 	return &response, nil

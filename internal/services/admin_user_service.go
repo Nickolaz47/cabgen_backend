@@ -7,10 +7,12 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -31,6 +33,7 @@ type adminUserService struct {
 	Repo        repositories.UserRepository
 	CountryRepo repositories.CountryRepository
 	Hasher      security.PasswordHasher
+	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
 }
 
@@ -38,12 +41,14 @@ func NewAdminUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
 	hasher security.PasswordHasher,
+	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 ) AdminUserService {
 	return &adminUserService{
 		Repo:        repo,
 		CountryRepo: countryRepo,
 		Hasher:      hasher,
+		AsynqClient: asynqClient,
 		Logger:      logger,
 	}
 }
@@ -373,6 +378,8 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID, admin
 		return nil
 	}
 
+	isFirstActivation := user.ActivatedOn == nil && user.ActivatedBy == nil
+
 	activatedOn := time.Now()
 	user.IsActive = true
 	user.ActivatedBy = &adminName
@@ -385,6 +392,31 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID, admin
 				logging.DatabaseError, err,
 			)...)
 		return ErrInternal
+	}
+
+	if isFirstActivation {
+		task, err := tasks.NewUserActivatedEmailTask(user.ID)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AdminUserService", "ActivateUser", logging.AsynqTaskError,
+				err,
+			)...)
+		} else {
+			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+				asynq.Queue(tasks.QueueEmail))
+			if err != nil {
+				s.Logger.Error("Service Error", logging.ServiceLogging(
+					"AdminUserService", "ActivateUser",
+					logging.RedisDispatchError, err,
+				)...)
+			} else {
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+					"AdminUserService", "ActivateUser",
+					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+					zap.String("queue", info.Queue),
+				)...)
+			}
+		}
 	}
 
 	return nil

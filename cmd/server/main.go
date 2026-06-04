@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/admin"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/common"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
@@ -54,6 +55,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Asynq Client
+	asynqClient, err := queue.NewAsynqClient(config.RedisURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Load translations
 	translation.LoadTranslation()
 
@@ -82,10 +89,11 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(mainDB.DB(), logging.FileLogger)
+	authSvc := container.BuildAuthService(mainDB.DB(), asynqClient,
+		logging.FileLogger)
 
 	userSvc := container.BuildUserService(mainDB.DB(), logging.FileLogger)
-	admUserSvc := container.BuildAdminUserService(mainDB.DB(),
+	admUserSvc := container.BuildAdminUserService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
 	sequencerSvc := container.BuildSequencerService(mainDB.DB(),
@@ -101,10 +109,10 @@ func main() {
 		logging.FileLogger)
 	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
 		logging.FileLogger)
-	analysisSvc := container.BuildAnalysisService(mainDB.DB(),
+	analysisSvc := container.BuildAnalysisService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 	admAnalysisSvc := container.BuildAdminAnalysisService(mainDB.DB(),
-		logging.FileLogger)
+		asynqClient, logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()

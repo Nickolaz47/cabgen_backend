@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -29,7 +31,7 @@ func TestAdminUserFind(t *testing.T) {
 			},
 		}
 
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		result, err := service.Find(
 			context.Background(), models.AdminUserFilter{}, lang)
 
@@ -48,7 +50,7 @@ func TestAdminUserFind(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Find(context.Background(), models.AdminUserFilter{}, lang)
 
 		assert.Error(t, err)
@@ -71,7 +73,7 @@ func TestAdminUserFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		result, err := service.FindByID(context.Background(), user.ID, lang)
 
 		assert.NoError(t, err)
@@ -87,7 +89,7 @@ func TestAdminUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
@@ -105,7 +107,7 @@ func TestAdminUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
@@ -128,7 +130,7 @@ func TestAdminUserFindByUsername(t *testing.T) {
 			},
 		}
 
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		result, err := service.FindByUsername(context.Background(), user.Username, lang)
 
 		assert.NoError(t, err)
@@ -144,7 +146,7 @@ func TestAdminUserFindByUsername(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByUsername(context.Background(), "invalid", lang)
 
 		assert.Error(t, err)
@@ -162,7 +164,7 @@ func TestAdminUserFindByUsername(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByUsername(context.Background(), "invalid", lang)
 
 		assert.Error(t, err)
@@ -185,7 +187,7 @@ func TestAdminUserFindByEmail(t *testing.T) {
 			},
 		}
 
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		result, err := service.FindByEmail(context.Background(), user.Email, lang)
 
 		assert.NoError(t, err)
@@ -201,7 +203,7 @@ func TestAdminUserFindByEmail(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByEmail(context.Background(), "invalid@mail.com", lang)
 
 		assert.Error(t, err)
@@ -219,7 +221,7 @@ func TestAdminUserFindByEmail(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.FindByEmail(context.Background(), "invalid@mail.com", lang)
 
 		assert.Error(t, err)
@@ -264,7 +266,7 @@ func TestAdminUserCreate(t *testing.T) {
 
 		hasher := &mocks.MockHasher{}
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, nil)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 		result.ActivatedOn = nil
 
@@ -294,7 +296,7 @@ func TestAdminUserCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -315,7 +317,7 @@ func TestAdminUserCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -343,7 +345,7 @@ func TestAdminUserCreate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -371,7 +373,7 @@ func TestAdminUserCreate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -403,7 +405,7 @@ func TestAdminUserCreate(t *testing.T) {
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -434,7 +436,7 @@ func TestAdminUserCreate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Create(context.Background(), input, adminName, lang)
 
 		assert.Error(t, err)
@@ -489,7 +491,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		hasher := &mocks.MockHasher{}
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, nil)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.NoError(t, err)
@@ -505,7 +507,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -523,7 +525,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -547,7 +549,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -571,7 +573,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -595,7 +597,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -619,7 +621,7 @@ func TestAdminUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -650,7 +652,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -681,7 +683,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -716,7 +718,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -750,7 +752,7 @@ func TestAdminUserUpdate(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, countryRepo, hasher, mockLogger)
+		service := services.NewAdminUserService(userRepo, countryRepo, hasher, nil, mockLogger)
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -769,13 +771,52 @@ func TestAdminActivateUser(t *testing.T) {
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
 				return &user, nil
 			},
+			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
 		}
 
 		user.IsActive = false
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		user.ActivatedBy = nil
+		user.ActivatedOn = nil
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		service := services.NewAdminUserService(userRepo, nil, nil, enqueuer,
+			mockLogger)
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Soft Fail Asynq", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
+		}
+
+		user.IsActive = false
+		user.ActivatedBy = nil
+		user.ActivatedOn = nil
+
+		failingEnqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return nil, errors.New("redis dispatch error")
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		service := services.NewAdminUserService(userRepo, nil, nil, failingEnqueuer, mockLogger)
+		err := service.ActivateUser(context.Background(), user.ID, adminName)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -787,7 +828,7 @@ func TestAdminActivateUser(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.Error(t, err)
@@ -807,7 +848,7 @@ func TestAdminActivateUser(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		user.IsActive = false
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.Error(t, err)
@@ -823,10 +864,13 @@ func TestAdminDeactivateUser(t *testing.T) {
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
 				return &user, nil
 			},
+			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
 		}
 
 		user.IsActive = true
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		err := service.DeactivateUser(context.Background(), user.ID)
 
 		assert.NoError(t, err)
@@ -841,7 +885,7 @@ func TestAdminDeactivateUser(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.DeactivateUser(context.Background(), user.ID)
 
 		assert.Error(t, err)
@@ -861,7 +905,7 @@ func TestAdminDeactivateUser(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		user.IsActive = true
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.DeactivateUser(context.Background(), user.ID)
 
 		assert.Error(t, err)
@@ -882,7 +926,7 @@ func TestAdminUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewAdminUserService(userRepo, nil, nil, nil)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil)
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
@@ -897,7 +941,7 @@ func TestAdminUserDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -917,7 +961,7 @@ func TestAdminUserDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAdminUserService(userRepo, nil, nil, mockLogger)
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, mockLogger)
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)

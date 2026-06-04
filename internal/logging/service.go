@@ -27,6 +27,12 @@ const (
 	DeleteFileError                 = "DELETE_FILE_ERROR"
 	MissingFileError                = "MISSING_FILE_ERROR"
 	ExceededDownloadLimitError      = "EXCEEDED_DOWNLOAD_LIMIT"
+	AsynqTaskError                  = "ASYNQ_TASK_ERROR"
+	RedisDispatchError              = "REDIS_DISPATCH_ERROR"
+)
+
+const (
+	TaskEnqueuedSuccess = "TASK_ENQUEUED_SUCCESS"
 )
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {
@@ -36,4 +42,18 @@ func ServiceLogging(service, function, errorType string, err error) []zap.Field 
 		zap.String("error_type", errorType),
 		zap.Error(err),
 	}
+}
+
+func ServiceInfoLogging(service, function, eventType string, extraFields ...zap.Field) []zap.Field {
+	fields := []zap.Field{
+		zap.String("service", service),
+		zap.String("func", function),
+		zap.String("event_type", eventType),
+	}
+
+	if len(extraFields) > 0 {
+		fields = append(fields, extraFields...)
+	}
+
+	return fields
 }

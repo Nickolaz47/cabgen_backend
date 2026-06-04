@@ -6,6 +6,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -18,12 +19,13 @@ func BuildUserService(db *gorm.DB, logger *zap.Logger) services.UserService {
 	return userService
 }
 
-func BuildAdminUserService(db *gorm.DB, logger *zap.Logger) services.AdminUserService {
+func BuildAdminUserService(db *gorm.DB, asynqClient *asynq.Client,
+	logger *zap.Logger) services.AdminUserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
 	hasher := security.NewPasswordHasher()
 	adminUserService := services.NewAdminUserService(
-		userRepo, countryRepo, hasher, logger)
+		userRepo, countryRepo, hasher, asynqClient, logger)
 
 	return adminUserService
 }
