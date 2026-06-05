@@ -152,7 +152,7 @@ func (s *authService) Register(
 
 	user.Country = *country
 
-	task, err := tasks.NewRegisterUserEmailTask(user.ID)
+	task, err := tasks.NewAdminAlertEmailTask(user.ID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AuthService", "Register", logging.AsynqTaskError, err,

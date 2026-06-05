@@ -205,7 +205,7 @@ func (s *adminAnalysisService) Create(ctx context.Context,
 		return nil, ErrInternal
 	}
 
-	task, err := tasks.NewProcessAnalysisTask(analysis.ID)
+	task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AdminAnalysisService", "Create", logging.AsynqTaskError,

@@ -102,7 +102,6 @@ func main() {
 	sampleSourceSvc := container.BuildSampleSourceService(mainDB.DB(),
 		logging.FileLogger)
 	countrySvc := container.BuildCountryService(mainDB.DB(), logging.FileLogger)
-	// emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
 	microSvc := container.BuildMicroorganismService(mainDB.DB(),
 		logging.FileLogger)
 	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(),

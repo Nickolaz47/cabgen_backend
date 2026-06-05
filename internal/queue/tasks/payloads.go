@@ -12,17 +12,17 @@ const (
 	QueueAnalysis = "analyses"
 	QueueEmail    = "emails"
 
-	TaskTypeProcessAnalysis    = "analysis:process"
-	TaskTypeRegisterUserEmail  = "email:register"
-	TaskTypeUserActivatedEmail = "email:activation"
-	TaskTypeAnalysisDoneEmail  = "email:analysisDone"
+	TaskTypeAnalysisProcess   = "analysis:process"
+	TaskTypeWelcomeEmail      = "email:welcome"
+	TaskTypeAnalysisDoneEmail = "email:analysis_done"
+	TaskTypeAdminAlertEmail   = "email:admin_user_alert"
 )
 
 type AnalysisProcessPayload struct {
 	AnalysisID uuid.UUID `json:"analysis_id"`
 }
 
-type UserEmailPayload struct {
+type WelcomeEmailPayload struct {
 	UserID uuid.UUID `json:"user_id"`
 }
 
@@ -30,7 +30,11 @@ type AnalysisDoneEmailPayload struct {
 	AnalysisID uuid.UUID `json:"analysis_id"`
 }
 
-func NewProcessAnalysisTask(analysisID uuid.UUID) (
+type AdminAlertEmailPayload struct {
+	NewUserID uuid.UUID `json:"new_user_id"`
+}
+
+func NewAnalysisProcessTask(analysisID uuid.UUID) (
 	*asynq.Task, error) {
 	payload := AnalysisProcessPayload{AnalysisID: analysisID}
 	payloadBytes, err := json.Marshal(payload)
@@ -39,51 +43,38 @@ func NewProcessAnalysisTask(analysisID uuid.UUID) (
 	}
 
 	return asynq.NewTask(
-		TaskTypeProcessAnalysis,
+		TaskTypeAnalysisProcess,
 		payloadBytes,
 		asynq.MaxRetry(3),
 		asynq.Timeout(5*time.Hour),
 	), nil
 }
 
-func NewRegisterUserEmailTask(userID uuid.UUID) (*asynq.Task, error) {
-	payload := UserEmailPayload{UserID: userID}
-	payloadBytes, err := json.Marshal(payload)
+func NewAdminAlertEmailTask(newUserID uuid.UUID) (*asynq.Task, error) {
+	payload, err := json.Marshal(AdminAlertEmailPayload{NewUserID: newUserID})
 	if err != nil {
 		return nil, err
 	}
-
-	return asynq.NewTask(
-		TaskTypeRegisterUserEmail,
-		payloadBytes,
-		asynq.MaxRetry(5),
-	), nil
+	return asynq.NewTask(TaskTypeAdminAlertEmail, payload), nil
 }
 
-func NewUserActivatedEmailTask(userID uuid.UUID) (*asynq.Task, error) {
-	payload := UserEmailPayload{UserID: userID}
-	payloadBytes, err := json.Marshal(payload)
+func NewWelcomeEmailTask(userID uuid.UUID) (*asynq.Task, error) {
+	payload, err := json.Marshal(WelcomeEmailPayload{UserID: userID})
 	if err != nil {
 		return nil, err
 	}
 
-	return asynq.NewTask(
-		TaskTypeUserActivatedEmail,
-		payloadBytes,
-		asynq.MaxRetry(5),
-	), nil
+	return asynq.NewTask(TaskTypeWelcomeEmail, payload,
+		asynq.MaxRetry(5)), nil
 }
 
 func NewAnalysisDoneEmailTask(analysisID uuid.UUID) (*asynq.Task, error) {
-	payload := AnalysisDoneEmailPayload{AnalysisID: analysisID}
-	payloadBytes, err := json.Marshal(payload)
+	payload, err := json.Marshal(AnalysisDoneEmailPayload{
+		AnalysisID: analysisID})
 	if err != nil {
 		return nil, err
 	}
 
-	return asynq.NewTask(
-		TaskTypeAnalysisDoneEmail,
-		payloadBytes,
-		asynq.MaxRetry(5),
-	), nil
+	return asynq.NewTask(TaskTypeAnalysisDoneEmail, payload,
+		asynq.MaxRetry(5)), nil
 }

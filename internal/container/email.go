@@ -10,8 +10,9 @@ import (
 
 func BuildEmailService(db *gorm.DB, logger *zap.Logger) services.EmailService {
 	userRepo := repositories.NewUserRepo(db)
+	analysisRepo := repositories.NewAnalysisRepository(db)
 	emailSvc := services.NewEmailService(
-		userRepo, email.CreateDefaultSender(), logger,
+		userRepo, analysisRepo, email.CreateDefaultSender(), logger,
 	)
 
 	return emailSvc

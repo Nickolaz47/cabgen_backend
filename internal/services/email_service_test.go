@@ -8,69 +8,237 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 )
 
-func TestSendActivationUserEmail(t *testing.T) {
+func TestSendAdminAlertEmail(t *testing.T) {
 	ctx := context.Background()
-	userToActivate := "johndoe"
+	userID := uuid.New()
+	newUser := models.User{Username: "newguy", Email: "newguy@mail.com"}
 	adminUser := testmodels.NewAdminLoginUser()
 
 	t.Run("Success", func(t *testing.T) {
-		userRepo := mocks.MockUserRepository{
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return &newUser, nil
+			},
 			GetUsersFunc: func(ctx context.Context,
 				filter models.AdminUserFilter) ([]models.User, error) {
 				return []models.User{adminUser}, nil
 			},
 		}
-		sender := mocks.MockEmailSender{}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(&userRepo, &sender, nil)
-		err := svc.SendActivationUserEmail(ctx, userToActivate)
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
 	})
 
+	t.Run("Error - Fetch New User", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendAdminAlertEmail(ctx, userID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to fetch new user:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
 	t.Run("Error - Get Admins", func(t *testing.T) {
-		userRepo := mocks.MockUserRepository{
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return &newUser, nil
+			},
 			GetUsersFunc: func(ctx context.Context,
 				filter models.AdminUserFilter) ([]models.User, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
-
-		sender := mocks.MockEmailSender{}
+		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(&userRepo, &sender, mockLogger)
-		err := svc.SendActivationUserEmail(ctx, userToActivate)
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "Failed to get admins:")
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Send Email", func(t *testing.T) {
-		userRepo := mocks.MockUserRepository{
+	t.Run("Error - Send Email Soft Fail", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return &newUser, nil
+			},
 			GetUsersFunc: func(ctx context.Context,
 				filter models.AdminUserFilter) ([]models.User, error) {
 				return []models.User{adminUser}, nil
 			},
 		}
-
-		sender := mocks.MockEmailSender{
+		sender := &mocks.MockEmailSender{
 			ShouldFail: true,
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(&userRepo, &sender, mockLogger)
-		err := svc.SendActivationUserEmail(ctx, userToActivate)
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestSendWelcomeEmail(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+	user := models.User{Name: "John Doe", Email: "john@mail.com"}
+
+	t.Run("Success", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return &user, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendWelcomeEmail(ctx, userID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - User Not Found", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendWelcomeEmail(ctx, userID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to fetch user:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
+				*models.User, error) {
+				return &user, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		err := svc.SendWelcomeEmail(ctx, userID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send welcome email to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestSendAnalysisDoneEmail(t *testing.T) {
+	ctx := context.Background()
+	analysisID := uuid.New()
+	mockAnalysis := testmodels.CreateMockAnalysis()
+
+	t.Run("Success - Completed", func(t *testing.T) {
+		mockAnalysis.Status = models.AnalysisStatusDone
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Analysis, error) {
+				return &mockAnalysis, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Success - Failed Status", func(t *testing.T) {
+		mockAnalysis.Status = models.AnalysisStatusFailed
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Analysis, error) {
+				return &mockAnalysis, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Analysis Not Found", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Analysis, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to fetch analysis:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Send Mail Failure", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Analysis, error) {
+				return &mockAnalysis, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send analysis email to")
 		assert.Equal(t, 1, logs.Len())
 	})
 }

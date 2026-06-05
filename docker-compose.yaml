@@ -13,6 +13,19 @@ services:
       redis:
         condition: service_healthy
 
+  worker-email:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=database
+    command: ["./worker-email"]
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   database:
     image: "postgres:15-alpine"
     restart: unless-stopped

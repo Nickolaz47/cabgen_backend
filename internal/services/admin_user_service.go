@@ -395,7 +395,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID, admin
 	}
 
 	if isFirstActivation {
-		task, err := tasks.NewUserActivatedEmailTask(user.ID)
+		task, err := tasks.NewWelcomeEmailTask(user.ID)
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(
 				"AdminUserService", "ActivateUser", logging.AsynqTaskError,
