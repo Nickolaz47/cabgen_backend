@@ -44,6 +44,7 @@ func main() {
 		&models.HealthService{},
 		&models.Sample{},
 		&models.Analysis{},
+		&models.Ticket{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
