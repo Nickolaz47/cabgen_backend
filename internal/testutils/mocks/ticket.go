@@ -3,7 +3,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/google/uuid"
 )
 

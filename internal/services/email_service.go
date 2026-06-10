@@ -17,11 +17,13 @@ type EmailService interface {
 	SendAdminAlertEmail(ctx context.Context, newUserID uuid.UUID) error
 	SendWelcomeEmail(ctx context.Context, userID uuid.UUID) error
 	SendAnalysisDoneEmail(ctx context.Context, analysisID uuid.UUID) error
+	SendAdminTicketEmail(ctx context.Context, ticketID uuid.UUID) error
 }
 
 type emailService struct {
 	UserRepo     repositories.UserRepository
 	AnalysisRepo repositories.AnalysisRepository
+	TicketRepo   repositories.TicketRepository
 	EmailSender  email.EmailSender
 	Logger       *zap.Logger
 }
@@ -29,11 +31,13 @@ type emailService struct {
 func NewEmailService(
 	userRepo repositories.UserRepository,
 	analysisRepo repositories.AnalysisRepository,
+	ticketRepo repositories.TicketRepository,
 	emailSender email.EmailSender,
 	logger *zap.Logger) EmailService {
 	return &emailService{
 		UserRepo:     userRepo,
 		AnalysisRepo: analysisRepo,
+		TicketRepo:   ticketRepo,
 		EmailSender:  emailSender,
 		Logger:       logger,
 	}
@@ -166,6 +170,66 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 		)...)
 		return fmt.Errorf("Failed to send analysis email to %s: %v",
 			analysis.User.Email, err)
+	}
+
+	return nil
+}
+
+func (s *emailService) SendAdminTicketEmail(ctx context.Context,
+	ticketID uuid.UUID) error {
+	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendAdminTicketEmail", logging.DatabaseError, err,
+		)...)
+		return fmt.Errorf("Failed to fetch ticket: %v", err)
+	}
+
+	admin, isActive := models.Admin, true
+	filter := models.AdminUserFilter{
+		UserRole: &admin,
+		Active:   &isActive,
+	}
+
+	admins, err := s.UserRepo.GetUsers(ctx, filter)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendAdminTicketEmail",
+			logging.DatabaseError, err,
+		)...)
+		return fmt.Errorf("Failed to get admins: %v", err)
+	}
+
+	body := fmt.Sprintf(`
+    <h2>Novo Ticket de Suporte CABGen</h2>
+    <p><strong>Nome:</strong> %s</p>
+    <p><strong>E-mail:</strong> %s</p>
+    <p><strong>Assunto:</strong> %s</p>
+    <hr>
+    <p>%s</p>
+	<br>
+	<p><small>Acesse o painel administrativo para atribuir este ticket a você e respondê-lo.</small></p>
+    `, ticket.Name, ticket.Email, ticket.Subject, ticket.Message)
+
+	for _, a := range admins {
+		if a.Email == "" {
+			continue
+		}
+
+		cfg := email.EmailConfig{
+			Sender:    config.SenderEmail,
+			Recipient: a.Email,
+			Subject:   "Contato CABGen - " + ticket.Name,
+			Body:      body,
+		}
+
+		if err := email.SendEmail(cfg, s.EmailSender); err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"EmailService", "SendAdminTicketEmail", logging.SendEmailError,
+				fmt.Errorf("Failed to send ticket email to %s: %v",
+					a.Email, err),
+			)...)
+		}
 	}
 
 	return nil

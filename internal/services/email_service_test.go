@@ -35,7 +35,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
@@ -51,7 +51,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -73,7 +73,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -97,7 +97,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
@@ -120,7 +120,8 @@ func TestSendWelcomeEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender,
+			mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.NoError(t, err)
@@ -136,7 +137,8 @@ func TestSendWelcomeEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender,
+			mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -156,7 +158,8 @@ func TestSendWelcomeEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, sender,
+			mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -181,7 +184,8 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
+			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
@@ -198,7 +202,8 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
+			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
@@ -214,7 +219,8 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
+			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.Error(t, err)
@@ -234,11 +240,118 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, sender, mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
+			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "Failed to send analysis email to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestSendAdminTicketEmail(t *testing.T) {
+	ctx := context.Background()
+	ticketID := uuid.New()
+	mockTicket := models.Ticket{
+		Name:    "John Doe",
+		Email:   "john@mail.com",
+		Subject: "Test Subject",
+		Message: "Test message body",
+	}
+	adminUser := testmodels.NewAdminLoginUser()
+
+	t.Run("Success", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &mockTicket, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return []models.User{adminUser}, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(userRepo, nil, ticketRepo,
+			sender, mockLogger)
+		err := svc.SendAdminTicketEmail(ctx, ticketID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Fetch Ticket", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		userRepo := &mocks.MockUserRepository{}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendAdminTicketEmail(ctx, ticketID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to fetch ticket:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Get Admins", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &mockTicket, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendAdminTicketEmail(ctx, ticketID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to get admins:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Send Email Soft Fail", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &mockTicket, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return []models.User{adminUser}, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendAdminTicketEmail(ctx, ticketID)
+
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
