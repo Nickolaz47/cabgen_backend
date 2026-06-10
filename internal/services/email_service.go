@@ -18,6 +18,7 @@ type EmailService interface {
 	SendWelcomeEmail(ctx context.Context, userID uuid.UUID) error
 	SendAnalysisDoneEmail(ctx context.Context, analysisID uuid.UUID) error
 	SendAdminTicketEmail(ctx context.Context, ticketID uuid.UUID) error
+	SendFinishedTicketEmail(ctx context.Context, ticketID uuid.UUID) error
 }
 
 type emailService struct {
@@ -230,6 +231,47 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 					a.Email, err),
 			)...)
 		}
+	}
+
+	return nil
+}
+
+func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
+	ticketID uuid.UUID) error {
+	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendFinishedTicketEmail", logging.DatabaseError,
+			err)...)
+		return fmt.Errorf("Failed to fetch ticket: %v", err)
+	}
+
+	body := fmt.Sprintf(`
+    <h2>Atualização do seu Ticket de Suporte CABGen</h2>
+    <p>Olá, <strong>%s</strong>,</p>
+    <p>O seu chamado referente ao assunto "<strong>%s</strong>" foi analisado e marcado como <strong>Resolvido</strong> pela nossa equipe.</p>
+    <hr>
+    <p><small><strong>Lembrete da sua mensagem original:</strong><br>%s</small></p>
+    <br>
+    <p>Se o problema persistir ou se você tiver novas dúvidas, sinta-se à vontade para abrir um novo ticket em nosso site.</p>
+    <p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+    `, ticket.Name, ticket.Subject, ticket.Message)
+
+	cfg := email.EmailConfig{
+		Sender:    config.SenderEmail,
+		Recipient: ticket.Email,
+		Subject: "CABGen - Ticket Resolvido: " + ticket.Subject,
+		Body:    body,
+	}
+
+	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendFinishedTicketEmail", logging.SendEmailError,
+			fmt.Errorf("Failed to send ticket email to %s: %v", ticket.Email,
+				err),
+		)...)
+		return fmt.Errorf("Failed to send ticket email to %s: %v",
+			ticket.Email, err)
 	}
 
 	return nil

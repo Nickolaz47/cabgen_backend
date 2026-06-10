@@ -13,6 +13,7 @@ type TicketRepository interface {
 	GetTicketByID(ctx context.Context, id uuid.UUID) (*models.Ticket, error)
 	CreateTicket(ctx context.Context, ticket *models.Ticket) error
 	UpdateTicket(ctx context.Context, ticket *models.Ticket) error
+	DeleteTicket(ctx context.Context, ticket *models.Ticket) error
 }
 
 type ticketRepository struct {
@@ -53,4 +54,9 @@ func (r *ticketRepository) CreateTicket(ctx context.Context,
 func (r *ticketRepository) UpdateTicket(ctx context.Context,
 	ticket *models.Ticket) error {
 	return r.db.WithContext(ctx).Save(ticket).Error
+}
+
+func (r *ticketRepository) DeleteTicket(ctx context.Context,
+	ticket *models.Ticket) error {
+	return r.db.WithContext(ctx).Delete(ticket).Error
 }

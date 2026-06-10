@@ -165,4 +165,110 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "unknown task type: email:alien_task")
 	})
+
+	t.Run("Success - Admin Ticket Email", func(t *testing.T) {
+		ticketID := uuid.New()
+		mockService := &mocks.MockEmailService{
+			SendAdminTicketEmailFunc: func(ctx context.Context,
+				receivedID uuid.UUID) error {
+				assert.Equal(t, ticketID, receivedID)
+				return nil
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.AdminTicketEmailPayload{
+			TicketID: ticketID})
+		task := asynq.NewTask(tasks.TaskTypeAdminTicketEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Admin Ticket Email JSON Unmarshal", func(t *testing.T) {
+		mockService := &mocks.MockEmailService{}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		task := asynq.NewTask(tasks.TaskTypeAdminTicketEmail,
+			[]byte(`broken json`))
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, asynq.SkipRetry)
+		assert.ErrorContains(t, err, "json unmarshal failed:")
+	})
+
+	t.Run("Error - Admin Ticket Email Service Failure", func(t *testing.T) {
+		ticketID := uuid.New()
+		mockService := &mocks.MockEmailService{
+			SendAdminTicketEmailFunc: func(ctx context.Context,
+				receivedID uuid.UUID) error {
+				return errors.New("smtp connection refused")
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.AdminTicketEmailPayload{
+			TicketID: ticketID})
+		task := asynq.NewTask(tasks.TaskTypeAdminTicketEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "smtp connection refused")
+	})
+
+	t.Run("Success - Finished Ticket Email", func(t *testing.T) {
+		ticketID := uuid.New()
+		mockService := &mocks.MockEmailService{
+			SendFinishedTicketEmailFunc: func(ctx context.Context,
+				receivedID uuid.UUID) error {
+				assert.Equal(t, ticketID, receivedID)
+				return nil
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.FinishedTicketEmailPayload{
+			TicketID: ticketID})
+		task := asynq.NewTask(tasks.TaskTypeFinishedTicketEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Finished Ticket Email JSON Unmarshal", func(t *testing.T) {
+		mockService := &mocks.MockEmailService{}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		task := asynq.NewTask(tasks.TaskTypeFinishedTicketEmail,
+			[]byte(`[1, 2, 3]`))
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, asynq.SkipRetry)
+		assert.ErrorContains(t, err, "json unmarshal failed:")
+	})
+
+	t.Run("Error - Finished Ticket Email Service Failure", func(t *testing.T) {
+		ticketID := uuid.New()
+		mockService := &mocks.MockEmailService{
+			SendFinishedTicketEmailFunc: func(ctx context.Context,
+				receivedID uuid.UUID) error {
+				return errors.New("template render error")
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.FinishedTicketEmailPayload{
+			TicketID: ticketID})
+		task := asynq.NewTask(tasks.TaskTypeFinishedTicketEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "template render error")
+	})
 }

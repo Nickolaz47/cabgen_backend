@@ -44,6 +44,20 @@ func (h *EmailTaskHandler) ProcessTask(ctx context.Context, t *asynq.Task) error
 		}
 		return h.EmailService.SendAnalysisDoneEmail(ctx, p.AnalysisID)
 
+	case tasks.TaskTypeAdminTicketEmail:
+		var p tasks.AdminTicketEmailPayload
+		if err := json.Unmarshal(t.Payload(), &p); err != nil {
+			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
+		}
+		return h.EmailService.SendAdminTicketEmail(ctx, p.TicketID)
+
+	case tasks.TaskTypeFinishedTicketEmail:
+		var p tasks.FinishedTicketEmailPayload
+		if err := json.Unmarshal(t.Payload(), &p); err != nil {
+			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
+		}
+		return h.EmailService.SendFinishedTicketEmail(ctx, p.TicketID)
+
 	default:
 		return fmt.Errorf("unknown task type: %s", t.Type())
 	}

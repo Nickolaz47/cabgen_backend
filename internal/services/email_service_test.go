@@ -355,3 +355,71 @@ func TestSendAdminTicketEmail(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestSendFinishedTicketEmail(t *testing.T) {
+	ctx := context.Background()
+	ticketID := uuid.New()
+	mockTicket := models.Ticket{
+		Name:    "Jane Doe",
+		Email:   "jane@mail.com",
+		Subject: "Login Issue",
+		Message: "I cannot log in to the system",
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &mockTicket, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendFinishedTicketEmail(ctx, ticketID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Fetch Ticket", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendFinishedTicketEmail(ctx, ticketID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to fetch ticket:")
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &mockTicket, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
+			mockLogger)
+		err := svc.SendFinishedTicketEmail(ctx, ticketID)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send ticket email to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}

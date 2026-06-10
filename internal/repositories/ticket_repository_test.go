@@ -219,3 +219,44 @@ func TestUpdateTicket(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestDeleteTicket(t *testing.T) {
+	ctx := context.Background()
+	admin := testmodels.NewAdminLoginUser()
+
+	db := testutils.NewMockDB()
+	ticketRepo := repositories.NewTicketRepo(db)
+
+	ticket := testmodels.NewTicket(
+		uuid.NewString(),
+		"Jão",
+		"jão@mail.com",
+		"Fiocruz",
+		"Wrong password",
+		"Cannot access my account.",
+		&admin,
+	)
+	db.Create(&ticket)
+
+	t.Run("Success", func(t *testing.T) {
+		err := ticketRepo.DeleteTicket(ctx, &ticket)
+		assert.NoError(t, err)
+
+		var result models.Ticket
+		err = db.Where("id = ?", ticket.ID).First(&result).Error
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+		assert.Empty(t, result)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockTicketRepo := repositories.NewTicketRepo(mockDB)
+		err = mockTicketRepo.DeleteTicket(ctx, &models.Ticket{})
+
+		assert.Error(t, err)
+	})
+}

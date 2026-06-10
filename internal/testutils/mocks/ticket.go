@@ -14,6 +14,7 @@ type MockTicketRepository struct {
 		*models.Ticket, error)
 	CreateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
 	UpdateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
+	DeleteTicketFunc func(ctx context.Context, ticket *models.Ticket) error
 }
 
 func (r *MockTicketRepository) GetTickets(ctx context.Context, status string) (
@@ -44,6 +45,14 @@ func (r *MockTicketRepository) UpdateTicket(ctx context.Context,
 	ticket *models.Ticket) error {
 	if r.UpdateTicketFunc != nil {
 		return r.UpdateTicketFunc(ctx, ticket)
+	}
+	return nil
+}
+
+func (r *MockTicketRepository) DeleteTicket(ctx context.Context,
+	ticket *models.Ticket) error {
+	if r.DeleteTicketFunc != nil {
+		return r.DeleteTicketFunc(ctx, ticket)
 	}
 	return nil
 }

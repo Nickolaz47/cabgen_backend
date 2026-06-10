@@ -12,11 +12,12 @@ const (
 	QueueAnalysis = "analyses"
 	QueueEmail    = "emails"
 
-	TaskTypeAnalysisProcess   = "analysis:process"
-	TaskTypeWelcomeEmail      = "email:welcome"
-	TaskTypeAnalysisDoneEmail = "email:analysis_done"
-	TaskTypeAdminAlertEmail   = "email:admin_user_alert"
-	TaskTypeAdminTicketEmail  = "email:admin_ticket"
+	TaskTypeAnalysisProcess     = "analysis:process"
+	TaskTypeWelcomeEmail        = "email:welcome"
+	TaskTypeAnalysisDoneEmail   = "email:analysis_done"
+	TaskTypeAdminAlertEmail     = "email:admin_user_alert"
+	TaskTypeAdminTicketEmail    = "email:admin_ticket"
+	TaskTypeFinishedTicketEmail = "email:finished_ticket"
 )
 
 type AnalysisProcessPayload struct {
@@ -36,7 +37,11 @@ type AdminAlertEmailPayload struct {
 }
 
 type AdminTicketEmailPayload struct {
-	TicketID      uuid.UUID `json:"ticket_id"`
+	TicketID uuid.UUID `json:"ticket_id"`
+}
+
+type FinishedTicketEmailPayload struct {
+	TicketID uuid.UUID `json:"ticket_id"`
 }
 
 func NewAnalysisProcessTask(analysisID uuid.UUID) (
@@ -94,4 +99,15 @@ func NewAdminTicketEmailTask(ticketID uuid.UUID) (
 
 	return asynq.NewTask(TaskTypeAdminTicketEmail, payload, asynq.MaxRetry(5)),
 		nil
+}
+
+func NewFinishedTicketEmailTask(ticketID uuid.UUID) (*asynq.Task, error) {
+	payload, err := json.Marshal(FinishedTicketEmailPayload{
+		TicketID: ticketID})
+	if err != nil {
+		return nil, err
+	}
+
+	return asynq.NewTask(TaskTypeFinishedTicketEmail, payload,
+		asynq.MaxRetry(5)), nil
 }

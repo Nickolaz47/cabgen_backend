@@ -29,6 +29,8 @@ const (
 	ExceededDownloadLimitError      = "EXCEEDED_DOWNLOAD_LIMIT"
 	AsynqTaskError                  = "ASYNQ_TASK_ERROR"
 	RedisDispatchError              = "REDIS_DISPATCH_ERROR"
+	TicketStatusError               = "TICKET_STATUS_ERROR"
+	DeleteActiveTicketError         = "DELETE_ACTIVE_TICKET_ERROR"
 )
 
 const (
