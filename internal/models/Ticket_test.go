@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTicketToResponse(t *testing.T) {
+	admin := testmodels.NewAdminLoginUser()
 	ticket := models.Ticket{
 		ID:          uuid.New(),
 		Name:        "Jão",
@@ -19,6 +21,8 @@ func TestTicketToResponse(t *testing.T) {
 		Message:     "Cannot access my account.",
 		Status:      models.TicketStatusOpen,
 		CreatedAt:   time.Date(2025, 12, 31, 1, 30, 00, 00, time.UTC),
+		AdminID:     &admin.ID,
+		Admin:       &admin,
 	}
 
 	expected := models.TicketResponse{
@@ -29,7 +33,9 @@ func TestTicketToResponse(t *testing.T) {
 		Subject:     ticket.Subject,
 		Message:     ticket.Message,
 		Status:      ticket.Status,
-		CreatedAt:   ticket.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt:   ticket.CreatedAt.Format(time.RFC3339),
+		AdminID:     &admin.ID,
+		Admin:       admin.Username,
 	}
 	result := ticket.ToResponse()
 

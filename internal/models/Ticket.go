@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	TicketStatusOpen     = "OPEN"
-	TicketStatusResolved = "RESOLVED"
+	TicketStatusOpen       = "OPEN"
+	TicketStatusInProgress = "IN_PROGRESS"
+	TicketStatusResolved   = "RESOLVED"
 )
 
 type Ticket struct {
@@ -21,13 +22,17 @@ type Ticket struct {
 	Status      string    `gorm:"not null;default:'OPEN'"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+
+	AdminID *uuid.UUID `gorm:"type:uuid;index"`
+	Admin   *User      `gorm:"foreignKey:AdminID;references:ID"`
 }
 
 type CreateTicketInput struct {
-	Name    string `json:"name" binding:"required,min=2,max=100"`
-	Email   string `json:"email" binding:"required,email"`
-	Subject string `json:"subject" binding:"required,min=5,max=150"`
-	Message string `json:"message" binding:"required,min=10,max=2000"`
+	Name        string `json:"name" binding:"required,min=2,max=100"`
+	Email       string `json:"email" binding:"required,email"`
+	Institution string `json:"institution" binding:"required,max=150"`
+	Subject     string `json:"subject" binding:"required,min=5,max=150"`
+	Message     string `json:"message" binding:"required,min=10,max=2000"`
 }
 
 type TicketResponse struct {
@@ -39,10 +44,13 @@ type TicketResponse struct {
 	Message     string    `json:"message"`
 	Status      string    `json:"status"`
 	CreatedAt   string    `json:"created_at"`
+
+	AdminID *uuid.UUID `json:"admin_id,omitempty"`
+	Admin   string     `json:"admin,omitempty"`
 }
 
 func (t *Ticket) ToResponse() TicketResponse {
-	return TicketResponse{
+	response := TicketResponse{
 		ID:          t.ID,
 		Name:        t.Name,
 		Email:       t.Email,
@@ -50,6 +58,16 @@ func (t *Ticket) ToResponse() TicketResponse {
 		Subject:     t.Subject,
 		Message:     t.Message,
 		Status:      t.Status,
-		CreatedAt:   t.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
 	}
+
+	if t.AdminID != nil {
+		response.AdminID = t.AdminID
+	}
+
+	if t.Admin != nil {
+		response.Admin = t.Admin.Username
+	}
+
+	return response
 }

@@ -23,7 +23,7 @@ import (
 )
 
 func NewMockDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:?_loc=Local"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -39,6 +39,7 @@ func NewMockDB() *gorm.DB {
 	db.AutoMigrate(&testmodels.HealthService{})
 	db.AutoMigrate(&testmodels.Sample{})
 	db.AutoMigrate(&testmodels.Analysis{})
+	db.AutoMigrate(&testmodels.Ticket{})
 
 	return db
 }
