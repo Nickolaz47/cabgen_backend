@@ -298,100 +298,100 @@ other = "O formato do email do contato é inválido."
 [validation.ContactPhone.e164]
 other = "O telefone do contato está no formato inválido."
 
-["admin.healthService.create.success"]
+[admin.healthService.create.success]
 other = "Serviço de saúde criado com sucesso."
 
-["admin.healthService.create.invalidType"]
+[admin.healthService.create.invalidType]
 other = "Serviço de saúde com tipo inválido."
 
-["admin.healthService.notFound.error"]
+[admin.healthService.notFound.error]
 other = "Serviço de saúde não encontrado."
 
-["admin.healthService.nameAlreadyExists.error"]
+[admin.healthService.nameAlreadyExists.error]
 other = "Serviço de saúde com esse nome já existe."
 
-["admin.healthService.delete.success"]
+[admin.healthService.delete.success]
 other = "Serviço de saúde deletado com sucesso."
 
-["validation.CollectionDate.required"]
+[validation.CollectionDate.required]
 other = "A data da coleta é obrigatória."
 
-["validation.CollectionDate.time_format"]
+[validation.CollectionDate.time_format]
 other = "A data da coleta deve ter o formato RFC3339."
 
-["validation.RunNumber.required"]
+[validation.RunNumber.required]
 other = "O número da corrida é obrigatório."
 
-["validation.RunNumber.max"]
+[validation.RunNumber.max]
 other = "O número da corrida deve ter até {{.Param}} caracteres."
 
-["validation.RunDate.required"]
+[validation.RunDate.required]
 other = "A data da corrida é obrigatória."
 
-["validation.RunDate.time_format"]
+[validation.RunDate.time_format]
 other = "A data da corrida deve ter o formato RFC3339."
 
-["validation.OriginCode.max"]
+[validation.OriginCode.max]
 other = "O código de origem deve ter até {{.Param}} caracteres."
 
-["validation.DateOfBirth.time_format"]
+[validation.DateOfBirth.time_format]
 other = "A data de nascimento deve ter o formato RFC3339."
 
-["validation.UserID.required"]
+[validation.UserID.required]
 other = "O ID do usuário é obrigatório."
 
-["validation.OriginID.required"]
+[validation.OriginID.required]
 other = "O ID da origem é obrigatório."
 
-["validation.SampleSourceID.required"]
+[validation.SampleSourceID.required]
 other = "O ID da fonte da amostra é obrigatório."
 
-["validation.MicroorganismID.required"]
+[validation.MicroorganismID.required]
 other = "O ID do microorganismo é obrigatório."
 
-["validation.SequencerID.required"]
+[validation.SequencerID.required]
 other = "O ID do sequenciador é obrigatório."
 
-["validation.LaboratoryID.required"]
+[validation.LaboratoryID.required]
 other = "O ID do laboratório é obrigatório."
 
-["validation.HealthServiceID.required"]
+[validation.HealthServiceID.required]
 other = "O ID do serviço de saúde é obrigatório."
 
-["validation.Fastq1.max"]
+[validation.Fastq1.max]
 other = "O nome do fastq1 deve ter no máximo {{.Param}} caracteres."
 
-["validation.Fastq2.max"]
+[validation.Fastq2.max]
 other = "O nome do fastq2 deve ter no máximo {{.Param}} caracteres."
 
-["validation.Fasta.max"]
+[validation.Fasta.max]
 other = "O nome do fasta deve ter no máximo {{.Param}} caracteres."
 
-["admin.sample.create.success"]
+[admin.sample.create.success]
 other = "Amostra criada com sucesso."
 
-["admin.sample.upload.success"]
+[admin.sample.upload.success]
 other = "Arquivos da amostra submetidos com sucesso."
 
-["admin.sample.create.invalidGender"]
+[admin.sample.create.invalidGender]
 other = "Amostra com gênero inválido."
 
-["admin.sample.missingFastq1"]
+[admin.sample.missingFastq1]
 other = "O arquivo Fastq1 não foi enviado."
 
-["admin.sample.missingFastq2"]
+[admin.sample.missingFastq2]
 other = "O arquivo Fastq2 não foi enviado."
 
-["admin.sample.missingFiles"]
+[admin.sample.missingFiles]
 other = "Nenhum arquivo foi enviado para upload."
 
-["admin.sample.contentType.error"]
+[admin.sample.contentType.error]
 other = "A requisição deve ser multipart/form-data."
 
-["admin.sample.notFound.error"]
+[admin.sample.notFound.error]
 other = "Amostra não encontrada."
 
-["admin.sample.delete.success"]
+[admin.sample.delete.success]
 other = "Amostra deletada com sucesso."
 
 [validation.AnalysisCreateInput.Type.required]
@@ -403,32 +403,71 @@ other = "O tipo da análise é obrigatório."
 [validation.SampleID.required]
 other = "O id da amostra é obrigatório."
 
-["analysis.create.success"]
+[analysis.create.success]
 other = "Análise criada com sucesso."
 
-["analysis.invalidType.error"]
+[analysis.invalidType.error]
 other = "Esse tipo de análise é inválido."
 
-["analysis.invalidStatus.error"]
+[analysis.invalidStatus.error]
 other = "Esse status de análise é inválido."
 
-["analysis.notFound.error"]
+[analysis.notFound.error]
 other = "Análise não encontrada."
 
-["analysis.exceededLimit.error"]
+[analysis.exceededLimit.error]
 other = "Não é possível baixar mais do que 50 resultados por vez."
 
-["analysis.zipNotFound.error"]
+[analysis.zipNotFound.error]
 other = "O arquivo zip não está disponível para essa análise."
 
-["analysis.delete.success"]
+[analysis.delete.success]
 other = "Análise deletada com sucesso."
 
-["analysis.deleteRunning.error"]
+[analysis.deleteRunning.error]
 other = "Não é possível deletar uma análise em execução, aguarde o término."
 
-["validation.IDs.required"]
+[validation.IDs.required]
 other = "Os IDs são necessários para fazer o download das tabelas de resultado."
 
-["validation.IDs.min"]
+[validation.IDs.min]
 other = "É necessário ao menos um ID para baixar a tabela de resultados."
+
+[ticket.create.success]
+other = "O ticket de contato foi criado com sucesso."
+
+[ticket.delete.success]
+other = "O ticket foi deletado com sucesso."
+
+[ticket.notFound.error]
+other = "Ticket não encontrado."
+
+[ticket.deleteInProgress.error]
+other = "Não é possível deletar um ticket em andamento."
+
+[ticket.alreadyResolved.error]
+other = "Não é possível resolver um ticket já finalizado."
+
+[ticket.isNotOpen.error]
+other = "Não é possível atribuir um ticket em andamento ou resolvido a um admin."
+
+[validation.Institution.required]
+other = "A instituição é obrigatória."
+
+[validation.Subject.required]
+other = "O assunto do contato é obrigatório."
+
+[validation.Subject.min]
+other = "O assunto do contato deve ter pelo menos {{.Param}} caracteres."
+
+[validation.Subject.max]
+other = "O assunto do contato deve ter no máximo {{.Param}} caracteres."
+
+[validation.Message.required]
+other = "A mensagem é obrigatória."
+
+[validation.Message.min]
+other = "A mensagem deve ter pelo menos {{.Param}} caracteres."
+
+[validation.Message.max]
+other = "A mensagem deve ter no máximo {{.Param}} caracteres."

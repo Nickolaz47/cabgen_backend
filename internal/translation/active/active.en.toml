@@ -432,3 +432,42 @@ other = "IDs are required to download the result tables."
 
 [validation.IDs.min]
 other = "At least one ID is required to download the result table."
+
+[ticket.create.success]
+other = "Contact ticket created successfully."
+
+[ticket.delete.success]
+other = "Ticket deleted successfully."
+
+[ticket.notFound.error]
+other = "Ticket not found."
+
+[ticket.deleteInProgress.error]
+other = "Cannot delete a ticket that is in progress."
+
+[ticket.alreadyResolved.error]
+other = "Cannot resolve a ticket that has already been finalized."
+
+[ticket.isNotOpen.error]
+other = "Cannot assign a ticket that is in progress or already resolved to an admin."
+
+[validation.Institution.required]
+other = "Institution is required."
+
+[validation.Subject.required]
+other = "Contact subject is required."
+
+[validation.Subject.min]
+other = "Contact subject must be at least {{.Param}} characters long."
+
+[validation.Subject.max]
+other = "Contact subject must be at most {{.Param}} characters long."
+
+[validation.Message.required]
+other = "Message is required."
+
+[validation.Message.min]
+other = "Message must be at least {{.Param}} characters long."
+
+[validation.Message.max]
+other = "Message must be at most {{.Param}} characters long."

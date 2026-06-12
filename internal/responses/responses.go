@@ -83,6 +83,12 @@ const (
 	AnalysisZipNotFound                       = "analysis.zipNotFound.error"
 	AnalysisDeleted                           = "analysis.delete.success"
 	AnalysisDeleteRunningError                = "analysis.deleteRunning.error"
+	TicketCreationSuccess                     = "ticket.create.success"
+	TicketDelete                              = "ticket.delete.success"
+	TicketNotFoundError                       = "ticket.notFound.error"
+	TicketDeleteInProgressError               = "ticket.deleteInProgress.error"
+	TicketAlreadyResolvedError                = "ticket.alreadyResolved.error"
+	TickedIsNotOpenError                      = "ticket.isNotOpen.error"
 )
 
 type APIResponse struct {

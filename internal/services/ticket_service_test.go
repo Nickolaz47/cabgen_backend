@@ -242,7 +242,7 @@ func TestTicketAssign(t *testing.T) {
 		result, err := service.Assign(ctx, ticket.ID, admin.ID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInvalidTicketStatus)
+		assert.ErrorIs(t, err, services.ErrTicketIsNotOpen)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})
@@ -394,7 +394,7 @@ func TestTicketResolve(t *testing.T) {
 		result, err := service.Resolve(ctx, ticket.ID)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInvalidTicketStatus)
+		assert.ErrorIs(t, err, services.ErrTicketAlreadyResolvedStatus)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})

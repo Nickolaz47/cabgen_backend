@@ -432,3 +432,42 @@ other = "Los IDs son necesarios para descargar las tablas de resultados."
 
 [validation.IDs.min]
 other = "Se requiere al menos un ID para descargar la tabla de resultados."
+
+[ticket.create.success]
+other = "El ticket de contacto se ha creado con éxito."
+
+[ticket.delete.success]
+other = "El ticket se ha eliminado con éxito."
+
+[ticket.notFound.error]
+other = "Ticket no encontrado."
+
+[ticket.deleteInProgress.error]
+other = "No se puede eliminar un ticket en curso."
+
+[ticket.alreadyResolved.error]
+other = "No se puede resolver un ticket ya finalizado."
+
+[ticket.isNotOpen.error]
+other = "No se puede asignar a un administrador un ticket en curso o resuelto."
+
+[validation.Institution.required]
+other = "La institución es obligatoria."
+
+[validation.Subject.required]
+other = "El asunto del contacto es obligatorio."
+
+[validation.Subject.min]
+other = "El asunto del contacto debe tener al menos {{.Param}} caracteres."
+
+[validation.Subject.max]
+other = "El asunto del contacto debe tener un máximo de {{.Param}} caracteres."
+
+[validation.Message.required]
+other = "El mensaje es obligatorio."
+
+[validation.Message.min]
+other = "El mensaje debe tener al menos {{.Param}} caracteres."
+
+[validation.Message.max]
+other = "El mensaje debe tener un máximo de {{.Param}} caracteres."

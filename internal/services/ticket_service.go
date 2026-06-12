@@ -121,11 +121,10 @@ func (s *ticketService) Assign(ctx context.Context, ticketID,
 	}
 
 	if ticket.Status != models.TicketStatusOpen {
-		err := errors.New("ticket is already in progress or resolved")
 		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(
 			"TicketService", "Assign", logging.TicketStatusError, err,
 		)...)
-		return nil, ErrInvalidTicketStatus
+		return nil, ErrTicketIsNotOpen
 	}
 
 	ticket.AdminID = &adminID
@@ -167,11 +166,10 @@ func (s *ticketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
 	}
 
 	if ticket.Status == models.TicketStatusResolved {
-		err := errors.New("ticket is already resolved")
 		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(
-			"TicketService", "Resolve", logging.TicketStatusError, err,
-		)...)
-		return nil, ErrInvalidTicketStatus
+			"TicketService", "Resolve", logging.TicketStatusError,
+			ErrTicketAlreadyResolvedStatus)...)
+		return nil, ErrTicketAlreadyResolvedStatus
 	}
 
 	ticket.Status = models.TicketStatusResolved
