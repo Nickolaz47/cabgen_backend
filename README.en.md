@@ -111,6 +111,9 @@ SENDER_EMAIL=
 SENDER_PASSWORD=
 SMTP_HOST=
 SMTP_PORT=
+
+# Redis URL
+REDIS_URL=
 ```
 
 ## Running the API
