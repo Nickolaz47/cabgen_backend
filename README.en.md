@@ -34,19 +34,18 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 │       └── main.go          # API initialization
 ├── internal/                # Internal code (non-exportable)
 │   ├── auth/                # Authentication (JWT and Cookies)
-│   ├── config/              # Environment variables loading
-│   ├── container/           # Repositories, services, and handlers initialization
-│   ├── data/                # Static data (e.g., countries.json)
+│   ├── config/              # Environment variable loading
+│   ├── container/           # Repository, service, and handler initialization
 │   ├── db/                  # Database configuration and connection
 │   ├── email/               # Email sending and configuration
-│   ├── events/              # Event management within the API
 │   ├── handlers/            # Controllers (Gin)
 │   ├── logging/             # Logging configuration and control
 │   ├── middlewares/         # Application middlewares
 │   ├── models/              # Models and database mapping
+│   ├── queue/               # Task definitions and async workers (Redis/asynq)
 │   ├── repositories/        # Database access and queries
 │   ├── responses/           # HTTP response standardization
-│   ├── routes/              # Route and endpoint definition
+│   ├── routes/              # Routes/endpoints definition
 │   ├── security/            # Password encryption and hashing
 │   ├── services/            # Business logic
 │   ├── testutils/           # Testing utilities

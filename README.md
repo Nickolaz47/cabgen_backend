@@ -36,14 +36,13 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 │   ├── auth/                # Autenticação (JWT e Cookies)
 │   ├── config/              # Carregamento das variáveis de ambiente
 │   ├── container/           # Inicialização de repositórios, services e handlers
-│   ├── data/                # Dados estáticos (ex: countries.json)
 │   ├── db/                  # Configuração e conexão com o banco
 │   ├── email/               # Envio e configuração de emails
-│   ├── events/              # Gerenciamento de eventos dentro da API
 │   ├── handlers/            # Controllers (Gin)
 │   ├── logging/             # Configuração e controle de logs
 │   ├── middlewares/         # Middlewares da aplicação
 │   ├── models/              # Models e mapeamento do banco
+│   ├── queue/               # Definição de tarefas e workers assíncronos (Redis/asynq)
 │   ├── repositories/        # Acesso e queries ao banco de dados
 │   ├── responses/           # Padronização de respostas HTTP
 │   ├── routes/              # Definição das rotas/endpoints
@@ -454,10 +453,10 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar Sample (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Analysis (Model + Repository + Service + Handler + Tests)
 - [ ] Adicionar rotas para select
-- [ ] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
+- [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [ ] Adicionar cidade como select no cadastro da amostra;
 - [ ] Mostrar no resultado as versões de cada programa;
-- [ ] Permitir o download de vários resultados;
+- [x] Permitir o download de vários resultados;
 - [ ] Migrar os dados do MongoDB para o Postgresql;
 - [ ] Integrar com a pipeline;
 - [ ] Integrar com o frontend;
