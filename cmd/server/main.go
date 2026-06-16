@@ -113,11 +113,14 @@ func main() {
 		logging.FileLogger)
 	admAnalysisSvc := container.BuildAdminAnalysisService(mainDB.DB(),
 		asynqClient, logging.FileLogger)
+	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
+		logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
 	authHandler := container.BuildAuthHandler(authSvc)
 	pubCountryHandler := container.BuildPublicCountryHandler(countrySvc)
+	contactHandler := container.BuildTicketHandler(ticketSvc)
 
 	// Common handlers
 	userHandler := container.BuildUserHandler(userSvc)
@@ -143,12 +146,14 @@ func main() {
 		healthServiceSvc)
 	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc)
 	adminAnalysisHandler := container.BuildAdminAnalysisHandler(admAnalysisSvc)
+	adminTicketHandler := container.BuildAdminTicketHandler(ticketSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
 	public.SetupCountryRoutes(publicRouter, pubCountryHandler)
 	public.SetupHealthRoute(publicRouter, healthHandler)
 	public.SetupAuthRoutes(publicRouter, authHandler)
+	public.SetupContactRoutes(publicRouter, contactHandler)
 
 	// Common routes
 	commonRouter := api.Group("", middlewares.AuthMiddleware())
@@ -175,6 +180,7 @@ func main() {
 	admin.SetupAdminHealthServiceRoutes(adminRouter, adminHealthServiceHandler)
 	admin.SetupAdminSampleRoutes(adminRouter, adminSampleHandler)
 	admin.SetupAdminAnalysisRoutes(adminRouter, adminAnalysisHandler)
+	admin.SetupAdminTicketRoutes(adminRouter, adminTicketHandler)
 
 	r.Run()
 }
