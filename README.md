@@ -276,6 +276,12 @@ Os endpoints estão organizados em três níveis de acesso:
 | GET | `/api/countries` | Lista todos os países |
 | GET | `/api/countries/:code` | Retorna um país específico |
 
+#### Contato
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| POST | `/api/contact` | Cria um ticket de contato |
+
 ### Common
 
 #### Usuário
@@ -345,7 +351,7 @@ Os endpoints estão organizados em três níveis de acesso:
 
 ### Admin
 
-Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos**, **Serviços de Saúde**, **Amostras** e **Análises**:
+Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos**, **Serviços de Saúde**, **Amostras**, **Análises** e **Tickets**:
 
 #### Usuário
 
@@ -447,6 +453,16 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
 | DELETE | `/api/admin/analyses/:analysisId` | Deleta uma análise |
+
+#### Ticket
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/tickets` | Lista todos os tickets |
+| GET | `/api/admin/tickets/:ticketId` | Retorna um ticket específico |
+| PUT | `/api/admin/tickets/:ticketId/assign` | Atribui um ticket a um administrador |
+| PUT | `/api/admin/tickets/:ticketId/resolve` | Resolve um ticket |
+| DELETE | `/api/admin/tickets/:ticketId` | Deleta um ticket |
 
 ## TODO
 

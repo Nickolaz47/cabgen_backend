@@ -265,6 +265,12 @@ Endpoints are organized into three access levels:
 | GET | `/api/countries` | Lists all countries |
 | GET | `/api/countries/:code` | Returns a specific country |
 
+#### Contact
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/contact` | Creates a contact ticket |
+
 ### Common
 
 #### User
@@ -334,7 +340,7 @@ Endpoints are organized into three access levels:
 
 ### Admin
 
-Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, **Microorganisms**, **Health Services**, **Samples**, and **Analyses**:
+Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, **Microorganisms**, **Health Services**, **Samples**, **Analyses**, and **Tickets**:
 
 #### User
 
@@ -436,3 +442,13 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | POST | `/api/admin/analyses/download/tsv` | Downloads batch TSV |
 | PUT | `/api/admin/analyses/:analysisId` | Updates analysis status/results |
 | DELETE | `/api/admin/analyses/:analysisId` | Deletes an analysis |
+
+#### Ticket
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/tickets` | Lists all tickets |
+| GET | `/api/admin/tickets/:ticketId` | Returns a specific ticket |
+| PUT | `/api/admin/tickets/:ticketId/assign` | Assigns a ticket to an administrator |
+| PUT | `/api/admin/tickets/:ticketId/resolve` | Resolves a ticket |
+| DELETE | `/api/admin/tickets/:ticketId` | Deletes a ticket |
