@@ -423,3 +423,34 @@ func TestSendFinishedTicketEmail(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestSendPasswordResetEmail(t *testing.T) {
+	ctx := context.Background()
+	userEmail := "john@mail.com"
+	userName := "John Doe"
+	token := "resettoken123"
+
+	t.Run("Success", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send reset email to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}

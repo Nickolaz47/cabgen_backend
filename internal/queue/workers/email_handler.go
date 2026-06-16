@@ -58,6 +58,14 @@ func (h *EmailTaskHandler) ProcessTask(ctx context.Context, t *asynq.Task) error
 		}
 		return h.EmailService.SendFinishedTicketEmail(ctx, p.TicketID)
 
+	case tasks.TaskTypePasswordResetEmail:
+		var p tasks.PasswordResetEmailPayload
+		if err := json.Unmarshal(t.Payload(), &p); err != nil {
+			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
+		}
+		return h.EmailService.SendPasswordResetEmail(ctx, p.Email, p.Name,
+			p.Token)
+
 	default:
 		return fmt.Errorf("unknown task type: %s", t.Type())
 	}

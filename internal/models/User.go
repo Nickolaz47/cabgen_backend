@@ -130,9 +130,9 @@ type UserRegisterInput struct {
 	Name            string `json:"name" binding:"required,min=3,max=100"`
 	Username        string `json:"username" binding:"required,min=4,max=100"`
 	Email           string `json:"email" binding:"required,email"`
-	ConfirmEmail    string `json:"confirm_email" binding:"required"`
+	ConfirmEmail    string `json:"confirm_email" binding:"required,eqfield=Email"`
 	Password        string `json:"password" binding:"required,min=8,max=32"`
-	ConfirmPassword string `json:"confirm_password" binding:"required"`
+	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 	CountryCode     string `json:"country_code" binding:"required,len=3"`
 
 	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`

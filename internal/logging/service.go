@@ -31,11 +31,14 @@ const (
 	RedisDispatchError              = "REDIS_DISPATCH_ERROR"
 	TicketStatusError               = "TICKET_STATUS_ERROR"
 	DeleteActiveTicketError         = "DELETE_ACTIVE_TICKET_ERROR"
+	DeletePasswordResetTokenError   = "DELETE_PASSWORD_RESET_TOKEN_ERROR"
 )
 
 const (
 	TaskEnqueuedSuccess = "TASK_ENQUEUED_SUCCESS"
 )
+
+const ()
 
 func ServiceLogging(service, function, errorType string, err error) []zap.Field {
 	return []zap.Field{

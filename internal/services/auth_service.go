@@ -2,8 +2,12 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
@@ -24,35 +28,41 @@ type TaskEnqueuer interface {
 }
 
 type AuthService interface {
-	Register(ctx context.Context, input models.UserRegisterInput, language string) (*models.UserResponse, error)
+	Register(ctx context.Context, input models.UserRegisterInput,
+		language string) (*models.UserResponse, error)
 	Login(ctx context.Context, input models.LoginInput) (*models.Cookies, error)
 	Refresh(ctx context.Context, tokenStr string) (*http.Cookie, error)
+	ForgotPassword(ctx context.Context, input models.ForgotPasswordInput) error
+	ResetPassword(ctx context.Context, input models.ResetPasswordInput) error
 }
 
 type authService struct {
-	UserRepo      repositories.UserRepository
-	CountryRepo   repositories.CountryRepository
-	Hasher        security.PasswordHasher
-	TokenProvider auth.TokenProvider
-	AsynqClient   TaskEnqueuer
-	Logger        *zap.Logger
+	UserRepo          repositories.UserRepository
+	CountryRepo       repositories.CountryRepository
+	PasswordResetRepo repositories.PasswordResetRepository
+	Hasher            security.PasswordHasher
+	TokenProvider     auth.TokenProvider
+	AsynqClient       TaskEnqueuer
+	Logger            *zap.Logger
 }
 
 func NewAuthService(
 	userRepo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
+	passwordResetRepo repositories.PasswordResetRepository,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 ) AuthService {
 	return &authService{
-		UserRepo:      userRepo,
-		CountryRepo:   countryRepo,
-		Hasher:        hasher,
-		TokenProvider: tokenProvider,
-		AsynqClient:   asynqClient,
-		Logger:        logger,
+		UserRepo:          userRepo,
+		CountryRepo:       countryRepo,
+		PasswordResetRepo: passwordResetRepo,
+		Hasher:            hasher,
+		TokenProvider:     tokenProvider,
+		AsynqClient:       asynqClient,
+		Logger:            logger,
 	}
 }
 
@@ -297,4 +307,148 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 		auth.Access, accessToken,
 		"/", auth.AccessTokenExpiration,
 	), nil
+}
+
+func (s *authService) ForgotPassword(ctx context.Context,
+	input models.ForgotPasswordInput) error {
+	user, err := s.UserRepo.GetUserByEmail(ctx, input.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Info("Forgot password requested for non-existent email",
+				zap.String("email", input.Email))
+			return nil
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ForgotPassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if err = s.PasswordResetRepo.DeleteTokensByEmail(ctx,
+		user.Email); err != nil {
+		err = fmt.Errorf("%s: %v", user.Email, err)
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AuthService", "ForgotPassword",
+			logging.DeletePasswordResetTokenError, err,
+		)...)
+	}
+
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ForgotPassword", logging.HasherError, err,
+		)...)
+		return ErrInternal
+	}
+	tokenStr := hex.EncodeToString(bytes)
+
+	reset := models.PasswordReset{
+		Email:     user.Email,
+		Token:     tokenStr,
+		ExpiresAt: time.Now().Add(15 * time.Minute),
+	}
+
+	if err := s.PasswordResetRepo.CreateToken(ctx, &reset); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ForgotPassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	task, err := tasks.NewPasswordResetEmailTask(user.Email, user.Name,
+		tokenStr)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ForgotPassword", logging.AsynqTaskError,
+			err,
+		)...)
+	} else {
+		info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueEmail))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "ForgotPassword",
+				logging.RedisDispatchError, err,
+			)...)
+		} else {
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				"AuthService", "ForgotPassword",
+				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+				zap.String("queue", info.Queue),
+			)...)
+		}
+	}
+
+	return nil
+}
+
+func (s *authService) ResetPassword(ctx context.Context,
+	input models.ResetPasswordInput) error {
+	reset, err := s.PasswordResetRepo.GetByToken(ctx, input.Token)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "ResetPassword", logging.DatabaseNotFoundError,
+				err)...)
+			return ErrInvalidToken
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ResetPassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if reset.IsExpired() {
+		if err = s.PasswordResetRepo.DeleteTokensByEmail(ctx,
+			reset.Email); err != nil {
+			err = fmt.Errorf("%s: %v", reset.Email, err)
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+				"AuthService", "ForgotPassword",
+				logging.DeletePasswordResetTokenError, err,
+			)...)
+		}
+		return ErrExpiredToken
+	}
+
+	user, err := s.UserRepo.GetUserByEmail(ctx, reset.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AuthService", "ResetPassword", logging.DatabaseNotFoundError,
+				err)...)
+			return ErrNotFound
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ResetPassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	hashedPassword, err := s.Hasher.Hash(input.NewPassword)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ResetPassword", logging.HasherError, err,
+		)...)
+		return ErrInternal
+	}
+
+	user.Password = hashedPassword
+
+	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AuthService", "ResetPassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if err := s.PasswordResetRepo.DeleteTokensByEmail(ctx,
+		reset.Email); err != nil {
+		err = fmt.Errorf("%s: %v", user.Email, err)
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AuthService", "ForgotPassword",
+			logging.DeletePasswordResetTokenError, err,
+		)...)
+	}
+
+	return nil
 }

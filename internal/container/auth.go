@@ -15,10 +15,12 @@ func BuildAuthService(mainDB *gorm.DB, asynqClient *asynq.Client,
 	logger *zap.Logger) services.AuthService {
 	countryRepo := repositories.NewCountryRepo(mainDB)
 	userRepo := repositories.NewUserRepo(mainDB)
+	passwordResetRepo := repositories.NewPasswordResetRepo(mainDB)
 	hasher := security.NewPasswordHasher()
 	provider := auth.NewTokenProvider()
 	authService := services.NewAuthService(
-		userRepo, countryRepo, hasher, provider, asynqClient, logger,
+		userRepo, countryRepo, passwordResetRepo, hasher, provider,
+		asynqClient, logger,
 	)
 
 	return authService

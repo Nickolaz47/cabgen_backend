@@ -271,4 +271,70 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 		assert.Error(t, err)
 		assert.EqualError(t, err, "template render error")
 	})
+
+	t.Run("Success - Password Reset Email", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		token := "token123"
+		mockService := &mocks.MockEmailService{
+			SendPasswordResetEmailFunc: func(ctx context.Context,
+				receivedEmail, receivedName, receivedToken string) error {
+				assert.Equal(t, email, receivedEmail)
+				assert.Equal(t, name, receivedName)
+				assert.Equal(t, token, receivedToken)
+				return nil
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.PasswordResetEmailPayload{
+			Email: email,
+			Name:  name,
+			Token: token,
+		})
+		task := asynq.NewTask(tasks.TaskTypePasswordResetEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Password Reset Email JSON Unmarshal", func(t *testing.T) {
+		mockService := &mocks.MockEmailService{}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		task := asynq.NewTask(tasks.TaskTypePasswordResetEmail,
+			[]byte(`[1, 2, 3]`))
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, asynq.SkipRetry)
+		assert.ErrorContains(t, err, "json unmarshal failed:")
+	})
+
+	t.Run("Error - Password Reset Email Service Failure", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		token := "token123"
+		mockService := &mocks.MockEmailService{
+			SendPasswordResetEmailFunc: func(ctx context.Context,
+				receivedEmail, receivedName, receivedToken string) error {
+				return errors.New("smtp timeout")
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.PasswordResetEmailPayload{
+			Email: email,
+			Name:  name,
+			Token: token,
+		})
+		task := asynq.NewTask(tasks.TaskTypePasswordResetEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "smtp timeout")
+	})
 }
+

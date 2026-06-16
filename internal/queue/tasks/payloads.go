@@ -18,6 +18,7 @@ const (
 	TaskTypeAdminAlertEmail     = "email:admin_user_alert"
 	TaskTypeAdminTicketEmail    = "email:admin_ticket"
 	TaskTypeFinishedTicketEmail = "email:finished_ticket"
+	TaskTypePasswordResetEmail  = "email:password_reset"
 )
 
 type AnalysisProcessPayload struct {
@@ -42,6 +43,12 @@ type AdminTicketEmailPayload struct {
 
 type FinishedTicketEmailPayload struct {
 	TicketID uuid.UUID `json:"ticket_id"`
+}
+
+type PasswordResetEmailPayload struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 }
 
 func NewAnalysisProcessTask(analysisID uuid.UUID) (
@@ -110,4 +117,18 @@ func NewFinishedTicketEmailTask(ticketID uuid.UUID) (*asynq.Task, error) {
 
 	return asynq.NewTask(TaskTypeFinishedTicketEmail, payload,
 		asynq.MaxRetry(5)), nil
+}
+
+func NewPasswordResetEmailTask(email, name, token string) (*asynq.Task, error) {
+	payload, err := json.Marshal(PasswordResetEmailPayload{
+		Email: email,
+		Name:  name,
+		Token: token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return asynq.NewTask(TaskTypePasswordResetEmail, payload,
+		asynq.MaxRetry(3)), nil
 }

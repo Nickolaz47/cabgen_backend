@@ -19,6 +19,8 @@ type EmailService interface {
 	SendAnalysisDoneEmail(ctx context.Context, analysisID uuid.UUID) error
 	SendAdminTicketEmail(ctx context.Context, ticketID uuid.UUID) error
 	SendFinishedTicketEmail(ctx context.Context, ticketID uuid.UUID) error
+	SendPasswordResetEmail(ctx context.Context, userEmail, userName,
+		token string) error
 }
 
 type emailService struct {
@@ -260,8 +262,8 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: ticket.Email,
-		Subject: "CABGen - Ticket Resolvido: " + ticket.Subject,
-		Body:    body,
+		Subject:   "CABGen - Ticket Resolvido: " + ticket.Subject,
+		Body:      body,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
@@ -272,6 +274,46 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 		)...)
 		return fmt.Errorf("Failed to send ticket email to %s: %v",
 			ticket.Email, err)
+	}
+
+	return nil
+}
+
+func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
+	userName, token string) error {
+	frontendURL := config.FrontendURL
+	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, token)
+
+	body := fmt.Sprintf(`
+	<div style="font-family: Arial, sans-serif; color: #333;">
+		<h2>Recuperação de Senha - CABGen</h2>
+		<p>Olá, <strong>%s</strong>,</p>
+		<p>Recebemos uma solicitação para redefinir a senha da sua conta no sistema CABGen.</p>
+		<p>Se você não fez essa solicitação, por favor ignore este e-mail. Sua senha permanecerá a mesma.</p>
+		<p>Para criar uma nova senha, clique no botão abaixo (este link expira em 15 minutos):</p>
+		<br>
+		<a href="%s" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Redefinir Minha Senha</a>
+		<br><br>
+		<p><small>Ou copie e cole o seguinte link no seu navegador:</small><br>
+		<small><a href="%s">%s</a></small></p>
+		<hr>
+		<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+	</div>
+	`, userName, resetLink, resetLink, resetLink)
+
+	cfg := email.EmailConfig{
+		Sender:    config.SenderEmail,
+		Recipient: userEmail,
+		Subject:   "CABGen - Redefinição de Senha",
+		Body:      body,
+	}
+
+	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendPasswordResetEmail", logging.SendEmailError,
+			fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err),
+		)...)
+		return fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err)
 	}
 
 	return nil

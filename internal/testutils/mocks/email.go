@@ -25,6 +25,7 @@ type MockEmailService struct {
 	SendAnalysisDoneEmailFunc   func(ctx context.Context, analysisID uuid.UUID) error
 	SendAdminTicketEmailFunc    func(ctx context.Context, ticketID uuid.UUID) error
 	SendFinishedTicketEmailFunc func(ctx context.Context, ticketID uuid.UUID) error
+	SendPasswordResetEmailFunc  func(ctx context.Context, userEmail, userName, token string) error
 }
 
 func (m *MockEmailService) SendAdminAlertEmail(ctx context.Context,
@@ -63,6 +64,14 @@ func (m *MockEmailService) SendFinishedTicketEmail(ctx context.Context,
 	ticketID uuid.UUID) error {
 	if m.SendFinishedTicketEmailFunc != nil {
 		return m.SendFinishedTicketEmailFunc(ctx, ticketID)
+	}
+	return nil
+}
+
+func (m *MockEmailService) SendPasswordResetEmail(ctx context.Context,
+	userEmail, userName, token string) error {
+	if m.SendPasswordResetEmailFunc != nil {
+		return m.SendPasswordResetEmailFunc(ctx, userEmail, userName, token)
 	}
 	return nil
 }

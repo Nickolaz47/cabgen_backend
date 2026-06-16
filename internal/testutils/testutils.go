@@ -40,6 +40,7 @@ func NewMockDB() *gorm.DB {
 	db.AutoMigrate(&testmodels.Sample{})
 	db.AutoMigrate(&testmodels.Analysis{})
 	db.AutoMigrate(&testmodels.Ticket{})
+	db.AutoMigrate(&testmodels.PasswordReset{})
 
 	return db
 }
