@@ -56,3 +56,65 @@ func (r *MockTicketRepository) DeleteTicket(ctx context.Context,
 	}
 	return nil
 }
+
+type MockTicketService struct {
+	FindAllFunc func(ctx context.Context, status string) (
+		[]models.TicketResponse, error)
+	FindByIDFunc func(ctx context.Context, ID uuid.UUID) (
+		*models.TicketResponse, error)
+	CreateFunc func(ctx context.Context, input models.CreateTicketInput) (
+		*models.TicketResponse, error)
+	AssignFunc func(ctx context.Context, ticketID, adminID uuid.UUID) (
+		*models.TicketResponse, error)
+	ResolveFunc func(ctx context.Context, ticketID uuid.UUID) (
+		*models.TicketResponse, error)
+	DeleteFunc func(ctx context.Context, ticketID uuid.UUID) error
+}
+
+func (s *MockTicketService) FindAll(ctx context.Context, status string) (
+	[]models.TicketResponse, error) {
+	if s.FindAllFunc != nil {
+		return s.FindAllFunc(ctx, status)
+	}
+	return nil, nil
+}
+
+func (s *MockTicketService) FindByID(ctx context.Context, ID uuid.UUID) (
+	*models.TicketResponse, error) {
+	if s.FindByIDFunc != nil {
+		return s.FindByIDFunc(ctx, ID)
+	}
+	return nil, nil
+}
+
+func (s *MockTicketService) Create(ctx context.Context,
+	input models.CreateTicketInput) (*models.TicketResponse, error) {
+	if s.CreateFunc != nil {
+		return s.CreateFunc(ctx, input)
+	}
+	return nil, nil
+}
+
+func (s *MockTicketService) Assign(ctx context.Context, ticketID,
+	adminID uuid.UUID) (*models.TicketResponse, error) {
+	if s.AssignFunc != nil {
+		return s.AssignFunc(ctx, ticketID, adminID)
+	}
+	return nil, nil
+}
+
+func (s *MockTicketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
+	*models.TicketResponse, error) {
+	if s.ResolveFunc != nil {
+		return s.ResolveFunc(ctx, ticketID)
+	}
+	return nil, nil
+}
+
+func (s *MockTicketService) Delete(ctx context.Context,
+	ticketID uuid.UUID) error {
+	if s.DeleteFunc != nil {
+		return s.DeleteFunc(ctx, ticketID)
+	}
+	return nil
+}

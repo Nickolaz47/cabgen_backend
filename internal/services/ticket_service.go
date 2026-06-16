@@ -16,6 +16,7 @@ import (
 
 type TicketService interface {
 	FindAll(ctx context.Context, status string) ([]models.TicketResponse, error)
+	FindByID(ctx context.Context, ID uuid.UUID) (*models.TicketResponse, error)
 	Create(ctx context.Context, input models.CreateTicketInput) (
 		*models.TicketResponse, error)
 	Assign(ctx context.Context, ticketID uuid.UUID, adminID uuid.UUID) (
@@ -59,6 +60,27 @@ func (s *ticketService) FindAll(ctx context.Context, status string) (
 	}
 
 	return responses, nil
+}
+
+func (s *ticketService) FindByID(ctx context.Context, ID uuid.UUID) (
+	*models.TicketResponse, error) {
+	ticket, err := s.Repo.GetTicketByID(ctx, ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"TicketService", "FindByID", logging.DatabaseNotFoundError, err,
+			)...)
+			return nil, ErrNotFound
+		}
+
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"TicketService", "FindByID", logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	response := ticket.ToResponse()
+	return &response, nil
 }
 
 func (s *ticketService) Create(ctx context.Context,

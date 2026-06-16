@@ -67,6 +67,74 @@ func TestTicketFindAll(t *testing.T) {
 	})
 }
 
+func TestTicketFindByID(t *testing.T) {
+	ctx := context.Background()
+	admin := testmodels.NewAdminLoginUser()
+
+	ticket := testmodels.NewTicket(
+		uuid.NewString(),
+		"Jão",
+		"jão@mail.com",
+		"Fiocruz",
+		"Wrong password",
+		"Cannot access my account.",
+		&admin,
+	)
+
+	t.Run("Success", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return &ticket, nil
+			},
+		}
+
+		service := services.NewTicketService(ticketRepo, nil, nil)
+		result, err := service.FindByID(ctx, ticket.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, ticket.ToResponse(), *result)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewTicketService(ticketRepo, nil, mockLogger)
+		result, err := service.FindByID(ctx, ticket.ID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Internal", func(t *testing.T) {
+		ticketRepo := &mocks.MockTicketRepository{
+			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
+				*models.Ticket, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewTicketService(ticketRepo, nil, mockLogger)
+		result, err := service.FindByID(ctx, ticket.ID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
 func TestTicketCreate(t *testing.T) {
 	ctx := context.Background()
 	input := models.CreateTicketInput{
