@@ -25,7 +25,8 @@ type Model interface {
 		models.AdminSampleUpdateInput | models.SampleCreateInput |
 		models.SampleUpdateInput | models.SampleAttachmentInput |
 		models.AnalysisCreateInput | models.AdminAnalysisCreateInput |
-		models.AdminAnalysisUpdateInput | models.AnalysisTSVDownloadInput
+		models.AdminAnalysisUpdateInput | models.AnalysisTSVDownloadInput |
+		models.CreateTicketInput
 }
 
 func Validate[T Model](
