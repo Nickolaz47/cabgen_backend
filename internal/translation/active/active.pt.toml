@@ -91,6 +91,18 @@ other = "Abreviação é obrigatória."
 [validation.Abbreviation.min]
 other = "Abreviação deve ter pelo menos {{.Param}} caracteres."
 
+[validation.Token.required]
+other = "O token é obrigatório."
+
+[validation.NewPassword.required]
+other = "A nova senha é obrigatória."
+
+[validation.NewPassword.min]
+other = "A nova senha deve ter pelo menos {{.Param}} caracteres."
+
+[validation.ConfirmPassword.eqfield]
+other = "As senhas devem ser iguais."
+
 [validation.generic]
 other = "Entrada inválida. Verifique os campos e tente novamente."
 
@@ -129,6 +141,18 @@ other = "Logout efetuado com sucesso."
 
 [public.auth.refresh.success]
 other = "Token de acesso renovado com sucesso."
+
+["public.auth.forgotPassword.success"]
+other = "Se o e-mail informado estiver cadastrado, você receberá as instruções para redefinir sua senha em instantes."
+
+["public.auth.resetPassword.success"]
+other = "A sua senha foi redefinida com sucesso. Por favor, efetue o login."
+
+["public.auth.invalidToken.error"]
+other = "Este link de redefinição de senha é inválido. Por favor, solicite uma nova recuperação."
+
+["public.auth.resetTokenExpired.error"]
+other = "O link de recuperação de senha expirou. Por favor, solicite um novo."
 
 [user.notFound.error]
 other = "Usuário não encontrado."

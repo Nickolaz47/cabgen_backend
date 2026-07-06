@@ -119,5 +119,57 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	http.SetCookie(c.Writer, accessCookie)
 
 	c.JSON(http.StatusOK,
-		responses.APIResponse{Message: responses.GetResponse(localizer, responses.TokenRenewed)})
+		responses.APIResponse{Message: responses.GetResponse(localizer,
+			responses.TokenRenewed)})
+}
+
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	var input models.ForgotPasswordInput
+	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	if err := h.Service.ForgotPassword(c.Request.Context(), input); err != nil {
+		code, errMsg := handlererrors.HandleAuthError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Message: responses.GetResponse(localizer,
+			responses.ForgotPasswordSuccess),
+	})
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	var input models.ResetPasswordInput
+	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	if err := h.Service.ResetPassword(c.Request.Context(), input); err != nil {
+		code, errMsg := handlererrors.HandleAuthError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Message: responses.GetResponse(localizer,
+			responses.ResetPasswordSuccess,
+		),
+	})
 }

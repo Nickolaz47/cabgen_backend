@@ -26,6 +26,10 @@ func HandleAuthError(err error) (int, string) {
 		return http.StatusForbidden, responses.LoginInactiveUser
 	case errors.Is(err, services.ErrUnauthorized):
 		return http.StatusUnauthorized, responses.UnauthorizedError
+	case errors.Is(err, services.ErrInvalidToken):
+		return http.StatusBadRequest, responses.InvalidTokenError
+	case errors.Is(err, services.ErrExpiredToken):
+		return http.StatusGone, responses.ResetTokenExpiredError
 	default:
 		return http.StatusInternalServerError, responses.GenericInternalServerError
 	}

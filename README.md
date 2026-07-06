@@ -471,6 +471,8 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Sample (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Analysis (Model + Repository + Service + Handler + Tests)
+- [ ] Adicionar rota para recuperar a senha
+- [ ] Adicionar rota para redefinir a senha
 - [ ] Adicionar rotas para select
 - [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [ ] Adicionar cidade como select no cadastro da amostra;

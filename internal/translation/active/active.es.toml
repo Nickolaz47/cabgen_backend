@@ -91,6 +91,18 @@ other = "Abreviatura es obligatoria."
 [validation.Abbreviation.min]
 other = "Abreviatura debe tener al menos {{.Param}} caracteres."
 
+[validation.Token.required]
+other = "El token es obligatorio."
+
+[validation.NewPassword.required]
+other = "La nueva contraseña es obligatoria."
+
+[validation.NewPassword.min]
+other = "La nueva contraseña debe tener al menos {{.Param}} caracteres."
+
+[validation.ConfirmPassword.eqfield]
+other = "Las contraseñas deben coincidir."
+
 [validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
 
@@ -129,6 +141,18 @@ other = "Cierre de sesión exitoso."
 
 [public.auth.refresh.success]
 other = "Token de acceso renovado con éxito."
+
+[public.auth.forgotPassword.success]
+other = "Si el correo está registrado, recibirá instrucciones para restablecer su contraseña en breve."
+
+[public.auth.resetPassword.success]
+other = "Contraseña restablecida correctamente. Por favor, inicie sesión."
+
+[public.auth.invalidToken.error]
+other = "Enlace de restablecimiento inválido. Por favor, solicite uno nuevo."
+
+[public.auth.resetTokenExpired.error]
+other = "El enlace de restablecimiento ha expirado. Por favor, solicite uno nuevo."
 
 [user.notFound.error]
 other = "Usuario no encontrado."

@@ -91,6 +91,18 @@ other = "Abbreviation is required."
 [validation.Abbreviation.min]
 other = "Abbreviation must be at least {{.Param}} characters long."
 
+[validation.Token.required]
+other = "Token is required."
+
+[validation.NewPassword.required]
+other = "New password is required."
+
+[validation.NewPassword.min]
+other = "New password must be at least {{.Param}} characters."
+
+[validation.ConfirmPassword.eqfield]
+other = "Passwords must match."
+
 [validation.generic]
 other = "Invalid input. Please check the fields and try again."
 
@@ -129,6 +141,18 @@ other = "Logout successful."
 
 [public.auth.refresh.success]
 other = "Access token renewed successfully."
+
+[public.auth.forgotPassword.success]
+other = "If the email is registered, you will receive password reset instructions shortly."
+
+[public.auth.resetPassword.success]
+other = "Password reset successfully. Please log in."
+
+[public.auth.invalidToken.error]
+other = "Invalid password reset link. Please request a new one."
+
+[public.auth.resetTokenExpired.error]
+other = "Password reset link expired. Please request a new one."
 
 [user.notFound.error]
 other = "User not found."
