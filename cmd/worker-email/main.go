@@ -7,7 +7,6 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
-	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/workers"
 	"github.com/hibiken/asynq"
@@ -23,25 +22,9 @@ func main() {
 	// Setup database
 	mainDriver := "postgres"
 	mainDSN := config.DatabaseConnectionString
-	modelsToMigrate := []any{
-		&models.User{},
-		&models.Country{},
-		&models.Origin{},
-		&models.Sequencer{},
-		&models.SampleSource{},
-		&models.Laboratory{},
-		&models.Microorganism{},
-		&models.HealthService{},
-		&models.Sample{},
-		&models.Analysis{},
-	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := mainDB.Migrate(modelsToMigrate...); err != nil {
 		log.Fatal(err)
 	}
 

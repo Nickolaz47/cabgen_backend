@@ -12,6 +12,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
 
   worker-email:
     build: .
@@ -25,6 +30,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      api:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
   database:
     image: "postgres:15-alpine"
@@ -43,11 +55,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
 
   redis:
     image: redis/redis-stack:7.4.0-v8
     restart: unless-stopped
-    mem_limit: 4g
     ports:
       - 6379:6379
     healthcheck:
@@ -55,6 +71,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
 
 volumes:
   postgres-data:
