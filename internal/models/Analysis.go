@@ -45,6 +45,9 @@ func (a AnalysisType) IsValid() bool {
 	}
 }
 
+var AnalysisTypes = []AnalysisType{AnalysisTypeFastQC, AnalysisTypeGenome,
+	AnalysisTypeComplete}
+
 type Analysis struct {
 	ID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 

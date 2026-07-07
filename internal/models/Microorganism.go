@@ -22,6 +22,8 @@ func (t Taxon) IsValid() bool {
 	}
 }
 
+var Taxons = []Taxon{Bacteria, Fungi, Protozoa, Virus}
+
 type Microorganism struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Taxon    Taxon     `gorm:"not null"`

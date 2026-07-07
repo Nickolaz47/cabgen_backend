@@ -71,6 +71,8 @@ func (g *Gender) ToTranslatedString(language string) *string {
 	return &val
 }
 
+var Genders = []Gender{Female, Male, Unspecified}
+
 type Sample struct {
 	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Name           string     `gorm:"type:varchar(255);not null"`

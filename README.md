@@ -268,6 +268,8 @@ Os endpoints estão organizados em três níveis de acesso:
 | POST | `/api/auth/login` | Login e retorno de tokens JWT via cookies |
 | POST | `/api/auth/logout` | Logout do usuário |
 | POST | `/api/auth/refresh` | Renovação do token de acesso |
+| POST | `/api/auth/forgot-password` | Solicitação de redefinição de senha |
+| POST | `/api/auth/reset-password` | Redefinição de senha |
 
 #### Países
 
@@ -359,6 +361,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lista todos os usuários |
 | GET | `/api/admin/users/:id` | Retorna um usuário específico |
+| GET | `/api/admin/users/roles` | Retorna os papéis válidos para usuários |
 | POST | `/api/admin/users` | Cria um usuário já ativado |
 | PUT | `/api/admin/users/:id` | Atualiza um usuário |
 | PATCH | `/api/admin/users/activate/:id` | Ativa um usuário |
@@ -416,6 +419,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/microorganisms` | Lista todos os microrganismos |
 | GET | `/api/admin/microorganisms/:id` | Retorna um microrganismo específico |
 | GET | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo |
+| GET | `/api/admin/microorganisms/taxons` | Retorna os táxons válidos para microrganismos |
 | POST | `/api/admin/microorganisms` | Cria um novo microrganismo |
 | PUT | `/api/admin/microorganisms/:id` | Atualiza um microrganismo |
 | DELETE | `/api/admin/microorganisms/:id` | Deleta um microrganismo |
@@ -427,6 +431,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/health-services` | Lista todos os serviços de saúde |
 | GET | `/api/admin/health-services/:id` | Retorna um serviços de saúde específico |
 | GET | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
+| GET | `/api/admin/health-services/types` | Retorna os tipos válidos para serviços de saúde |
 | POST | `/api/admin/health-services` | Cria um novo serviços de saúde |
 | PUT | `/api/admin/health-services/:id` | Atualiza um serviços de saúde |
 | DELETE | `/api/admin/health-services/:id` | Deleta um serviços de saúde |
@@ -437,6 +442,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/samples` | Lista todas as amostras |
 | GET | `/api/admin/samples/:sampleId` | Retorna uma amostra específica |
+| GET | `/api/admin/samples/genders` | Retorna os gêneros válidos para amostras |
 | POST | `/api/admin/samples` | Cria uma nova amostra |
 | PUT | `/api/admin/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
 | PUT | `/api/admin/samples/:sampleId` | Atualiza os dados de uma amostra |
@@ -449,6 +455,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/analyses` | Lista todas as análises |
 | GET | `/api/admin/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/admin/analyses/:analysisId/download/tsv` | Faz o download do arquivo ZIP da análise |
+| GET | `/api/admin/analyses/types` | Retorna os tipos válidos para análises |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
@@ -471,8 +478,8 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Sample (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Analysis (Model + Repository + Service + Handler + Tests)
-- [ ] Adicionar rota para recuperar a senha
-- [ ] Adicionar rota para redefinir a senha
+- [x] Adicionar rota para recuperar a senha
+- [x] Adicionar rota para redefinir a senha
 - [ ] Adicionar rotas para select
 - [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [ ] Adicionar cidade como select no cadastro da amostra;

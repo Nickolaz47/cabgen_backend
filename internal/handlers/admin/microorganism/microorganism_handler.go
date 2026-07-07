@@ -105,6 +105,12 @@ func (h *AdminMicroorganismHandler) GetMicroorganismBySpecies(c *gin.Context) {
 	})
 }
 
+func (h *AdminMicroorganismHandler) GetMicroorganismTaxons(c *gin.Context) {
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: models.Taxons,
+	})
+}
+
 func (h *AdminMicroorganismHandler) CreateMicroorganism(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 

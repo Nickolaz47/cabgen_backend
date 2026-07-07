@@ -11,6 +11,7 @@ func SetupAdminMicroorganismRoutes(r *gin.RouterGroup, handler *microorganism.Ad
 	microorganismRouter.GET("", handler.GetMicroorganisms)
 	microorganismRouter.GET("/:microorganismId", handler.GetMicroorganismByID)
 	microorganismRouter.GET("/search", handler.GetMicroorganismBySpecies)
+	microorganismRouter.GET("/taxons", handler.GetMicroorganismTaxons)
 	microorganismRouter.POST("", handler.CreateMicroorganism)
 	microorganismRouter.PUT("/:microorganismId", handler.UpdateMicroorganism)
 	microorganismRouter.DELETE("/:microorganismId", handler.DeleteMicroorganism)

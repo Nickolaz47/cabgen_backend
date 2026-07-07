@@ -257,6 +257,8 @@ Endpoints are organized into three access levels:
 | POST | `/api/auth/login` | Login and returns JWT tokens via cookies |
 | POST | `/api/auth/logout` | User logout |
 | POST | `/api/auth/refresh` | Access token renewal |
+| POST | `/api/auth/forgot-password` | Password reset request |
+| POST | `/api/auth/reset-password` | Password reset |
 
 #### Countries
 
@@ -348,6 +350,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lists all users |
 | GET | `/api/admin/users/:id` | Returns a specific user |
+| GET | `/api/admin/users/roles` | Returns valid roles for users |
 | POST | `/api/admin/users` | Creates a pre-activated user |
 | PUT | `/api/admin/users/:id` | Updates a user |
 | PATCH | `/api/admin/users/activate/:id` | Activates a user |
@@ -405,6 +408,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/microorganisms` | Lists all microorganisms |
 | GET | `/api/admin/microorganisms/:id` | Returns a specific microorganism |
 | GET | `/api/admin/microorganisms/search` | Searches microorganisms by name or group |
+| GET | `/api/admin/microorganisms/taxons` | Returns valid taxons for microorganisms |
 | POST | `/api/admin/microorganisms` | Creates a new microorganism |
 | PUT | `/api/admin/microorganisms/:id` | Updates a microorganism |
 | DELETE | `/api/admin/microorganisms/:id` | Deletes a microorganism |
@@ -416,6 +420,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/health-services` | Lists all health services |
 | GET | `/api/admin/health-services/:id` | Returns a specific health service |
 | GET | `/api/admin/health-services/search` | Searches health services by name or group |
+| GET | `/api/admin/health-services/types` | Returns valid types for health services |
 | POST | `/api/admin/health-services` | Creates a new health service |
 | PUT | `/api/admin/health-services/:id` | Updates a health service |
 | DELETE | `/api/admin/health-services/:id` | Deletes a health service |
@@ -426,6 +431,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/samples` | Lists all samples |
 | GET | `/api/admin/samples/:sampleId` | Returns a specific sample |
+| GET | `/api/admin/samples/genders` | Returns valid genders for samples |
 | POST | `/api/admin/samples` | Creates a new sample |
 | PUT | `/api/admin/samples/:sampleId/upload` | Uploads files (FASTQ/FASTA) |
 | PUT | `/api/admin/samples/:sampleId` | Updates sample data |
@@ -438,6 +444,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/analyses` | Lists all analyses |
 | GET | `/api/admin/analyses/:analysisId` | Returns a specific analysis |
 | GET | `/api/admin/analyses/:analysisId/download/tsv` | Downloads the analysis ZIP file |
+| GET | `/api/admin/analyses/types` | Returns valid types for analyses |
 | POST | `/api/admin/analyses` | Creates and starts a new analysis |
 | POST | `/api/admin/analyses/download/tsv` | Downloads batch TSV |
 | PUT | `/api/admin/analyses/:analysisId` | Updates analysis status/results |

@@ -95,6 +95,12 @@ func (h *AdminHealthServiceHandler) GetHealthServicesByName(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: healthServices})
 }
 
+func (h *AdminHealthServiceHandler) GetHealthServiceTypes(c *gin.Context) {
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: models.HealthServiceTypes,
+	})
+}
+
 func (h *AdminHealthServiceHandler) CreateHealthService(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	var newHealthService models.HealthServiceCreateInput

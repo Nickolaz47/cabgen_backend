@@ -64,6 +64,12 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 
+func (h *AdminAnalysisHandler) GetAnalysisTypes(c *gin.Context) {
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: models.AnalysisTypes,
+	})
+}
+
 func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 

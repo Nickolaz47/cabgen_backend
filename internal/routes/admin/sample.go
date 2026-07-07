@@ -11,6 +11,7 @@ func SetupAdminSampleRoutes(r *gin.RouterGroup,
 
 	sampleRouter.GET("", handler.GetSamples)
 	sampleRouter.GET("/:sampleId", handler.GetSampleByID)
+	sampleRouter.GET("/genders", handler.GetSampleGenders)
 	sampleRouter.POST("", handler.CreateSample)
 	sampleRouter.PUT("/:sampleId/upload", handler.UploadFiles)
 	sampleRouter.PUT("/:sampleId", handler.UpdateSample)

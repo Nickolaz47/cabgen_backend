@@ -90,6 +90,12 @@ func (h *AdminUserHandler) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: user})
 }
 
+func (h *AdminUserHandler) GetUserRoles(c *gin.Context) {
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: models.UserRoles,
+	})
+}
+
 func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)

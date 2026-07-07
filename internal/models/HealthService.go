@@ -18,6 +18,8 @@ func (h HealthServiceType) IsValid() bool {
 	}
 }
 
+var HealthServiceTypes = []HealthServiceType{Public, Private}
+
 type HealthService struct {
 	ID           uuid.UUID         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Name         string            `gorm:"type:varchar(255);not null;uniqueIndex"`

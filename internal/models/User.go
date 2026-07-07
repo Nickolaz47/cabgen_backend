@@ -22,6 +22,8 @@ func (r UserRole) IsValid() bool {
 	}
 }
 
+var UserRoles = []UserRole{Admin, Collaborator}
+
 type User struct {
 	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Name        string    `gorm:"type:varchar(255);not null"`

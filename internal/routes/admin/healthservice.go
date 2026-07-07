@@ -12,6 +12,7 @@ func SetupAdminHealthServiceRoutes(
 	healthServiceRouter.GET("", handler.GetAllHealthServices)
 	healthServiceRouter.GET("/:healthServiceId", handler.GetHealthServiceByID)
 	healthServiceRouter.GET("/search", handler.GetHealthServicesByName)
+	healthServiceRouter.GET("/types", handler.GetHealthServiceTypes)
 	healthServiceRouter.POST("", handler.CreateHealthService)
 	healthServiceRouter.PUT("/:healthServiceId", handler.UpdateHealthService)
 	healthServiceRouter.DELETE("/:healthServiceId", handler.DeleteHealthService)

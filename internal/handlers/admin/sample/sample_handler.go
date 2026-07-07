@@ -73,6 +73,12 @@ func (h *AdminSampleHandler) GetSampleByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sample})
 }
 
+func (h *AdminSampleHandler) GetSampleGenders(c *gin.Context) {
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: models.Genders,
+	})
+}
+
 func (h *AdminSampleHandler) CreateSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
