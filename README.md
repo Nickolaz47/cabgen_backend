@@ -242,6 +242,7 @@ A API utiliza os seguintes códigos de status HTTP:
 | 403 | Usuário desativado ou token de acesso expirado |
 | 404 | Recurso não encontrado |
 | 409 | Tentativa de criação de recurso duplicado |
+| 410 | Recurso válido, mas não encontrado (apagado) |
 | 500 | Erro interno inesperado |
 
 ## Endpoints
@@ -350,6 +351,12 @@ Os endpoints estão organizados em três níveis de acesso:
 | POST | `/api/analyses` | Cria e inicia uma nova análise |
 | POST | `/api/analyses/download/tsv` | Faz o download em lote (TSV) |
 | DELETE | `/api/analyses/:analysisId` | Deleta uma análise |
+
+#### Select Options
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/select-options` | Retorna os dados para os selects do frontend |
 
 ### Admin
 
@@ -480,7 +487,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Modelar Analysis (Model + Repository + Service + Handler + Tests)
 - [x] Adicionar rota para recuperar a senha
 - [x] Adicionar rota para redefinir a senha
-- [ ] Adicionar rotas para select
+- [x] Adicionar rotas para select
 - [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [ ] Adicionar cidade como select no cadastro da amostra;
 - [ ] Mostrar no resultado as versões de cada programa;

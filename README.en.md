@@ -231,6 +231,7 @@ Present **exclusively** when an error occurs. Contains a descriptive message of 
 | 403 | User disabled or access token expired |
 | 404 | Resource not found |
 | 409 | Attempt to create a duplicate resource |
+| 410 | Resource valid but not found (deleted) |
 | 500 | Unexpected internal error |
 
 ## Endpoints
@@ -339,6 +340,12 @@ Endpoints are organized into three access levels:
 | POST | `/api/analyses` | Creates and starts a new analysis |
 | POST | `/api/analyses/download/tsv` | Downloads batch TSV |
 | DELETE | `/api/analyses/:analysisId` | Deletes an analysis |
+
+#### Select Options
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/select-options` | Returns data for frontend selects |
 
 ### Admin
 
