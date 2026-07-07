@@ -45,6 +45,7 @@ func main() {
 		&models.Sample{},
 		&models.Analysis{},
 		&models.Ticket{},
+		&models.PasswordReset{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
