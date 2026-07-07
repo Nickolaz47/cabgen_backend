@@ -347,6 +347,12 @@ Endpoints are organized into three access levels:
 | --- | --- | --- |
 | GET | `/api/select-options` | Returns data for frontend selects |
 
+#### Cities
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/cities` | Returns Brazilian cities for the frontend select |
+
 ### Admin
 
 Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**, **Sequencers**, **Sample Sources**, **Laboratories**, **Microorganisms**, **Health Services**, **Samples**, **Analyses**, and **Tickets**:

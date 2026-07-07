@@ -358,6 +358,12 @@ Os endpoints estão organizados em três níveis de acesso:
 | --- | --- | --- |
 | GET | `/api/select-options` | Retorna os dados para os selects do frontend |
 
+#### Cidades
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/cities` | Retorna as cidades brasileiras para o select do frontend |
+
 ### Admin
 
 Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, **Origens**, **Sequenciadores**, **Fontes da Amostra**, **Laboratórios**, **Microorganismos**, **Serviços de Saúde**, **Amostras**, **Análises** e **Tickets**:
@@ -489,7 +495,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 - [x] Adicionar rota para redefinir a senha
 - [x] Adicionar rotas para select
 - [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
-- [ ] Adicionar cidade como select no cadastro da amostra;
+- [x] Adicionar cidade como select no cadastro da amostra;
 - [ ] Mostrar no resultado as versões de cada programa;
 - [x] Permitir o download de vários resultados;
 - [ ] Migrar os dados do MongoDB para o Postgresql;

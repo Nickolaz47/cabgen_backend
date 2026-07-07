@@ -134,6 +134,7 @@ func main() {
 	sampleHandler := container.BuildSampleHandler(sampleSvc)
 	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
 	selectOptionHandler := container.BuildSelectOptionHandler()
+	cityHandler := container.BuildCityHandler()
 
 	// Admin handlers
 	adminUserHandler := container.BuildAdminUserHandler(admUserSvc)
@@ -169,6 +170,7 @@ func main() {
 	common.SetupSampleRoutes(commonRouter, sampleHandler)
 	common.SetupAnalysisRoutes(commonRouter, analysisHandler)
 	common.SetupSelectOptionRoutes(commonRouter, selectOptionHandler)
+	common.SetupCityRoutes(commonRouter, cityHandler)
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(),
