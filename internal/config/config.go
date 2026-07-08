@@ -23,6 +23,17 @@ var (
 	SMTPPort                 = 0
 	RedisURL                 = ""
 	FrontendURL              = ""
+	FastQCPath               = ""
+	AbricatePath             = ""
+	MlstPath                 = ""
+	PolimyxinDBPath          = ""
+	OthersDBPath             = ""
+	Kraken2Path              = ""
+	KrakenDBPath             = ""
+	UnicyclerPath            = ""
+	FastaniPath              = ""
+	FastaniDBPath            = ""
+	SpadesPath               = ""
 )
 
 /*
@@ -75,6 +86,17 @@ func LoadEnvVariables(envFile string) error {
 	SMTPHost = os.Getenv("SMTP_HOST")
 	RedisURL = os.Getenv("REDIS_URL")
 	FrontendURL = os.Getenv("FRONTEND_URL")
+	FastQCPath = os.Getenv("FASTQC_PATH")
+	AbricatePath = os.Getenv("ABRICATE_PATH")
+	MlstPath = os.Getenv("MLST_PATH")
+	PolimyxinDBPath = os.Getenv("POLIMYXIN_DB_PATH")
+	OthersDBPath = os.Getenv("OTHERS_DB_PATH")
+	Kraken2Path = os.Getenv("KRAKEN2_PATH")
+	KrakenDBPath = os.Getenv("KRAKEN_DB_PATH")
+	UnicyclerPath = os.Getenv("UNICYCLER_PATH")
+	FastaniPath = os.Getenv("FASTANI_PATH")
+	FastaniDBPath = os.Getenv("FASTANI_DB_PATH")
+	SpadesPath = os.Getenv("SPADES_PATH")
 
 	return nil
 }
