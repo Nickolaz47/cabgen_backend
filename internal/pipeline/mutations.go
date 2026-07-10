@@ -43,7 +43,7 @@ func (f *mutationFinder) findMutation(mutations []string) (
 	[]string, error) {
 	file, err := os.Open(f.BlastResultPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read BLAST result: %v", err)
+		return nil, fmt.Errorf("BLAST result file not found: %v", err)
 	}
 	defer file.Close()
 

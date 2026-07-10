@@ -42,6 +42,7 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 │   ├── logging/             # Logging configuration and control
 │   ├── middlewares/         # Application middlewares
 │   ├── models/              # Models and database mapping
+│   ├── pipeline/            # Sample processing
 │   ├── queue/               # Task definitions and async workers (Redis/asynq)
 │   ├── repositories/        # Database access and queries
 │   ├── responses/           # HTTP response standardization

@@ -77,7 +77,7 @@ Identities = 85/85 (85%)
 		notFoundFinder := NewMutationFinder("invalid_path_to_blast.txt").(*mutationFinder)
 		res, err := notFoundFinder.findMutation([]string{"GyrA"})
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Failed to read BLAST result")
+		assert.Contains(t, err.Error(), "BLAST result file not found")
 		assert.Nil(t, res)
 	})
 }
