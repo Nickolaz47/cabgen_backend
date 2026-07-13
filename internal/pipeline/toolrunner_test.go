@@ -227,6 +227,31 @@ func TestToolRunnerRun(t *testing.T) {
 	})
 }
 
+func TestBuildBlastXCmd(t *testing.T) {
+	runner := &toolRunner{}
+
+	t.Run("Returns correct slice", func(t *testing.T) {
+		result := runner.buildBlastXCmd("nr", "contigs.fa", "blastx_out.txt")
+
+		assert.Equal(t, []string{
+			"blastx", "-db", "nr", "-query", "contigs.fa",
+			"-evalue", "0.001", "-out", "blastx_out.txt",
+		}, result)
+	})
+
+	t.Run("Returns nil for empty blastDB", func(t *testing.T) {
+		assert.Nil(t, runner.buildBlastXCmd("", "contigs.fa", "blastx_out.txt"))
+	})
+
+	t.Run("Returns nil for empty inputFile", func(t *testing.T) {
+		assert.Nil(t, runner.buildBlastXCmd("nr", "", "blastx_out.txt"))
+	})
+
+	t.Run("Returns nil for empty outputFile", func(t *testing.T) {
+		assert.Nil(t, runner.buildBlastXCmd("nr", "contigs.fa", ""))
+	})
+}
+
 func TestBuildFastQCCmd(t *testing.T) {
 	runner := &toolRunner{}
 

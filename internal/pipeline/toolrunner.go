@@ -21,6 +21,18 @@ func NewToolRunner(commander Commander) ToolRunner {
 	}
 }
 
+func (r *toolRunner) buildBlastXCmd(blastDB, inputFile,
+	outputFile string) []string {
+	if blastDB == "" || inputFile == "" || outputFile == "" {
+		return nil
+	}
+
+	return []string{
+		"blastx", "-db", blastDB, "-query", inputFile, "-evalue", "0.001",
+		"-out", outputFile,
+	}
+}
+
 func (r *toolRunner) buildFastQCCmd(fastqcCmd, read1, read2,
 	outputDir string) []string {
 	if fastqcCmd == "" || read1 == "" || read2 == "" || outputDir == "" {
