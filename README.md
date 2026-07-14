@@ -485,6 +485,47 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolve um ticket |
 | DELETE | `/api/admin/tickets/:ticketId` | Deleta um ticket |
 
+## Organização do Diretório de Uploads
+
+O diretório de uploads é organizado da seguinte forma:
+
+```bash
+uploads/
+└── users/
+    └── {user_id}/
+        └── samples/
+            └── {sample_id}/
+                ├── reads.fastq
+                └── analyses/
+                    └── {analysis_id}/
+                        ├── qc/                    
+                        │   ├── fastqc.html
+                        │   └── fastqc.zip
+                        ├── assembly/
+                        │   ├── contigs.fasta           
+                        │   ├── assembly.gfa
+                        │   ├── coverage.json           
+                        │   ├── checkm_report.tsv        
+                        │   ├── species_id.tsv           
+                        │   └── annotation/               
+                        ├── amr/                       
+                        │   ├── resfinder.tsv
+                        │   ├── virulence.tsv
+                        │   ├── plasmids.tsv
+                        │   ├── mlst.tsv
+                        │   └── mutations.json
+                        ├── report/
+                        │   └── summary.json        
+                        ├── logs/
+                        │   └── pipeline.log
+```
+
+- **`qc/`**: controle de qualidade dos reads brutos (FastQC).
+- **`assembly/`**: tudo que deriva da montagem — contigs (Unicycler), cobertura, qualidade da montagem (CheckM), identificação de espécie (Kraken2/FastANI) e anotação (Prokka).
+- **`amr/`**: resultados de resistência, virulência, plasmídeos, MLST e mutações pontuais (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
+- **`report/`**: relatório final consolidado com os resultados clinicamente relevantes.
+- **`logs/`**: logs de execução do pipeline.
+
 ## TODO
 
 - [x] Implementar logger nos services;

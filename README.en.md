@@ -473,3 +473,44 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | PUT | `/api/admin/tickets/:ticketId/assign` | Assigns a ticket to an administrator |
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolves a ticket |
 | DELETE | `/api/admin/tickets/:ticketId` | Deletes a ticket |
+
+## Uploads Directory Organization
+
+The uploads directory is organized as follows:
+
+```bash
+uploads/
+└── users/
+    └── {user_id}/
+        └── samples/
+            └── {sample_id}/
+                ├── reads.fastq
+                └── analyses/
+                    └── {analysis_id}/
+                        ├── qc/                    
+                        │   ├── fastqc.html
+                        │   └── fastqc.zip
+                        ├── assembly/
+                        │   ├── contigs.fasta           
+                        │   ├── assembly.gfa
+                        │   ├── coverage.json           
+                        │   ├── checkm_report.tsv        
+                        │   ├── species_id.tsv           
+                        │   └── annotation/               
+                        ├── amr/                       
+                        │   ├── resfinder.tsv
+                        │   ├── virulence.tsv
+                        │   ├── plasmids.tsv
+                        │   ├── mlst.tsv
+                        │   └── mutations.json
+                        ├── report/
+                        │   └── summary.json        
+                        ├── logs/
+                        │   └── pipeline.log
+```
+
+- **`qc/`**: quality control of the raw reads (FastQC).
+- **`assembly/`**: everything derived from the assembly — contigs (Unicycler), coverage, assembly quality (CheckM), species identification (Kraken2/FastANI), and annotation (Prokka).
+- **`amr/`**: resistance, virulence, plasmid, MLST, and point mutation results (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
+- **`report/`**: consolidated final report with the clinically relevant results.
+- **`logs/`**: pipeline execution logs.

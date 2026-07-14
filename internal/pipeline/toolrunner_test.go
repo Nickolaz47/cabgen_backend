@@ -231,7 +231,7 @@ func TestBuildBlastXCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildBlastXCmd("nr", "contigs.fa", "blastx_out.txt")
+		result := runner.BuildBlastXCmd("nr", "contigs.fa", "blastx_out.txt")
 
 		assert.Equal(t, []string{
 			"blastx", "-db", "nr", "-query", "contigs.fa",
@@ -240,15 +240,15 @@ func TestBuildBlastXCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty blastDB", func(t *testing.T) {
-		assert.Nil(t, runner.buildBlastXCmd("", "contigs.fa", "blastx_out.txt"))
+		assert.Nil(t, runner.BuildBlastXCmd("", "contigs.fa", "blastx_out.txt"))
 	})
 
 	t.Run("Returns nil for empty inputFile", func(t *testing.T) {
-		assert.Nil(t, runner.buildBlastXCmd("nr", "", "blastx_out.txt"))
+		assert.Nil(t, runner.BuildBlastXCmd("nr", "", "blastx_out.txt"))
 	})
 
 	t.Run("Returns nil for empty outputFile", func(t *testing.T) {
-		assert.Nil(t, runner.buildBlastXCmd("nr", "contigs.fa", ""))
+		assert.Nil(t, runner.BuildBlastXCmd("nr", "contigs.fa", ""))
 	})
 }
 
@@ -256,25 +256,25 @@ func TestBuildFastQCCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildFastQCCmd("fastqc", "read1.fq", "read2.fq", "/out")
+		result := runner.BuildFastQCCmd("fastqc", "read1.fq", "read2.fq", "/out")
 
 		assert.Equal(t, []string{"fastqc", "--quiet", "read1.fq", "read2.fq", "--outdir", "/out"}, result)
 	})
 
 	t.Run("Returns nil for empty fastqcCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastQCCmd("", "read1.fq", "read2.fq", "/out"))
+		assert.Nil(t, runner.BuildFastQCCmd("", "read1.fq", "read2.fq", "/out"))
 	})
 
 	t.Run("Returns nil for empty read1", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastQCCmd("fastqc", "", "read2.fq", "/out"))
+		assert.Nil(t, runner.BuildFastQCCmd("fastqc", "", "read2.fq", "/out"))
 	})
 
 	t.Run("Returns nil for empty read2", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastQCCmd("fastqc", "read1.fq", "", "/out"))
+		assert.Nil(t, runner.BuildFastQCCmd("fastqc", "read1.fq", "", "/out"))
 	})
 
 	t.Run("Returns nil for empty outputDir", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastQCCmd("fastqc", "read1.fq", "read2.fq", ""))
+		assert.Nil(t, runner.BuildFastQCCmd("fastqc", "read1.fq", "read2.fq", ""))
 	})
 }
 
@@ -282,7 +282,7 @@ func TestBuildUnicyclerCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildUnicyclerCmd("unicycler", "r1.fq", "r2.fq", "/out", "4", "/spades")
+		result := runner.BuildUnicyclerCmd("unicycler", "r1.fq", "r2.fq", "/out", "4", "/spades")
 
 		assert.Equal(t, []string{
 			"unicycler", "-1", "r1.fq", "-2", "r2.fq", "-o", "/out",
@@ -292,15 +292,15 @@ func TestBuildUnicyclerCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty unicyclerCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildUnicyclerCmd("", "r1.fq", "r2.fq", "/out", "4", "/spades"))
+		assert.Nil(t, runner.BuildUnicyclerCmd("", "r1.fq", "r2.fq", "/out", "4", "/spades"))
 	})
 
 	t.Run("Returns nil for empty read1", func(t *testing.T) {
-		assert.Nil(t, runner.buildUnicyclerCmd("unicycler", "", "r2.fq", "/out", "4", "/spades"))
+		assert.Nil(t, runner.BuildUnicyclerCmd("unicycler", "", "r2.fq", "/out", "4", "/spades"))
 	})
 
 	t.Run("Returns nil for empty threads", func(t *testing.T) {
-		assert.Nil(t, runner.buildUnicyclerCmd("unicycler", "r1.fq", "r2.fq", "/out", "", "/spades"))
+		assert.Nil(t, runner.BuildUnicyclerCmd("unicycler", "r1.fq", "r2.fq", "/out", "", "/spades"))
 	})
 }
 
@@ -308,7 +308,7 @@ func TestBuildProkkaCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildProkkaCmd("prokka", "/out", "sample", "contigs.fa", "8")
+		result := runner.BuildProkkaCmd("prokka", "/out", "sample", "contigs.fa", "8")
 
 		assert.Equal(t, []string{
 			"prokka", "--outdir", "/out", "--prefix", "sample",
@@ -317,15 +317,15 @@ func TestBuildProkkaCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty prokkaCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildProkkaCmd("", "/out", "sample", "contigs.fa", "8"))
+		assert.Nil(t, runner.BuildProkkaCmd("", "/out", "sample", "contigs.fa", "8"))
 	})
 
 	t.Run("Returns nil for empty outputDir", func(t *testing.T) {
-		assert.Nil(t, runner.buildProkkaCmd("prokka", "", "sample", "contigs.fa", "8"))
+		assert.Nil(t, runner.BuildProkkaCmd("prokka", "", "sample", "contigs.fa", "8"))
 	})
 
 	t.Run("Returns nil for empty prefix", func(t *testing.T) {
-		assert.Nil(t, runner.buildProkkaCmd("prokka", "/out", "", "contigs.fa", "8"))
+		assert.Nil(t, runner.BuildProkkaCmd("prokka", "/out", "", "contigs.fa", "8"))
 	})
 }
 
@@ -333,7 +333,7 @@ func TestBuildCheckMLineageCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildCheckMLineageCmd("checkm", "/in", "/out", "4")
+		result := runner.BuildCheckMLineageCmd("checkm", "/in", "/out", "4")
 
 		assert.Equal(t, []string{
 			"checkm", "lineage_wf", "-x", "fasta", "/in", "/out",
@@ -342,11 +342,11 @@ func TestBuildCheckMLineageCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty checkmCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildCheckMLineageCmd("", "/in", "/out", "4"))
+		assert.Nil(t, runner.BuildCheckMLineageCmd("", "/in", "/out", "4"))
 	})
 
 	t.Run("Returns nil for empty inputDir", func(t *testing.T) {
-		assert.Nil(t, runner.buildCheckMLineageCmd("checkm", "", "/out", "4"))
+		assert.Nil(t, runner.BuildCheckMLineageCmd("checkm", "", "/out", "4"))
 	})
 }
 
@@ -354,7 +354,7 @@ func TestBuildCheckMQACmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildCheckMQACmd("checkm", "/dir", "sample1", "4")
+		result := runner.BuildCheckMQACmd("checkm", "/dir", "sample1", "4")
 
 		assert.Equal(t, []string{
 			"checkm", "qa", "-o", "2", "-f",
@@ -365,11 +365,11 @@ func TestBuildCheckMQACmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty checkmCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildCheckMQACmd("", "/dir", "sample1", "4"))
+		assert.Nil(t, runner.BuildCheckMQACmd("", "/dir", "sample1", "4"))
 	})
 
 	t.Run("Returns nil for empty sample", func(t *testing.T) {
-		assert.Nil(t, runner.buildCheckMQACmd("checkm", "/dir", "", "4"))
+		assert.Nil(t, runner.BuildCheckMQACmd("checkm", "/dir", "", "4"))
 	})
 }
 
@@ -377,7 +377,7 @@ func TestBuildKraken2Cmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildKraken2Cmd("kraken2", "/db", "/out", "4", "contigs.fa")
+		result := runner.BuildKraken2Cmd("kraken2", "/db", "/out", "4", "contigs.fa")
 
 		assert.Equal(t, []string{
 			"kraken2", "--db", "/db", "--use-names",
@@ -387,11 +387,11 @@ func TestBuildKraken2Cmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty krakenCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildKraken2Cmd("", "/db", "/out", "4", "contigs.fa"))
+		assert.Nil(t, runner.BuildKraken2Cmd("", "/db", "/out", "4", "contigs.fa"))
 	})
 
 	t.Run("Returns nil for empty dbPath", func(t *testing.T) {
-		assert.Nil(t, runner.buildKraken2Cmd("kraken2", "", "/out", "4", "contigs.fa"))
+		assert.Nil(t, runner.BuildKraken2Cmd("kraken2", "", "/out", "4", "contigs.fa"))
 	})
 }
 
@@ -399,7 +399,7 @@ func TestBuildSplitterCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildSplitterCmd("4", "input.fq", "prefix_")
+		result := runner.BuildSplitterCmd("4", "input.fq", "prefix_")
 
 		assert.Equal(t, []string{
 			"split", "--numeric-suffixes=1", "-n", "l/4",
@@ -408,11 +408,11 @@ func TestBuildSplitterCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty threads", func(t *testing.T) {
-		assert.Nil(t, runner.buildSplitterCmd("", "input.fq", "prefix_"))
+		assert.Nil(t, runner.BuildSplitterCmd("", "input.fq", "prefix_"))
 	})
 
 	t.Run("Returns nil for empty inputFile", func(t *testing.T) {
-		assert.Nil(t, runner.buildSplitterCmd("4", "", "prefix_"))
+		assert.Nil(t, runner.BuildSplitterCmd("4", "", "prefix_"))
 	})
 }
 
@@ -420,7 +420,7 @@ func TestBuildFastANICmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice", func(t *testing.T) {
-		result := runner.buildFastANICmd("fastani", "query.fna", "ref.txt", "/out", "4")
+		result := runner.BuildFastANICmd("fastani", "query.fna", "ref.txt", "/out", "4")
 
 		assert.Equal(t, []string{
 			"fastani", "-q", "query.fna", "--rl", "ref.txt",
@@ -429,11 +429,11 @@ func TestBuildFastANICmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty fastaniCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastANICmd("", "query.fna", "ref.txt", "/out", "4"))
+		assert.Nil(t, runner.BuildFastANICmd("", "query.fna", "ref.txt", "/out", "4"))
 	})
 
 	t.Run("Returns nil for empty query", func(t *testing.T) {
-		assert.Nil(t, runner.buildFastANICmd("fastani", "", "ref.txt", "/out", "4"))
+		assert.Nil(t, runner.BuildFastANICmd("fastani", "", "ref.txt", "/out", "4"))
 	})
 }
 
@@ -441,7 +441,7 @@ func TestBuildAbricateCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice with sh -c wrapper", func(t *testing.T) {
-		result := runner.buildAbricateCmd("abricate", "resfinder", "input.fna", "out.txt", "4")
+		result := runner.BuildAbricateCmd("abricate", "resfinder", "input.fna", "out.txt", "4")
 
 		assert.Equal(t, []string{
 			"sh", "-c",
@@ -450,11 +450,11 @@ func TestBuildAbricateCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty abricateCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildAbricateCmd("", "resfinder", "input.fna", "out.txt", "4"))
+		assert.Nil(t, runner.BuildAbricateCmd("", "resfinder", "input.fna", "out.txt", "4"))
 	})
 
 	t.Run("Returns nil for empty db", func(t *testing.T) {
-		assert.Nil(t, runner.buildAbricateCmd("abricate", "", "input.fna", "out.txt", "4"))
+		assert.Nil(t, runner.BuildAbricateCmd("abricate", "", "input.fna", "out.txt", "4"))
 	})
 }
 
@@ -462,7 +462,7 @@ func TestBuildMLSTCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Returns correct slice with sh -c wrapper", func(t *testing.T) {
-		result := runner.buildMLSTCmd("mlst", "4", "contigs.fa", "out.txt")
+		result := runner.BuildMLSTCmd("mlst", "4", "contigs.fa", "out.txt")
 
 		assert.Equal(t, []string{
 			"sh", "-c",
@@ -471,10 +471,10 @@ func TestBuildMLSTCmd(t *testing.T) {
 	})
 
 	t.Run("Returns nil for empty mlstCmd", func(t *testing.T) {
-		assert.Nil(t, runner.buildMLSTCmd("", "4", "contigs.fa", "out.txt"))
+		assert.Nil(t, runner.BuildMLSTCmd("", "4", "contigs.fa", "out.txt"))
 	})
 
 	t.Run("Returns nil for empty threads", func(t *testing.T) {
-		assert.Nil(t, runner.buildMLSTCmd("mlst", "", "contigs.fa", "out.txt"))
+		assert.Nil(t, runner.BuildMLSTCmd("mlst", "", "contigs.fa", "out.txt"))
 	})
 }

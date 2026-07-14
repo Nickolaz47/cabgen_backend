@@ -8,6 +8,22 @@ import (
 )
 
 type ToolRunner interface {
+	BuildBlastXCmd(blastDB, inputFile, outputFile string) []string
+	BuildFastQCCmd(fastqcCmd, read1, read2, outputDir string) []string
+	BuildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir, threads,
+		spadesPath string) []string
+	BuildProkkaCmd(prokkaCmd, outputDir, prefix, assemblyPath,
+		threads string) []string
+	BuildCheckMLineageCmd(checkmCmd, inputDir, outputDir,
+		threads string) []string
+	BuildCheckMQACmd(checkmCmd, checkmDir, sample, threads string) []string
+	BuildKraken2Cmd(krakenCmd, dbPath, outputDir, threads,
+		assemblyPath string) []string
+	BuildSplitterCmd(threads, inputFile, outputFilePrefix string) []string
+	BuildFastANICmd(fastaniCmd, query, refList, output, threads string) []string
+	BuildAbricateCmd(abricateCmd, db, inputFile, outputFile,
+		threads string) []string
+	BuildMLSTCmd(mlstCmd, threads, assemblyPath, outputFile string) []string
 	Run(ctx context.Context, args []string) (string, error)
 }
 
@@ -21,7 +37,7 @@ func NewToolRunner(commander Commander) ToolRunner {
 	}
 }
 
-func (r *toolRunner) buildBlastXCmd(blastDB, inputFile,
+func (r *toolRunner) BuildBlastXCmd(blastDB, inputFile,
 	outputFile string) []string {
 	if blastDB == "" || inputFile == "" || outputFile == "" {
 		return nil
@@ -33,7 +49,7 @@ func (r *toolRunner) buildBlastXCmd(blastDB, inputFile,
 	}
 }
 
-func (r *toolRunner) buildFastQCCmd(fastqcCmd, read1, read2,
+func (r *toolRunner) BuildFastQCCmd(fastqcCmd, read1, read2,
 	outputDir string) []string {
 	if fastqcCmd == "" || read1 == "" || read2 == "" || outputDir == "" {
 		return nil
@@ -42,7 +58,7 @@ func (r *toolRunner) buildFastQCCmd(fastqcCmd, read1, read2,
 	return []string{fastqcCmd, "--quiet", read1, read2, "--outdir", outputDir}
 }
 
-func (r *toolRunner) buildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir,
+func (r *toolRunner) BuildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir,
 	threads, spadesPath string) []string {
 	if unicyclerCmd == "" || read1 == "" || read2 == "" || outputDir == "" ||
 		threads == "" {
@@ -64,7 +80,7 @@ func (r *toolRunner) buildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir,
 	}
 }
 
-func (r *toolRunner) buildProkkaCmd(prokkaCmd, outputDir, prefix,
+func (r *toolRunner) BuildProkkaCmd(prokkaCmd, outputDir, prefix,
 	assemblyPath, threads string) []string {
 	if prokkaCmd == "" || outputDir == "" || prefix == "" ||
 		assemblyPath == "" || threads == "" {
@@ -77,7 +93,7 @@ func (r *toolRunner) buildProkkaCmd(prokkaCmd, outputDir, prefix,
 	}
 }
 
-func (r *toolRunner) buildCheckMLineageCmd(checkmCmd, inputDir,
+func (r *toolRunner) BuildCheckMLineageCmd(checkmCmd, inputDir,
 	outputDir, threads string) []string {
 	if checkmCmd == "" || inputDir == "" || outputDir == "" || threads == "" {
 		return nil
@@ -89,7 +105,7 @@ func (r *toolRunner) buildCheckMLineageCmd(checkmCmd, inputDir,
 	}
 }
 
-func (r *toolRunner) buildCheckMQACmd(checkmCmd, checkmDir,
+func (r *toolRunner) BuildCheckMQACmd(checkmCmd, checkmDir,
 	sample, threads string) []string {
 	if checkmCmd == "" || checkmDir == "" || sample == "" || threads == "" {
 		return nil
@@ -103,7 +119,7 @@ func (r *toolRunner) buildCheckMQACmd(checkmCmd, checkmDir,
 	}
 }
 
-func (r *toolRunner) buildKraken2Cmd(krakenCmd, dbPath, outputDir,
+func (r *toolRunner) BuildKraken2Cmd(krakenCmd, dbPath, outputDir,
 	threads, assemblyPath string) []string {
 	if krakenCmd == "" || dbPath == "" || outputDir == "" ||
 		threads == "" || assemblyPath == "" {
@@ -117,7 +133,7 @@ func (r *toolRunner) buildKraken2Cmd(krakenCmd, dbPath, outputDir,
 	}
 }
 
-func (r *toolRunner) buildSplitterCmd(threads, inputFile,
+func (r *toolRunner) BuildSplitterCmd(threads, inputFile,
 	outputFilePrefix string) []string {
 	if threads == "" || inputFile == "" || outputFilePrefix == "" {
 		return nil
@@ -129,7 +145,7 @@ func (r *toolRunner) buildSplitterCmd(threads, inputFile,
 	}
 }
 
-func (r *toolRunner) buildFastANICmd(fastaniCmd, query, refList,
+func (r *toolRunner) BuildFastANICmd(fastaniCmd, query, refList,
 	output, threads string) []string {
 	if fastaniCmd == "" || query == "" || refList == "" || output == "" ||
 		threads == "" {
@@ -142,7 +158,7 @@ func (r *toolRunner) buildFastANICmd(fastaniCmd, query, refList,
 	}
 }
 
-func (r *toolRunner) buildAbricateCmd(abricateCmd, db, inputFile,
+func (r *toolRunner) BuildAbricateCmd(abricateCmd, db, inputFile,
 	outputFile, threads string) []string {
 	if abricateCmd == "" || db == "" || inputFile == "" || outputFile == "" ||
 		threads == "" {
@@ -156,7 +172,7 @@ func (r *toolRunner) buildAbricateCmd(abricateCmd, db, inputFile,
 	}
 }
 
-func (r *toolRunner) buildMLSTCmd(mlstCmd, threads, assemblyPath,
+func (r *toolRunner) BuildMLSTCmd(mlstCmd, threads, assemblyPath,
 	outputFile string) []string {
 	if mlstCmd == "" || threads == "" || assemblyPath == "" ||
 		outputFile == "" {
