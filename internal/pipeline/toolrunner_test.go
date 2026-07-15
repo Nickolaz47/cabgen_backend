@@ -358,7 +358,7 @@ func TestBuildCheckMQACmd(t *testing.T) {
 
 		assert.Equal(t, []string{
 			"checkm", "qa", "-o", "2", "-f",
-			"/dir/sample1_resultados",
+			"/dir/sample1_results",
 			"--tab_table", "/dir/lineage.ms",
 			"/dir", "--threads", "4",
 		}, result)

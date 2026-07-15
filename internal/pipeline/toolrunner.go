@@ -113,7 +113,7 @@ func (r *toolRunner) BuildCheckMQACmd(checkmCmd, checkmDir,
 
 	return []string{
 		checkmCmd, "qa", "-o", "2", "-f",
-		checkmDir + "/" + sample + "_resultados",
+		checkmDir + "/" + sample + "_results",
 		"--tab_table", checkmDir + "/lineage.ms",
 		checkmDir, "--threads", threads,
 	}

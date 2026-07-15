@@ -32,14 +32,18 @@ func KrakenSpeciesCounter(krakenOutput string) (*KrakenSpecies, *KrakenSpecies,
 	counts := make(map[string]int)
 	scanner := bufio.NewScanner(br)
 
+	const maxCapacity = 1024 * 1024 * 50
+	lineBuf := make([]byte, 1024*64)
+	scanner.Buffer(lineBuf, maxCapacity)
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		fields := strings.Split(line, "\t")
+		fields := strings.SplitN(line, "\t", 4)
 
-		if len(fields) >= 3 {
+		if len(fields) >= 3 && fields[0] == "C" {
 			speciesPart := fields[2]
-			speciesName := strings.Split(speciesPart, "(")[0]
-			speciesName = strings.TrimSpace(speciesName)
+			speciesName := strings.TrimSpace(strings.Split(
+				speciesPart, "(")[0])
 
 			if speciesName != "" {
 				counts[speciesName]++
