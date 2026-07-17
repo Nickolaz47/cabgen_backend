@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/workers"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
@@ -40,6 +41,12 @@ func main() {
 	logging.SetupLoggers("./logs/worker-analysis.log")
 	defer logging.FileLogger.Sync()
 
+	// Asynq Client
+	asynqClient, err := queue.NewAsynqClient(config.RedisURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Analysis Runner Service
 	toolsConfig := pipeline.ToolsConfig{
 		FastQCPath:         config.FastQCPath,
@@ -65,7 +72,7 @@ func main() {
 		FastaniListAcineto: config.FastaniListAcineto,
 	}
 	analysisRunnerSvc := container.BuildAnalysisRunnerService(
-		mainDB.DB(), toolsConfig, rootDir, logging.FileLogger,
+		mainDB.DB(), toolsConfig, asynqClient, rootDir, logging.FileLogger,
 	)
 
 	// Handler

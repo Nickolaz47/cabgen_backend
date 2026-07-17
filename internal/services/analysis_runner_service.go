@@ -16,8 +16,10 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -34,21 +36,24 @@ type AnalysisRunnerService interface {
 }
 
 type analysisRunnerService struct {
-	Repo     repositories.AnalysisRepository
-	Pipeline pipeline.CabgenPipeline
-	Logger   *zap.Logger
-	RootDir  string
+	Repo        repositories.AnalysisRepository
+	Pipeline    pipeline.CabgenPipeline
+	AsynqClient TaskEnqueuer
+	Logger      *zap.Logger
+	RootDir     string
 }
 
 func NewAnalysisRunnerService(
 	repo repositories.AnalysisRepository,
 	pipeline pipeline.CabgenPipeline,
+	asynqClient TaskEnqueuer,
 	logger *zap.Logger, rootDir string) AnalysisRunnerService {
 	return &analysisRunnerService{
-		Repo:     repo,
-		Pipeline: pipeline,
-		Logger:   logger,
-		RootDir:  rootDir,
+		Repo:        repo,
+		Pipeline:    pipeline,
+		AsynqClient: asynqClient,
+		Logger:      logger,
+		RootDir:     rootDir,
 	}
 }
 
@@ -395,6 +400,27 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	}
 
 	s.finalizeAnalysis(ctx, analysis, &results, runErr)
+
+	task, err := tasks.NewAnalysisDoneEmailTask(analysisID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisRunnerService", "Run", logging.AsynqTaskError, err,
+		)...)
+	} else {
+		info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueEmail))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AnalysisRunnerService", "Run", logging.RedisDispatchError, err,
+			)...)
+		} else {
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				"AnalysisRunnerService", "Run", logging.TaskEnqueuedSuccess,
+				zap.String("task_id", info.ID),
+				zap.String("queue", info.Queue),
+			)...)
+		}
+	}
 
 	if runErr != nil {
 		s.Logger.Error(fmt.Sprintf(

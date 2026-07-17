@@ -184,7 +184,7 @@ func TestRunCheckM(t *testing.T) {
 	t.Run("Error - QA Fails", func(t *testing.T) {
 		calls := 0
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{
-			RunFunc: func(_ context.Context, _ []string) (string, error) {
+			RunFunc: func(ctx context.Context, args []string) (string, error) {
 				calls++
 				if calls == 2 {
 					return "", fmt.Errorf("qa failed")
@@ -314,7 +314,7 @@ func TestProcessSpecies(t *testing.T) {
 			organismMockContent)
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{
-			RunFunc: func(_ context.Context, _ []string) (string, error) {
+			RunFunc: func(ctx context.Context, args []string) (string, error) {
 				return mlstPath, nil
 			},
 		}, defaultConfig())
@@ -329,7 +329,7 @@ func TestProcessSpecies(t *testing.T) {
 		sampleID := "s1"
 		calls := 0
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{
-			RunFunc: func(_ context.Context, _ []string) (string, error) {
+			RunFunc: func(ctx context.Context, args []string) (string, error) {
 				calls++
 				if calls >= 3 {
 					return "", fmt.Errorf("blastx failed")
