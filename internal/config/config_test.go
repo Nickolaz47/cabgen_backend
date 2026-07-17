@@ -38,14 +38,24 @@ func TestLoadEnvVariables(t *testing.T) {
 			FASTQC_PATH=/usr/bin/fastqc
 			ABRICATE_PATH=/usr/bin/abricate
 			MLST_PATH=/usr/bin/mlst
-			POLIMYXIN_DB_PATH=/data/polymyxin_db
-			OTHERS_DB_PATH=/data/others_db
+			CHECKM_PATH=/usr/bin/checkm
 			KRAKEN2_PATH=/usr/bin/kraken2
 			KRAKEN_DB_PATH=/data/kraken_db
 			UNICYCLER_PATH=/usr/bin/unicycler
 			FASTANI_PATH=/usr/bin/fastani
-			FASTANI_DB_PATH=/data/fastani_db
 			SPADES_PATH=/usr/bin/spades
+			RESFINDER_DB_PATH=/data/resfinder_db
+			POLI_DB_PSEUDO=/dbs/poli/proteins_pseudo_poli.fasta
+			POLI_DB_KLEB=/dbs/poli/proteins_kleb_poli.fasta
+			POLI_DB_ENTERO=/dbs/poli/proteins_Ecloacae_poli.fasta
+			POLI_DB_ACINETO=/dbs/poli/proteins_acineto_poli.fasta
+			OTHER_DB_PSEUDO=/dbs/other/proteins_outrasMut_pseudo.fasta
+			OTHER_DB_KLEB=/dbs/other/proteins_outrasMut_kleb.fasta
+			OTHER_DB_ENTERO=/dbs/other/proteins_outrasMut_Ecloacae.fasta
+			OTHER_DB_ACINETO=/dbs/other/proteins_outrasMut_acineto.fasta
+			FASTANI_LIST_KLEB=/dbs/fastani/kleb_database/lista-kleb
+			FASTANI_LIST_ENTERO=/dbs/fastani/fastANI/list_entero
+			FASTANI_LIST_ACINETO=/dbs/fastani/fastANI_acineto/list-acineto
 		`
 		expectedAppRoot := "/app"
 		expectedDbHost := "localhost"
@@ -67,14 +77,24 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedFastQCPath := "/usr/bin/fastqc"
 		expectedAbricatePath := "/usr/bin/abricate"
 		expectedMlstPath := "/usr/bin/mlst"
-		expectedPolimyxinDBPath := "/data/polymyxin_db"
-		expectedOthersDBPath := "/data/others_db"
+		expectedCheckMPath := "/usr/bin/checkm"
 		expectedKraken2Path := "/usr/bin/kraken2"
 		expectedKrakenDBPath := "/data/kraken_db"
 		expectedUnicyclerPath := "/usr/bin/unicycler"
 		expectedFastaniPath := "/usr/bin/fastani"
-		expectedFastaniDBPath := "/data/fastani_db"
 		expectedSpadesPath := "/usr/bin/spades"
+		expectedResfinderDBPath := "/data/resfinder_db"
+		expectedPoliDbPseudo := "/dbs/poli/proteins_pseudo_poli.fasta"
+		expectedPoliDbKleb := "/dbs/poli/proteins_kleb_poli.fasta"
+		expectedPoliDbEntero := "/dbs/poli/proteins_Ecloacae_poli.fasta"
+		expectedPoliDbAcineto := "/dbs/poli/proteins_acineto_poli.fasta"
+		expectedOtherDbPseudo := "/dbs/other/proteins_outrasMut_pseudo.fasta"
+		expectedOtherDbKleb := "/dbs/other/proteins_outrasMut_kleb.fasta"
+		expectedOtherDbEntero := "/dbs/other/proteins_outrasMut_Ecloacae.fasta"
+		expectedOtherDbAcineto := "/dbs/other/proteins_outrasMut_acineto.fasta"
+		expectedFastaniListKleb := "/dbs/fastani/kleb_database/lista-kleb"
+		expectedFastaniListEntero := "/dbs/fastani/fastANI/list_entero"
+		expectedFastaniListAcineto := "/dbs/fastani/fastANI_acineto/list-acineto"
 
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
@@ -102,14 +122,24 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedFastQCPath, os.Getenv("FASTQC_PATH"), "expected fastqc paths to be equal")
 		assert.Equal(t, expectedAbricatePath, os.Getenv("ABRICATE_PATH"), "expected abricate paths to be equal")
 		assert.Equal(t, expectedMlstPath, os.Getenv("MLST_PATH"), "expected mlst paths to be equal")
-		assert.Equal(t, expectedPolimyxinDBPath, os.Getenv("POLIMYXIN_DB_PATH"), "expected polimyxin db paths to be equal")
-		assert.Equal(t, expectedOthersDBPath, os.Getenv("OTHERS_DB_PATH"), "expected others db paths to be equal")
+		assert.Equal(t, expectedCheckMPath, os.Getenv("CHECKM_PATH"), "expected checkm paths to be equal")
 		assert.Equal(t, expectedKraken2Path, os.Getenv("KRAKEN2_PATH"), "expected kraken2 paths to be equal")
 		assert.Equal(t, expectedKrakenDBPath, os.Getenv("KRAKEN_DB_PATH"), "expected kraken db paths to be equal")
 		assert.Equal(t, expectedUnicyclerPath, os.Getenv("UNICYCLER_PATH"), "expected unicycler paths to be equal")
 		assert.Equal(t, expectedFastaniPath, os.Getenv("FASTANI_PATH"), "expected fastani paths to be equal")
-		assert.Equal(t, expectedFastaniDBPath, os.Getenv("FASTANI_DB_PATH"), "expected fastani db paths to be equal")
 		assert.Equal(t, expectedSpadesPath, os.Getenv("SPADES_PATH"), "expected spades paths to be equal")
+		assert.Equal(t, expectedResfinderDBPath, os.Getenv("RESFINDER_DB_PATH"), "expected resfinder db paths to be equal")
+		assert.Equal(t, expectedPoliDbPseudo, os.Getenv("POLI_DB_PSEUDO"), "expected poli db pseudo to be equal")
+		assert.Equal(t, expectedPoliDbKleb, os.Getenv("POLI_DB_KLEB"), "expected poli db kleb to be equal")
+		assert.Equal(t, expectedPoliDbEntero, os.Getenv("POLI_DB_ENTERO"), "expected poli db entero to be equal")
+		assert.Equal(t, expectedPoliDbAcineto, os.Getenv("POLI_DB_ACINETO"), "expected poli db acineto to be equal")
+		assert.Equal(t, expectedOtherDbPseudo, os.Getenv("OTHER_DB_PSEUDO"), "expected other db pseudo to be equal")
+		assert.Equal(t, expectedOtherDbKleb, os.Getenv("OTHER_DB_KLEB"), "expected other db kleb to be equal")
+		assert.Equal(t, expectedOtherDbEntero, os.Getenv("OTHER_DB_ENTERO"), "expected other db entero to be equal")
+		assert.Equal(t, expectedOtherDbAcineto, os.Getenv("OTHER_DB_ACINETO"), "expected other db acineto to be equal")
+		assert.Equal(t, expectedFastaniListKleb, os.Getenv("FASTANI_LIST_KLEB"), "expected fastani list kleb to be equal")
+	    assert.Equal(t, expectedFastaniListEntero, os.Getenv("FASTANI_LIST_ENTERO"), "expected fastani list entero to be equal")
+		assert.Equal(t, expectedFastaniListAcineto, os.Getenv("FASTANI_LIST_ACINETO"), "expected fastani list acineto to be equal")
 
 		Port, err := strconv.Atoi(os.Getenv("PORT"))
 		assert.NoError(t, err)

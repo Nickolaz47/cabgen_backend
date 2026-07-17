@@ -48,6 +48,32 @@ func (a AnalysisType) IsValid() bool {
 var AnalysisTypes = []AnalysisType{AnalysisTypeFastQC, AnalysisTypeGenome,
 	AnalysisTypeComplete}
 
+type AnalysisResults struct {
+	// --- Genomic Coverage ---
+	Coverage float64 `json:"coverage,omitempty"`
+
+	// --- Assembly Quality (CheckM) ---
+	CheckMCompleteness  string `json:"completeness,omitempty"`
+	CheckMContamination string `json:"contamination,omitempty"`
+	CheckMGenomeSize    string `json:"genome_size,omitempty"`
+	CheckMN50           string `json:"n50,omitempty"`
+
+	// --- Taxonomy and Typing ---
+	PrimarySpeciesName   string `json:"primary_species,omitempty"`
+	SecondarySpeciesName string `json:"secondary_species,omitempty"`
+	MLST                 string `json:"mlst,omitempty"`
+
+	// --- Identified Mutations ---
+	PoliMutations  []string `json:"poli_mutations,omitempty"`
+	OtherMutations []string `json:"other_mutations,omitempty"`
+
+	// --- Virulence (Abricate) ---
+	ResfinderGenes []string `json:"gene,omitempty"`
+	ResfinderBlast []string `json:"resfinder,omitempty"`
+	VFDB           []string `json:"vfdb,omitempty"`
+	PlasmidFinder  []string `json:"plasmid,omitempty"`
+}
+
 type Analysis struct {
 	ID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 

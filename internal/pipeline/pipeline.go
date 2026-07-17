@@ -9,22 +9,31 @@ import (
 )
 
 type ToolsConfig struct {
-	FastQCPath       string
-	UnicyclerPath    string
-	SpadesPath       string
-	ProkkaPath       string
-	CheckMPath       string
-	Kraken2Path      string
-	KrakenDBPath     string
-	FastANIPath      string
-	FastANIRefsPath  string
-	AbricatePath     string
-	MLSTPath         string
-	BlastPoliDBPath  string
-	BlastOtherDBPath string
+	FastQCPath         string
+	UnicyclerPath      string
+	SpadesPath         string
+	CheckMPath         string
+	Kraken2Path        string
+	KrakenDBPath       string
+	FastANIPath        string
+	AbricatePath       string
+	MLSTPath           string
+	ResfinderDBPath    string
+	PoliDbPseudo       string
+	PoliDbKleb         string
+	PoliDbEntero       string
+	PoliDbAcineto      string
+	OtherDbPseudo      string
+	OtherDbKleb        string
+	OtherDbEntero      string
+	OtherDbAcineto     string
+	FastaniListKleb    string
+	FastaniListEntero  string
+	FastaniListAcineto string
 }
 
 type CabgenPipeline interface {
+	GetConfig() *ToolsConfig
 	RunFastQC(ctx context.Context, read1, read2, outputDir string) (
 		string, string, error)
 	RunUnicycler(ctx context.Context, threads int,
@@ -36,6 +45,8 @@ type CabgenPipeline interface {
 	RunKraken2(ctx context.Context, threads int, assembly,
 		outputDir string) (*KrakenSpecies, *KrakenSpecies, error)
 	RunBlastX(ctx context.Context, query, DB, outputFile string) error
+	RunAbricate(ctx context.Context, threads int, db, input,
+		outputFile string) error
 	ProcessSpecies(ctx context.Context, threads int,
 		sampleID, mostCommon, assemblyPath, outputDir string) (
 		*SpeciesResult, error)
@@ -51,6 +62,10 @@ func NewCabgenPipeline(runner ToolRunner, config ToolsConfig) CabgenPipeline {
 		Runner: runner,
 		Config: config,
 	}
+}
+
+func (p *cabgenPipeline) GetConfig() *ToolsConfig {
+	return &p.Config
 }
 
 func (p *cabgenPipeline) RunFastQC(
@@ -160,11 +175,24 @@ func (p *cabgenPipeline) RunBlastX(ctx context.Context, query, DB,
 	return nil
 }
 
+func (p *cabgenPipeline) RunAbricate(ctx context.Context, threads int, db,
+	input, outputFile string) error {
+	threadsStr := strconv.Itoa(threads)
+
+	abricateArgs := p.Runner.BuildAbricateCmd(p.Config.AbricatePath, db,
+		input, outputFile, threadsStr)
+	if _, err := p.Runner.Run(ctx, abricateArgs); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 	sampleID, mostCommon, assemblyPath, outputDir string) (
 	*SpeciesResult, error) {
 	mostCommon = strings.TrimSpace(mostCommon)
-	parts := strings.Split(mostCommon, " ")
+	parts := strings.Fields(mostCommon)
 
 	genus := mostCommon
 	species := ""
@@ -193,9 +221,8 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 	mlstResultPath := filepath.Join(outputDir, "mlst.csv")
 	mlstArgs := p.Runner.BuildMLSTCmd(p.Config.MLSTPath, threadsStr,
 		assemblyPath, mlstResultPath)
-	mlstPath, err := p.Runner.Run(ctx, mlstArgs)
-	if err == nil {
-		if mlstData, err := ParseMLST(mlstPath); err == nil &&
+	if _, err := p.Runner.Run(ctx, mlstArgs); err == nil {
+		if mlstData, err := ParseMLST(mlstResultPath); err == nil &&
 			mlstData != nil {
 			result.MLSTSpecies = fmt.Sprintf(
 				"%s (ST: %s)", mlstData.Scheme, mlstData.ST)
@@ -207,15 +234,34 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 	isKleb := isKlebsiella(normalizedName)
 	isPseudo := isPseudomonas(normalizedName)
 
-	if isEntero || isAcineto || isKleb {
+	var poliDbFullPath, otherDbFullPath, fastAniRefFullPath string
+
+	if isPseudo {
+		poliDbFullPath = p.Config.PoliDbPseudo
+		otherDbFullPath = p.Config.OtherDbPseudo
+	} else if isKleb {
+		poliDbFullPath = p.Config.PoliDbKleb
+		otherDbFullPath = p.Config.OtherDbKleb
+		fastAniRefFullPath = p.Config.FastaniListKleb
+	} else if isEntero {
+		poliDbFullPath = p.Config.PoliDbEntero
+		otherDbFullPath = p.Config.OtherDbEntero
+		fastAniRefFullPath = p.Config.FastaniListEntero
+	} else if isAcineto {
+		poliDbFullPath = p.Config.PoliDbAcineto
+		otherDbFullPath = p.Config.OtherDbAcineto
+		fastAniRefFullPath = p.Config.FastaniListAcineto
+	}
+
+	if (isEntero || isAcineto || isKleb) && fastAniRefFullPath != "" {
 		fastAniOut := filepath.Join(outputDir,
 			fmt.Sprintf("%s_out-fastANI", sampleID))
+
 		fastAniArgs := p.Runner.BuildFastANICmd(
-			p.Config.FastANIPath, assemblyPath, p.Config.FastANIRefsPath,
+			p.Config.FastANIPath, assemblyPath, fastAniRefFullPath,
 			fastAniOut, threadsStr,
 		)
-		_, err := p.Runner.Run(ctx, fastAniArgs)
-		if err == nil {
+		if _, err := p.Runner.Run(ctx, fastAniArgs); err == nil {
 			fastAniSpecies, parseErr := ParseFastANI(fastAniOut)
 			if parseErr == nil && fastAniSpecies != "" {
 				result.DisplayName = strings.ReplaceAll(fastAniSpecies, "_",
@@ -224,45 +270,49 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 		}
 	}
 
-	blastPoliFile := filepath.Join(outputDir, fmt.Sprintf(
-		"%s_blastPoli", sampleID))
-	if err := p.RunBlastX(ctx, assemblyPath, p.Config.BlastPoliDBPath,
-		blastPoliFile); err != nil {
-		return nil, err
-	}
+	if poliDbFullPath != "" && otherDbFullPath != "" {
+		blastPoliFile := filepath.Join(outputDir, fmt.Sprintf(
+			"%s_blastPoli", sampleID))
 
-	blastOtherFile := filepath.Join(outputDir, fmt.Sprintf(
-		"%s_blastOther", sampleID))
-	if err := p.RunBlastX(ctx, assemblyPath, p.Config.BlastOtherDBPath,
-		blastOtherFile); err != nil {
-		return nil, err
-	}
+		if err := p.RunBlastX(ctx, assemblyPath, poliDbFullPath,
+			blastPoliFile); err != nil {
+			return nil, err
+		}
 
-	poliFinder := NewMutationFinder(blastPoliFile)
-	otherFinder := NewMutationFinder(blastOtherFile)
+		blastOtherFile := filepath.Join(outputDir, fmt.Sprintf(
+			"%s_blastOther", sampleID))
 
-	var otherMut, poliMut []string
-	var errPoli, errOther error
+		if err := p.RunBlastX(ctx, assemblyPath, otherDbFullPath,
+			blastOtherFile); err != nil {
+			return nil, err
+		}
 
-	if isAcineto {
-		_, poliMut, errPoli = poliFinder.FindAcinetoMutations()
-		otherMut, _, errOther = otherFinder.FindAcinetoMutations()
-	} else if isEntero {
-		_, poliMut, errPoli = poliFinder.FindEcloacaeMutations()
-		otherMut, _, errOther = otherFinder.FindEcloacaeMutations()
-	} else if isKleb {
-		_, poliMut, errPoli = poliFinder.FindKlebMutations()
-		otherMut, _, errOther = otherFinder.FindKlebMutations()
-	} else if isPseudo {
-		_, poliMut, errPoli = poliFinder.FindPseudoMutations()
-		otherMut, _, errOther = otherFinder.FindPseudoMutations()
-	}
+		poliFinder := NewMutationFinder(blastPoliFile)
+		otherFinder := NewMutationFinder(blastOtherFile)
 
-	if errPoli == nil && poliMut != nil {
-		result.PoliMutations = poliMut
-	}
-	if errOther == nil && otherMut != nil {
-		result.OtherMutations = otherMut
+		var otherMut, poliMut []string
+		var errPoli, errOther error
+
+		if isAcineto {
+			_, poliMut, errPoli = poliFinder.FindAcinetoMutations()
+			otherMut, _, errOther = otherFinder.FindAcinetoMutations()
+		} else if isEntero {
+			_, poliMut, errPoli = poliFinder.FindEcloacaeMutations()
+			otherMut, _, errOther = otherFinder.FindEcloacaeMutations()
+		} else if isKleb {
+			_, poliMut, errPoli = poliFinder.FindKlebMutations()
+			otherMut, _, errOther = otherFinder.FindKlebMutations()
+		} else if isPseudo {
+			_, poliMut, errPoli = poliFinder.FindPseudoMutations()
+			otherMut, _, errOther = otherFinder.FindPseudoMutations()
+		}
+
+		if errPoli == nil && poliMut != nil {
+			result.PoliMutations = poliMut
+		}
+		if errOther == nil && otherMut != nil {
+			result.OtherMutations = otherMut
+		}
 	}
 
 	return result, nil

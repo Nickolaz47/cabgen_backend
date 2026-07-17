@@ -32,6 +32,7 @@ const (
 	TicketStatusError               = "TICKET_STATUS_ERROR"
 	DeleteActiveTicketError         = "DELETE_ACTIVE_TICKET_ERROR"
 	DeletePasswordResetTokenError   = "DELETE_PASSWORD_RESET_TOKEN_ERROR"
+	AnalysisRunError                = "ANALYSIS_RUN_ERROR"
 )
 
 const (

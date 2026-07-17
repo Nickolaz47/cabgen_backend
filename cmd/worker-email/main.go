@@ -38,6 +38,15 @@ func main() {
 	// Handler
 	emailHandler := workers.NewEmailTaskHandler(emailSvc)
 
+	// Mux
+	mux := asynq.NewServeMux()
+	mux.Handle(tasks.TaskTypeAdminAlertEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeWelcomeEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeAnalysisDoneEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeAdminTicketEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeFinishedTicketEmail, emailHandler)
+	mux.Handle(tasks.TaskTypePasswordResetEmail, emailHandler)
+
 	// Redis
 	redisOpt := asynq.RedisClientOpt{Addr: config.RedisURL}
 	srv := asynq.NewServer(
@@ -56,7 +65,7 @@ func main() {
 		zap.Int("concurrency", 10),
 	)
 
-	if err := srv.Run(emailHandler); err != nil {
+	if err := srv.Run(mux); err != nil {
 		logging.FileLogger.Fatal("Email worker execution failed.", zap.Error(err))
 	}
 }
