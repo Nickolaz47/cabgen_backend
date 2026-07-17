@@ -58,8 +58,9 @@ func NewAnalysisRunnerService(
 }
 
 func (s *analysisRunnerService) prepareFolders(
-	analysisID string) (*AnalysisRunnerFolders, error) {
-	rootDir := filepath.Join(s.RootDir, analysisID)
+	userID, sampleID, analysisID string) (*AnalysisRunnerFolders, error) {
+	rootDir := filepath.Join(s.RootDir, "uploads", "users", userID,
+		"samples", sampleID, "analyses", analysisID)
 
 	qcDir := filepath.Join(rootDir, "qc")
 	assemblyDir := filepath.Join(rootDir, "assembly")
@@ -360,7 +361,8 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 
 	var results models.AnalysisResults
 
-	folders, err := s.prepareFolders(analysis.ID.String())
+	folders, err := s.prepareFolders(analysis.UserID.String(),
+		analysis.SampleID.String(), analysis.ID.String())
 	if err != nil {
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed to prepare folders: %v", analysisID.String(), err),

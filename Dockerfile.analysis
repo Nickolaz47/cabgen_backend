@@ -1,0 +1,65 @@
+# Build
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# Dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Test Dependecies
+RUN apk add --no-cache gcc musl-dev
+
+# Source code
+COPY internal/ ./internal
+COPY cmd/ ./cmd
+COPY data/ ./data
+
+# Compilation
+RUN CGO_ENABLED=1 GOOS=linux go build -o worker-email ./cmd/worker-analysis
+
+# Bioinformatics
+FROM mambaorg/micromamba:latest
+
+# System dependencies
+USER root
+RUN apt-get update && apt-get install -y \
+    procps \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Back to Mamba user to install tools
+USER $MAMBA_USER
+
+# Pipeline via Bioconda
+RUN micromamba install -y -n base -c bioconda -c conda-forge \
+    fastqc \
+    unicycler \
+    spades \
+    prokka \
+    checkm-genome \
+    kraken2 \
+    fastani \
+    abricate \
+    mlst \
+    blast \
+    && micromamba clean --all --yes
+
+WORKDIR /app
+
+# Compiled binary
+# Copy Go binary from builder into the bioinformatics environment
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/worker-analysis .
+
+# Data folders needed at runtime
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/data ./data
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/internal/translation/active ./internal/translation/active
+
+# Volume mount folders
+RUN mkdir ./logs && mkdir -p /app/data/databases && mkdir -p /app/uploads
+
+# Required by micromamba base active
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+
+CMD ["./worker-analysis"]

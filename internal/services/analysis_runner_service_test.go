@@ -634,7 +634,10 @@ func TestAnalysisRunnerPrepareFolders(t *testing.T) {
 		assert.NoError(t, err)
 		for _, sub := range []string{"qc", "assembly", "amr", "report"} {
 			assert.DirExists(t,
-				filepath.Join(root, mock.ID.String(), sub))
+				filepath.Join(root, "uploads", "users",
+					mock.UserID.String(), "samples",
+					mock.SampleID.String(), "analyses",
+					mock.ID.String(), sub))
 		}
 	})
 }

@@ -12,6 +12,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - analysis-uploads:/app/uploads
     deploy:
       resources:
         limits:
@@ -37,6 +39,30 @@ services:
         limits:
           cpus: '0.5'
           memory: 256M
+
+  worker-analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile.analysis
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=database
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+    volumes:
+      - analysis-databases:/app/data/databases
+      - analysis-uploads:/app/uploads
+    deploy:
+      resources:
+        limits:
+          cpus: '${ANALYSIS_CPU:-100}'
+          memory: '${ANALYSIS_RAM:-128G}'
 
   database:
     image: "postgres:15-alpine"
@@ -79,3 +105,5 @@ services:
 
 volumes:
   postgres-data:
+  analysis-databases:
+  analysis-uploads:
