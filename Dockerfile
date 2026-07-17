@@ -24,6 +24,7 @@ RUN go test -v ./...
 USER root
 RUN CGO_ENABLED=1 GOOS=linux go build -o api ./cmd/server
 RUN CGO_ENABLED=1 GOOS=linux go build -o worker-email ./cmd/worker-email
+RUN CGO_ENABLED=1 GOOS=linux go build -o worker-analysis ./cmd/worker-analysis
 
 # Runtime
 FROM alpine:latest
@@ -32,6 +33,7 @@ WORKDIR /app
 
 COPY --from=builder /app/api .
 COPY --from=builder /app/worker-email .
+COPY --from=builder /app/worker-analysis .
 
 COPY --from=builder /app/internal/translation/active ./internal/translation/active
 COPY --from=builder /app/data ./data
