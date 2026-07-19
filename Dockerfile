@@ -34,7 +34,7 @@ COPY --from=builder /app/api .
 COPY --from=builder /app/worker-email .
 
 COPY --from=builder /app/internal/translation/active ./internal/translation/active
-COPY --from=builder /app/data ./data
+COPY --from=builder /app/jsons ./jsons
 
 EXPOSE 8080
 

@@ -107,12 +107,12 @@ func Setup(db *gorm.DB) error {
 		return err
 	}
 
-	countriesJSON := filepath.Join(rootDir, "data/countries.json")
+	countriesJSON := filepath.Join(rootDir, "jsons/countries.json")
 	if err := insertCountries(ctx, db, countriesJSON); err != nil {
 		return err
 	}
 
-	microJSON := filepath.Join(rootDir, "data/microorganisms.json")
+	microJSON := filepath.Join(rootDir, "jsons/microorganisms.json")
 	if err := insertMicroorganisms(ctx, db, microJSON); err != nil {
 		return err
 	}

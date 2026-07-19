@@ -56,7 +56,7 @@ services:
       api:
         condition: service_started
     volumes:
-      - analysis-databases:/app/data/databases
+      - analysis-databases:/app/databases
       - analysis-uploads:/app/uploads
     deploy:
       resources:

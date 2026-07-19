@@ -13,7 +13,7 @@ RUN apk add --no-cache gcc musl-dev
 # Source code
 COPY internal/ ./internal
 COPY cmd/ ./cmd
-COPY data/ ./data
+COPY databases/ ./databases
 
 # Compilation
 RUN CGO_ENABLED=1 GOOS=linux go build -o worker-email ./cmd/worker-analysis
