@@ -1,4 +1,4 @@
-package workeranalysis
+package main
 
 import (
 	"log"

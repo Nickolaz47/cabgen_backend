@@ -1,5 +1,5 @@
 # Build
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY cmd/ ./cmd
 COPY databases/ ./databases
 
 # Compilation
-RUN CGO_ENABLED=1 GOOS=linux go build -o worker-email ./cmd/worker-analysis
+RUN CGO_ENABLED=1 GOOS=linux go build -o worker-analysis ./cmd/worker-analysis
 
 # Bioinformatics
 FROM mambaorg/micromamba:latest
@@ -51,9 +51,10 @@ WORKDIR /app
 # Compiled binary
 # Copy Go binary from builder into the bioinformatics environment
 COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/worker-analysis .
+RUN chmod +x worker-analysis
 
 # Data folders needed at runtime
-COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/data ./data
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/databases ./databases
 COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/internal/translation/active ./internal/translation/active
 
 # Volume mount folders

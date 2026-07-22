@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
@@ -15,6 +16,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -76,13 +78,33 @@ func main() {
 	defer logging.ConsoleLogger.Sync()
 	defer logging.FileLogger.Sync()
 
+	// API Config
+	r := gin.New()
+
+	corsConfig := cors.Config{}
+	corsConfig.AllowOrigins = []string{config.FrontendURL}
+	corsConfig.AllowMethods = []string{
+		"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD",
+	}
+	corsConfig.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Accept",
+		"Authorization",
+		"Accept-Language",
+		"X-Requested-With",
+		"Cache-Control"}
+	corsConfig.ExposeHeaders = []string{"Content-Length"}
+	corsConfig.AllowCredentials = true
+	corsConfig.MaxAge = 12 * time.Hour
+
 	gin.SetMode(gin.DebugMode)
 	if config.Environment != "dev" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	r := gin.New()
 	r.Use(
+		cors.New(corsConfig),
 		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
 		middlewares.I18nMiddleware(),
 		gin.Recovery(),
