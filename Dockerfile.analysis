@@ -1,5 +1,5 @@
 # Build
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25-bookworm AS builder
 
 WORKDIR /app
 
@@ -7,8 +7,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Test Dependecies
-RUN apk add --no-cache gcc musl-dev
+# Test Dependencies
+RUN apt-get update && apt-get install -y gcc libc6-dev && rm -rf /var/lib/apt/lists/*
 
 # Source code
 COPY internal/ ./internal
@@ -16,14 +16,14 @@ COPY cmd/ ./cmd
 COPY databases/ ./databases
 
 # Compilation
-RUN CGO_ENABLED=1 GOOS=linux go build -o worker-analysis ./cmd/worker-analysis
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o worker-analysis ./cmd/worker-analysis
 
 # Bioinformatics
 FROM mambaorg/micromamba:latest
 
 # System dependencies
 USER root
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     libgomp1 \
     curl \
