@@ -257,7 +257,6 @@ Endpoints are organized into three access levels:
 | --- | --- | --- |
 | POST | `/api/auth/register` | User registration (requires activation) |
 | POST | `/api/auth/login` | Login and returns JWT tokens via cookies |
-| POST | `/api/auth/logout` | User logout |
 | POST | `/api/auth/refresh` | Access token renewal |
 | POST | `/api/auth/forgot-password` | Password reset request |
 | POST | `/api/auth/reset-password` | Password reset |
@@ -276,6 +275,13 @@ Endpoints are organized into three access levels:
 | POST | `/api/contact` | Creates a contact ticket |
 
 ### Common
+
+#### Authentication
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/auth/me` | Returns authenticated user data |
+| POST | `/api/auth/logout` | User logout |
 
 #### User
 

@@ -14,6 +14,12 @@ type UserToken struct {
 	jwt.RegisteredClaims
 }
 
+type MeResponse struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	UserRole UserRole  `json:"user_role"`
+}
+
 type LoginInput struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`

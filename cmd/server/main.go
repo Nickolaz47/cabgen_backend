@@ -141,11 +141,12 @@ func main() {
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
-	authHandler := container.BuildAuthHandler(authSvc)
+	pubAuthHandler := container.BuildPublicAuthHandler(authSvc)
 	pubCountryHandler := container.BuildPublicCountryHandler(countrySvc)
 	contactHandler := container.BuildTicketHandler(ticketSvc)
 
 	// Common handlers
+	authHandler := container.BuildCommonAuthHandler(authSvc)
 	userHandler := container.BuildUserHandler(userSvc)
 	laboratoryHandler := container.BuildLaboratoryHandler(labSvc)
 	sequencerHandler := container.BuildSequencerHandler(sequencerSvc)
@@ -177,11 +178,12 @@ func main() {
 	publicRouter := api.Group("")
 	public.SetupCountryRoutes(publicRouter, pubCountryHandler)
 	public.SetupHealthRoute(publicRouter, healthHandler)
-	public.SetupAuthRoutes(publicRouter, authHandler)
+	public.SetupPublicAuthRoutes(publicRouter, pubAuthHandler)
 	public.SetupContactRoutes(publicRouter, contactHandler)
 
 	// Common routes
 	commonRouter := api.Group("", middlewares.AuthMiddleware())
+	common.SetupCommonAuthRoutes(commonRouter, authHandler)
 	common.SetupUserRoutes(commonRouter, userHandler)
 	common.SetupSequencerRoutes(commonRouter, sequencerHandler)
 	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)

@@ -2,7 +2,8 @@ package container
 
 import (
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
+	commonAuthHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/common/auth"
+	publicAuthHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -26,6 +27,12 @@ func BuildAuthService(mainDB *gorm.DB, asynqClient *asynq.Client,
 	return authService
 }
 
-func BuildAuthHandler(svc services.AuthService) *authHandler.AuthHandler {
-	return authHandler.NewAuthHandler(svc)
+func BuildPublicAuthHandler(
+	svc services.AuthService) *publicAuthHandler.AuthHandler {
+	return publicAuthHandler.NewAuthHandler(svc)
+}
+
+func BuildCommonAuthHandler(
+	svc services.AuthService) *commonAuthHandler.AuthHandler {
+	return commonAuthHandler.NewAuthHandler(svc)
 }

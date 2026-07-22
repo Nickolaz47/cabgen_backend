@@ -78,21 +78,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			Message: responses.GetResponse(localizer, responses.LoginSuccess)})
 }
 
-func (h *AuthHandler) Logout(c *gin.Context) {
-	localizer := translation.GetLocalizerFromContext(c)
-
-	accessCookie := auth.DeleteCookie(auth.Access, "/")
-	refreshCookie := auth.DeleteCookie(auth.Refresh, "/api/auth/refresh")
-
-	http.SetCookie(c.Writer, accessCookie)
-	http.SetCookie(c.Writer, refreshCookie)
-
-	c.JSON(http.StatusOK,
-		responses.APIResponse{
-			Message: responses.GetResponse(localizer, responses.LogoutSuccess)},
-	)
-}
-
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 

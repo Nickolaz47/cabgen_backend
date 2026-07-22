@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
-	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
+	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/common/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/stretchr/testify/assert"
 )
