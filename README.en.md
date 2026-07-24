@@ -343,7 +343,7 @@ Endpoints are organized into three access levels:
 | --- | --- | --- |
 | GET | `/api/analyses` | Lists all user analyses |
 | GET | `/api/analyses/:analysisId` | Returns a specific analysis |
-| GET | `/api/analyses/:analysisId/download/tsv` | Downloads the analysis ZIP file |
+| GET | `/api/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | POST | `/api/analyses` | Creates and starts a new analysis |
 | POST | `/api/analyses/download/tsv` | Downloads batch TSV |
 | DELETE | `/api/analyses/:analysisId` | Deletes an analysis |
@@ -463,7 +463,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/analyses` | Lists all analyses |
 | GET | `/api/admin/analyses/:analysisId` | Returns a specific analysis |
-| GET | `/api/admin/analyses/:analysisId/download/tsv` | Downloads the analysis ZIP file |
+| GET | `/api/admin/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | GET | `/api/admin/analyses/types` | Returns valid types for analyses |
 | POST | `/api/admin/analyses` | Creates and starts a new analysis |
 | POST | `/api/admin/analyses/download/tsv` | Downloads batch TSV |
