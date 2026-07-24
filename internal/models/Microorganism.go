@@ -29,7 +29,7 @@ type Microorganism struct {
 	Taxon    Taxon     `gorm:"not null"`
 	Species  string    `gorm:"type:varchar(255);not null"`
 	Variety  JSONMap   `gorm:"type:jsonb"`
-	IsActive bool      `gorm:"not null"`
+	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 
 type MicroorganismAdminDetailResponse struct {

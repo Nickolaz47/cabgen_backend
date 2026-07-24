@@ -44,3 +44,83 @@ func (r *MicroorganismSeedRepository) Count(ctx context.Context) (int64, error) 
 		Count(&count).Error
 	return count, err
 }
+
+type OriginSeedRepository struct {
+	DB *gorm.DB
+}
+
+func NewOriginSeedRepository(db *gorm.DB) *OriginSeedRepository {
+	return &OriginSeedRepository{DB: db}
+}
+
+func (r *OriginSeedRepository) BulkInsert(ctx context.Context,
+	origins []models.Origin) error {
+	return r.DB.WithContext(ctx).Create(&origins).Error
+}
+
+func (r *OriginSeedRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.Origin{}).
+		Count(&count).Error
+	return count, err
+}
+
+type SequencerSeedRepository struct {
+	DB *gorm.DB
+}
+
+func NewSequencerSeedRepository(db *gorm.DB) *SequencerSeedRepository {
+	return &SequencerSeedRepository{DB: db}
+}
+
+func (r *SequencerSeedRepository) BulkInsert(ctx context.Context,
+	sequencers []models.Sequencer) error {
+	return r.DB.WithContext(ctx).Create(&sequencers).Error
+}
+
+func (r *SequencerSeedRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.Sequencer{}).
+		Count(&count).Error
+	return count, err
+}
+
+type LaboratorySeedRepository struct {
+	DB *gorm.DB
+}
+
+func NewLaboratorySeedRepository(db *gorm.DB) *LaboratorySeedRepository {
+	return &LaboratorySeedRepository{DB: db}
+}
+
+func (r *LaboratorySeedRepository) BulkInsert(ctx context.Context,
+	laboratories []models.Laboratory) error {
+	return r.DB.WithContext(ctx).Create(&laboratories).Error
+}
+
+func (r *LaboratorySeedRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.Laboratory{}).
+		Count(&count).Error
+	return count, err
+}
+
+type SampleSourceSeedRepository struct {
+	DB *gorm.DB
+}
+
+func NewSampleSourceSeedRepository(db *gorm.DB) *SampleSourceSeedRepository {
+	return &SampleSourceSeedRepository{DB: db}
+}
+
+func (r *SampleSourceSeedRepository) BulkInsert(ctx context.Context,
+	sampleSources []models.SampleSource) error {
+	return r.DB.WithContext(ctx).Create(&sampleSources).Error
+}
+
+func (r *SampleSourceSeedRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.SampleSource{}).
+		Count(&count).Error
+	return count, err
+}

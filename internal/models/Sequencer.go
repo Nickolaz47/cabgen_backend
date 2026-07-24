@@ -6,7 +6,7 @@ type Sequencer struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Model    string    `gorm:"type:varchar(255);not null"`
 	Brand    string    `gorm:"type:varchar(255);not null"`
-	IsActive bool      `gorm:"not null"`
+	IsActive bool      `gorm:"not null" json:"is_active"`
 }
 
 type SequencerAdminTableResponse struct {

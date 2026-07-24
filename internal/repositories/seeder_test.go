@@ -153,3 +153,247 @@ func TestMicroorganismCount(t *testing.T) {
 		assert.Empty(t, count)
 	})
 }
+
+func TestOriginBulkInsert(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	origin1 := testmodels.NewOrigin(uuid.NewString(), map[string]string{
+		"pt": "Humano", "en": "Human", "es": "Humano",
+	}, true)
+	origin2 := testmodels.NewOrigin(uuid.NewString(), map[string]string{
+		"pt": "Animal", "en": "Animal", "es": "Animal",
+	}, true)
+	origins := []models.Origin{origin1, origin2}
+
+	t.Run("Success", func(t *testing.T) {
+		repo := repositories.NewOriginSeedRepository(db)
+
+		err := repo.BulkInsert(context.Background(), origins)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewOriginSeedRepository(mockDB)
+		err = repo.BulkInsert(context.Background(), origins)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestOriginCount(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repositories.NewOriginSeedRepository(db)
+
+	origin1 := testmodels.NewOrigin(uuid.NewString(), map[string]string{
+		"pt": "Humano", "en": "Human", "es": "Humano",
+	}, true)
+	origin2 := testmodels.NewOrigin(uuid.NewString(), map[string]string{
+		"pt": "Animal", "en": "Animal", "es": "Animal",
+	}, true)
+	db.Create(&origin1)
+	db.Create(&origin2)
+
+	t.Run("Success", func(t *testing.T) {
+		count, err := repo.Count(context.Background())
+
+		var expected int64 = 2
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, count)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockRepo := repositories.NewOriginSeedRepository(mockDB)
+		count, err := mockRepo.Count(context.Background())
+
+		assert.Error(t, err)
+		assert.Empty(t, count)
+	})
+}
+
+func TestSequencerBulkInsert(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	seq1 := testmodels.NewSequencer(uuid.NewString(), "MiSeq", "Illumina", true)
+	seq2 := testmodels.NewSequencer(uuid.NewString(), "NextSeq", "Illumina", true)
+	sequencers := []models.Sequencer{seq1, seq2}
+
+	t.Run("Success", func(t *testing.T) {
+		repo := repositories.NewSequencerSeedRepository(db)
+
+		err := repo.BulkInsert(context.Background(), sequencers)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewSequencerSeedRepository(mockDB)
+		err = repo.BulkInsert(context.Background(), sequencers)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestSequencerCount(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repositories.NewSequencerSeedRepository(db)
+
+	seq1 := testmodels.NewSequencer(uuid.NewString(), "MiSeq", "Illumina", true)
+	seq2 := testmodels.NewSequencer(uuid.NewString(), "NextSeq", "Illumina", true)
+	db.Create(&seq1)
+	db.Create(&seq2)
+
+	t.Run("Success", func(t *testing.T) {
+		count, err := repo.Count(context.Background())
+
+		var expected int64 = 2
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, count)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockRepo := repositories.NewSequencerSeedRepository(mockDB)
+		count, err := mockRepo.Count(context.Background())
+
+		assert.Error(t, err)
+		assert.Empty(t, count)
+	})
+}
+
+func TestLaboratoryBulkInsert(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	lab1 := testmodels.NewLaboratory(uuid.NewString(), "LACEN/RJ", "RJ", true)
+	lab2 := testmodels.NewLaboratory(uuid.NewString(), "LACEN/MG", "MG", true)
+	laboratories := []models.Laboratory{lab1, lab2}
+
+	t.Run("Success", func(t *testing.T) {
+		repo := repositories.NewLaboratorySeedRepository(db)
+
+		err := repo.BulkInsert(context.Background(), laboratories)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewLaboratorySeedRepository(mockDB)
+		err = repo.BulkInsert(context.Background(), laboratories)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestLaboratoryCount(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repositories.NewLaboratorySeedRepository(db)
+
+	lab1 := testmodels.NewLaboratory(uuid.NewString(), "LACEN/RJ", "RJ", true)
+	lab2 := testmodels.NewLaboratory(uuid.NewString(), "LACEN/MG", "MG", true)
+	db.Create(&lab1)
+	db.Create(&lab2)
+
+	t.Run("Success", func(t *testing.T) {
+		count, err := repo.Count(context.Background())
+
+		var expected int64 = 2
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, count)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockRepo := repositories.NewLaboratorySeedRepository(mockDB)
+		count, err := mockRepo.Count(context.Background())
+
+		assert.Error(t, err)
+		assert.Empty(t, count)
+	})
+}
+
+func TestSampleSourceBulkInsert(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	source1 := testmodels.NewSampleSource(uuid.NewString(),
+		map[string]string{"pt": "Aspirado", "en": "Aspirated", "es": "Aspirado"},
+		map[string]string{"pt": "Respiratório", "en": "Respiratory", "es": "Respiratorio"},
+		true)
+	source2 := testmodels.NewSampleSource(uuid.NewString(),
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		true)
+	sampleSources := []models.SampleSource{source1, source2}
+
+	t.Run("Success", func(t *testing.T) {
+		repo := repositories.NewSampleSourceSeedRepository(db)
+
+		err := repo.BulkInsert(context.Background(), sampleSources)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewSampleSourceSeedRepository(mockDB)
+		err = repo.BulkInsert(context.Background(), sampleSources)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestSampleSourceCount(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repositories.NewSampleSourceSeedRepository(db)
+
+	source1 := testmodels.NewSampleSource(uuid.NewString(),
+		map[string]string{"pt": "Aspirado", "en": "Aspirated", "es": "Aspirado"},
+		map[string]string{"pt": "Respiratório", "en": "Respiratory", "es": "Respiratorio"},
+		true)
+	source2 := testmodels.NewSampleSource(uuid.NewString(),
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
+		true)
+	db.Create(&source1)
+	db.Create(&source2)
+
+	t.Run("Success", func(t *testing.T) {
+		count, err := repo.Count(context.Background())
+
+		var expected int64 = 2
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, count)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockRepo := repositories.NewSampleSourceSeedRepository(mockDB)
+		count, err := mockRepo.Count(context.Background())
+
+		assert.Error(t, err)
+		assert.Empty(t, count)
+	})
+}
