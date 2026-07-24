@@ -397,3 +397,77 @@ func TestSampleSourceCount(t *testing.T) {
 		assert.Empty(t, count)
 	})
 }
+
+func TestHealthServiceBulkInsert(t *testing.T) {
+	db := testutils.NewMockDB()
+
+	country := testmodels.NewCountry("BRA", nil)
+	db.Create(&country)
+
+	hs1 := testmodels.NewHealthService(
+		uuid.NewString(), "Hospital A", models.Public, country,
+		"Rio de Janeiro", "John", "john@example.com", "123456789", true,
+	)
+	hs2 := testmodels.NewHealthService(
+		uuid.NewString(), "Hospital B", models.Private, country,
+		"São Paulo", "Jane", "jane@example.com", "987654321", true,
+	)
+	healthServices := []models.HealthService{hs1, hs2}
+
+	t.Run("Success", func(t *testing.T) {
+		repo := repositories.NewHealthServiceSeedRepository(db)
+
+		err := repo.BulkInsert(context.Background(), healthServices)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewHealthServiceSeedRepository(mockDB)
+		err = repo.BulkInsert(context.Background(), healthServices)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestHealthServiceCount(t *testing.T) {
+	db := testutils.NewMockDB()
+	repo := repositories.NewHealthServiceSeedRepository(db)
+
+	country := testmodels.NewCountry("BRA", nil)
+	db.Create(&country)
+
+	hs1 := testmodels.NewHealthService(
+		uuid.NewString(), "Hospital A", models.Public, country,
+		"Rio de Janeiro", "John", "john@example.com", "123456789", true,
+	)
+	hs2 := testmodels.NewHealthService(
+		uuid.NewString(), "Hospital B", models.Private, country,
+		"São Paulo", "Jane", "jane@example.com", "987654321", true,
+	)
+	db.Create(&hs1)
+	db.Create(&hs2)
+
+	t.Run("Success", func(t *testing.T) {
+		count, err := repo.Count(context.Background())
+
+		var expected int64 = 2
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, count)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockRepo := repositories.NewHealthServiceSeedRepository(mockDB)
+		count, err := mockRepo.Count(context.Background())
+
+		assert.Error(t, err)
+		assert.Empty(t, count)
+	})
+}

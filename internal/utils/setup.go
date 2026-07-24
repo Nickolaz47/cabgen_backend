@@ -95,6 +95,68 @@ func seedFromJSON[T any](ctx context.Context, name string,
 	return nil
 }
 
+type healthServiceSeed struct {
+	Name         string  `json:"name"`
+	Type         string  `json:"type"`
+	CountryCode  string  `json:"country_code"`
+	City         *string `json:"city"`
+	Contactant   *string `json:"contactant"`
+	ContactEmail *string `json:"contact_email"`
+	ContactPhone *string `json:"contact_phone"`
+	IsActive     bool    `json:"is_active"`
+}
+
+func seedHealthServices(ctx context.Context, db *gorm.DB,
+	file string) error {
+	repo := repositories.NewHealthServiceSeedRepository(db)
+	count, err := repo.Count(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot access health_services table: %w", err)
+	}
+	if count > 0 {
+		log.Printf("health_services table already populated, skipping seed")
+		return nil
+	}
+
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		log.Printf("seed file not found, skipping: %s", file)
+		return nil
+	}
+
+	seeds, err := LoadJSONFile[healthServiceSeed](file)
+	if err != nil {
+		return err
+	}
+
+	countryRepo := repositories.NewCountryRepo(db)
+	healthServices := make([]models.HealthService, len(seeds))
+	for i, seed := range seeds {
+		country, err := countryRepo.GetCountryByCode(ctx, seed.CountryCode)
+		if err != nil {
+			return fmt.Errorf("cannot resolve country %s for health service %s: %w",
+				seed.CountryCode, seed.Name, err)
+		}
+
+		healthServices[i] = models.HealthService{
+			Name:         seed.Name,
+			Type:         models.HealthServiceType(seed.Type),
+			CountryID:    country.ID,
+			City:         seed.City,
+			Contactant:   seed.Contactant,
+			ContactEmail: seed.ContactEmail,
+			ContactPhone: seed.ContactPhone,
+			IsActive:     seed.IsActive,
+		}
+	}
+
+	if err := repo.BulkInsert(ctx, healthServices); err != nil {
+		return err
+	}
+
+	log.Printf("seeded %d health_services from %s", len(healthServices), file)
+	return nil
+}
+
 func Setup(db *gorm.DB) error {
 	ctx := context.Background()
 
@@ -141,6 +203,11 @@ func Setup(db *gorm.DB) error {
 	if err := seedFromJSON(ctx, "sample_sources",
 		repositories.NewSampleSourceSeedRepository(db),
 		sampleSourcesJSON); err != nil {
+		return err
+	}
+
+	healthServicesJSON := filepath.Join(rootDir, "jsons/health_services.json")
+	if err := seedHealthServices(ctx, db, healthServicesJSON); err != nil {
 		return err
 	}
 

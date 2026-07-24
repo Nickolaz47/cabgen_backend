@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetSelectOptions(t *testing.T) {
+func TestGetEnumSelects(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockResponse := models.EnumSelectsResponse{
@@ -45,7 +45,7 @@ func TestGetSelectOptions(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSelectOptionsService{
-			FindAllFunc: func(ctx context.Context) (
+			FindAllEnumSelectsFunc: func(ctx context.Context) (
 				*models.EnumSelectsResponse, error) {
 				return &mockResponse, nil
 			},
@@ -53,10 +53,10 @@ func TestGetSelectOptions(t *testing.T) {
 		handler := selectoptions.NewSelectOptionsHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/select-options",
+			http.MethodGet, "/api/select-options/enum",
 			"", nil, nil,
 		)
-		handler.GetSelectOptions(c)
+		handler.GetEnumSelects(c)
 
 		expected := testutils.ToJSON(map[string]any{
 			"data": mockResponse,
@@ -68,17 +68,74 @@ func TestGetSelectOptions(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockSelectOptionsService{
-			FindAllFunc: func(ctx context.Context) (*models.EnumSelectsResponse, error) {
+			FindAllEnumSelectsFunc: func(ctx context.Context) (
+				*models.EnumSelectsResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
 		handler := selectoptions.NewSelectOptionsHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/select-options",
+			http.MethodGet, "/api/select-options/enum",
 			"", nil, nil,
 		)
-		handler.GetSelectOptions(c)
+		handler.GetEnumSelects(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "There was a server error. Please try again.",
+		})
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+}
+
+func TestGetFormSelects(t *testing.T) {
+	testutils.SetupTestContext()
+
+	mockResponse := models.FormSelectsResponse{
+		Laboratories: []models.SelectOption{
+			{Label: "LACEN/RJ", Value: "lab-id"},
+		},
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		svc := &mocks.MockSelectOptionsService{
+			FindAllFormSelectsFunc: func(ctx context.Context, language string) (
+				*models.FormSelectsResponse, error) {
+				return &mockResponse, nil
+			},
+		}
+		handler := selectoptions.NewSelectOptionsHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/select-options/form",
+			"", nil, nil,
+		)
+		handler.GetFormSelects(c)
+
+		expected := testutils.ToJSON(map[string]any{
+			"data": mockResponse,
+		})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		svc := &mocks.MockSelectOptionsService{
+			FindAllFormSelectsFunc: func(ctx context.Context, language string) (
+				*models.FormSelectsResponse, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := selectoptions.NewSelectOptionsHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/select-options/form",
+			"", nil, nil,
+		)
+		handler.GetFormSelects(c)
 
 		expected := testutils.ToJSON(map[string]string{
 			"error": "There was a server error. Please try again.",

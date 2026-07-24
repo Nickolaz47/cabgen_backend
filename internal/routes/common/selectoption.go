@@ -8,5 +8,6 @@ import (
 func SetupSelectOptionRoutes(r *gin.RouterGroup,
 	handler *selectoptions.SelectOptionsHandler) {
 	selectOptionsRouter := r.Group("/select-options")
-	selectOptionsRouter.GET("", handler.GetSelectOptions)
+	selectOptionsRouter.GET("/enum", handler.GetEnumSelects)
+	selectOptionsRouter.GET("/form", handler.GetFormSelects)
 }

@@ -2,7 +2,6 @@ package container
 
 import (
 	adminSequencer "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sequencer"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sequencer"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"go.uber.org/zap"
@@ -14,10 +13,6 @@ func BuildSequencerService(db *gorm.DB, logger *zap.Logger) services.SequencerSe
 	sequencerService := services.NewSequencerService(sequencerRepo, logger)
 
 	return sequencerService
-}
-
-func BuildSequencerHandler(svc services.SequencerService) *sequencer.SequencerHandler {
-	return sequencer.NewSequencerHandler(svc)
 }
 
 func BuildAdminSequencerHandler(svc services.SequencerService) *adminSequencer.AdminSequencerHandler {

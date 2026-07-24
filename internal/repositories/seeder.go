@@ -124,3 +124,23 @@ func (r *SampleSourceSeedRepository) Count(ctx context.Context) (int64, error) {
 		Count(&count).Error
 	return count, err
 }
+
+type HealthServiceSeedRepository struct {
+	DB *gorm.DB
+}
+
+func NewHealthServiceSeedRepository(db *gorm.DB) *HealthServiceSeedRepository {
+	return &HealthServiceSeedRepository{DB: db}
+}
+
+func (r *HealthServiceSeedRepository) BulkInsert(ctx context.Context,
+	healthServices []models.HealthService) error {
+	return r.DB.WithContext(ctx).Create(&healthServices).Error
+}
+
+func (r *HealthServiceSeedRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.HealthService{}).
+		Count(&count).Error
+	return count, err
+}

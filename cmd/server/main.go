@@ -148,15 +148,16 @@ func main() {
 	// Common handlers
 	authHandler := container.BuildCommonAuthHandler(authSvc)
 	userHandler := container.BuildUserHandler(userSvc)
-	laboratoryHandler := container.BuildLaboratoryHandler(labSvc)
-	sequencerHandler := container.BuildSequencerHandler(sequencerSvc)
-	originHandler := container.BuildOriginHandler(originSvc)
-	sampleSourceHandler := container.BuildSampleSourceHandler(sampleSourceSvc)
-	microHandler := container.BuildMicroorganismHandler(microSvc)
-	healthServiceHandler := container.BuildHealthServiceHandler(healthServiceSvc)
 	sampleHandler := container.BuildSampleHandler(sampleSvc)
 	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
-	selectOptionHandler := container.BuildSelectOptionHandler()
+	selectOptionHandler := container.BuildSelectOptionHandler(
+		labSvc,
+		sequencerSvc,
+		healthServiceSvc,
+		originSvc,
+		microSvc,
+		sampleSourceSvc,
+	)
 	cityHandler := container.BuildCityHandler()
 
 	// Admin handlers
@@ -185,12 +186,6 @@ func main() {
 	commonRouter := api.Group("", middlewares.AuthMiddleware())
 	common.SetupCommonAuthRoutes(commonRouter, authHandler)
 	common.SetupUserRoutes(commonRouter, userHandler)
-	common.SetupSequencerRoutes(commonRouter, sequencerHandler)
-	common.SetupLaboratoryRoutes(commonRouter, laboratoryHandler)
-	common.SetupOriginRoutes(commonRouter, originHandler)
-	common.SetupSampleSourceRoutes(commonRouter, sampleSourceHandler)
-	common.SetupMicroorganismRoutes(commonRouter, microHandler)
-	common.SetupHealthServiceRoutes(commonRouter, healthServiceHandler)
 	common.SetupSampleRoutes(commonRouter, sampleHandler)
 	common.SetupAnalysisRoutes(commonRouter, analysisHandler)
 	common.SetupSelectOptionRoutes(commonRouter, selectOptionHandler)

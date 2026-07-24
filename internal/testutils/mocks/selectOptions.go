@@ -7,13 +7,25 @@ import (
 )
 
 type MockSelectOptionsService struct {
-	FindAllFunc func(ctx context.Context) (*models.EnumSelectsResponse, error)
+	FindAllEnumSelectsFunc func(ctx context.Context) (
+		*models.EnumSelectsResponse, error)
+	FindAllFormSelectsFunc func(ctx context.Context, language string) (
+		*models.FormSelectsResponse, error)
 }
 
-func (s *MockSelectOptionsService) FindAll(ctx context.Context) (
+func (s *MockSelectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	*models.EnumSelectsResponse, error) {
-	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx)
+	if s.FindAllEnumSelectsFunc != nil {
+		return s.FindAllEnumSelectsFunc(ctx)
+	}
+
+	return nil, nil
+}
+
+func (s *MockSelectOptionsService) FindAllFormSelects(ctx context.Context,
+	language string) (*models.FormSelectsResponse, error) {
+	if s.FindAllFormSelectsFunc != nil {
+		return s.FindAllFormSelectsFunc(ctx, language)
 	}
 
 	return nil, nil

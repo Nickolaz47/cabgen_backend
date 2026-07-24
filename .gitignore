@@ -6,4 +6,8 @@
 .vscode
 AGENT.md
 /data
-/jsons
+/jsons/h*.json
+/jsons/l*.json
+/jsons/m*.json
+/jsons/o*.json
+/jsons/s*.json

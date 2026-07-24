@@ -166,6 +166,20 @@ go build -o cabgen-backend ./cmd/server
 docker compose up -d
 ```
 
+## Seed
+
+Na inicialização, a API executa o seed automático das seguintes entidades a partir dos arquivos JSON em `jsons/`:
+
+- `countries.json`
+- `microorganisms.json`
+- `origins.json`
+- `sequencers.json`
+- `laboratories.json`
+- `sample_sources.json`
+- `health_services.json`
+
+Cada tabela é populada apenas se estiver vazia. Os arquivos JSON podem ser mantidos fora do controle de versão via `.gitignore`.
+
 ## Internacionalização (i18n)
 
 Idiomas suportados:
@@ -301,42 +315,6 @@ Os endpoints estão organizados em três níveis de acesso:
 | GET | `/api/users/me` | Dados do usuário autenticado |
 | PUT | `/api/users/me` | Atualiza dados do usuário |
 
-#### Origem
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/origins` | Lista origens ativas |
-
-#### Sequenciador
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/sequencers` | Lista sequenciadores ativos |
-
-#### Fonte da Amostra
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/sample-sources` | Lista fontes de amostra ativas |
-
-#### Laboratório
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/laboratories` | Lista laboratórios ativos |
-
-#### Microrganismo
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/microorganisms` | Lista microrganismos ativos |
-
-#### Serviços de Saúde
-
-| Método | Endpoint | Descrição |
-| --- | --- | --- |
-| GET | `/api/health-services` | Lista serviços de saúde ativos |
-
 #### Amostra
 
 | Método | Endpoint | Descrição |
@@ -363,7 +341,8 @@ Os endpoints estão organizados em três níveis de acesso:
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/select-options` | Retorna os dados para os selects do frontend |
+| GET | `/api/select-options/enum` | Retorna os enums para os selects do frontend (papéis, táxons, gêneros, tipos de serviço de saúde e tipos de análise) |
+| GET | `/api/select-options/form` | Retorna as entidades ativas para os selects do frontend (laboratórios, sequenciadores, serviços de saúde, origens, microrganismos e fontes da amostra) |
 
 #### Cidades
 

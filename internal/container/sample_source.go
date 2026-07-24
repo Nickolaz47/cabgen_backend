@@ -2,7 +2,6 @@ package container
 
 import (
 	adminSampleSource "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/samplesource"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/samplesource"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"go.uber.org/zap"
@@ -15,10 +14,6 @@ func BuildSampleSourceService(db *gorm.DB, logger *zap.Logger) services.SampleSo
 		sampleSourceRepo, logger)
 
 	return sampleSourceService
-}
-
-func BuildSampleSourceHandler(svc services.SampleSourceService) *samplesource.SampleSourceHandler {
-	return samplesource.NewSampleSourceHandler(svc)
 }
 
 func BuildAdminSampleSourceHandler(svc services.SampleSourceService) *adminSampleSource.AdminSampleSourceHandler {

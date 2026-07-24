@@ -2,7 +2,6 @@ package container
 
 import (
 	adminMicroorganism "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/microorganism"
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/microorganism"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"go.uber.org/zap"
@@ -15,11 +14,6 @@ func BuildMicroorganismService(db *gorm.DB,
 	microService := services.NewMicroorganismService(microRepo, logger)
 
 	return microService
-}
-
-func BuildMicroorganismHandler(
-	svc services.MicroorganismService) *microorganism.MicroorganismHandler {
-	return microorganism.NewMicroorganismHandler(svc)
 }
 
 func BuildAdminMicroorganismHandler(

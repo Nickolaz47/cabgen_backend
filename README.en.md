@@ -166,6 +166,20 @@ go build -o cabgen-backend ./cmd/server
 docker compose up -d
 ```
 
+## Seeding
+
+On startup, the API automatically seeds the following entities from JSON files in `jsons/`:
+
+- `countries.json`
+- `microorganisms.json`
+- `origins.json`
+- `sequencers.json`
+- `laboratories.json`
+- `sample_sources.json`
+- `health_services.json`
+
+Each table is seeded only if it is empty. The JSON files can be kept out of version control via `.gitignore`.
+
 ## Internationalization (i18n)
 
 Supported languages:
@@ -290,42 +304,6 @@ Endpoints are organized into three access levels:
 | GET | `/api/users/me` | Authenticated user data |
 | PUT | `/api/users/me` | Updates authenticated user data |
 
-#### Origin
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/origins` | Lists active origins |
-
-#### Sequencer
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/sequencers` | Lists active sequencers |
-
-#### Sample Source
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/sample-sources` | Lists active sample sources |
-
-#### Laboratory
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/laboratories` | Lists active laboratories |
-
-#### Microorganism
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/microorganisms` | Lists active microorganisms |
-
-#### Health Service
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/health-services` | Lists active health services |
-
 #### Sample
 
 | Method | Endpoint | Description |
@@ -352,7 +330,8 @@ Endpoints are organized into three access levels:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/select-options` | Returns data for frontend selects |
+| GET | `/api/select-options/enum` | Returns enum data for frontend selects (roles, taxons, genders, health service types, and analysis types) |
+| GET | `/api/select-options/form` | Returns active entities for frontend selects (laboratories, sequencers, health services, origins, microorganisms, and sample sources) |
 
 #### Cities
 

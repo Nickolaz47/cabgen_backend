@@ -8,16 +8,39 @@ import (
 )
 
 type SelectOptionsService interface {
-	FindAll(ctx context.Context) (*models.EnumSelectsResponse, error)
+	FindAllEnumSelects(ctx context.Context) (*models.EnumSelectsResponse, error)
+	FindAllFormSelects(ctx context.Context, language string) (
+		*models.FormSelectsResponse, error)
 }
 
-type selectOptionsService struct{}
-
-func NewSelectOptionsService() SelectOptionsService {
-	return &selectOptionsService{}
+type selectOptionsService struct {
+	laboratoryService    LaboratoryService
+	sequencerService     SequencerService
+	healthServiceService HealthServiceService
+	originService        OriginService
+	microorganismService MicroorganismService
+	sampleSourceService  SampleSourceService
 }
 
-func (s *selectOptionsService) FindAll(ctx context.Context) (
+func NewSelectOptionsService(
+	laboratoryService LaboratoryService,
+	sequencerService SequencerService,
+	healthServiceService HealthServiceService,
+	originService OriginService,
+	microorganismService MicroorganismService,
+	sampleSourceService SampleSourceService,
+) SelectOptionsService {
+	return &selectOptionsService{
+		laboratoryService:    laboratoryService,
+		sequencerService:     sequencerService,
+		healthServiceService: healthServiceService,
+		originService:        originService,
+		microorganismService: microorganismService,
+		sampleSourceService:  sampleSourceService,
+	}
+}
+
+func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	*models.EnumSelectsResponse, error) {
 	resp := &models.EnumSelectsResponse{}
 
@@ -61,6 +84,85 @@ func (s *selectOptionsService) FindAll(ctx context.Context) (
 			Label: "option.analysis_type." + strings.ToLower(string(aType)),
 			Value: string(aType),
 		})
+	}
+
+	return resp, nil
+}
+
+func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
+	language string) (*models.FormSelectsResponse, error) {
+	resp := &models.FormSelectsResponse{}
+
+	labs, err := s.laboratoryService.FindAllActive(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp.Laboratories = make([]models.SelectOption, len(labs))
+	for i, lab := range labs {
+		resp.Laboratories[i] = models.SelectOption{
+			Label: lab.Name,
+			Value: lab.ID.String(),
+		}
+	}
+
+	sequencers, err := s.sequencerService.FindAllActive(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp.Sequencers = make([]models.SelectOption, len(sequencers))
+	for i, seq := range sequencers {
+		resp.Sequencers[i] = models.SelectOption{
+			Label: seq.Model,
+			Value: seq.ID.String(),
+		}
+	}
+
+	healthServices, err := s.healthServiceService.FindAllActive(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp.HealthServices = make([]models.SelectOption, len(healthServices))
+	for i, hs := range healthServices {
+		resp.HealthServices[i] = models.SelectOption{
+			Label: hs.Name,
+			Value: hs.ID.String(),
+		}
+	}
+
+	origins, err := s.originService.FindAllActive(ctx, language)
+	if err != nil {
+		return nil, err
+	}
+	resp.Origins = make([]models.SelectOption, len(origins))
+	for i, origin := range origins {
+		resp.Origins[i] = models.SelectOption{
+			Label: origin.Name,
+			Value: origin.ID.String(),
+		}
+	}
+
+	micros, err := s.microorganismService.FindAllActive(ctx, language)
+	if err != nil {
+		return nil, err
+	}
+	resp.Microorganisms = make([]models.SelectOption, len(micros))
+	for i, micro := range micros {
+		resp.Microorganisms[i] = models.SelectOption{
+			Label: micro.Species,
+			Value: micro.ID.String(),
+		}
+	}
+
+	sources, err := s.sampleSourceService.FindAllActive(ctx, language)
+	if err != nil {
+		return nil, err
+	}
+	resp.SampleSources = make([]models.SelectOption, len(sources))
+	for i, source := range sources {
+		resp.SampleSources[i] = models.SelectOption{
+			Label: source.Name,
+			Value: source.ID.String(),
+		}
 	}
 
 	return resp, nil
