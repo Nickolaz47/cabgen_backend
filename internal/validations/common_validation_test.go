@@ -14,13 +14,16 @@ func TestApplySampleUpdate(t *testing.T) {
 	mock := testmodels.CreateMockSample()
 
 	name := "Updated Sample"
-	collectionDate := time.Date(2025, time.January, 10, 0, 0, 0, 0, time.UTC)
+	collectionDate := models.Date{
+		Time: time.Date(2025, time.January, 10, 0, 0, 0, 0, time.UTC)}
 	runNumber := "R2"
-	runDate := time.Date(2025, time.February, 5, 0, 0, 0, 0, time.UTC)
+	runDate := models.Date{
+		Time: time.Date(2025, time.February, 5, 0, 0, 0, 0, time.UTC)}
 	city := "Rio de Janeiro"
 	originCode := "B02"
 	gender := models.Female
-	dateOfBirth := time.Date(1990, time.March, 15, 0, 0, 0, 0, time.UTC)
+	dateOfBirth := models.Date{
+		Time: time.Date(1990, time.March, 15, 0, 0, 0, 0, time.UTC)}
 
 	input := models.SampleUpdateDTO{
 		Name:           &name,
@@ -36,13 +39,13 @@ func TestApplySampleUpdate(t *testing.T) {
 	expected := models.Sample{
 		ID:              mock.ID,
 		Name:            name,
-		CollectionDate:  collectionDate,
+		CollectionDate:  *models.ToTimePtr(&collectionDate),
 		RunNumber:       runNumber,
-		RunDate:         runDate,
+		RunDate:         *models.ToTimePtr(&runDate),
 		City:            &city,
 		OriginCode:      &originCode,
 		Gender:          &gender,
-		DateOfBirth:     &dateOfBirth,
+		DateOfBirth:     models.ToTimePtr(&dateOfBirth),
 		CountryID:       mock.CountryID,
 		Country:         mock.Country,
 		UserID:          mock.UserID,

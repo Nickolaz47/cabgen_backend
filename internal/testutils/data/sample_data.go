@@ -10,13 +10,13 @@ const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 var baseSampleCreateBody = map[string]any{
 	"name":              "Sample-SARS-CoV-2",
-	"collection_date":   "2026-05-20T00:00:00Z",
+	"collection_date":   "2026-05-20",
 	"run_number":        "RUN-2026-XYZ",
-	"run_date":          "2026-05-25T00:00:00Z",
+	"run_date":          "2026-05-25",
 	"city":              "Maricá",
 	"origin_code":       "BR-RJ-01",
 	"gender":            "Male",
-	"date_of_birth":     "1990-01-01T00:00:00Z",
+	"date_of_birth":     "1990-01-01",
 	"country_code":      "BRA",
 	"user_id":           validUUID,
 	"origin_id":         validUUID,

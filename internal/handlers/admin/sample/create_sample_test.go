@@ -25,13 +25,13 @@ func TestCreateSample(t *testing.T) {
 
 	validInput := map[string]any{
 		"name":              "Sample-SARS-CoV-2",
-		"collection_date":   "2026-05-20T00:00:00Z",
+		"collection_date":   "2026-05-20",
 		"run_number":        "RUN-2026-XYZ",
-		"run_date":          "2026-05-25T00:00:00Z",
+		"run_date":          "2026-05-25",
 		"city":              "Maricá",
 		"origin_code":       "BR-RJ-01",
 		"gender":            "Male",
-		"date_of_birth":     "1990-01-01T00:00:00Z",
+		"date_of_birth":     "1990-01-01",
 		"country_code":      "BRA",
 		"user_id":           validUUID,
 		"origin_id":         validUUID,
@@ -87,9 +87,9 @@ func TestCreateSample(t *testing.T) {
 
 		minimalInput := map[string]any{
 			"name":              "Minimal-Sample",
-			"collection_date":   "2026-05-20T00:00:00Z",
+			"collection_date":   "2026-05-20",
 			"run_number":        "RUN-01",
-			"run_date":          "2026-05-25T00:00:00Z",
+			"run_date":          "2026-05-25",
 			"country_code":      "BRA",
 			"user_id":           validUUID,
 			"origin_id":         validUUID,

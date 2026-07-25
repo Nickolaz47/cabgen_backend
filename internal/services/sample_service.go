@@ -299,13 +299,13 @@ func (s *sampleService) Create(
 
 	sample := models.Sample{
 		Name:            input.Name,
-		CollectionDate:  input.CollectionDate,
+		CollectionDate:  *models.ToTimePtr(&input.CollectionDate),
 		RunNumber:       input.RunNumber,
-		RunDate:         input.RunDate,
+		RunDate:         *models.ToTimePtr(&input.RunDate),
 		City:            input.City,
 		OriginCode:      input.OriginCode,
 		Gender:          input.Gender,
-		DateOfBirth:     input.DateOfBirth,
+		DateOfBirth:     models.ToTimePtr(input.DateOfBirth),
 		CountryID:       country.ID,
 		UserID:          user.ID,
 		OriginID:        origin.ID,

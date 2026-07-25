@@ -179,14 +179,14 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 }
 
 type AdminSampleCreateInput struct {
-	Name           string     `json:"name" binding:"required,min=3,max=100"`
-	CollectionDate time.Time  `json:"collection_date" binding:"required" time_format:"2006-01-02"`
-	RunNumber      string     `json:"run_number" binding:"required,max=50"`
-	RunDate        time.Time  `json:"run_date" binding:"required" time_format:"2006-01-02"`
-	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
-	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	Name           string  `json:"name" binding:"required,min=3,max=100"`
+	CollectionDate Date    `json:"collection_date" binding:"required"`
+	RunNumber      string  `json:"run_number" binding:"required,max=50"`
+	RunDate        Date    `json:"run_date" binding:"required"`
+	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
 	CountryCode     string    `json:"country_code" binding:"required,len=3"`
 	UserID          uuid.UUID `json:"user_id" binding:"required"`
@@ -199,14 +199,14 @@ type AdminSampleCreateInput struct {
 }
 
 type SampleCreateInput struct {
-	Name           string     `json:"name" binding:"required,min=3,max=100"`
-	CollectionDate time.Time  `json:"collection_date" binding:"required" time_format:"2006-01-02"`
-	RunNumber      string     `json:"run_number" binding:"required,max=50"`
-	RunDate        time.Time  `json:"run_date" binding:"required" time_format:"2006-01-02"`
-	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
-	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	Name           string  `json:"name" binding:"required,min=3,max=100"`
+	CollectionDate Date    `json:"collection_date" binding:"required"`
+	RunNumber      string  `json:"run_number" binding:"required,max=50"`
+	RunDate        Date    `json:"run_date" binding:"required"`
+	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
 	CountryCode     string    `json:"country_code" binding:"required,len=3"`
 	OriginID        uuid.UUID `json:"origin_id" binding:"required"`
@@ -219,13 +219,13 @@ type SampleCreateInput struct {
 
 type SampleCreateDTO struct {
 	Name            string
-	CollectionDate  time.Time
+	CollectionDate  Date
 	RunNumber       string
-	RunDate         time.Time
+	RunDate         Date
 	City            *string
 	OriginCode      *string
 	Gender          *Gender
-	DateOfBirth     *time.Time
+	DateOfBirth     *Date
 	CountryCode     string
 	UserID          uuid.UUID
 	OriginID        uuid.UUID
@@ -237,14 +237,14 @@ type SampleCreateDTO struct {
 }
 
 type AdminSampleUpdateInput struct {
-	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
-	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
-	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty,max=50"`
-	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
-	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
-	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	Name           *string `json:"name" binding:"omitempty,min=3,max=100"`
+	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
+	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
+	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
+	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	UserID          *uuid.UUID `json:"user_id,omitempty" binding:"omitempty"`
@@ -257,14 +257,14 @@ type AdminSampleUpdateInput struct {
 }
 
 type SampleUpdateInput struct {
-	Name           *string    `json:"name" binding:"omitempty,min=3,max=100"`
-	CollectionDate *time.Time `json:"collection_date" binding:"omitempty" time_format:"2006-01-02"`
-	RunNumber      *string    `json:"run_number,omitempty" binding:"omitempty,max=50"`
-	RunDate        *time.Time `json:"run_date,omitempty" binding:"omitempty" time_format:"2006-01-02"`
-	City           *string    `json:"city,omitempty" binding:"omitempty,max=255"`
-	OriginCode     *string    `json:"origin_code,omitempty" binding:"omitempty,max=255"`
-	Gender         *Gender    `json:"gender,omitempty" binding:"omitempty"`
-	DateOfBirth    *time.Time `json:"date_of_birth,omitempty" binding:"omitempty" time_format:"2006-01-02"`
+	Name           *string `json:"name" binding:"omitempty,min=3,max=100"`
+	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
+	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
+	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
+	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
+	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
+	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	OriginID        *uuid.UUID `json:"origin_id,omitempty" binding:"omitempty"`
@@ -277,13 +277,13 @@ type SampleUpdateInput struct {
 
 type SampleUpdateDTO struct {
 	Name            *string
-	CollectionDate  *time.Time
+	CollectionDate  *Date
 	RunNumber       *string
-	RunDate         *time.Time
+	RunDate         *Date
 	City            *string
 	OriginCode      *string
 	Gender          *Gender
-	DateOfBirth     *time.Time
+	DateOfBirth     *Date
 	CountryCode     *string
 	UserID          *uuid.UUID
 	OriginID        *uuid.UUID

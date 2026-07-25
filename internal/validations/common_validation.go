@@ -8,7 +8,7 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 	}
 
 	if input.CollectionDate != nil {
-		sample.CollectionDate = *input.CollectionDate
+		sample.CollectionDate = *models.ToTimePtr(input.CollectionDate)
 	}
 
 	if input.RunNumber != nil {
@@ -16,7 +16,7 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 	}
 
 	if input.RunDate != nil {
-		sample.RunDate = *input.RunDate
+		sample.RunDate = *models.ToTimePtr(input.RunDate)
 	}
 
 	if input.City != nil {
@@ -32,7 +32,7 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 	}
 
 	if input.DateOfBirth != nil {
-		sample.DateOfBirth = input.DateOfBirth
+		sample.DateOfBirth = models.ToTimePtr(input.DateOfBirth)
 	}
 }
 

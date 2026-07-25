@@ -141,13 +141,13 @@ func CreateMockSample() rModels.Sample {
 func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 	return rModels.SampleCreateInput{
 		Name:            sample.Name,
-		CollectionDate:  sample.CollectionDate,
+		CollectionDate:  rModels.Date{Time: sample.CollectionDate},
 		RunNumber:       sample.RunNumber,
-		RunDate:         sample.RunDate,
+		RunDate:         rModels.Date{Time: sample.RunDate},
 		City:            sample.City,
 		OriginCode:      sample.OriginCode,
 		Gender:          sample.Gender,
-		DateOfBirth:     sample.DateOfBirth,
+		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
 		CountryCode:     sample.Country.Code,
 		OriginID:        sample.OriginID,
 		SampleSourceID:  sample.SampleSourceID,
@@ -161,13 +161,13 @@ func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 func NewSampleCreateDTO(sample rModels.Sample) rModels.SampleCreateDTO {
 	return rModels.SampleCreateDTO{
 		Name:            sample.Name,
-		CollectionDate:  sample.CollectionDate,
+		CollectionDate:  rModels.Date{Time: sample.CollectionDate},
 		RunNumber:       sample.RunNumber,
-		RunDate:         sample.RunDate,
+		RunDate:         rModels.Date{Time: sample.RunDate},
 		City:            sample.City,
 		OriginCode:      sample.OriginCode,
 		Gender:          sample.Gender,
-		DateOfBirth:     sample.DateOfBirth,
+		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
 		CountryCode:     sample.Country.Code,
 		UserID:          sample.UserID,
 		OriginID:        sample.OriginID,

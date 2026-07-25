@@ -56,6 +56,32 @@ func Validate[T Model](
 		return responses.GetResponse(localizer, responses.ValidationGeneric),
 			false
 	}
+
+	return validateRequiredDates(model, localizer)
+}
+
+func validateRequiredDates[T Model](
+	model *T, localizer *i18n.Localizer) (string, bool) {
+	switch m := any(*model).(type) {
+	case models.AdminSampleCreateInput:
+		if m.CollectionDate.IsZero() {
+			return responses.GetResponse(localizer,
+				"validation.CollectionDate.required"), false
+		}
+		if m.RunDate.IsZero() {
+			return responses.GetResponse(localizer,
+				"validation.RunDate.required"), false
+		}
+	case models.SampleCreateInput:
+		if m.CollectionDate.IsZero() {
+			return responses.GetResponse(localizer,
+				"validation.CollectionDate.required"), false
+		}
+		if m.RunDate.IsZero() {
+			return responses.GetResponse(localizer,
+				"validation.RunDate.required"), false
+		}
+	}
 	return "", true
 }
 
