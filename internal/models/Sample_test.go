@@ -170,7 +170,7 @@ func TestSampleToResponse(t *testing.T) {
 		Origin:         mockOrigin.Names[language],
 		SampleSource:   mockSampleSource.Names[language],
 		Microorganism:  mockMicro.Species + " " + mockMicro.Variety[language],
-		Sequencer:      mockSequencer.Brand + " - " + mockSequencer.Model,
+		Sequencer:      mockSequencer.Model,
 		Laboratory:     mockLab.Name,
 		HealthService:  mockHealthService.Name,
 	}

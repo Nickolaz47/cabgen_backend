@@ -11,3 +11,4 @@ AGENT.md
 /jsons/m*.json
 /jsons/o*.json
 /jsons/s*.json
+/uploads
