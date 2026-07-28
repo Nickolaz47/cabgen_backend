@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 )
 
 type SelectOptionsService interface {
@@ -14,29 +16,29 @@ type SelectOptionsService interface {
 }
 
 type selectOptionsService struct {
-	laboratoryService    LaboratoryService
-	sequencerService     SequencerService
-	healthServiceService HealthServiceService
-	originService        OriginService
-	microorganismService MicroorganismService
-	sampleSourceService  SampleSourceService
+	laboratoryRepo    repositories.LaboratoryRepository
+	sequencerRepo     repositories.SequencerRepository
+	healthServiceRepo repositories.HealthServiceRepository
+	originRepo        repositories.OriginRepository
+	microorganismRepo repositories.MicroorganismRepository
+	sampleSourceRepo  repositories.SampleSourceRepository
 }
 
 func NewSelectOptionsService(
-	laboratoryService LaboratoryService,
-	sequencerService SequencerService,
-	healthServiceService HealthServiceService,
-	originService OriginService,
-	microorganismService MicroorganismService,
-	sampleSourceService SampleSourceService,
+	laboratoryRepo repositories.LaboratoryRepository,
+	sequencerRepo repositories.SequencerRepository,
+	healthServiceRepo repositories.HealthServiceRepository,
+	originRepo repositories.OriginRepository,
+	microorganismRepo repositories.MicroorganismRepository,
+	sampleSourceRepo repositories.SampleSourceRepository,
 ) SelectOptionsService {
 	return &selectOptionsService{
-		laboratoryService:    laboratoryService,
-		sequencerService:     sequencerService,
-		healthServiceService: healthServiceService,
-		originService:        originService,
-		microorganismService: microorganismService,
-		sampleSourceService:  sampleSourceService,
+		laboratoryRepo:    laboratoryRepo,
+		sequencerRepo:     sequencerRepo,
+		healthServiceRepo: healthServiceRepo,
+		originRepo:        originRepo,
+		microorganismRepo: microorganismRepo,
+		sampleSourceRepo:  sampleSourceRepo,
 	}
 }
 
@@ -91,9 +93,10 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 
 func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	language string) (*models.FormSelectsResponse, error) {
+	language = translation.ParseLanguage(language)
 	resp := &models.FormSelectsResponse{}
 
-	labs, err := s.laboratoryService.FindAllActive(ctx)
+	labs, err := s.laboratoryRepo.GetActiveLaboratories(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +108,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 		}
 	}
 
-	sequencers, err := s.sequencerService.FindAllActive(ctx)
+	sequencers, err := s.sequencerRepo.GetActiveSequencers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +120,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 		}
 	}
 
-	healthServices, err := s.healthServiceService.FindAllActive(ctx)
+	healthServices, err := s.healthServiceRepo.GetActiveHealthServices(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -129,38 +132,38 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 		}
 	}
 
-	origins, err := s.originService.FindAllActive(ctx, language)
+	origins, err := s.originRepo.GetActiveOrigins(ctx)
 	if err != nil {
 		return nil, err
 	}
 	resp.Origins = make([]models.SelectOption, len(origins))
 	for i, origin := range origins {
 		resp.Origins[i] = models.SelectOption{
-			Label: origin.Name,
+			Label: origin.Names[language],
 			Value: origin.ID.String(),
 		}
 	}
 
-	micros, err := s.microorganismService.FindAllActive(ctx, language)
+	micros, err := s.microorganismRepo.GetActiveMicroorganisms(ctx)
 	if err != nil {
 		return nil, err
 	}
 	resp.Microorganisms = make([]models.SelectOption, len(micros))
 	for i, micro := range micros {
 		resp.Microorganisms[i] = models.SelectOption{
-			Label: micro.Species,
+			Label: micro.Species + " " + micro.Variety[language],
 			Value: micro.ID.String(),
 		}
 	}
 
-	sources, err := s.sampleSourceService.FindAllActive(ctx, language)
+	sources, err := s.sampleSourceRepo.GetActiveSampleSources(ctx)
 	if err != nil {
 		return nil, err
 	}
 	resp.SampleSources = make([]models.SelectOption, len(sources))
 	for i, source := range sources {
 		resp.SampleSources[i] = models.SelectOption{
-			Label: source.Name,
+			Label: source.Names[language],
 			Value: source.ID.String(),
 		}
 	}

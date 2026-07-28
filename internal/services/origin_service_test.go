@@ -56,48 +56,6 @@ func TestOriginFindAll(t *testing.T) {
 	})
 }
 
-func TestOriginFindAllActive(t *testing.T) {
-	origin := testmodels.NewOrigin(
-		uuid.New().String(),
-		map[string]string{"pt": "Humano"},
-		true,
-	)
-
-	t.Run("Success", func(t *testing.T) {
-		originRepo := &mocks.MockOriginRepository{
-			GetActiveOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
-				return []models.Origin{origin}, nil
-			},
-		}
-
-		service := services.NewOriginService(originRepo, nil)
-		result, err := service.FindAllActive(context.Background(), "pt")
-
-		assert.NoError(t, err)
-		assert.Equal(t, []models.OriginFormResponse{
-			origin.ToFormResponse("pt"),
-		}, result)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		originRepo := &mocks.MockOriginRepository{
-			GetActiveOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewOriginService(originRepo, mockLogger)
-		result, err := service.FindAllActive(context.Background(), "pt")
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, result)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestOriginFindByID(t *testing.T) {
 	origin := testmodels.NewOrigin(
 		uuid.New().String(),

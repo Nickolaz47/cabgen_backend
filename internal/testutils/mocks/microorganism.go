@@ -76,7 +76,6 @@ func (r *MockMicroorganismRepository) DeleteMicroorganism(ctx context.Context, m
 
 type MockMicroorganismService struct {
 	FindAllFunc       func(ctx context.Context, language string) ([]models.MicroorganismAdminTableResponse, error)
-	FindAllActiveFunc func(ctx context.Context, language string) ([]models.MicroorganismFormResponse, error)
 	FindByIDFunc      func(ctx context.Context, ID uuid.UUID) (*models.MicroorganismAdminDetailResponse, error)
 	FindBySpeciesFunc func(ctx context.Context, species, language string) ([]models.MicroorganismAdminTableResponse, error)
 	CreateFunc        func(ctx context.Context, input models.MicroorganismCreateInput) (*models.MicroorganismAdminDetailResponse, error)
@@ -87,13 +86,6 @@ type MockMicroorganismService struct {
 func (m *MockMicroorganismService) FindAll(ctx context.Context, language string) ([]models.MicroorganismAdminTableResponse, error) {
 	if m.FindAllFunc != nil {
 		return m.FindAllFunc(ctx, language)
-	}
-	return nil, nil
-}
-
-func (m *MockMicroorganismService) FindAllActive(ctx context.Context, language string) ([]models.MicroorganismFormResponse, error) {
-	if m.FindAllActiveFunc != nil {
-		return m.FindAllActiveFunc(ctx, language)
 	}
 	return nil, nil
 }

@@ -61,49 +61,6 @@ func TestSampleSourceFindAll(t *testing.T) {
 	})
 }
 
-func TestSampleSourceFindAllActive(t *testing.T) {
-	sampleSource := testmodels.NewSampleSource(
-		uuid.NewString(),
-		map[string]string{"pt": "Plasma", "en": "Plasma", "es": "Plasma"},
-		map[string]string{"pt": "Sangue", "en": "Blood", "es": "Sangre"},
-		true,
-	)
-
-	t.Run("Success", func(t *testing.T) {
-		sampleSourceRepo := &mocks.MockSampleSourceRepository{
-			GetActiveSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
-				return []models.SampleSource{sampleSource}, nil
-			},
-		}
-
-		service := services.NewSampleSourceService(sampleSourceRepo, nil)
-		expected := []models.SampleSourceFormResponse{sampleSource.ToFormResponse("en")}
-
-		sampleSources, err := service.FindAllActive(context.Background(), "en")
-
-		assert.NoError(t, err)
-		assert.Equal(t, expected, sampleSources)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		sampleSourceRepo := &mocks.MockSampleSourceRepository{
-			GetActiveSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewSampleSourceService(sampleSourceRepo, mockLogger)
-		sampleSources, err := service.FindAllActive(context.Background(), "en")
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, sampleSources)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestSampleSourceFindByID(t *testing.T) {
 	sampleSource := testmodels.NewSampleSource(
 		uuid.NewString(),

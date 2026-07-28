@@ -15,7 +15,6 @@ import (
 
 type LaboratoryService interface {
 	FindAll(ctx context.Context) ([]models.LaboratoryAdminTableResponse, error)
-	FindAllActive(ctx context.Context) ([]models.LaboratoryFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.LaboratoryAdminTableResponse, error)
 	FindByNameOrAbbreviation(ctx context.Context, input string) ([]models.LaboratoryAdminTableResponse, error)
 	Create(ctx context.Context, input models.LaboratoryCreateInput) (*models.LaboratoryAdminTableResponse, error)
@@ -48,24 +47,6 @@ func (s *laboratoryService) FindAll(ctx context.Context) ([]models.LaboratoryAdm
 		tableResponses[i] = lab.ToAdminTableResponse()
 	}
 	return tableResponses, nil
-}
-
-func (s *laboratoryService) FindAllActive(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
-	labs, err := s.Repo.GetActiveLaboratories(ctx)
-
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"LaboratoryService", "FindAllActive", logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	formLabs := make([]models.LaboratoryFormResponse, len(labs))
-	for i, lab := range labs {
-		formLabs[i] = lab.ToFormResponse()
-	}
-
-	return formLabs, nil
 }
 
 func (s *laboratoryService) FindByID(ctx context.Context, ID uuid.UUID) (*models.LaboratoryAdminTableResponse, error) {

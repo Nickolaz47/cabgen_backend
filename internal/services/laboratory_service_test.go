@@ -55,46 +55,6 @@ func TestLaboratoryFindAll(t *testing.T) {
 	})
 }
 
-func TestLaboratoryFindAllActive(t *testing.T) {
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
-
-	t.Run("Success", func(t *testing.T) {
-		labRepo := &mocks.MockLaboratoryRepository{
-			GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
-				return []models.Laboratory{
-					lab,
-				}, nil
-			},
-		}
-
-		service := services.NewLaboratoryService(labRepo, nil)
-		expected := []models.LaboratoryFormResponse{lab.ToFormResponse()}
-
-		labs, err := service.FindAllActive(context.Background())
-
-		assert.NoError(t, err)
-		assert.Equal(t, expected, labs)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		labRepo := &mocks.MockLaboratoryRepository{
-			GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewLaboratoryService(labRepo, mockLogger)
-		labs, err := service.FindAllActive(context.Background())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, labs)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestLaboratoryFindByID(t *testing.T) {
 	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
 

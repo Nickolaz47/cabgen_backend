@@ -16,8 +16,6 @@ import (
 type MicroorganismService interface {
 	FindAll(ctx context.Context, language string) (
 		[]models.MicroorganismAdminTableResponse, error)
-	FindAllActive(ctx context.Context, language string) (
-		[]models.MicroorganismFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (
 		*models.MicroorganismAdminDetailResponse, error)
 	FindBySpecies(ctx context.Context, species, language string) (
@@ -61,26 +59,6 @@ func (s *microorganismService) FindAll(
 		[]models.MicroorganismAdminTableResponse, len(micros))
 	for i, micro := range micros {
 		microResponses[i] = micro.ToAdminTableResponse(language)
-	}
-
-	return microResponses, nil
-}
-
-func (s *microorganismService) FindAllActive(
-	ctx context.Context, language string) (
-	[]models.MicroorganismFormResponse, error) {
-	micros, err := s.Repo.GetActiveMicroorganisms(ctx)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"MicroorganismService", "FindAllActive",
-			logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	microResponses := make([]models.MicroorganismFormResponse, len(micros))
-	for i, micro := range micros {
-		microResponses[i] = micro.ToFormResponse(language)
 	}
 
 	return microResponses, nil

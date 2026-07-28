@@ -84,7 +84,6 @@ func (r *MockSampleSourceRepository) DeleteSampleSource(ctx context.Context, sam
 
 type MockSampleSourceService struct {
 	FindAllFunc           func(ctx context.Context, language string) ([]models.SampleSourceAdminTableResponse, error)
-	FindAllActiveFunc     func(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error)
 	FindByIDFunc          func(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error)
 	FindByNameOrGroupFunc func(ctx context.Context, input, language string) ([]models.SampleSourceAdminTableResponse, error)
 	CreateFunc            func(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error)
@@ -98,16 +97,6 @@ func (m *MockSampleSourceService) FindAll(
 ) ([]models.SampleSourceAdminTableResponse, error) {
 	if m.FindAllFunc != nil {
 		return m.FindAllFunc(ctx, language)
-	}
-	return nil, nil
-}
-
-func (m *MockSampleSourceService) FindAllActive(
-	ctx context.Context,
-	language string,
-) ([]models.SampleSourceFormResponse, error) {
-	if m.FindAllActiveFunc != nil {
-		return m.FindAllActiveFunc(ctx, language)
 	}
 	return nil, nil
 }

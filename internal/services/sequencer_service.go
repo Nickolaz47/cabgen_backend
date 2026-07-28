@@ -15,7 +15,6 @@ import (
 
 type SequencerService interface {
 	FindAll(ctx context.Context) ([]models.SequencerAdminTableResponse, error)
-	FindAllActive(ctx context.Context) ([]models.SequencerFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error)
 	FindByBrandOrModel(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error)
 	Create(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error)
@@ -50,24 +49,6 @@ func (s *sequencerService) FindAll(ctx context.Context) ([]models.SequencerAdmin
 	}
 
 	return tableResponses, nil
-}
-
-func (s *sequencerService) FindAllActive(ctx context.Context) ([]models.SequencerFormResponse, error) {
-	sequencers, err := s.Repo.GetActiveSequencers(ctx)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"SequencerService", "FindAllActive",
-			logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	formSequencers := make([]models.SequencerFormResponse, len(sequencers))
-	for i, sequencer := range sequencers {
-		formSequencers[i] = sequencer.ToFormResponse()
-	}
-
-	return formSequencers, nil
 }
 
 func (s *sequencerService) FindByID(

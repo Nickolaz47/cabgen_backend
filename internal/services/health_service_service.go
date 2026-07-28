@@ -15,7 +15,6 @@ import (
 
 type HealthServiceService interface {
 	FindAll(ctx context.Context) ([]models.HealthServiceAdminTableResponse, error)
-	FindAllActive(ctx context.Context) ([]models.HealthServiceFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.HealthServiceAdminTableResponse, error)
 	FindByName(ctx context.Context, name string) ([]models.HealthServiceAdminTableResponse, error)
 	Create(ctx context.Context, input models.HealthServiceCreateInput) (*models.HealthServiceAdminTableResponse, error)
@@ -56,25 +55,6 @@ func (s *healthServiceService) FindAll(ctx context.Context) (
 	}
 
 	return tableResponses, nil
-}
-
-func (s *healthServiceService) FindAllActive(ctx context.Context) (
-	[]models.HealthServiceFormResponse, error) {
-	healthServices, err := s.Repo.GetActiveHealthServices(ctx)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"HealthServiceService", "FindAllActive", logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	formServices := make([]models.HealthServiceFormResponse,
-		len(healthServices))
-	for i, hs := range healthServices {
-		formServices[i] = hs.ToFormResponse()
-	}
-
-	return formServices, nil
 }
 
 func (s *healthServiceService) FindByID(ctx context.Context, ID uuid.UUID) (

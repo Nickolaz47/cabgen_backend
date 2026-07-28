@@ -15,7 +15,6 @@ import (
 
 type OriginService interface {
 	FindAll(ctx context.Context, language string) ([]models.OriginAdminTableResponse, error)
-	FindAllActive(ctx context.Context, language string) ([]models.OriginFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error)
 	FindByName(ctx context.Context, name, language string) ([]models.OriginAdminTableResponse, error)
 	Create(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error)
@@ -50,24 +49,6 @@ func (s *originService) FindAll(ctx context.Context, language string) ([]models.
 	}
 
 	return tableResponses, nil
-}
-
-func (s *originService) FindAllActive(ctx context.Context, language string) ([]models.OriginFormResponse, error) {
-	origins, err := s.Repo.GetActiveOrigins(ctx)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"OriginService", "FindAllActive",
-			logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	formOrigins := make([]models.OriginFormResponse, len(origins))
-	for i, origin := range origins {
-		formOrigins[i] = origin.ToFormResponse(language)
-	}
-
-	return formOrigins, nil
 }
 
 func (s *originService) FindByID(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error) {

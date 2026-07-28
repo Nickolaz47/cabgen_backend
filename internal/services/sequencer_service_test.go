@@ -52,43 +52,6 @@ func TestSequencerFindAll(t *testing.T) {
 	})
 }
 
-func TestSequencerFindAllActive(t *testing.T) {
-	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
-
-	t.Run("Success", func(t *testing.T) {
-		seqRepo := &mocks.MockSequencerRepository{
-			GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return []models.Sequencer{sequencer}, nil
-			},
-		}
-		service := services.NewSequencerService(seqRepo, nil)
-
-		expected := []models.SequencerFormResponse{sequencer.ToFormResponse()}
-		sequencers, err := service.FindAllActive(context.Background())
-
-		assert.NoError(t, err)
-		assert.Equal(t, expected, sequencers)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		seqRepo := &mocks.MockSequencerRepository{
-			GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewSequencerService(seqRepo, mockLogger)
-		sequencers, err := service.FindAllActive(context.Background())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, sequencers)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestSequencerFindByID(t *testing.T) {
 	sequencer := testmodels.NewSequencer(uuid.NewString(), "Illumina", "MiSeq", true)
 

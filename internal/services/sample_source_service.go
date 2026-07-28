@@ -15,7 +15,6 @@ import (
 
 type SampleSourceService interface {
 	FindAll(ctx context.Context, language string) ([]models.SampleSourceAdminTableResponse, error)
-	FindAllActive(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error)
 	FindByNameOrGroup(ctx context.Context, input, language string) ([]models.SampleSourceAdminTableResponse, error)
 	Create(ctx context.Context, input models.SampleSourceCreateInput) (*models.SampleSourceAdminDetailResponse, error)
@@ -48,24 +47,6 @@ func (s *sampleSourceService) FindAll(ctx context.Context, language string) ([]m
 		tableResponses[i] = sample.ToAdminTableResponse(language)
 	}
 	return tableResponses, nil
-}
-
-func (s *sampleSourceService) FindAllActive(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error) {
-	sampleSources, err := s.Repo.GetActiveSampleSources(ctx)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"SampleSourceService", "FindAllActive",
-			logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	formSampleSources := make([]models.SampleSourceFormResponse, len(sampleSources))
-	for i, sample := range sampleSources {
-		formSampleSources[i] = sample.ToFormResponse(language)
-	}
-
-	return formSampleSources, nil
 }
 
 func (s *sampleSourceService) FindByID(ctx context.Context, ID uuid.UUID) (*models.SampleSourceAdminDetailResponse, error) {

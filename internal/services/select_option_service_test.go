@@ -57,45 +57,45 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 	microID := uuid.New()
 	sourceID := uuid.New()
 
-	labSvc := &mocks.MockLaboratoryService{
-		FindAllActiveFunc: func(ctx context.Context) ([]models.LaboratoryFormResponse, error) {
-			return []models.LaboratoryFormResponse{
+	labRepo := &mocks.MockLaboratoryRepository{
+		GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
+			return []models.Laboratory{
 				{ID: labID, Name: "LACEN/RJ"},
 			}, nil
 		},
 	}
-	seqSvc := &mocks.MockSequencerService{
-		FindAllActiveFunc: func(ctx context.Context) ([]models.SequencerFormResponse, error) {
-			return []models.SequencerFormResponse{
+	seqRepo := &mocks.MockSequencerRepository{
+		GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
+			return []models.Sequencer{
 				{ID: seqID, Model: "MiSeq"},
 			}, nil
 		},
 	}
-	hsSvc := &mocks.MockHealthServiceService{
-		FindAllActiveFunc: func(ctx context.Context) ([]models.HealthServiceFormResponse, error) {
-			return []models.HealthServiceFormResponse{
+	hsRepo := &mocks.MockHealthServiceRepository{
+		GetActiveHealthServicesFunc: func(ctx context.Context) ([]models.HealthService, error) {
+			return []models.HealthService{
 				{ID: hsID, Name: "Hospital Central"},
 			}, nil
 		},
 	}
-	originSvc := &mocks.MockOriginService{
-		FindAllActiveFunc: func(ctx context.Context, language string) ([]models.OriginFormResponse, error) {
-			return []models.OriginFormResponse{
-				{ID: originID, Name: "Humano"},
+	originRepo := &mocks.MockOriginRepository{
+		GetActiveOriginsFunc: func(ctx context.Context) ([]models.Origin, error) {
+			return []models.Origin{
+				{ID: originID, Names: models.JSONMap{"en": "Human", "pt": "Humano"}},
 			}, nil
 		},
 	}
-	microSvc := &mocks.MockMicroorganismService{
-		FindAllActiveFunc: func(ctx context.Context, language string) ([]models.MicroorganismFormResponse, error) {
-			return []models.MicroorganismFormResponse{
-				{ID: microID, Species: "Escherichia coli"},
+	microRepo := &mocks.MockMicroorganismRepository{
+		GetActiveMicroorganismsFunc: func(ctx context.Context) ([]models.Microorganism, error) {
+			return []models.Microorganism{
+				{ID: microID, Species: "Escherichia coli", Variety: models.JSONMap{"en": "", "pt": ""}},
 			}, nil
 		},
 	}
-	sourceSvc := &mocks.MockSampleSourceService{
-		FindAllActiveFunc: func(ctx context.Context, language string) ([]models.SampleSourceFormResponse, error) {
-			return []models.SampleSourceFormResponse{
-				{ID: sourceID, Name: "Aspirado"},
+	sourceRepo := &mocks.MockSampleSourceRepository{
+		GetActiveSampleSourcesFunc: func(ctx context.Context) ([]models.SampleSource, error) {
+			return []models.SampleSource{
+				{ID: sourceID, Names: models.JSONMap{"en": "Aspirated", "pt": "Aspirado"}},
 			}, nil
 		},
 	}
@@ -114,7 +114,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 			{Label: "Humano", Value: originID.String()},
 		},
 		Microorganisms: []models.SelectOption{
-			{Label: "Escherichia coli", Value: microID.String()},
+			{Label: "Escherichia coli ", Value: microID.String()},
 		},
 		SampleSources: []models.SelectOption{
 			{Label: "Aspirado", Value: sourceID.String()},
@@ -123,7 +123,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := services.NewSelectOptionsService(
-			labSvc, seqSvc, hsSvc, originSvc, microSvc, sourceSvc)
+			labRepo, seqRepo, hsRepo, originRepo, microRepo, sourceRepo)
 
 		result, err := svc.FindAllFormSelects(context.Background(), "pt")
 

@@ -62,50 +62,6 @@ func TestMicroorganismFindAll(t *testing.T) {
 	})
 }
 
-func TestMicroorganismFindAllActive(t *testing.T) {
-	micro := testmodels.NewMicroorganism(
-		uuid.NewString(),
-		models.Bacteria,
-		"Neisseria meningitidis",
-		map[string]string{"pt": "Sorogrupo B", "en": "Serogroup B", "es": "Serogrupo B"},
-		true,
-	)
-
-	t.Run("Success", func(t *testing.T) {
-		microRepo := &mocks.MockMicroorganismRepository{
-			GetActiveMicroorganismsFunc: func(ctx context.Context) ([]models.Microorganism, error) {
-				return []models.Microorganism{micro}, nil
-			},
-		}
-
-		service := services.NewMicroorganismService(microRepo, nil)
-		expected := []models.MicroorganismFormResponse{micro.ToFormResponse("en")}
-
-		micros, err := service.FindAllActive(context.Background(), "en")
-
-		assert.NoError(t, err)
-		assert.Equal(t, expected, micros)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		microRepo := &mocks.MockMicroorganismRepository{
-			GetActiveMicroorganismsFunc: func(ctx context.Context) ([]models.Microorganism, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewMicroorganismService(microRepo, mockLogger)
-		micros, err := service.FindAllActive(context.Background(), "en")
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, micros)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestMicroorganismFindByID(t *testing.T) {
 	micro := testmodels.NewMicroorganism(
 		uuid.NewString(),

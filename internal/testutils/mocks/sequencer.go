@@ -76,7 +76,6 @@ func (s *MockSequencerRepository) DeleteSequencer(ctx context.Context, sequencer
 
 type MockSequencerService struct {
 	FindAllFunc            func(ctx context.Context) ([]models.SequencerAdminTableResponse, error)
-	FindAllActiveFunc      func(ctx context.Context) ([]models.SequencerFormResponse, error)
 	FindByIDFunc           func(ctx context.Context, ID uuid.UUID) (*models.SequencerAdminTableResponse, error)
 	FindByBrandOrModelFunc func(ctx context.Context, input string) ([]models.SequencerAdminTableResponse, error)
 	CreateFunc             func(ctx context.Context, input models.SequencerCreateInput) (*models.SequencerAdminTableResponse, error)
@@ -87,13 +86,6 @@ type MockSequencerService struct {
 func (s *MockSequencerService) FindAll(ctx context.Context) ([]models.SequencerAdminTableResponse, error) {
 	if s.FindAllFunc != nil {
 		return s.FindAllFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (s *MockSequencerService) FindAllActive(ctx context.Context) ([]models.SequencerFormResponse, error) {
-	if s.FindAllActiveFunc != nil {
-		return s.FindAllActiveFunc(ctx)
 	}
 	return nil, nil
 }

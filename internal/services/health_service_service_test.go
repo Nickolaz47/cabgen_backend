@@ -61,51 +61,6 @@ func TestHealthServiceFindAll(t *testing.T) {
 	})
 }
 
-func TestHealthServiceFindAllActive(t *testing.T) {
-	country := testmodels.NewCountry("BRA", nil)
-	healthService := testmodels.NewHealthService(
-		uuid.NewString(), "Hospital A", models.Public, country,
-		"Rio de Janeiro", "John Doe", "john@example.com", "123456789",
-		true,
-	)
-
-	t.Run("Success", func(t *testing.T) {
-		repo := &mocks.MockHealthServiceRepository{
-			GetActiveHealthServicesFunc: func(ctx context.Context) (
-				[]models.HealthService, error) {
-				return []models.HealthService{healthService}, nil
-			},
-		}
-		service := services.NewHealthServiceService(repo, nil, nil)
-
-		expected := []models.HealthServiceFormResponse{
-			healthService.ToFormResponse(),
-		}
-		healthServices, err := service.FindAllActive(context.Background())
-
-		assert.NoError(t, err)
-		assert.Equal(t, expected, healthServices)
-	})
-
-	t.Run("Error", func(t *testing.T) {
-		repo := &mocks.MockHealthServiceRepository{
-			GetActiveHealthServicesFunc: func(ctx context.Context) ([]models.HealthService, error) {
-				return nil, gorm.ErrInvalidTransaction
-			},
-		}
-
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-
-		service := services.NewHealthServiceService(repo, nil, mockLogger)
-		healthServices, err := service.FindAllActive(context.Background())
-
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, services.ErrInternal)
-		assert.Empty(t, healthServices)
-		assert.Equal(t, 1, logs.Len())
-	})
-}
-
 func TestHealthServiceFindByID(t *testing.T) {
 	country := testmodels.NewCountry("BRA", nil)
 	healthService := testmodels.NewHealthService(

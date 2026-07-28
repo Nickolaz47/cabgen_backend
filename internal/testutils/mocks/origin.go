@@ -76,7 +76,6 @@ func (r *MockOriginRepository) DeleteOrigin(ctx context.Context, origin *models.
 
 type MockOriginService struct {
 	FindAllFunc       func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error)
-	FindAllActiveFunc func(ctx context.Context, lang string) ([]models.OriginFormResponse, error)
 	FindByIDFunc      func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error)
 	FindByNameFunc    func(ctx context.Context, name, lang string) ([]models.OriginAdminTableResponse, error)
 	CreateFunc        func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error)
@@ -87,13 +86,6 @@ type MockOriginService struct {
 func (m *MockOriginService) FindAll(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
 	if m.FindAllFunc != nil {
 		return m.FindAllFunc(ctx, lang)
-	}
-	return nil, nil
-}
-
-func (m *MockOriginService) FindAllActive(ctx context.Context, lang string) ([]models.OriginFormResponse, error) {
-	if m.FindAllActiveFunc != nil {
-		return m.FindAllActiveFunc(ctx, lang)
 	}
 	return nil, nil
 }

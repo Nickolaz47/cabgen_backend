@@ -19,7 +19,6 @@ type SequencerAdminTableResponse struct {
 type SequencerFormResponse struct {
 	ID    uuid.UUID `json:"id"`
 	Model string    `json:"model"`
-	Brand string    `json:"brand"`
 }
 
 func (s *Sequencer) ToAdminTableResponse() SequencerAdminTableResponse {
@@ -35,7 +34,6 @@ func (s *Sequencer) ToFormResponse() SequencerFormResponse {
 	return SequencerFormResponse{
 		ID:    s.ID,
 		Model: s.Model,
-		Brand: s.Brand,
 	}
 }
 

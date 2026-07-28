@@ -84,7 +84,6 @@ func (r *MockLaboratoryRepository) DeleteLaboratory(ctx context.Context, lab *mo
 
 type MockLaboratoryService struct {
 	FindAllFunc                  func(ctx context.Context) ([]models.LaboratoryAdminTableResponse, error)
-	FindAllActiveFunc            func(ctx context.Context) ([]models.LaboratoryFormResponse, error)
 	FindByIDFunc                 func(ctx context.Context, ID uuid.UUID) (*models.LaboratoryAdminTableResponse, error)
 	FindByNameOrAbbreviationFunc func(ctx context.Context, input string) ([]models.LaboratoryAdminTableResponse, error)
 	CreateFunc                   func(ctx context.Context, input models.LaboratoryCreateInput) (*models.LaboratoryAdminTableResponse, error)
@@ -97,15 +96,6 @@ func (m *MockLaboratoryService) FindAll(
 ) ([]models.LaboratoryAdminTableResponse, error) {
 	if m.FindAllFunc != nil {
 		return m.FindAllFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (m *MockLaboratoryService) FindAllActive(
-	ctx context.Context,
-) ([]models.LaboratoryFormResponse, error) {
-	if m.FindAllActiveFunc != nil {
-		return m.FindAllActiveFunc(ctx)
 	}
 	return nil, nil
 }

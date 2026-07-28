@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue"
+	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/admin"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/common"
 	"github.com/CABGenOrg/cabgen_backend/internal/routes/public"
@@ -150,13 +151,20 @@ func main() {
 	userHandler := container.BuildUserHandler(userSvc)
 	sampleHandler := container.BuildSampleHandler(sampleSvc)
 	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
+
+	labRepo := repositories.NewLaboratoryRepo(mainDB.DB())
+	seqRepo := repositories.NewSequencerRepo(mainDB.DB())
+	hsRepo := repositories.NewHealthServiceRepo(mainDB.DB())
+	originRepo := repositories.NewOriginRepo(mainDB.DB())
+	microRepo := repositories.NewMicroorganismRepository(mainDB.DB())
+	ssRepo := repositories.NewSampleSourceRepo(mainDB.DB())
 	selectOptionHandler := container.BuildSelectOptionHandler(
-		labSvc,
-		sequencerSvc,
-		healthServiceSvc,
-		originSvc,
-		microSvc,
-		sampleSourceSvc,
+		labRepo,
+		seqRepo,
+		hsRepo,
+		originRepo,
+		microRepo,
+		ssRepo,
 	)
 	cityHandler := container.BuildCityHandler()
 
