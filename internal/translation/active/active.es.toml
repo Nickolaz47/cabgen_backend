@@ -592,3 +592,9 @@ other = """
 <p>Si el problema persiste o tiene nuevas dudas, no dude en abrir un nuevo ticket en nuestro sitio web.</p>
 <p>Atentamente,<br><strong>Equipo CABGen</strong></p>
 </div>"""
+
+[user.updatePassword.success]
+other = "Contraseña actualizada correctamente."
+
+[user.updatePassword.currentPasswordMismatch.error]
+other = "La contraseña actual es incorrecta."

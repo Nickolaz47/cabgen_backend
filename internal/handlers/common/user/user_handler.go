@@ -113,3 +113,37 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 			localizer, responses.UserSelfDeleted)},
 	)
 }
+
+func (h *UserHandler) UpdatePassword(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	userToken, ok := validations.GetUserTokenFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer,
+				responses.UnauthorizedError)})
+		return
+	}
+
+	var input models.UpdatePasswordInput
+	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	if err := h.Service.UpdatePassword(c.Request.Context(),
+		userToken.ID, input); err != nil {
+		code, errMsg := handlererrors.HandleUserError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
+		return
+	}
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{Message: responses.GetResponse(
+			localizer, responses.UpdatePasswordSuccess)},
+	)
+}

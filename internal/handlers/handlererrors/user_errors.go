@@ -18,6 +18,8 @@ func HandleUserError(err error) (int, string) {
 		return http.StatusNotFound, responses.UserNotFoundError
 	case errors.Is(err, services.ErrInvalidCountryCode):
 		return http.StatusNotFound, responses.CountryNotFoundError
+	case errors.Is(err, services.ErrCurrentPasswordMismatch):
+		return http.StatusBadRequest, responses.CurrentPasswordMismatchError
 	default:
 		return http.StatusInternalServerError, responses.GenericInternalServerError
 	}

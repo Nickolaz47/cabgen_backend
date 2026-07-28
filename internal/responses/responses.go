@@ -94,6 +94,8 @@ const (
 	TicketDeleteInProgressError               = "ticket.deleteInProgress.error"
 	TicketAlreadyResolvedError                = "ticket.alreadyResolved.error"
 	TickedIsNotOpenError                      = "ticket.isNotOpen.error"
+	UpdatePasswordSuccess                     = "user.updatePassword.success"
+	CurrentPasswordMismatchError              = "user.updatePassword.currentPasswordMismatch.error"
 )
 
 type APIResponse struct {

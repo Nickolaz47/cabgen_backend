@@ -303,6 +303,7 @@ Endpoints are organized into three access levels:
 | --- | --- | --- |
 | GET | `/api/users/me` | Authenticated user data |
 | PUT | `/api/users/me` | Updates authenticated user data |
+| POST | `/api/users/me/update-password` | Updates the authenticated user's password |
 | DELETE | `/api/users/me` | Deletes the authenticated user's account |
 
 #### Sample

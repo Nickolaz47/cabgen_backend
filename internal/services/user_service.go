@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -21,11 +22,13 @@ type UserService interface {
 	FindByID(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error)
 	Update(ctx context.Context, ID uuid.UUID, input models.UserUpdateInput, language string) (*models.UserResponse, error)
 	Delete(ctx context.Context, ID uuid.UUID) error
+	UpdatePassword(ctx context.Context, ID uuid.UUID, input models.UpdatePasswordInput) error
 }
 
 type userService struct {
 	Repo        repositories.UserRepository
 	CountryRepo repositories.CountryRepository
+	Hasher      security.PasswordHasher
 	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
 	RootDir     string
@@ -34,6 +37,7 @@ type userService struct {
 func NewUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
+	hasher security.PasswordHasher,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 	rootDir string,
@@ -41,6 +45,7 @@ func NewUserService(
 	return &userService{
 		Repo:        repo,
 		CountryRepo: countryRepo,
+		Hasher:      hasher,
 		AsynqClient: asynqClient,
 		Logger:      logger,
 		RootDir:     rootDir,
@@ -186,6 +191,50 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 			_, _ = s.AsynqClient.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueEmail))
 		}
+	}
+
+	return nil
+}
+
+func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
+	input models.UpdatePasswordInput) error {
+	user, err := s.Repo.GetUserByID(ctx, ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"UserService", "UpdatePassword",
+				logging.DatabaseNotFoundError, err,
+			)...)
+			return ErrNotFound
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "UpdatePassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if err := s.Hasher.CheckPassword(user.Password,
+		input.CurrentPassword); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "UpdatePassword", logging.HasherError, err,
+		)...)
+		return ErrCurrentPasswordMismatch
+	}
+
+	hashedPassword, err := s.Hasher.Hash(input.NewPassword)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "UpdatePassword", logging.HasherError, err,
+		)...)
+		return ErrInternal
+	}
+
+	user.Password = hashedPassword
+	if err := s.Repo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "UpdatePassword", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
 	}
 
 	return nil

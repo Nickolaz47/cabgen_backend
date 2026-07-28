@@ -314,6 +314,7 @@ Os endpoints estão organizados em três níveis de acesso:
 | --- | --- | --- |
 | GET | `/api/users/me` | Dados do usuário autenticado |
 | PUT | `/api/users/me` | Atualiza dados do usuário |
+| POST | `/api/users/me/update-password` | Atualiza a senha do usuário autenticado |
 | DELETE | `/api/users/me` | Deleta a conta do usuário autenticado |
 
 #### Amostra

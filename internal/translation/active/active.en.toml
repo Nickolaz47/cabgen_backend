@@ -508,6 +508,12 @@ other = "Portuguese"
 [option.language.es]
 other = "Spanish"
 
+[user.updatePassword.success]
+other = "Password updated successfully."
+
+[user.updatePassword.currentPasswordMismatch.error]
+other = "The current password is incorrect."
+
 [email.user_deleted.subject]
 other = "CABGen - Your account has been deleted"
 

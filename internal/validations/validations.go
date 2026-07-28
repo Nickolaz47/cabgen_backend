@@ -27,7 +27,7 @@ type Model interface {
 		models.AnalysisCreateInput | models.AdminAnalysisCreateInput |
 		models.AdminAnalysisUpdateInput | models.AnalysisTSVDownloadInput |
 		models.CreateTicketInput | models.ForgotPasswordInput |
-		models.ResetPasswordInput
+		models.ResetPasswordInput | models.UpdatePasswordInput
 }
 
 func Validate[T Model](
