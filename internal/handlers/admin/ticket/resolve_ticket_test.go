@@ -33,10 +33,10 @@ func TestResolveTicket(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			ResolveFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.TicketResponse, error) {
-				return &mockResponse, nil
-			},
+		ResolveFunc: func(ctx context.Context, id uuid.UUID) (
+			*models.TicketResponse, error) {
+			return &mockResponse, nil
+		},
 		}
 
 		handler := ticket.NewAdminTicketHandler(svc)
@@ -76,10 +76,10 @@ func TestResolveTicket(t *testing.T) {
 
 	t.Run("Error - Ticket Already Resolved", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			ResolveFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.TicketResponse, error) {
-				return nil, services.ErrTicketAlreadyResolvedStatus
-			},
+		ResolveFunc: func(ctx context.Context, id uuid.UUID) (
+			*models.TicketResponse, error) {
+			return nil, services.ErrTicketAlreadyResolvedStatus
+		},
 		}
 		handler := ticket.NewAdminTicketHandler(svc)
 
@@ -101,10 +101,10 @@ func TestResolveTicket(t *testing.T) {
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			ResolveFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.TicketResponse, error) {
-				return nil, services.ErrNotFound
-			},
+		ResolveFunc: func(ctx context.Context, id uuid.UUID) (
+			*models.TicketResponse, error) {
+			return nil, services.ErrNotFound
+		},
 		}
 		handler := ticket.NewAdminTicketHandler(svc)
 
@@ -126,10 +126,10 @@ func TestResolveTicket(t *testing.T) {
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			ResolveFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.TicketResponse, error) {
-				return nil, services.ErrInternal
-			},
+		ResolveFunc: func(ctx context.Context, id uuid.UUID) (
+			*models.TicketResponse, error) {
+			return nil, services.ErrInternal
+		},
 		}
 		handler := ticket.NewAdminTicketHandler(svc)
 

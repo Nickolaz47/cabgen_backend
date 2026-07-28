@@ -15,6 +15,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -147,6 +148,7 @@ func (s *authService) Register(
 		Password:    hashedPassword,
 		CountryID:   country.ID,
 		UserRole:    models.Collaborator,
+		Language:    translation.ParseLanguage(language),
 		Interest:    input.Interest,
 		Role:        input.Role,
 		Institution: input.Institution,

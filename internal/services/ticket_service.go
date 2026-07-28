@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
@@ -17,7 +18,7 @@ import (
 type TicketService interface {
 	FindAll(ctx context.Context, status string) ([]models.TicketResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.TicketResponse, error)
-	Create(ctx context.Context, input models.CreateTicketInput) (
+	Create(ctx context.Context, input models.CreateTicketInput, language string) (
 		*models.TicketResponse, error)
 	Assign(ctx context.Context, ticketID uuid.UUID, adminID uuid.UUID) (
 		*models.TicketResponse, error)
@@ -84,7 +85,7 @@ func (s *ticketService) FindByID(ctx context.Context, ID uuid.UUID) (
 }
 
 func (s *ticketService) Create(ctx context.Context,
-	input models.CreateTicketInput) (*models.TicketResponse, error) {
+	input models.CreateTicketInput, language string) (*models.TicketResponse, error) {
 	ticket := models.Ticket{
 		Name:        input.Name,
 		Email:       input.Email,
@@ -92,6 +93,7 @@ func (s *ticketService) Create(ctx context.Context,
 		Subject:     input.Subject,
 		Message:     input.Message,
 		Status:      models.TicketStatusOpen,
+		Language:    translation.ParseLanguage(language),
 	}
 
 	if err := s.Repo.CreateTicket(ctx, &ticket); err != nil {

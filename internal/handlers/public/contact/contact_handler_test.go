@@ -33,7 +33,7 @@ func TestCreateTicket(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			CreateFunc: func(ctx context.Context, input models.CreateTicketInput) (
+			CreateFunc: func(ctx context.Context, input models.CreateTicketInput, language string) (
 				*models.TicketResponse, error) {
 				return &mockResponse, nil
 			},
@@ -81,7 +81,7 @@ func TestCreateTicket(t *testing.T) {
 
 	t.Run("Error - Internal Server Error", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			CreateFunc: func(ctx context.Context, input models.CreateTicketInput) (
+			CreateFunc: func(ctx context.Context, input models.CreateTicketInput, language string) (
 				*models.TicketResponse, error) {
 				return nil, services.ErrInternal
 			},

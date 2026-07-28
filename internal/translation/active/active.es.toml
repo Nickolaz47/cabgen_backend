@@ -498,3 +498,97 @@ other = "El mensaje debe tener al menos {{.Param}} caracteres."
 
 [validation.Message.max]
 other = "El mensaje debe tener un máximo de {{.Param}} caracteres."
+
+[option.language.en]
+other = "Inglés"
+
+[option.language.pt]
+other = "Portugués"
+
+[option.language.es]
+other = "Español"
+
+[email.user_deleted.subject]
+other = "CABGen - Su cuenta ha sido eliminada"
+
+[email.user_deleted.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Cuenta Eliminada - CABGen</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>Su cuenta en el sistema CABGen ha sido eliminada exitosamente.</p>
+<p>Todos sus datos, incluyendo muestras y análisis, han sido eliminados permanentemente.</p>
+<p>Si esta no fue su acción, por favor contacte al soporte inmediatamente.</p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""
+
+[email.welcome.subject]
+other = "CABGen - ¡Su cuenta ha sido activada!"
+
+[email.welcome.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Bienvenido a CABGen!</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>Su cuenta en el sistema CABGen ha sido activada por un administrador.</p>
+<p>Ahora puede iniciar sesión y comenzar a analizar sus muestras.</p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""
+
+[email.password_reset.subject]
+other = "CABGen - Restablecimiento de Contraseña"
+
+[email.password_reset.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Restablecimiento de Contraseña - CABGen</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>Recibimos una solicitud para restablecer la contraseña de su cuenta en el sistema CABGen.</p>
+<p>Si usted no realizó esta solicitud, por favor ignore este correo. Su contraseña permanecerá igual.</p>
+<p>Para crear una nueva contraseña, haga clic en el botón de abajo (este enlace expira en 15 minutos):</p>
+<br>
+<a href="{{.ResetLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer Mi Contraseña</a>
+<br><br>
+<p><small>O copie y pegue el siguiente enlace en su navegador:</small><br>
+<small><a href="{{.ResetLink}}">{{.ResetLink}}</a></small></p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""
+
+[email.analysis_done.subject]
+other = "CABGen - Análisis Finalizado"
+
+[email.analysis_done.status_done]
+other = "se completó exitosamente"
+
+[email.analysis_done.status_failed]
+other = "encontró un error durante el procesamiento"
+
+[email.analysis_done.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Análisis Finalizado - CABGen</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>El análisis de su muestra <strong>{{.SampleName}}</strong> {{.StatusText}}.</p>
+<p>Acceda al sistema para ver los resultados detallados.</p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""
+
+[email.finished_ticket.subject]
+other = "CABGen - Ticket Resuelto: {{.Subject}}"
+
+[email.finished_ticket.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Actualización de su Ticket de Soporte - CABGen</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>Su ticket de soporte referente al asunto "<strong>{{.Subject}}</strong>" ha sido revisado y marcado como <strong>Resuelto</strong> por nuestro equipo.</p>
+<hr>
+<p><small><strong>Recordatorio de su mensaje original:</strong><br>{{.Message}}</small></p>
+<br>
+<p>Si el problema persiste o tiene nuevas dudas, no dude en abrir un nuevo ticket en nuestro sitio web.</p>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""

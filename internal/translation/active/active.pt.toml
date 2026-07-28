@@ -498,3 +498,97 @@ other = "A mensagem deve ter pelo menos {{.Param}} caracteres."
 
 [validation.Message.max]
 other = "A mensagem deve ter no máximo {{.Param}} caracteres."
+
+[option.language.en]
+other = "Inglês"
+
+[option.language.pt]
+other = "Português"
+
+[option.language.es]
+other = "Espanhol"
+
+[email.user_deleted.subject]
+other = "CABGen - Sua conta foi excluída"
+
+[email.user_deleted.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Conta Excluída - CABGen</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>Sua conta no sistema CABGen foi excluída com sucesso.</p>
+<p>Todos os seus dados, incluindo amostras e análises, foram removidos permanentemente.</p>
+<p>Se esta não foi uma ação sua, entre em contato com o suporte imediatamente.</p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
+
+[email.welcome.subject]
+other = "CABGen - Sua conta foi ativada!"
+
+[email.welcome.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Bem-vindo ao CABGen!</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>Sua conta no sistema CABGen acaba de ser ativada por um administrador.</p>
+<p>Você já pode realizar o login e começar a analisar suas amostras.</p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
+
+[email.password_reset.subject]
+other = "CABGen - Redefinição de Senha"
+
+[email.password_reset.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Redefinição de Senha - CABGen</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>Recebemos uma solicitação para redefinir a senha da sua conta no sistema CABGen.</p>
+<p>Se você não fez essa solicitação, por favor ignore este e-mail. Sua senha permanecerá a mesma.</p>
+<p>Para criar uma nova senha, clique no botão abaixo (este link expira em 15 minutos):</p>
+<br>
+<a href="{{.ResetLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Redefinir Minha Senha</a>
+<br><br>
+<p><small>Ou copie e cole o seguinte link no seu navegador:</small><br>
+<small><a href="{{.ResetLink}}">{{.ResetLink}}</a></small></p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
+
+[email.analysis_done.subject]
+other = "CABGen - Análise Finalizada"
+
+[email.analysis_done.status_done]
+other = "foi finalizada com sucesso"
+
+[email.analysis_done.status_failed]
+other = "encontrou um erro durante o processamento"
+
+[email.analysis_done.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Análise Finalizada - CABGen</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>A análise da sua amostra <strong>{{.SampleName}}</strong> {{.StatusText}}.</p>
+<p>Acesse o sistema para verificar os resultados detalhados.</p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
+
+[email.finished_ticket.subject]
+other = "CABGen - Ticket Resolvido: {{.Subject}}"
+
+[email.finished_ticket.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Atualização do seu Ticket de Suporte - CABGen</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>O seu chamado referente ao assunto "<strong>{{.Subject}}</strong>" foi analisado e marcado como <strong>Resolvido</strong> pela nossa equipe.</p>
+<hr>
+<p><small><strong>Lembrete da sua mensagem original:</strong><br>{{.Message}}</small></p>
+<br>
+<p>Se o problema persistir ou se você tiver novas dúvidas, sinta-se à vontade para abrir um novo ticket em nosso site.</p>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""

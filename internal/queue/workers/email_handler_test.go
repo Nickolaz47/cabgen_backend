@@ -397,4 +397,3 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 		assert.EqualError(t, err, "smtp timeout")
 	})
 }
-

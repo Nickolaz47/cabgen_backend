@@ -9,7 +9,9 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
 )
 
@@ -45,6 +47,18 @@ func NewEmailService(
 		EmailSender:  emailSender,
 		Logger:       logger,
 	}
+}
+
+func (s *emailService) getLocalizer(language string) *i18n.Localizer {
+	return i18n.NewLocalizer(translation.Bundle, language)
+}
+
+func (s *emailService) localize(localizer *i18n.Localizer, messageID string, data map[string]interface{}) string {
+	cfg := &i18n.LocalizeConfig{MessageID: messageID}
+	if data != nil {
+		cfg.TemplateData = data
+	}
+	return localizer.MustLocalize(cfg)
 }
 
 func (s *emailService) SendAdminAlertEmail(ctx context.Context,
@@ -111,17 +125,16 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 		return fmt.Errorf("Failed to fetch user: %v", err)
 	}
 
-	body := fmt.Sprintf(`
-	Olá, %s!
-	<p>Sua conta no CABGen acaba de ser ativada por um administrador.</p>
-	<p>Você já pode realizar o login e começar a analisar suas amostras.</p>
-	<br>Equipe CABGen.
-	`, user.Name)
+	localizer := s.getLocalizer(user.Language)
+	subject := s.localize(localizer, "email.welcome.subject", nil)
+	body := s.localize(localizer, "email.welcome.body", map[string]interface{}{
+		"Name": user.Name,
+	})
 
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: user.Email,
-		Subject:   "Sua conta CABGen foi ativada!",
+		Subject:   subject,
 		Body:      body,
 	}
 
@@ -147,22 +160,24 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 		return fmt.Errorf("Failed to fetch analysis: %v", err)
 	}
 
-	statusText := "foi finalizada com sucesso"
+	localizer := s.getLocalizer(analysis.User.Language)
+	subject := s.localize(localizer, "email.analysis_done.subject", nil)
+
+	statusText := s.localize(localizer, "email.analysis_done.status_done", nil)
 	if analysis.Status == models.AnalysisStatusFailed {
-		statusText = "encontrou um erro durante o processamento"
+		statusText = s.localize(localizer, "email.analysis_done.status_failed", nil)
 	}
 
-	body := fmt.Sprintf(`
-	Olá, %s!
-	<p>A análise da sua amostra <strong>%s</strong> %s.</p>
-	<p>Acesse o sistema para verificar os resultados detalhados.</p>
-	<br>Equipe CABGen.
-	`, analysis.User.Name, analysis.Sample.Name, statusText)
+	body := s.localize(localizer, "email.analysis_done.body", map[string]interface{}{
+		"Name":       analysis.User.Name,
+		"SampleName": analysis.Sample.Name,
+		"StatusText": statusText,
+	})
 
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: analysis.User.Email,
-		Subject:   "CABGen - Análise Finalizada",
+		Subject:   subject,
 		Body:      body,
 	}
 
@@ -249,21 +264,20 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 		return fmt.Errorf("Failed to fetch ticket: %v", err)
 	}
 
-	body := fmt.Sprintf(`
-    <h2>Atualização do seu Ticket de Suporte CABGen</h2>
-    <p>Olá, <strong>%s</strong>,</p>
-    <p>O seu chamado referente ao assunto "<strong>%s</strong>" foi analisado e marcado como <strong>Resolvido</strong> pela nossa equipe.</p>
-    <hr>
-    <p><small><strong>Lembrete da sua mensagem original:</strong><br>%s</small></p>
-    <br>
-    <p>Se o problema persistir ou se você tiver novas dúvidas, sinta-se à vontade para abrir um novo ticket em nosso site.</p>
-    <p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
-    `, ticket.Name, ticket.Subject, ticket.Message)
+	localizer := s.getLocalizer(ticket.Language)
+	subject := s.localize(localizer, "email.finished_ticket.subject",
+		map[string]interface{}{"Subject": ticket.Subject})
+	body := s.localize(localizer, "email.finished_ticket.body",
+		map[string]interface{}{
+			"Name":    ticket.Name,
+			"Subject": ticket.Subject,
+			"Message": ticket.Message,
+		})
 
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: ticket.Email,
-		Subject:   "CABGen - Ticket Resolvido: " + ticket.Subject,
+		Subject:   subject,
 		Body:      body,
 	}
 
@@ -285,27 +299,24 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 	frontendURL := config.FrontendURL
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, token)
 
-	body := fmt.Sprintf(`
-	<div style="font-family: Arial, sans-serif; color: #333;">
-		<h2>Recuperação de Senha - CABGen</h2>
-		<p>Olá, <strong>%s</strong>,</p>
-		<p>Recebemos uma solicitação para redefinir a senha da sua conta no sistema CABGen.</p>
-		<p>Se você não fez essa solicitação, por favor ignore este e-mail. Sua senha permanecerá a mesma.</p>
-		<p>Para criar uma nova senha, clique no botão abaixo (este link expira em 15 minutos):</p>
-		<br>
-		<a href="%s" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Redefinir Minha Senha</a>
-		<br><br>
-		<p><small>Ou copie e cole o seguinte link no seu navegador:</small><br>
-		<small><a href="%s">%s</a></small></p>
-		<hr>
-		<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
-	</div>
-	`, userName, resetLink, resetLink, resetLink)
+	language := "en"
+	if s.UserRepo != nil {
+		if user, err := s.UserRepo.GetUserByEmail(ctx, userEmail); err == nil {
+			language = user.Language
+		}
+	}
+
+	localizer := s.getLocalizer(language)
+	subject := s.localize(localizer, "email.password_reset.subject", nil)
+	body := s.localize(localizer, "email.password_reset.body", map[string]interface{}{
+		"Name":      userName,
+		"ResetLink": resetLink,
+	})
 
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: userEmail,
-		Subject:   "CABGen - Redefinição de Senha",
+		Subject:   subject,
 		Body:      body,
 	}
 
@@ -322,22 +333,23 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 
 func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 	userName string) error {
-	body := fmt.Sprintf(`
-	<div style="font-family: Arial, sans-serif; color: #333;">
-		<h2>Conta Excluída - CABGen</h2>
-		<p>Olá, <strong>%s</strong>,</p>
-		<p>Sua conta no sistema CABGen foi excluída com sucesso.</p>
-		<p>Todos os seus dados, incluindo amostras e análises, foram removidos permanentemente.</p>
-		<p>Se esta não foi uma ação sua, entre em contato com o suporte imediatamente.</p>
-		<hr>
-		<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
-	</div>
-	`, userName)
+	language := "en"
+	if s.UserRepo != nil {
+		if user, err := s.UserRepo.GetUserByEmail(ctx, userEmail); err == nil {
+			language = user.Language
+		}
+	}
+
+	localizer := s.getLocalizer(language)
+	subject := s.localize(localizer, "email.user_deleted.subject", nil)
+	body := s.localize(localizer, "email.user_deleted.body", map[string]interface{}{
+		"Name": userName,
+	})
 
 	cfg := email.EmailConfig{
 		Sender:    config.SenderEmail,
 		Recipient: userEmail,
-		Subject:   "CABGen - Sua conta foi excluída",
+		Subject:   subject,
 		Body:      body,
 	}
 

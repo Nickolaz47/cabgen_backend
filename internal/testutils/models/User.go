@@ -17,6 +17,7 @@ type User struct {
 	Country     models.Country  `gorm:"foreignKey:CountryID;references:ID" `
 	IsActive    bool            `gorm:"not null" json:"is_active"`
 	UserRole    models.UserRole `gorm:"type:varchar(20);not null" json:"user_role"`
+	Language    string          `gorm:"type:varchar(2);not null;default:'en'" json:"language"`
 	Interest    *string         `gorm:"default:null" json:"interest,omitempty"`
 	Role        *string         `gorm:"default:null" json:"role,omitempty"`
 	Institution *string         `gorm:"default:null" json:"institution,omitempty"`

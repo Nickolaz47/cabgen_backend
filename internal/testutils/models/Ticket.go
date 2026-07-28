@@ -15,6 +15,7 @@ type Ticket struct {
 	Subject     string    `gorm:"not null"`
 	Message     string    `gorm:"not null"`
 	Status      string    `gorm:"not null;default:'OPEN'"`
+	Language    string    `gorm:"type:varchar(2);not null;default:'en'"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	AdminID     *string       `gorm:"index"`

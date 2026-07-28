@@ -24,6 +24,7 @@ func NewTicketHandler(svc services.TicketService) *TicketHandler {
 
 func (h *TicketHandler) CreateTicket(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	var newTicket models.CreateTicketInput
 	if errMsg, valid := validations.Validate(c, localizer, &newTicket); !valid {
@@ -33,7 +34,7 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 		return
 	}
 
-	ticket, err := h.Service.Create(c.Request.Context(), newTicket)
+	ticket, err := h.Service.Create(c.Request.Context(), newTicket, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{

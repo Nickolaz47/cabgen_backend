@@ -28,9 +28,9 @@ func TestActivateUser(t *testing.T) {
 	mockLoginUser := testmodels.NewLoginUser()
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
-				return nil
-			},
+		ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
+			return nil
+		},
 		}
 		handler := user.NewAdminUserHandler(svc)
 
@@ -68,9 +68,9 @@ func TestActivateUser(t *testing.T) {
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
-				return services.ErrNotFound
-			},
+		ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
+			return services.ErrNotFound
+		},
 		}
 		handler := user.NewAdminUserHandler(svc)
 
@@ -91,9 +91,9 @@ func TestActivateUser(t *testing.T) {
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
-				return services.ErrInternal
-			},
+		ActivateUserFunc: func(ctx context.Context, ID uuid.UUID, adminName string) error {
+			return services.ErrInternal
+		},
 		}
 		handler := user.NewAdminUserHandler(svc)
 

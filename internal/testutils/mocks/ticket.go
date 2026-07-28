@@ -62,7 +62,7 @@ type MockTicketService struct {
 		[]models.TicketResponse, error)
 	FindByIDFunc func(ctx context.Context, ID uuid.UUID) (
 		*models.TicketResponse, error)
-	CreateFunc func(ctx context.Context, input models.CreateTicketInput) (
+	CreateFunc func(ctx context.Context, input models.CreateTicketInput, language string) (
 		*models.TicketResponse, error)
 	AssignFunc func(ctx context.Context, ticketID, adminID uuid.UUID) (
 		*models.TicketResponse, error)
@@ -88,9 +88,9 @@ func (s *MockTicketService) FindByID(ctx context.Context, ID uuid.UUID) (
 }
 
 func (s *MockTicketService) Create(ctx context.Context,
-	input models.CreateTicketInput) (*models.TicketResponse, error) {
+	input models.CreateTicketInput, language string) (*models.TicketResponse, error) {
 	if s.CreateFunc != nil {
-		return s.CreateFunc(ctx, input)
+		return s.CreateFunc(ctx, input, language)
 	}
 	return nil, nil
 }

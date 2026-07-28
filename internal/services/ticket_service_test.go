@@ -164,7 +164,7 @@ func TestTicketCreate(t *testing.T) {
 
 		service := services.NewTicketService(ticketRepo, asynqClient,
 			mockLogger)
-		result, err := service.Create(ctx, input)
+		result, err := service.Create(ctx, input, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -183,7 +183,7 @@ func TestTicketCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
-		result, err := service.Create(ctx, input)
+		result, err := service.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -208,7 +208,7 @@ func TestTicketCreate(t *testing.T) {
 
 		service := services.NewTicketService(ticketRepo, asynqClient,
 			mockLogger)
-		result, err := service.Create(ctx, input)
+		result, err := service.Create(ctx, input, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)

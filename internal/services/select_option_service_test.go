@@ -37,6 +37,11 @@ func TestSelectOptionFindAllEnumSelects(t *testing.T) {
 			{Label: "option.analysis_type.genome", Value: "GENOME"},
 			{Label: "option.analysis_type.complete", Value: "COMPLETE"},
 		},
+		Languages: []models.SelectOption{
+			{Label: "option.language.pt", Value: "pt"},
+			{Label: "option.language.en", Value: "en"},
+			{Label: "option.language.es", Value: "es"},
+		},
 	}
 
 	t.Run("Success", func(t *testing.T) {

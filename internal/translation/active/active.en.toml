@@ -498,3 +498,97 @@ other = "Message must be at least {{.Param}} characters long."
 
 [validation.Message.max]
 other = "Message must be at most {{.Param}} characters long."
+
+[option.language.en]
+other = "English"
+
+[option.language.pt]
+other = "Portuguese"
+
+[option.language.es]
+other = "Spanish"
+
+[email.user_deleted.subject]
+other = "CABGen - Your account has been deleted"
+
+[email.user_deleted.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Account Deleted - CABGen</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>Your account on the CABGen system has been successfully deleted.</p>
+<p>All your data, including samples and analyses, has been permanently removed.</p>
+<p>If this was not your action, please contact support immediately.</p>
+<hr>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""
+
+[email.welcome.subject]
+other = "CABGen - Your account has been activated!"
+
+[email.welcome.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Welcome to CABGen!</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>Your account on the CABGen system has been activated by an administrator.</p>
+<p>You can now log in and start analyzing your samples.</p>
+<hr>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""
+
+[email.password_reset.subject]
+other = "CABGen - Password Reset"
+
+[email.password_reset.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Password Reset - CABGen</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>We received a request to reset the password for your CABGen account.</p>
+<p>If you did not make this request, please ignore this email. Your password will remain the same.</p>
+<p>To create a new password, click the button below (this link expires in 15 minutes):</p>
+<br>
+<a href="{{.ResetLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset My Password</a>
+<br><br>
+<p><small>Or copy and paste the following link into your browser:</small><br>
+<small><a href="{{.ResetLink}}">{{.ResetLink}}</a></small></p>
+<hr>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""
+
+[email.analysis_done.subject]
+other = "CABGen - Analysis Finished"
+
+[email.analysis_done.status_done]
+other = "was successfully completed"
+
+[email.analysis_done.status_failed]
+other = "encountered an error during processing"
+
+[email.analysis_done.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Analysis Finished - CABGen</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>The analysis of your sample <strong>{{.SampleName}}</strong> {{.StatusText}}.</p>
+<p>Access the system to view the detailed results.</p>
+<hr>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""
+
+[email.finished_ticket.subject]
+other = "CABGen - Ticket Resolved: {{.Subject}}"
+
+[email.finished_ticket.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Support Ticket Update - CABGen</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>Your support ticket regarding "<strong>{{.Subject}}</strong>" has been reviewed and marked as <strong>Resolved</strong> by our team.</p>
+<hr>
+<p><small><strong>Reminder of your original message:</strong><br>{{.Message}}</small></p>
+<br>
+<p>If the issue persists or you have new questions, feel free to open a new ticket on our website.</p>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""

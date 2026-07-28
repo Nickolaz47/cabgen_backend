@@ -11,6 +11,7 @@ type EnumSelectsResponse struct {
 	Genders            []SelectOption `json:"genders"`
 	HealthServiceTypes []SelectOption `json:"health_service_types"`
 	AnalysisTypes      []SelectOption `json:"analysis_types"`
+	Languages          []SelectOption `json:"languages"`
 }
 
 type FormSelectsResponse struct {

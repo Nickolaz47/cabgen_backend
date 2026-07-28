@@ -52,6 +52,11 @@ type PasswordResetEmailPayload struct {
 	Token string `json:"token"`
 }
 
+type UserDeletedEmailPayload struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
 func NewAnalysisProcessTask(analysisID uuid.UUID) (
 	*asynq.Task, error) {
 	payload := AnalysisProcessPayload{AnalysisID: analysisID}
@@ -77,7 +82,9 @@ func NewAdminAlertEmailTask(newUserID uuid.UUID) (*asynq.Task, error) {
 }
 
 func NewWelcomeEmailTask(userID uuid.UUID) (*asynq.Task, error) {
-	payload, err := json.Marshal(WelcomeEmailPayload{UserID: userID})
+	payload, err := json.Marshal(WelcomeEmailPayload{
+		UserID: userID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +95,8 @@ func NewWelcomeEmailTask(userID uuid.UUID) (*asynq.Task, error) {
 
 func NewAnalysisDoneEmailTask(analysisID uuid.UUID) (*asynq.Task, error) {
 	payload, err := json.Marshal(AnalysisDoneEmailPayload{
-		AnalysisID: analysisID})
+		AnalysisID: analysisID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +119,8 @@ func NewAdminTicketEmailTask(ticketID uuid.UUID) (
 
 func NewFinishedTicketEmailTask(ticketID uuid.UUID) (*asynq.Task, error) {
 	payload, err := json.Marshal(FinishedTicketEmailPayload{
-		TicketID: ticketID})
+		TicketID: ticketID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -132,11 +141,6 @@ func NewPasswordResetEmailTask(email, name, token string) (*asynq.Task, error) {
 
 	return asynq.NewTask(TaskTypePasswordResetEmail, payload,
 		asynq.MaxRetry(3)), nil
-}
-
-type UserDeletedEmailPayload struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
 }
 
 func NewUserDeletedEmailTask(email, name string) (*asynq.Task, error) {

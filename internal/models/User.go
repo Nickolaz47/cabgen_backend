@@ -34,6 +34,7 @@ type User struct {
 	Country     Country   `gorm:"foreignKey:CountryID;references:ID"`
 	IsActive    bool      `gorm:"not null"`
 	UserRole    UserRole  `gorm:"type:varchar(20);not null"`
+	Language    string    `gorm:"type:varchar(2);not null;default:'en'"`
 	Interest    *string   `gorm:"type:varchar(255);default:null"`
 	Role        *string   `gorm:"type:varchar(255);default:null"`
 	Institution *string   `gorm:"type:varchar(255);default:null"`

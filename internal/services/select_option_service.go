@@ -88,6 +88,14 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 		})
 	}
 
+	// Languages
+	for _, lang := range translation.Languages {
+		resp.Languages = append(resp.Languages, models.SelectOption{
+			Label: "option.language." + lang,
+			Value: lang,
+		})
+	}
+
 	return resp, nil
 }
 

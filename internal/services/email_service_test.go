@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -9,11 +10,17 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
+
+func TestMain(m *testing.M) {
+	translation.LoadTranslation()
+	os.Exit(m.Run())
+}
 
 func TestSendAdminAlertEmail(t *testing.T) {
 	ctx := context.Background()
