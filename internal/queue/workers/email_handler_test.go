@@ -336,5 +336,65 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 		assert.Error(t, err)
 		assert.EqualError(t, err, "smtp timeout")
 	})
+
+	t.Run("Success - User Deleted Email", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		mockService := &mocks.MockEmailService{
+			SendUserDeletedEmailFunc: func(ctx context.Context,
+				receivedEmail, receivedName string) error {
+				assert.Equal(t, email, receivedEmail)
+				assert.Equal(t, name, receivedName)
+				return nil
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.UserDeletedEmailPayload{
+			Email: email,
+			Name:  name,
+		})
+		task := asynq.NewTask(tasks.TaskTypeUserDeletedEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - User Deleted Email JSON Unmarshal", func(t *testing.T) {
+		mockService := &mocks.MockEmailService{}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		task := asynq.NewTask(tasks.TaskTypeUserDeletedEmail,
+			[]byte(`[1, 2, 3]`))
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, asynq.SkipRetry)
+		assert.ErrorContains(t, err, "json unmarshal failed:")
+	})
+
+	t.Run("Error - User Deleted Email Service Failure", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		mockService := &mocks.MockEmailService{
+			SendUserDeletedEmailFunc: func(ctx context.Context,
+				receivedEmail, receivedName string) error {
+				return errors.New("smtp timeout")
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.UserDeletedEmailPayload{
+			Email: email,
+			Name:  name,
+		})
+		task := asynq.NewTask(tasks.TaskTypeUserDeletedEmail, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "smtp timeout")
+	})
 }
 

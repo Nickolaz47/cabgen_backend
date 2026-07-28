@@ -157,6 +157,9 @@ other = "Password reset link expired. Please request a new one."
 [user.notFound.error]
 other = "User not found."
 
+[user.delete.success]
+other = "User deleted successfully."
+
 [user.update.error]
 other = "Could not update user."
 

@@ -21,6 +21,7 @@ type EmailService interface {
 	SendFinishedTicketEmail(ctx context.Context, ticketID uuid.UUID) error
 	SendPasswordResetEmail(ctx context.Context, userEmail, userName,
 		token string) error
+	SendUserDeletedEmail(ctx context.Context, userEmail, userName string) error
 }
 
 type emailService struct {
@@ -314,6 +315,38 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 			fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err),
 		)...)
 		return fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err)
+	}
+
+	return nil
+}
+
+func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
+	userName string) error {
+	body := fmt.Sprintf(`
+	<div style="font-family: Arial, sans-serif; color: #333;">
+		<h2>Conta Excluída - CABGen</h2>
+		<p>Olá, <strong>%s</strong>,</p>
+		<p>Sua conta no sistema CABGen foi excluída com sucesso.</p>
+		<p>Todos os seus dados, incluindo amostras e análises, foram removidos permanentemente.</p>
+		<p>Se esta não foi uma ação sua, entre em contato com o suporte imediatamente.</p>
+		<hr>
+		<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+	</div>
+	`, userName)
+
+	cfg := email.EmailConfig{
+		Sender:    config.SenderEmail,
+		Recipient: userEmail,
+		Subject:   "CABGen - Sua conta foi excluída",
+		Body:      body,
+	}
+
+	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendUserDeletedEmail", logging.SendEmailError,
+			fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err),
+		)...)
+		return fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err)
 	}
 
 	return nil

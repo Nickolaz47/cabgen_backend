@@ -193,6 +193,7 @@ func (m *MockAdminUserService) Delete(
 type MockUserService struct {
 	FindByIDFunc func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error)
 	UpdateFunc   func(ctx context.Context, ID uuid.UUID, input models.UserUpdateInput, language string) (*models.UserResponse, error)
+	DeleteFunc   func(ctx context.Context, ID uuid.UUID) error
 }
 
 func (m *MockUserService) FindByID(
@@ -216,4 +217,14 @@ func (m *MockUserService) Update(
 		return m.UpdateFunc(ctx, ID, input, language)
 	}
 	return nil, nil
+}
+
+func (m *MockUserService) Delete(
+	ctx context.Context,
+	ID uuid.UUID,
+) error {
+	if m.DeleteFunc != nil {
+		return m.DeleteFunc(ctx, ID)
+	}
+	return nil
 }

@@ -117,9 +117,10 @@ func main() {
 	authSvc := container.BuildAuthService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 
-	userSvc := container.BuildUserService(mainDB.DB(), logging.FileLogger)
+	userSvc := container.BuildUserService(mainDB.DB(), asynqClient,
+		logging.FileLogger, rootDir)
 	admUserSvc := container.BuildAdminUserService(mainDB.DB(), asynqClient,
-		logging.FileLogger)
+		logging.FileLogger, rootDir)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
 	sequencerSvc := container.BuildSequencerService(mainDB.DB(),
 		logging.FileLogger)

@@ -66,6 +66,13 @@ func (h *EmailTaskHandler) ProcessTask(ctx context.Context, t *asynq.Task) error
 		return h.EmailService.SendPasswordResetEmail(ctx, p.Email, p.Name,
 			p.Token)
 
+	case tasks.TaskTypeUserDeletedEmail:
+		var p tasks.UserDeletedEmailPayload
+		if err := json.Unmarshal(t.Payload(), &p); err != nil {
+			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
+		}
+		return h.EmailService.SendUserDeletedEmail(ctx, p.Email, p.Name)
+
 	default:
 		return fmt.Errorf("unknown task type: %s", t.Type())
 	}

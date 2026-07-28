@@ -28,7 +28,7 @@ func TestUserFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil)
+		service := services.NewUserService(userRepo, nil, nil, nil, "")
 		result, err := service.FindByID(context.Background(), user.ID, lang)
 
 		assert.NoError(t, err)
@@ -44,7 +44,7 @@ func TestUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
@@ -62,12 +62,69 @@ func TestUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Empty(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestUserDelete(t *testing.T) {
+	user := testmodels.NewLoginUser()
+
+	t.Run("Success", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			DeleteUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
+		}
+
+		service := services.NewUserService(userRepo, nil, &mocks.MockTaskEnqueuer{}, nil, t.TempDir())
+		err := service.Delete(context.Background(), user.ID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
+		err := service.Delete(context.Background(), uuid.New())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Internal Server", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			DeleteUserFunc: func(ctx context.Context, user *models.User) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
+		err := service.Delete(context.Background(), uuid.New())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
@@ -111,7 +168,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, countryRepo, nil)
+		service := services.NewUserService(userRepo, countryRepo, nil, nil, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.NoError(t, err)
@@ -127,7 +184,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -145,7 +202,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -169,7 +226,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -193,7 +250,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, mockLogger)
+		service := services.NewUserService(userRepo, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -223,7 +280,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, mockLogger)
+		service := services.NewUserService(userRepo, countryRepo, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -253,7 +310,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, mockLogger)
+		service := services.NewUserService(userRepo, countryRepo, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -286,7 +343,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, mockLogger)
+		service := services.NewUserService(userRepo, countryRepo, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)

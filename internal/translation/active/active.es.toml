@@ -157,6 +157,9 @@ other = "El enlace de restablecimiento ha expirado. Por favor, solicite uno nuev
 [user.notFound.error]
 other = "Usuario no encontrado."
 
+[user.delete.success]
+other = "Usuario eliminado correctamente."
+
 [user.update.error]
 other = "No se pudo actualizar el usuario."
 

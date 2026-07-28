@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
@@ -35,6 +37,7 @@ type adminUserService struct {
 	Hasher      security.PasswordHasher
 	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
+	RootDir     string
 }
 
 func NewAdminUserService(
@@ -43,6 +46,7 @@ func NewAdminUserService(
 	hasher security.PasswordHasher,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
+	rootDir string,
 ) AdminUserService {
 	return &adminUserService{
 		Repo:        repo,
@@ -50,6 +54,7 @@ func NewAdminUserService(
 		Hasher:      hasher,
 		AsynqClient: asynqClient,
 		Logger:      logger,
+		RootDir:     rootDir,
 	}
 }
 
@@ -489,6 +494,11 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 			)...)
 		return ErrInternal
 	}
+
+	userFolder := filepath.Join(s.RootDir, "uploads", "users", user.ID.String())
+	go func() {
+		_ = os.RemoveAll(userFolder)
+	}()
 
 	return nil
 }

@@ -3,6 +3,7 @@ package user
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -79,4 +80,36 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Data: updatedUser,
 	})
+}
+
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	userToken, ok := validations.GetUserTokenFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer,
+				responses.UnauthorizedError)})
+		return
+	}
+
+	if err := h.Service.Delete(c.Request.Context(), userToken.ID); err != nil {
+		code, errMsg := handlererrors.HandleUserError(err)
+		c.JSON(
+			code,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
+		return
+	}
+
+	accessCookie := auth.DeleteCookie(auth.Access, "/")
+	refreshCookie := auth.DeleteCookie(auth.Refresh, "/api/auth/refresh")
+	http.SetCookie(c.Writer, accessCookie)
+	http.SetCookie(c.Writer, refreshCookie)
+
+	c.JSON(http.StatusOK,
+		responses.APIResponse{Message: responses.GetResponse(
+			localizer, responses.UserSelfDeleted)},
+	)
 }

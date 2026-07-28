@@ -11,21 +11,23 @@ import (
 	"gorm.io/gorm"
 )
 
-func BuildUserService(db *gorm.DB, logger *zap.Logger) services.UserService {
+func BuildUserService(db *gorm.DB, asynqClient *asynq.Client,
+	logger *zap.Logger, rootDir string) services.UserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
-	userService := services.NewUserService(userRepo, countryRepo, logger)
+	userService := services.NewUserService(
+		userRepo, countryRepo, asynqClient, logger, rootDir)
 
 	return userService
 }
 
 func BuildAdminUserService(db *gorm.DB, asynqClient *asynq.Client,
-	logger *zap.Logger) services.AdminUserService {
+	logger *zap.Logger, rootDir string) services.AdminUserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
 	hasher := security.NewPasswordHasher()
 	adminUserService := services.NewAdminUserService(
-		userRepo, countryRepo, hasher, asynqClient, logger)
+		userRepo, countryRepo, hasher, asynqClient, logger, rootDir)
 
 	return adminUserService
 }

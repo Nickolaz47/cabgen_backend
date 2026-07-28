@@ -19,6 +19,7 @@ const (
 	TaskTypeAdminTicketEmail    = "email:admin_ticket"
 	TaskTypeFinishedTicketEmail = "email:finished_ticket"
 	TaskTypePasswordResetEmail  = "email:password_reset"
+	TaskTypeUserDeletedEmail    = "email:user_deleted"
 )
 
 type AnalysisProcessPayload struct {
@@ -130,5 +131,23 @@ func NewPasswordResetEmailTask(email, name, token string) (*asynq.Task, error) {
 	}
 
 	return asynq.NewTask(TaskTypePasswordResetEmail, payload,
+		asynq.MaxRetry(3)), nil
+}
+
+type UserDeletedEmailPayload struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+func NewUserDeletedEmailTask(email, name string) (*asynq.Task, error) {
+	payload, err := json.Marshal(UserDeletedEmailPayload{
+		Email: email,
+		Name:  name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return asynq.NewTask(TaskTypeUserDeletedEmail, payload,
 		asynq.MaxRetry(3)), nil
 }

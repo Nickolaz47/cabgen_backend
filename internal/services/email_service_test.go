@@ -454,3 +454,33 @@ func TestSendPasswordResetEmail(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestSendUserDeletedEmail(t *testing.T) {
+	ctx := context.Background()
+	userEmail := "john@mail.com"
+	userName := "John Doe"
+
+	t.Run("Success", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send deletion email to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}

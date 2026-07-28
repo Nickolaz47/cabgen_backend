@@ -31,6 +31,7 @@ const (
 	InvalidTokenError                         = "public.auth.invalidToken.error"
 	ResetTokenExpiredError                    = "public.auth.resetTokenExpired.error"
 	UserNotFoundError                         = "user.notFound.error"
+	UserSelfDeleted                          = "user.delete.success"
 	UpdateUserError                           = "user.update.error"
 	InvalidUserRoleError                      = "admin.user.register.invalidUserRole"
 	AdminRegisterSuccess                      = "admin.user.register.success"

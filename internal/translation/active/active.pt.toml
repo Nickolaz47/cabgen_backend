@@ -157,6 +157,9 @@ other = "O link de recuperação de senha expirou. Por favor, solicite um novo."
 [user.notFound.error]
 other = "Usuário não encontrado."
 
+[user.delete.success]
+other = "Usuário excluído com sucesso."
+
 [user.update.error]
 other = "Não foi possível atualizar o usuário."
 
