@@ -46,3 +46,16 @@ func TestCheckPassword(t *testing.T) {
 		assert.Error(t, err, "expected passwords to be different")
 	})
 }
+
+func TestGenerateSecureToken(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		token1, err1 := security.GenerateSecureToken()
+		token2, err2 := security.GenerateSecureToken()
+
+		assert.NoError(t, err1)
+		assert.NoError(t, err2)
+		assert.Len(t, token1, 64)
+		assert.Len(t, token2, 64)
+		assert.NotEqual(t, token1, token2)
+	})
+}

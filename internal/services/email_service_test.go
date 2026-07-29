@@ -491,3 +491,38 @@ func TestSendUserDeletedEmail(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestSendEmailUpdateConfirmation(t *testing.T) {
+	ctx := context.Background()
+	userEmail := "john@mail.com"
+	userName := "John Doe"
+	oldEmail := "john@mail.com"
+	newEmail := "john.doe@mail.com"
+	token := "updatetoken123"
+
+	t.Run("Success", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
+			oldEmail, newEmail, token)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		sender := &mocks.MockEmailSender{
+			ShouldFail: true,
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
+			oldEmail, newEmail, token)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Failed to send email update confirmation to")
+		assert.Equal(t, 1, logs.Len())
+	})
+}

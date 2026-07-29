@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -335,14 +333,13 @@ func (s *authService) ForgotPassword(ctx context.Context,
 		)...)
 	}
 
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
+	tokenStr, err := security.GenerateSecureToken()
+	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AuthService", "ForgotPassword", logging.HasherError, err,
 		)...)
 		return ErrInternal
 	}
-	tokenStr := hex.EncodeToString(bytes)
 
 	reset := models.PasswordReset{
 		Email:     user.Email,

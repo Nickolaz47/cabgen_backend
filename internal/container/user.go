@@ -15,9 +15,10 @@ func BuildUserService(db *gorm.DB, asynqClient *asynq.Client,
 	logger *zap.Logger, rootDir string) services.UserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
+	emailUpdateRepo := repositories.NewEmailUpdateRepo(db)
 	hasher := security.NewPasswordHasher()
 	userService := services.NewUserService(
-		userRepo, countryRepo, hasher, asynqClient, logger, rootDir)
+		userRepo, countryRepo, emailUpdateRepo, hasher, asynqClient, logger, rootDir)
 
 	return userService
 }

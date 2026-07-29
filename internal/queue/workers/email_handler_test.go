@@ -396,4 +396,81 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 		assert.Error(t, err)
 		assert.EqualError(t, err, "smtp timeout")
 	})
+
+	t.Run("Success - Email Update Confirmation", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		oldEmail := "john@mail.com"
+		newEmail := "john.doe@mail.com"
+		token := "updatetoken123"
+		mockService := &mocks.MockEmailService{
+			SendEmailUpdateConfirmationFunc: func(ctx context.Context,
+				receivedEmail, receivedName, receivedOldEmail,
+				receivedNewEmail, receivedToken string) error {
+				assert.Equal(t, email, receivedEmail)
+				assert.Equal(t, name, receivedName)
+				assert.Equal(t, oldEmail, receivedOldEmail)
+				assert.Equal(t, newEmail, receivedNewEmail)
+				assert.Equal(t, token, receivedToken)
+				return nil
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.EmailUpdateConfirmationPayload{
+			Email:    email,
+			Name:     name,
+			OldEmail: oldEmail,
+			NewEmail: newEmail,
+			Token:    token,
+		})
+		task := asynq.NewTask(tasks.TaskTypeEmailUpdateConfirmation, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Error - Email Update Confirmation JSON Unmarshal", func(t *testing.T) {
+		mockService := &mocks.MockEmailService{}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		task := asynq.NewTask(tasks.TaskTypeEmailUpdateConfirmation,
+			[]byte(`[1, 2, 3]`))
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, asynq.SkipRetry)
+		assert.ErrorContains(t, err, "json unmarshal failed:")
+	})
+
+	t.Run("Error - Email Update Confirmation Service Failure", func(t *testing.T) {
+		email := "john@mail.com"
+		name := "John Doe"
+		oldEmail := "john@mail.com"
+		newEmail := "john.doe@mail.com"
+		token := "updatetoken123"
+		mockService := &mocks.MockEmailService{
+			SendEmailUpdateConfirmationFunc: func(ctx context.Context,
+				receivedEmail, receivedName, receivedOldEmail,
+				receivedNewEmail, receivedToken string) error {
+				return errors.New("smtp timeout")
+			},
+		}
+		handler := workers.NewEmailTaskHandler(mockService)
+
+		payloadBytes, _ := json.Marshal(tasks.EmailUpdateConfirmationPayload{
+			Email:    email,
+			Name:     name,
+			OldEmail: oldEmail,
+			NewEmail: newEmail,
+			Token:    token,
+		})
+		task := asynq.NewTask(tasks.TaskTypeEmailUpdateConfirmation, payloadBytes)
+
+		err := handler.ProcessTask(ctx, task)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "smtp timeout")
+	})
 }

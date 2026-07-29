@@ -23,10 +23,7 @@ func createMockAbricateFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-// buildAbricateLine creates a tab-separated abricate result line.
-// fields: 0=seqid, 1=start, 2=end, 3=strand, 4=coverage, 5=gene,
-//
-//	6=cov_db, 7=accession, 8=gap, 9=cov_q, 10=identity
+// fields: [5]=gene, [7]=accession, [9]=covQ, [10]=identity
 func buildAbricateLine(seqid, gene, covDb, accession, covQ, identity string) string {
 	return seqid + "\t" + "100" + "\t" + "200" + "\t" + "+" + "\t" +
 		"100/100" + "\t" + gene + "\t" + covDb + "\t" + accession + "\t" +

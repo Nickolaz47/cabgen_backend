@@ -12,4 +12,6 @@ func SetupUserRoutes(r *gin.RouterGroup, handler *user.UserHandler) {
 	userRouter.PUT("/me", handler.UpdateUser)
 	userRouter.DELETE("/me", handler.DeleteUser)
 	userRouter.POST("/me/update-password", handler.UpdatePassword)
+	userRouter.POST("/me/request-email-update", handler.RequestEmailUpdate)
+	userRouter.POST("/me/confirm-email-update", handler.ConfirmEmailUpdate)
 }

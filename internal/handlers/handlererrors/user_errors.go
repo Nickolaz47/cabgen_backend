@@ -20,6 +20,12 @@ func HandleUserError(err error) (int, string) {
 		return http.StatusNotFound, responses.CountryNotFoundError
 	case errors.Is(err, services.ErrCurrentPasswordMismatch):
 		return http.StatusBadRequest, responses.CurrentPasswordMismatchError
+	case errors.Is(err, services.ErrInvalidEmailUpdateToken):
+		return http.StatusBadRequest, responses.InvalidEmailUpdateTokenError
+	case errors.Is(err, services.ErrExpiredEmailUpdateToken):
+		return http.StatusBadRequest, responses.EmailUpdateTokenExpiredError
+	case errors.Is(err, services.ErrEmailSame):
+		return http.StatusBadRequest, responses.EmailSameError
 	default:
 		return http.StatusInternalServerError, responses.GenericInternalServerError
 	}

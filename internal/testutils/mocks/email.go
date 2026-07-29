@@ -20,13 +20,14 @@ func (m *MockEmailSender) Send(msg *gomail.Message) error {
 }
 
 type MockEmailService struct {
-	SendAdminAlertEmailFunc     func(ctx context.Context, newUserID uuid.UUID) error
-	SendWelcomeEmailFunc        func(ctx context.Context, userID uuid.UUID) error
-	SendAnalysisDoneEmailFunc   func(ctx context.Context, analysisID uuid.UUID) error
-	SendAdminTicketEmailFunc    func(ctx context.Context, ticketID uuid.UUID) error
-	SendFinishedTicketEmailFunc func(ctx context.Context, ticketID uuid.UUID) error
-	SendPasswordResetEmailFunc  func(ctx context.Context, userEmail, userName, token string) error
-	SendUserDeletedEmailFunc    func(ctx context.Context, userEmail, userName string) error
+	SendAdminAlertEmailFunc         func(ctx context.Context, newUserID uuid.UUID) error
+	SendWelcomeEmailFunc            func(ctx context.Context, userID uuid.UUID) error
+	SendAnalysisDoneEmailFunc       func(ctx context.Context, analysisID uuid.UUID) error
+	SendAdminTicketEmailFunc        func(ctx context.Context, ticketID uuid.UUID) error
+	SendFinishedTicketEmailFunc     func(ctx context.Context, ticketID uuid.UUID) error
+	SendPasswordResetEmailFunc      func(ctx context.Context, userEmail, userName, token string) error
+	SendUserDeletedEmailFunc        func(ctx context.Context, userEmail, userName string) error
+	SendEmailUpdateConfirmationFunc func(ctx context.Context, userEmail, userName, oldEmail, newEmail, token string) error
 }
 
 func (m *MockEmailService) SendAdminAlertEmail(ctx context.Context,
@@ -81,6 +82,15 @@ func (m *MockEmailService) SendUserDeletedEmail(ctx context.Context,
 	userEmail, userName string) error {
 	if m.SendUserDeletedEmailFunc != nil {
 		return m.SendUserDeletedEmailFunc(ctx, userEmail, userName)
+	}
+	return nil
+}
+
+func (m *MockEmailService) SendEmailUpdateConfirmation(ctx context.Context,
+	userEmail, userName, oldEmail, newEmail, token string) error {
+	if m.SendEmailUpdateConfirmationFunc != nil {
+		return m.SendEmailUpdateConfirmationFunc(ctx, userEmail, userName,
+			oldEmail, newEmail, token)
 	}
 	return nil
 }

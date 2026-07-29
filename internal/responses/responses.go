@@ -31,7 +31,7 @@ const (
 	InvalidTokenError                         = "public.auth.invalidToken.error"
 	ResetTokenExpiredError                    = "public.auth.resetTokenExpired.error"
 	UserNotFoundError                         = "user.notFound.error"
-	UserSelfDeleted                          = "user.delete.success"
+	UserSelfDeleted                           = "user.delete.success"
 	UpdateUserError                           = "user.update.error"
 	InvalidUserRoleError                      = "admin.user.register.invalidUserRole"
 	AdminRegisterSuccess                      = "admin.user.register.success"
@@ -96,6 +96,11 @@ const (
 	TickedIsNotOpenError                      = "ticket.isNotOpen.error"
 	UpdatePasswordSuccess                     = "user.updatePassword.success"
 	CurrentPasswordMismatchError              = "user.updatePassword.currentPasswordMismatch.error"
+	RequestEmailUpdateSuccess                 = "user.requestEmailUpdate.success"
+	ConfirmEmailUpdateSuccess                 = "user.confirmEmailUpdate.success"
+	InvalidEmailUpdateTokenError              = "user.emailUpdateToken.invalid.error"
+	EmailUpdateTokenExpiredError              = "user.emailUpdateToken.expired.error"
+	EmailSameError                            = "user.emailSame.error"
 )
 
 type APIResponse struct {

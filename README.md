@@ -315,6 +315,8 @@ Os endpoints estão organizados em três níveis de acesso:
 | GET | `/api/users/me` | Dados do usuário autenticado |
 | PUT | `/api/users/me` | Atualiza dados do usuário |
 | POST | `/api/users/me/update-password` | Atualiza a senha do usuário autenticado |
+| POST | `/api/users/me/request-email-update` | Solicita a atualização de e-mail e envia um link de confirmação |
+| POST | `/api/users/me/confirm-email-update` | Confirma a atualização de e-mail usando o token do link |
 | DELETE | `/api/users/me` | Deleta a conta do usuário autenticado |
 
 #### Amostra

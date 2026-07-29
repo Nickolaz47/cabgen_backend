@@ -24,6 +24,8 @@ type EmailService interface {
 	SendPasswordResetEmail(ctx context.Context, userEmail, userName,
 		token string) error
 	SendUserDeletedEmail(ctx context.Context, userEmail, userName string) error
+	SendEmailUpdateConfirmation(ctx context.Context, userEmail, userName,
+		oldEmail, newEmail, token string) error
 }
 
 type emailService struct {
@@ -359,6 +361,50 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 			fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err),
 		)...)
 		return fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err)
+	}
+
+	return nil
+}
+
+func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
+	userEmail, userName, oldEmail, newEmail, token string) error {
+	frontendURL := config.FrontendURL
+	confirmLink := fmt.Sprintf("%s/confirm-email-update?token=%s",
+		frontendURL, token)
+
+	language := "en"
+	if s.UserRepo != nil {
+		if user, err := s.UserRepo.GetUserByEmail(ctx, userEmail); err == nil {
+			language = user.Language
+		}
+	}
+
+	localizer := s.getLocalizer(language)
+	subject := s.localize(localizer, "email.email_update_confirmation.subject", nil)
+	body := s.localize(localizer, "email.email_update_confirmation.body",
+		map[string]interface{}{
+			"Name":        userName,
+			"OldEmail":    oldEmail,
+			"NewEmail":    newEmail,
+			"ConfirmLink": confirmLink,
+		})
+
+	cfg := email.EmailConfig{
+		Sender:    config.SenderEmail,
+		Recipient: newEmail,
+		Subject:   subject,
+		Body:      body,
+	}
+
+	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"EmailService", "SendEmailUpdateConfirmation",
+			logging.SendEmailError,
+			fmt.Errorf("Failed to send email update confirmation to %s: %v",
+				newEmail, err),
+		)...)
+		return fmt.Errorf("Failed to send email update confirmation to %s: %v",
+			newEmail, err)
 	}
 
 	return nil

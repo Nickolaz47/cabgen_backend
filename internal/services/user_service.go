@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -23,32 +25,37 @@ type UserService interface {
 	Update(ctx context.Context, ID uuid.UUID, input models.UserUpdateInput, language string) (*models.UserResponse, error)
 	Delete(ctx context.Context, ID uuid.UUID) error
 	UpdatePassword(ctx context.Context, ID uuid.UUID, input models.UpdatePasswordInput) error
+	RequestEmailUpdate(ctx context.Context, ID uuid.UUID, input models.RequestEmailUpdateInput) error
+	ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID, input models.ConfirmEmailUpdateInput) error
 }
 
 type userService struct {
-	Repo        repositories.UserRepository
-	CountryRepo repositories.CountryRepository
-	Hasher      security.PasswordHasher
-	AsynqClient TaskEnqueuer
-	Logger      *zap.Logger
-	RootDir     string
+	Repo            repositories.UserRepository
+	CountryRepo     repositories.CountryRepository
+	EmailUpdateRepo repositories.EmailUpdateRepository
+	Hasher          security.PasswordHasher
+	AsynqClient     TaskEnqueuer
+	Logger          *zap.Logger
+	RootDir         string
 }
 
 func NewUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
+	emailUpdateRepo repositories.EmailUpdateRepository,
 	hasher security.PasswordHasher,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
 	rootDir string,
 ) UserService {
 	return &userService{
-		Repo:        repo,
-		CountryRepo: countryRepo,
-		Hasher:      hasher,
-		AsynqClient: asynqClient,
-		Logger:      logger,
-		RootDir:     rootDir,
+		Repo:            repo,
+		CountryRepo:     countryRepo,
+		EmailUpdateRepo: emailUpdateRepo,
+		Hasher:          hasher,
+		AsynqClient:     asynqClient,
+		Logger:          logger,
+		RootDir:         rootDir,
 	}
 }
 
@@ -235,6 +242,137 @@ func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
 			"UserService", "UpdatePassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
+	}
+
+	return nil
+}
+
+func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
+	input models.RequestEmailUpdateInput) error {
+	user, err := s.Repo.GetUserByID(ctx, ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"UserService", "RequestEmailUpdate",
+				logging.DatabaseNotFoundError, err,
+			)...)
+			return ErrNotFound
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if input.NewEmail == user.Email {
+		return ErrEmailSame
+	}
+
+	existing, err := s.Repo.GetUserByEmail(ctx, input.NewEmail)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+	if existing != nil && existing.ID != ID {
+		return ErrConflictEmail
+	}
+
+	if err := s.EmailUpdateRepo.DeleteRequestsByUserID(ctx, ID); err != nil {
+		err = fmt.Errorf("%s: %v", ID, err)
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate",
+			logging.DeleteEmailUpdateRequestError, err,
+		)...)
+	}
+
+	token, err := security.GenerateSecureToken()
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.HasherError, err,
+		)...)
+		return ErrInternal
+	}
+
+	req := models.EmailUpdateRequest{
+		UserID:    ID,
+		OldEmail:  user.Email,
+		NewEmail:  input.NewEmail,
+		Token:     token,
+		ExpiresAt: time.Now().Add(15 * time.Minute),
+	}
+
+	if err := s.EmailUpdateRepo.CreateRequest(ctx, &req); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	task, err := tasks.NewEmailUpdateConfirmationTask(user.Email, user.Name,
+		user.Email, input.NewEmail, token)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if _, err := s.AsynqClient.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail)); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+		)...)
+		return ErrInternal
+	}
+
+	return nil
+}
+
+func (s *userService) ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID,
+	input models.ConfirmEmailUpdateInput) error {
+	req, err := s.EmailUpdateRepo.GetByToken(ctx, input.Token)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrInvalidEmailUpdateToken
+		}
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if req.UserID != ID {
+		return ErrInvalidEmailUpdateToken
+	}
+
+	if req.IsExpired() {
+		return ErrExpiredEmailUpdateToken
+	}
+
+	user, err := s.Repo.GetUserByID(ctx, ID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	user.Email = req.NewEmail
+	if err := s.Repo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+		)...)
+		return ErrInternal
+	}
+
+	if err := s.EmailUpdateRepo.DeleteRequestsByUserID(ctx, ID); err != nil {
+		err = fmt.Errorf("%s: %v", ID, err)
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"UserService", "ConfirmEmailUpdate",
+			logging.DeleteEmailUpdateRequestError, err,
+		)...)
 	}
 
 	return nil

@@ -103,6 +103,12 @@ other = "La nueva contraseña debe tener al menos {{.Param}} caracteres."
 [validation.ConfirmPassword.eqfield]
 other = "Las contraseñas deben coincidir."
 
+[validation.ConfirmNewEmail.required]
+other = "La confirmación de correo electrónico es obligatoria."
+
+[validation.ConfirmNewEmail.eqfield]
+other = "Los correos electrónicos deben coincidir."
+
 [validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
 
@@ -598,3 +604,38 @@ other = "Contraseña actualizada correctamente."
 
 [user.updatePassword.currentPasswordMismatch.error]
 other = "La contraseña actual es incorrecta."
+
+[user.requestEmailUpdate.success]
+other = "Se ha enviado un enlace de confirmación a su nueva dirección de correo electrónico. Por favor, revise su bandeja de entrada."
+
+[user.confirmEmailUpdate.success]
+other = "Correo electrónico actualizado correctamente."
+
+[user.emailUpdateToken.invalid.error]
+other = "Enlace de actualización de correo electrónico inválido. Por favor, solicite uno nuevo."
+
+[user.emailUpdateToken.expired.error]
+other = "El enlace de actualización de correo electrónico ha expirado. Por favor, solicite uno nuevo."
+
+[user.emailSame.error]
+other = "El nuevo correo electrónico es el mismo que el actual."
+
+[email.email_update_confirmation.subject]
+other = "CABGen - Confirme Su Nuevo Correo Electrónico"
+
+[email.email_update_confirmation.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Confirmar Nuevo Correo Electrónico - CABGen</h2>
+<p>Hola, <strong>{{.Name}}</strong>,</p>
+<p>Recibimos una solicitud para cambiar el correo electrónico de su cuenta en CABGen de <strong>{{.OldEmail}}</strong> a <strong>{{.NewEmail}}</strong>.</p>
+<p>Si usted no realizó esta solicitud, por favor ignore este correo. Su correo electrónico permanecerá igual.</p>
+<p>Para confirmar el cambio, haga clic en el botón de abajo (este enlace expira en 15 minutos):</p>
+<br>
+<a href="{{.ConfirmLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Confirmar Nuevo Correo Electrónico</a>
+<br><br>
+<p><small>O copie y pegue el siguiente enlace en su navegador:</small><br>
+<small><a href="{{.ConfirmLink}}">{{.ConfirmLink}}</a></small></p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""

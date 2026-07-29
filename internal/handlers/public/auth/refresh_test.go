@@ -32,10 +32,6 @@ func TestRefresh(t *testing.T) {
 		HttpOnly: true,
 	}
 
-	// mockLoginUser := testmodels.NewLoginUser()
-	// lang := "en"
-	// mockResponse := mockLoginUser.ToResponse(lang)
-
 	t.Run("Success", func(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,

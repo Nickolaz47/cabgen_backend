@@ -73,6 +73,14 @@ func (h *EmailTaskHandler) ProcessTask(ctx context.Context, t *asynq.Task) error
 		}
 		return h.EmailService.SendUserDeletedEmail(ctx, p.Email, p.Name)
 
+	case tasks.TaskTypeEmailUpdateConfirmation:
+		var p tasks.EmailUpdateConfirmationPayload
+		if err := json.Unmarshal(t.Payload(), &p); err != nil {
+			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
+		}
+		return h.EmailService.SendEmailUpdateConfirmation(ctx, p.Email,
+			p.Name, p.OldEmail, p.NewEmail, p.Token)
+
 	default:
 		return fmt.Errorf("unknown task type: %s", t.Type())
 	}

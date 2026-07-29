@@ -191,10 +191,12 @@ func (m *MockAdminUserService) Delete(
 }
 
 type MockUserService struct {
-	FindByIDFunc       func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error)
-	UpdateFunc         func(ctx context.Context, ID uuid.UUID, input models.UserUpdateInput, language string) (*models.UserResponse, error)
-	DeleteFunc         func(ctx context.Context, ID uuid.UUID) error
-	UpdatePasswordFunc func(ctx context.Context, ID uuid.UUID, input models.UpdatePasswordInput) error
+	FindByIDFunc           func(ctx context.Context, ID uuid.UUID, language string) (*models.UserResponse, error)
+	UpdateFunc             func(ctx context.Context, ID uuid.UUID, input models.UserUpdateInput, language string) (*models.UserResponse, error)
+	DeleteFunc             func(ctx context.Context, ID uuid.UUID) error
+	UpdatePasswordFunc     func(ctx context.Context, ID uuid.UUID, input models.UpdatePasswordInput) error
+	RequestEmailUpdateFunc func(ctx context.Context, ID uuid.UUID, input models.RequestEmailUpdateInput) error
+	ConfirmEmailUpdateFunc func(ctx context.Context, ID uuid.UUID, input models.ConfirmEmailUpdateInput) error
 }
 
 func (m *MockUserService) FindByID(
@@ -237,6 +239,28 @@ func (m *MockUserService) UpdatePassword(
 ) error {
 	if m.UpdatePasswordFunc != nil {
 		return m.UpdatePasswordFunc(ctx, ID, input)
+	}
+	return nil
+}
+
+func (m *MockUserService) RequestEmailUpdate(
+	ctx context.Context,
+	ID uuid.UUID,
+	input models.RequestEmailUpdateInput,
+) error {
+	if m.RequestEmailUpdateFunc != nil {
+		return m.RequestEmailUpdateFunc(ctx, ID, input)
+	}
+	return nil
+}
+
+func (m *MockUserService) ConfirmEmailUpdate(
+	ctx context.Context,
+	ID uuid.UUID,
+	input models.ConfirmEmailUpdateInput,
+) error {
+	if m.ConfirmEmailUpdateFunc != nil {
+		return m.ConfirmEmailUpdateFunc(ctx, ID, input)
 	}
 	return nil
 }

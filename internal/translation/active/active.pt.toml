@@ -103,6 +103,12 @@ other = "A nova senha deve ter pelo menos {{.Param}} caracteres."
 [validation.ConfirmPassword.eqfield]
 other = "As senhas devem ser iguais."
 
+[validation.ConfirmNewEmail.required]
+other = "A confirmação de e-mail é obrigatória."
+
+[validation.ConfirmNewEmail.eqfield]
+other = "Os e-mails devem ser iguais."
+
 [validation.generic]
 other = "Entrada inválida. Verifique os campos e tente novamente."
 
@@ -513,6 +519,41 @@ other = "Senha atualizada com sucesso."
 
 [user.updatePassword.currentPasswordMismatch.error]
 other = "A senha atual esta incorreta."
+
+[user.requestEmailUpdate.success]
+other = "Um link de confirmação foi enviado para o seu novo endereço de e-mail. Por favor, verifique sua caixa de entrada."
+
+[user.confirmEmailUpdate.success]
+other = "E-mail atualizado com sucesso."
+
+[user.emailUpdateToken.invalid.error]
+other = "Este link de atualização de e-mail é inválido. Por favor, solicite um novo."
+
+[user.emailUpdateToken.expired.error]
+other = "O link de atualização de e-mail expirou. Por favor, solicite um novo."
+
+[user.emailSame.error]
+other = "O novo e-mail é o mesmo que o e-mail atual."
+
+[email.email_update_confirmation.subject]
+other = "CABGen - Confirme Seu Novo E-mail"
+
+[email.email_update_confirmation.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Confirmar Novo E-mail - CABGen</h2>
+<p>Olá, <strong>{{.Name}}</strong>,</p>
+<p>Recebemos uma solicitação para alterar o e-mail da sua conta no CABGen de <strong>{{.OldEmail}}</strong> para <strong>{{.NewEmail}}</strong>.</p>
+<p>Se você não fez essa solicitação, por favor ignore este e-mail. Seu e-mail permanecerá o mesmo.</p>
+<p>Para confirmar a alteração, clique no botão abaixo (este link expira em 15 minutos):</p>
+<br>
+<a href="{{.ConfirmLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Confirmar Novo E-mail</a>
+<br><br>
+<p><small>Ou copie e cole o seguinte link no seu navegador:</small><br>
+<small><a href="{{.ConfirmLink}}">{{.ConfirmLink}}</a></small></p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
 
 [email.user_deleted.subject]
 other = "CABGen - Sua conta foi excluída"

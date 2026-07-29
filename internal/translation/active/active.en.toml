@@ -103,6 +103,12 @@ other = "New password must be at least {{.Param}} characters."
 [validation.ConfirmPassword.eqfield]
 other = "Passwords must match."
 
+[validation.ConfirmNewEmail.required]
+other = "Email confirmation is required."
+
+[validation.ConfirmNewEmail.eqfield]
+other = "Emails must match."
+
 [validation.generic]
 other = "Invalid input. Please check the fields and try again."
 
@@ -513,6 +519,41 @@ other = "Password updated successfully."
 
 [user.updatePassword.currentPasswordMismatch.error]
 other = "The current password is incorrect."
+
+[user.requestEmailUpdate.success]
+other = "A confirmation link has been sent to your new email address. Please check your inbox."
+
+[user.confirmEmailUpdate.success]
+other = "Email updated successfully."
+
+[user.emailUpdateToken.invalid.error]
+other = "Invalid email update link. Please request a new one."
+
+[user.emailUpdateToken.expired.error]
+other = "Email update link expired. Please request a new one."
+
+[user.emailSame.error]
+other = "The new email is the same as your current email."
+
+[email.email_update_confirmation.subject]
+other = "CABGen - Confirm Your New Email"
+
+[email.email_update_confirmation.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Confirm New Email - CABGen</h2>
+<p>Hello, <strong>{{.Name}}</strong>,</p>
+<p>We received a request to change the email for your CABGen account from <strong>{{.OldEmail}}</strong> to <strong>{{.NewEmail}}</strong>.</p>
+<p>If you did not make this request, please ignore this email. Your email will remain the same.</p>
+<p>To confirm the change, click the button below (this link expires in 15 minutes):</p>
+<br>
+<a href="{{.ConfirmLink}}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Confirm New Email</a>
+<br><br>
+<p><small>Or copy and paste the following link into your browser:</small><br>
+<small><a href="{{.ConfirmLink}}">{{.ConfirmLink}}</a></small></p>
+<hr>
+<p>Best regards,<br><strong>CABGen Team</strong></p>
+</div>"""
 
 [email.user_deleted.subject]
 other = "CABGen - Your account has been deleted"

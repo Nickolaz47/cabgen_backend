@@ -43,7 +43,6 @@ func createMockGzipFastqFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-// fastqRead builds a 4-line FASTQ read block.
 func fastqRead(id, seq string) string {
 	return id + "\n" + seq + "\n+\n" + qualityScores(len(seq)) + "\n"
 }
@@ -126,11 +125,7 @@ func TestProcessFastq(t *testing.T) {
 
 func TestCalculateCoverage(t *testing.T) {
 	t.Run("Success - Calculates Coverage", func(t *testing.T) {
-		// read1: 2 reads of 8 bases = 16 bases
-		// read2: 2 reads of 8 bases = 16 bases (bases discarded, only count used)
-		// avgLength = 16 / 2 = 8
-		// totalReads = 2 + 2 = 4
-		// coverage = (8 * 4) / 100 = 0.32
+		// 4 reads, avg len 8, genome 100 → (8*4)/100 = 0.32
 		read1 := createMockFastqFile(t, fastqRead("@r1", "ATCGATCG")+fastqRead("@r2", "ATCGATCG"))
 		read2 := createMockFastqFile(t, fastqRead("@r3", "GCTAGCTA")+fastqRead("@r4", "GCTAGCTA"))
 
@@ -140,11 +135,7 @@ func TestCalculateCoverage(t *testing.T) {
 	})
 
 	t.Run("Success - Single Read Per File", func(t *testing.T) {
-		// read1: 1 read of 10 bases = 10 bases
-		// read2: 1 read of 10 bases = 10 bases (discarded)
-		// avgLength = 10 / 1 = 10
-		// totalReads = 1 + 1 = 2
-		// coverage = (10 * 2) / 50 = 0.4
+		// 2 reads, avg len 10, genome 50 → (10*2)/50 = 0.4
 		read1 := createMockFastqFile(t, fastqRead("@r1", "ATCGATCGAT"))
 		read2 := createMockFastqFile(t, fastqRead("@r2", "GCTAGCTAGC"))
 
@@ -163,11 +154,7 @@ func TestCalculateCoverage(t *testing.T) {
 	})
 
 	t.Run("Success - Reads With Different Lengths", func(t *testing.T) {
-		// read1: 2 reads of 4 and 6 bases = 10 bases total
-		// avgLength = 10 / 2 = 5
-		// read2: 1 read of 8 bases (discarded, count=1)
-		// totalReads = 2 + 1 = 3
-		// coverage = (5 * 3) / 100 = 0.15
+		// 3 reads, avg len 5, genome 100 → (5*3)/100 = 0.15
 		read1 := createMockFastqFile(t, fastqRead("@r1", "ATCG")+fastqRead("@r2", "ATCGAT"))
 		read2 := createMockFastqFile(t, fastqRead("@r3", "GCTAGCTA"))
 

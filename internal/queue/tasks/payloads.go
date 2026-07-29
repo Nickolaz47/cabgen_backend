@@ -12,14 +12,15 @@ const (
 	QueueAnalysis = "analyses"
 	QueueEmail    = "emails"
 
-	TaskTypeAnalysisProcess     = "analysis:process"
-	TaskTypeWelcomeEmail        = "email:welcome"
-	TaskTypeAnalysisDoneEmail   = "email:analysis_done"
-	TaskTypeAdminAlertEmail     = "email:admin_user_alert"
-	TaskTypeAdminTicketEmail    = "email:admin_ticket"
-	TaskTypeFinishedTicketEmail = "email:finished_ticket"
-	TaskTypePasswordResetEmail  = "email:password_reset"
-	TaskTypeUserDeletedEmail    = "email:user_deleted"
+	TaskTypeAnalysisProcess         = "analysis:process"
+	TaskTypeWelcomeEmail            = "email:welcome"
+	TaskTypeAnalysisDoneEmail       = "email:analysis_done"
+	TaskTypeAdminAlertEmail         = "email:admin_user_alert"
+	TaskTypeAdminTicketEmail        = "email:admin_ticket"
+	TaskTypeFinishedTicketEmail     = "email:finished_ticket"
+	TaskTypePasswordResetEmail      = "email:password_reset"
+	TaskTypeUserDeletedEmail        = "email:user_deleted"
+	TaskTypeEmailUpdateConfirmation = "email:update_confirmation"
 )
 
 type AnalysisProcessPayload struct {
@@ -55,6 +56,14 @@ type PasswordResetEmailPayload struct {
 type UserDeletedEmailPayload struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
+}
+
+type EmailUpdateConfirmationPayload struct {
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	OldEmail string `json:"old_email"`
+	NewEmail string `json:"new_email"`
+	Token    string `json:"token"`
 }
 
 func NewAnalysisProcessTask(analysisID uuid.UUID) (
@@ -153,5 +162,22 @@ func NewUserDeletedEmailTask(email, name string) (*asynq.Task, error) {
 	}
 
 	return asynq.NewTask(TaskTypeUserDeletedEmail, payload,
+		asynq.MaxRetry(3)), nil
+}
+
+func NewEmailUpdateConfirmationTask(email, name, oldEmail, newEmail,
+	token string) (*asynq.Task, error) {
+	payload, err := json.Marshal(EmailUpdateConfirmationPayload{
+		Email:    email,
+		Name:     name,
+		OldEmail: oldEmail,
+		NewEmail: newEmail,
+		Token:    token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return asynq.NewTask(TaskTypeEmailUpdateConfirmation, payload,
 		asynq.MaxRetry(3)), nil
 }

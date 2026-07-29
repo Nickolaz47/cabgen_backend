@@ -22,7 +22,6 @@ func createMockKrakenFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-// krakenLine builds a kraken2 classified line: "C\tseq_id\ttaxon\tkmers".
 func krakenLine(seqID, taxon string) string {
 	return "C\t" + seqID + "\t" + taxon + "\t|0:0|\n"
 }

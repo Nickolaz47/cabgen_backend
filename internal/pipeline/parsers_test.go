@@ -23,10 +23,7 @@ func createMockParserFile(t *testing.T, content string) string {
 }
 
 func TestParseCheckM(t *testing.T) {
-	// checkm qa -o 2 --tab_table output format (tab-separated):
-	// Bin Id  Marker lineage  # genomes  # markers  # marker sets
-	// Completeness  Contamination  # contigs  Genome size  # N's
-	// # N's per 100 kbp  Scaffold N50
+	// CheckM tab: fields[5]=Completeness, [6]=Contamination, [8]=GenomeSize, [11]=N50
 	t.Run("Success - Valid CheckM Output", func(t *testing.T) {
 		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\t# contigs\tGenome size\t# N's\t# N's per 100 kbp\tScaffold N50\n" +
 			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t15\t3500000\t0\t0\t25000\n"
@@ -108,9 +105,7 @@ func TestParseCheckM(t *testing.T) {
 }
 
 func TestParseFastANI(t *testing.T) {
-	// fastani -q <query> --rl <refList> -o <output> output format (tab-separated):
-	// query  ref  ANI  fragments_matched/total_fragments
-	// Parser extracts filename from ref path, strips extension
+	// FastANI tab: fields[1]=ref (strip ext), [2]=ANI, [3]=fragments
 	t.Run("Success - Valid FastANI Output", func(t *testing.T) {
 		content := "/data/contigs.fa\t/data/ref/Ecoli_K12.fasta\t99.87\t1500/1500\n"
 		path := createMockParserFile(t, content)
@@ -187,9 +182,7 @@ func TestParseFastANI(t *testing.T) {
 }
 
 func TestParseMLST(t *testing.T) {
-	// mlst --csv output format (comma-separated):
-	// file,scheme,ST,gene1,gene2,...
-	// Parser extracts fields[1]=Scheme, fields[2]=ST
+	// MLST CSV: fields[1]=Scheme, [2]=ST
 	t.Run("Success - Valid MLST CSV Output", func(t *testing.T) {
 		content := "contigs.fa,ecoli,ST131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
 		path := createMockParserFile(t, content)
