@@ -103,6 +103,7 @@ FRONTEND_URL=          # e.g., http://localhost:3000
 PORT=                  # e.g., 8080
 ENVIRONMENT=           # dev | prod
 API_HOST=              # e.g., http://localhost:8080
+APP_ROOT=              # Overrides the project root directory (auto-detected if empty)
 
 # Default administrator
 ADMIN_PASSWORD=
@@ -115,6 +116,31 @@ SMTP_PORT=
 
 # Redis URL
 REDIS_URL=
+
+# Analysis Worker — Bioinformatics tool paths (optional)
+FASTQC_PATH=
+UNICYCLER_PATH=
+SPADES_PATH=
+CHECKM_PATH=
+KRAKEN2_PATH=
+KRAKEN_DB_PATH=
+FASTANI_PATH=
+ABRICATE_PATH=
+MLST_PATH=
+RESFINDER_DB_PATH=
+
+# Analysis Worker — Database paths (optional)
+POLI_DB_PSEUDO=
+POLI_DB_KLEB=
+POLI_DB_ENTERO=
+POLI_DB_ACINETO=
+OTHER_DB_PSEUDO=
+OTHER_DB_KLEB=
+OTHER_DB_ENTERO=
+OTHER_DB_ACINETO=
+FASTANI_LIST_KLEB=
+FASTANI_LIST_ENTERO=
+FASTANI_LIST_ACINETO=
 ```
 
 ## Running the API

@@ -46,6 +46,8 @@ func main() {
 	mux.Handle(tasks.TaskTypeAdminTicketEmail, emailHandler)
 	mux.Handle(tasks.TaskTypeFinishedTicketEmail, emailHandler)
 	mux.Handle(tasks.TaskTypePasswordResetEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeUserDeletedEmail, emailHandler)
+	mux.Handle(tasks.TaskTypeEmailUpdateConfirmation, emailHandler)
 
 	// Redis
 	redisOpt := asynq.RedisClientOpt{Addr: config.RedisURL}
