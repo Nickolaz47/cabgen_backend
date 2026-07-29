@@ -29,7 +29,7 @@ type Ticket struct {
 }
 
 type CreateTicketInput struct {
-	Name        string `json:"name" binding:"required,min=2,max=100"`
+	Name        string `json:"name" binding:"required,min=3,max=100"`
 	Email       string `json:"email" binding:"required,email"`
 	Institution string `json:"institution" binding:"required,max=150"`
 	Subject     string `json:"subject" binding:"required,min=5,max=150"`

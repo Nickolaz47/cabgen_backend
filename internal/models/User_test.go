@@ -34,14 +34,14 @@ func TestUserToAdminResponse(t *testing.T) {
 
 	mockResponse := mockUser.ToAdminResponse(lang)
 	expected := models.AdminUserResponse{
-		ID: mockUser.ID,
-		Name: mockUser.Name,
-		Username: mockUser.Username,
-		Email: mockUser.Email,
+		ID:          mockUser.ID,
+		Name:        mockUser.Name,
+		Username:    mockUser.Username,
+		Email:       mockUser.Email,
 		CountryCode: mockUser.Country.Code,
-		Country: mockUser.Country.Names[lang],
-		UserRole: mockUser.UserRole,
-		IsActive: mockUser.IsActive,
+		Country:     mockUser.Country.Names[lang],
+		UserRole:    mockUser.UserRole,
+		IsActive:    mockUser.IsActive,
 	}
 
 	assert.Equal(t, expected, mockResponse)

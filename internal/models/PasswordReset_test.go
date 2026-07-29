@@ -10,14 +10,14 @@ import (
 
 func TestPasswordReset_IsExpired(t *testing.T) {
 	t.Run("should return false when token is not expired", func(t *testing.T) {
-		pr := testmodels.NewPasswordReset("user@example.com", "valid-token", 
-		time.Now().Add(1*time.Hour))
+		pr := testmodels.NewPasswordReset("user@example.com", "valid-token",
+			time.Now().Add(1*time.Hour))
 		assert.False(t, pr.IsExpired())
 	})
 
 	t.Run("should return true when token is expired", func(t *testing.T) {
 		pr := testmodels.NewPasswordReset("user@example.com", "expired-token",
-		 time.Now().Add(-1*time.Hour))
+			time.Now().Add(-1*time.Hour))
 		assert.True(t, pr.IsExpired())
 	})
 }

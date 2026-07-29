@@ -31,7 +31,7 @@ var CreateTicketValidationTests = []Body{
 			b["name"] = "A"
 			return b
 		}()),
-		Expected: `{"error":"Name must be at least 2 characters long."}`,
+		Expected: `{"error":"Name must be at least 3 characters long."}`,
 	},
 	{
 		Name: "Name too long",

@@ -24,6 +24,6 @@ type ForgotPasswordInput struct {
 
 type ResetPasswordInput struct {
 	Token           string `json:"token" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required,min=8,max=64"`
+	NewPassword     string `json:"new_password" binding:"required,min=8,max=32"`
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=NewPassword"`
 }

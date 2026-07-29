@@ -1,6 +1,10 @@
 package data
 
-import "github.com/CABGenOrg/cabgen_backend/internal/testutils"
+import (
+	"strings"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+)
 
 var baseLaboratoryCreateBody = map[string]any{
 	"name":         "Laboratório Central do Rio de Janeiro",
@@ -11,6 +15,11 @@ var baseLaboratoryCreateBody = map[string]any{
 var CreateLaboratoryTests = []Body{
 	{"Name Required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseLaboratoryCreateBody); b["name"] = ""; return b }()), `{"error":"Name is required."}`},
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseLaboratoryCreateBody); b["name"] = "La"; return b }()), `{"error":"Name must be at least 3 characters long."}`},
+	{"Name too long", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseLaboratoryCreateBody)
+		b["name"] = strings.Repeat("A", 256)
+		return b
+	}()), `{"error":"Name must be at most 255 characters long."}`},
 	{"Abbreviation Required", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseLaboratoryCreateBody)
 		b["abbreviation"] = ""
@@ -25,6 +34,11 @@ var CreateLaboratoryTests = []Body{
 
 var UpdateLaboratoryTests = []Body{
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseLaboratoryCreateBody); b["name"] = "La"; return b }()), `{"error":"Name must be at least 3 characters long."}`},
+	{"Name too long", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseLaboratoryCreateBody)
+		b["name"] = strings.Repeat("A", 256)
+		return b
+	}()), `{"error":"Name must be at most 255 characters long."}`},
 	{"Abbreviation too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseLaboratoryCreateBody)
 		b["abbreviation"] = "L"

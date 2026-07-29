@@ -104,10 +104,10 @@ var ResetPasswordBadRequestTests = []Body{
 		Name: "Password too long",
 		Body: testutils.ToJSON(func() map[string]any {
 			b := testutils.CopyMap(baseValidResetBody)
-			b["new_password"] = strings.Repeat("a", 65)
-			b["confirm_password"] = strings.Repeat("a", 65)
+			b["new_password"] = strings.Repeat("a", 33)
+			b["confirm_password"] = strings.Repeat("a", 33)
 			return b
 		}()),
-		Expected: `{"error":"New password must be at most 64 characters."}`,
+		Expected: `{"error":"New password must be at most 32 characters."}`,
 	},
 }

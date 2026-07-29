@@ -241,8 +241,14 @@ other = "Sequencer model is required."
 [validation.Brand.min]
 other = "Sequencer brand must contain at least {{.Param}} characters."
 
+[validation.Brand.max]
+other = "Sequencer brand must have a maximum of {{.Param}} characters."
+
 [validation.Model.min]
 other = "Sequencer model must contain at least {{.Param}} characters."
+
+[validation.Model.max]
+other = "Sequencer model must have a maximum of {{.Param}} characters."
 
 [admin.sequencer.create.success]
 other = "Sequencer registered successfully."
@@ -330,6 +336,9 @@ other = "Species is required."
 
 [validation.Species.min]
 other = "Species must be at least {{.Param}} characters long."
+
+[validation.Species.max]
+other = "Species must be at most {{.Param}} characters long."
 
 [validation.Taxon.required]
 other = "Taxon is required."

@@ -38,13 +38,13 @@ func (s *Sequencer) ToFormResponse() SequencerFormResponse {
 }
 
 type SequencerCreateInput struct {
-	Model    string `json:"model" binding:"required,min=3"`
-	Brand    string `json:"brand" binding:"required,min=3"`
+	Model    string `json:"model" binding:"required,min=3,max=255"`
+	Brand    string `json:"brand" binding:"required,min=3,max=255"`
 	IsActive bool   `json:"is_active"`
 }
 
 type SequencerUpdateInput struct {
-	Model    *string `json:"model,omitempty" binding:"omitempty,min=3"`
-	Brand    *string `json:"brand,omitempty" binding:"omitempty,min=3"`
+	Model    *string `json:"model,omitempty" binding:"omitempty,min=3,max=255"`
+	Brand    *string `json:"brand,omitempty" binding:"omitempty,min=3,max=255"`
 	IsActive *bool   `json:"is_active,omitempty" binding:"omitempty"`
 }

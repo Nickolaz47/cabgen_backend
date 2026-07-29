@@ -1,6 +1,8 @@
 package data
 
 import (
+	"strings"
+
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 )
@@ -28,6 +30,15 @@ var CreateHealthServiceTests = []Body{
 		`{"error":"Name must be at least 3 characters long."}`,
 	},
 	{
+		"Name too long",
+		testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseHealthServiceBody)
+			b["name"] = strings.Repeat("A", 256)
+			return b
+		}()),
+		`{"error":"Name must be at most 255 characters long."}`,
+	},
+	{
 		"Type Required",
 		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["type"] = ""; return b }()),
 		`{"error":"The health service type is required."}`,
@@ -41,6 +52,15 @@ var CreateHealthServiceTests = []Body{
 		"City too short",
 		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["city"] = "Ri"; return b }()),
 		`{"error":"City must be at least 3 characters long."}`,
+	},
+	{
+		"City too long",
+		testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseHealthServiceBody)
+			b["city"] = strings.Repeat("A", 256)
+			return b
+		}()),
+		`{"error":"City must be at most 255 characters long."}`,
 	},
 	{
 		"Country Code Required",
@@ -96,6 +116,15 @@ var UpdateHealthServiceTests = []Body{
 		`{"error":"Name must be at least 3 characters long."}`,
 	},
 	{
+		"Name too long",
+		testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseHealthServiceBody)
+			b["name"] = strings.Repeat("A", 256)
+			return b
+		}()),
+		`{"error":"Name must be at most 255 characters long."}`,
+	},
+	{
 		"Type too short",
 		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["type"] = "Pr"; return b }()),
 		`{"error":"The health service type must be at least 3 characters long."}`,
@@ -104,6 +133,15 @@ var UpdateHealthServiceTests = []Body{
 		"City too short",
 		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["city"] = "Ri"; return b }()),
 		`{"error":"City must be at least 3 characters long."}`,
+	},
+	{
+		"City too long",
+		testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseHealthServiceBody)
+			b["city"] = strings.Repeat("A", 256)
+			return b
+		}()),
+		`{"error":"City must be at most 255 characters long."}`,
 	},
 	{
 		"Country Code invalid length",

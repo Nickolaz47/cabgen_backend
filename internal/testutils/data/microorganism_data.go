@@ -1,7 +1,11 @@
 package data
 
-import "github.com/CABGenOrg/cabgen_backend/internal/testutils"
-import "github.com/CABGenOrg/cabgen_backend/internal/models"
+import (
+	"strings"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+)
 
 var baseMicroorganismCreateBody = map[string]any{
 	"taxon":     models.Bacteria,
@@ -28,6 +32,11 @@ var CreateMicroorganismTests = []Body{
 		b["species"] = "Ec"
 		return b
 	}()), `{"error":"Species must be at least 3 characters long."}`},
+	{"Species too long", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseMicroorganismCreateBody)
+		b["species"] = strings.Repeat("A", 256)
+		return b
+	}()), `{"error":"Species must be at most 255 characters long."}`},
 
 	{"Invalid taxon", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseMicroorganismCreateBody)
@@ -66,6 +75,11 @@ var UpdateMicroorganismTests = []Body{
 		b["species"] = "In"
 		return b
 	}()), `{"error":"Species must be at least 3 characters long."}`},
+	{"Species too long", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseMicroorganismUpdateBody)
+		b["species"] = strings.Repeat("A", 256)
+		return b
+	}()), `{"error":"Species must be at most 255 characters long."}`},
 
 	{"Invalid taxon", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseMicroorganismUpdateBody)

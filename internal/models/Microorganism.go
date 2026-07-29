@@ -96,14 +96,14 @@ func (m *Microorganism) ToFormResponse(language string) MicroorganismFormRespons
 
 type MicroorganismCreateInput struct {
 	Taxon    Taxon             `json:"taxon" binding:"required"`
-	Species  string            `json:"species" binding:"required,min=3"`
+	Species  string            `json:"species" binding:"required,min=3,max=255"`
 	Variety  map[string]string `json:"variety" binding:"min=3"`
 	IsActive bool              `json:"is_active"`
 }
 
 type MicroorganismUpdateInput struct {
 	Taxon    *Taxon            `json:"taxon,omitempty" binding:"omitempty"`
-	Species  *string           `json:"species,omitempty" binding:"omitempty,min=3"`
+	Species  *string           `json:"species,omitempty" binding:"omitempty,min=3,max=255"`
 	Variety  map[string]string `json:"variety,omitempty" binding:"omitempty,min=3"`
 	IsActive *bool             `json:"is_active,omitempty" binding:"omitempty"`
 }

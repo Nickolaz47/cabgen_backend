@@ -241,8 +241,14 @@ other = "O modelo do sequenciador é obrigatório."
 [validation.Brand.min]
 other = "A marca do sequenciador deve conter pelo menos {{.Param}} caracteres."
 
+[validation.Brand.max]
+other = "A marca do sequenciador deve conter no máximo {{.Param}} caracteres."
+
 [validation.Model.min]
 other = "O modelo do sequenciador deve conter pelo menos {{.Param}} caracteres."
+
+[validation.Model.max]
+other = "O modelo do sequenciador deve conter no máximo {{.Param}} caracteres."
 
 [admin.sequencer.create.success]
 other = "Sequenciador cadastrado com sucesso."
@@ -330,6 +336,9 @@ other = "A espécie é obrigatória."
 
 [validation.Species.min]
 other = "A espécie deve ter no mínimo {{.Param}} caracteres."
+
+[validation.Species.max]
+other = "A espécie deve ter no máximo {{.Param}} caracteres."
 
 [validation.Taxon.required]
 other = "O táxon é obrigatório."

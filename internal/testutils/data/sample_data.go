@@ -78,6 +78,11 @@ var CreateSampleTests = []Body{
 		b["country_code"] = "BR"
 		return b
 	}()), `{"error":"The country code must be 3 characters long."}`},
+	{"City too short", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleCreateBody)
+		b["city"] = "Ma"
+		return b
+	}()), `{"error":"City must be at least 3 characters long."}`},
 	{"City too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
 		b["city"] = strings.Repeat("A", 256)
@@ -157,6 +162,11 @@ var UpdateSampleTests = []Body{
 		b["country_code"] = "BR"
 		return b
 	}()), `{"error":"The country code must be 3 characters long."}`},
+	{"City too short on update", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleUpdateBody)
+		b["city"] = "Ma"
+		return b
+	}()), `{"error":"City must be at least 3 characters long."}`},
 	{"City too long on update", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleUpdateBody)
 		b["city"] = strings.Repeat("A", 256)

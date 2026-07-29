@@ -183,7 +183,7 @@ type AdminSampleCreateInput struct {
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
-	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
@@ -203,7 +203,7 @@ type SampleCreateInput struct {
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
-	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
@@ -241,7 +241,7 @@ type AdminSampleUpdateInput struct {
 	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
 	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
 	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
-	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
@@ -261,7 +261,7 @@ type SampleUpdateInput struct {
 	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
 	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
 	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
-	City           *string `json:"city,omitempty" binding:"omitempty,max=255"`
+	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`

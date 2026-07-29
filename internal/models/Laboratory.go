@@ -40,13 +40,13 @@ func (s *Laboratory) ToFormResponse() LaboratoryFormResponse {
 }
 
 type LaboratoryCreateInput struct {
-	Name         string `json:"name" binding:"required,min=3"`
+	Name         string `json:"name" binding:"required,min=3,max=255"`
 	Abbreviation string `json:"abbreviation" binding:"required,min=2"`
 	IsActive     bool   `json:"is_active"`
 }
 
 type LaboratoryUpdateInput struct {
-	Name         *string `json:"name,omitempty" binding:"omitempty,min=3"`
+	Name         *string `json:"name,omitempty" binding:"omitempty,min=3,max=255"`
 	Abbreviation *string `json:"abbreviation,omitempty" binding:"omitempty,min=2"`
 	IsActive     *bool   `json:"is_active,omitempty" binding:"omitempty"`
 }
