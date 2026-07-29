@@ -43,10 +43,13 @@ other = "El correo electrónico es obligatorio."
 [validation.Email.email]
 other = "Formato de correo electrónico no válido."
 
-[validation.ConfirmEmail.required]  
-other = "La confirmación de correo electrónico es obligatoria." 
+[validation.ConfirmEmail.required]
+other = "La confirmación de correo electrónico es obligatoria."
 
-[validation.emailMismatch]  
+[validation.ConfirmEmail.eqfield]
+other = "Los correos electrónicos deben coincidir."
+
+[validation.emailMismatch]
 other = "Los correos electrónicos deben coincidir."
 
 [validation.Password.required]
@@ -108,6 +111,18 @@ other = "La confirmación de correo electrónico es obligatoria."
 
 [validation.ConfirmNewEmail.eqfield]
 other = "Los correos electrónicos deben coincidir."
+
+[validation.CurrentPassword.required]
+other = "La contraseña actual es obligatoria."
+
+[validation.NewPassword.max]
+other = "La nueva contraseña debe tener como máximo {{.Param}} caracteres."
+
+[validation.NewEmail.required]
+other = "El nuevo correo electrónico es obligatorio."
+
+[validation.NewEmail.email]
+other = "Formato de correo electrónico inválido."
 
 [validation.generic]
 other = "Entrada inválida. Verifique los campos e intente nuevamente."
@@ -313,14 +328,23 @@ other = "El taxón del microorganismo no es válido. Elija entre Bacteria, Virus
 [validation.Species.required]
 other = "La especie es obligatoria."
 
+[validation.Species.min]
+other = "La especie debe tener al menos {{.Param}} caracteres."
+
 [validation.Taxon.required]
 other = "El taxón es obligatorio."
 
 [validation.Type.required]
 other = "El tipo de servicio de salud es obligatorio."
 
+[validation.Type.min]
+other = "El tipo de servicio de salud debe tener al menos {{.Param}} caracteres."
+
 [validation.City.min]
 other = "La ciudad debe tener al menos {{.Param}} caracteres."
+
+[validation.City.max]
+other = "La ciudad debe tener como máximo {{.Param}} caracteres."
 
 [validation.Contactant.min]
 other = "El nombre del contacto debe tener al menos {{.Param}} caracteres."

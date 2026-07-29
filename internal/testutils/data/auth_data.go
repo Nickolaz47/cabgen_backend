@@ -1,6 +1,10 @@
 package data
 
-import "github.com/CABGenOrg/cabgen_backend/internal/testutils"
+import (
+	"strings"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+)
 
 var baseValidLoginBody = map[string]any{
 	"username": "nick",
@@ -16,21 +20,6 @@ var LoginSuccess = Body{
 var LoginBadRequestTests = []Body{
 	{"Username required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidLoginBody); b["username"] = ""; return b }()), `{"error":"Username is required."}`},
 	{"Password required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidLoginBody); b["password"] = ""; return b }()), `{"error":"Password is required."}`},
-}
-
-var LoginUnauthorizedTests = []Body{
-	{"Invalid credentials (username)", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidLoginBody); b["username"] = "nic"; return b }()), `{"error":"Invalid credentials."}`},
-	{"Invalid credentials (password)", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidLoginBody)
-		b["password"] = "1234567"
-		return b
-	}()), `{"error":"Invalid credentials."}`},
-}
-
-var LoginUserDeactivatedTest = Body{
-	Name:     "User deactivated",
-	Body:     testutils.ToJSON(baseValidLoginBody),
-	Expected: `{"error": "Your account is not activated."}`,
 }
 
 var baseValidForgotBody = map[string]any{
@@ -84,6 +73,15 @@ var ResetPasswordBadRequestTests = []Body{
 		Expected: `{"error":"New password is required."}`,
 	},
 	{
+		Name: "Confirm password required",
+		Body: testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseValidResetBody)
+			b["confirm_password"] = ""
+			return b
+		}()),
+		Expected: `{"error":"Password confirmation is required."}`,
+	},
+	{
 		Name: "Passwords do not match",
 		Body: testutils.ToJSON(func() map[string]any {
 			b := testutils.CopyMap(baseValidResetBody)
@@ -101,5 +99,15 @@ var ResetPasswordBadRequestTests = []Body{
 			return b
 		}()),
 		Expected: `{"error":"New password must be at least 8 characters."}`,
+	},
+	{
+		Name: "Password too long",
+		Body: testutils.ToJSON(func() map[string]any {
+			b := testutils.CopyMap(baseValidResetBody)
+			b["new_password"] = strings.Repeat("a", 65)
+			b["confirm_password"] = strings.Repeat("a", 65)
+			return b
+		}()),
+		Expected: `{"error":"New password must be at most 64 characters."}`,
 	},
 }

@@ -49,6 +49,16 @@ var RegisterTests = []Body{
 		b["email"] = "invalid-email"
 		return b
 	}()), `{"error":"Invalid email format."}`},
+	{"Confirm email required", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		b["confirm_email"] = ""
+		return b
+	}()), `{"error":"Email confirmation is required."}`},
+	{"Emails do not match", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		b["confirm_email"] = "other@mail.com"
+		return b
+	}()), `{"error":"Emails must match."}`},
 
 	// Password
 	{"Password required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["password"] = ""; return b }()), `{"error":"Password is required."}`},
@@ -62,6 +72,16 @@ var RegisterTests = []Body{
 		b["password"] = strings.Repeat("1234", 10)
 		return b
 	}()), `{"error":"Password must be at most 32 characters long."}`},
+	{"Confirm password required", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		b["confirm_password"] = ""
+		return b
+	}()), `{"error":"Password confirmation is required."}`},
+	{"Passwords do not match", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		b["confirm_password"] = "different123"
+		return b
+	}()), `{"error":"Passwords must match."}`},
 
 	// Country code
 	{"Country code required", testutils.ToJSON(func() map[string]any {
@@ -69,6 +89,11 @@ var RegisterTests = []Body{
 		b["country_code"] = ""
 		return b
 	}()), `{"error":"Country code is required."}`},
+	{"Country code invalid length", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		b["country_code"] = "BR"
+		return b
+	}()), `{"error":"The country code must be 3 characters long."}`},
 
 	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {

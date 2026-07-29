@@ -33,6 +33,16 @@ var CreateHealthServiceTests = []Body{
 		`{"error":"The health service type is required."}`,
 	},
 	{
+		"Type too short",
+		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["type"] = "Pr"; return b }()),
+		`{"error":"The health service type must be at least 3 characters long."}`,
+	},
+	{
+		"City too short",
+		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["city"] = "Ri"; return b }()),
+		`{"error":"City must be at least 3 characters long."}`,
+	},
+	{
 		"Country Code Required",
 		testutils.ToJSON(func() map[string]any {
 			b := testutils.CopyMap(baseHealthServiceBody)
@@ -84,6 +94,16 @@ var UpdateHealthServiceTests = []Body{
 		"Name too short",
 		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["name"] = "Ho"; return b }()),
 		`{"error":"Name must be at least 3 characters long."}`,
+	},
+	{
+		"Type too short",
+		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["type"] = "Pr"; return b }()),
+		`{"error":"The health service type must be at least 3 characters long."}`,
+	},
+	{
+		"City too short",
+		testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseHealthServiceBody); b["city"] = "Ri"; return b }()),
+		`{"error":"City must be at least 3 characters long."}`,
 	},
 	{
 		"Country Code invalid length",

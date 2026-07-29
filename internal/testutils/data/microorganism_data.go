@@ -11,11 +11,23 @@ var baseMicroorganismCreateBody = map[string]any{
 }
 
 var CreateMicroorganismTests = []Body{
+	{"Missing taxon", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseMicroorganismCreateBody)
+		b["taxon"] = ""
+		return b
+	}()), `{"error":"Taxon is required."}`},
+
 	{"Missing species", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseMicroorganismCreateBody)
 		b["species"] = nil
 		return b
 	}()), `{"error":"Species is required."}`},
+
+	{"Species too short", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseMicroorganismCreateBody)
+		b["species"] = "Ec"
+		return b
+	}()), `{"error":"Species must be at least 3 characters long."}`},
 
 	{"Invalid taxon", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseMicroorganismCreateBody)
@@ -49,6 +61,12 @@ var baseMicroorganismUpdateBody = map[string]any{
 }
 
 var UpdateMicroorganismTests = []Body{
+	{"Species too short", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseMicroorganismUpdateBody)
+		b["species"] = "In"
+		return b
+	}()), `{"error":"Species must be at least 3 characters long."}`},
+
 	{"Invalid taxon", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseMicroorganismUpdateBody)
 		b["taxon"] = "invalid_taxon"

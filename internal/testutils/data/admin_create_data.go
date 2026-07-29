@@ -90,6 +90,18 @@ var AdminCreateUserTests = []Body{
 		b["country_code"] = ""
 		return b
 	}()), `{"error":"Country code is required."}`},
+	{"Country code invalid length", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidAdminCreateUserBody)
+		b["country_code"] = "BR"
+		return b
+	}()), `{"error":"The country code must be 3 characters long."}`},
+
+	// User Role
+	{"User role required", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidAdminCreateUserBody)
+		b["user_role"] = ""
+		return b
+	}()), `{"error":"User role is required."}`},
 
 	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {

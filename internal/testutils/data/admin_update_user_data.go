@@ -73,12 +73,17 @@ var AdminUpdateUserTests = []Body{
 		b["institution"] = string(make([]byte, 256))
 		return b
 	}()), `{"error":"Institution must be at most 255 characters long."}`},
+	{"Country code invalid length", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidAdminUpdateBody)
+		b["country_code"] = "BR"
+		return b
+	}()), `{"error":"The country code must be 3 characters long."}`},
 }
 
 var AdminCountryNotFoundTest = Body{
-	"Country code invalid",
+	"Country code not found",
 	testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidUpdateBody)
+		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["country_code"] = "XXX"
 		return b
 	}()),

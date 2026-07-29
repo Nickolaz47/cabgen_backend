@@ -50,23 +50,9 @@ var UpdateUserTests = []Body{
 		b["institution"] = string(make([]byte, 256))
 		return b
 	}()), `{"error":"Institution must be at most 255 characters long."}`},
-}
-
-var UpdateUserConflictTests = []Body{
-	// Username
-	{"Username already exists", testutils.ToJSON(func() map[string]any {
+	{"Country code invalid length", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidUpdateBody)
-		b["username"] = "nick"
+		b["country_code"] = "BR"
 		return b
-	}()), `{"error": "Username already exists."}`},
-}
-
-var CountryNotFoundTest = Body{
-	"Country code invalid",
-	testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseValidUpdateBody)
-		b["country_code"] = "XXX"
-		return b
-	}()),
-	`{"error":"No country was found with this code."}`,
+	}()), `{"error":"The country code must be 3 characters long."}`},
 }

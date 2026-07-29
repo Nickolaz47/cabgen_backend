@@ -234,6 +234,32 @@ func TestUpdateUser(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Invalid Country Code", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.AdminUserUpdateInput,
+				language string,
+			) (*models.AdminUserResponse, error) {
+				return nil, services.ErrInvalidCountryCode
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/users/"+validUserID.String(),
+			data.AdminCountryNotFoundTest.Body,
+			nil,
+			gin.Params{{Key: "userId", Value: validUserID.String()}},
+		)
+		handler.UpdateUser(c)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.JSONEq(t, data.AdminCountryNotFoundTest.Expected, w.Body.String())
+	})
+
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
 			UpdateFunc: func(

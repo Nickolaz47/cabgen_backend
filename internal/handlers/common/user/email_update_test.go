@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/google/uuid"
@@ -64,6 +65,23 @@ func TestRequestEmailUpdate(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	for _, tt := range data.RequestEmailUpdateTests {
+		t.Run(tt.Name, func(t *testing.T) {
+			svc := &mocks.MockUserService{}
+			handler := user.NewUserHandler(svc)
+
+			c, w := testutils.SetupGinContext(
+				http.MethodPost, "/api/users/me/request-email-update", tt.Body,
+				nil, nil,
+			)
+			c.Set("user", &mockToken)
+			handler.RequestEmailUpdate(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.JSONEq(t, tt.Expected, w.Body.String())
+		})
+	}
 
 	t.Run("Error - Emails do not match", func(t *testing.T) {
 		svc := &mocks.MockUserService{}
@@ -178,6 +196,23 @@ func TestConfirmEmailUpdate(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	for _, tt := range data.ConfirmEmailUpdateTests {
+		t.Run(tt.Name, func(t *testing.T) {
+			svc := &mocks.MockUserService{}
+			handler := user.NewUserHandler(svc)
+
+			c, w := testutils.SetupGinContext(
+				http.MethodPost, "/api/users/me/confirm-email-update", tt.Body,
+				nil, nil,
+			)
+			c.Set("user", &mockToken)
+			handler.ConfirmEmailUpdate(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.JSONEq(t, tt.Expected, w.Body.String())
+		})
+	}
 
 	t.Run("Error - Invalid Token", func(t *testing.T) {
 		svc := &mocks.MockUserService{

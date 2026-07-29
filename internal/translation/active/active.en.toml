@@ -43,10 +43,13 @@ other = "Email is required."
 [validation.Email.email]
 other = "Invalid email format."
 
-[validation.ConfirmEmail.required]  
-other = "Email confirmation is required."  
+[validation.ConfirmEmail.required]
+other = "Email confirmation is required."
 
-[validation.emailMismatch]  
+[validation.ConfirmEmail.eqfield]
+other = "Emails must match."
+
+[validation.emailMismatch]
 other = "Emails must match."
 
 [validation.Password.required]
@@ -108,6 +111,18 @@ other = "Email confirmation is required."
 
 [validation.ConfirmNewEmail.eqfield]
 other = "Emails must match."
+
+[validation.CurrentPassword.required]
+other = "Current password is required."
+
+[validation.NewPassword.max]
+other = "New password must be at most {{.Param}} characters."
+
+[validation.NewEmail.required]
+other = "New email is required."
+
+[validation.NewEmail.email]
+other = "Invalid email format."
 
 [validation.generic]
 other = "Invalid input. Please check the fields and try again."
@@ -313,14 +328,23 @@ other = "The microorganism taxon is invalid. Choose between Bacteria, Virus, Pro
 [validation.Species.required]
 other = "Species is required."
 
+[validation.Species.min]
+other = "Species must be at least {{.Param}} characters long."
+
 [validation.Taxon.required]
 other = "Taxon is required."
 
 [validation.Type.required]
 other = "The health service type is required."
 
+[validation.Type.min]
+other = "The health service type must be at least {{.Param}} characters long."
+
 [validation.City.min]
 other = "City must be at least {{.Param}} characters long."
+
+[validation.City.max]
+other = "City must be at most {{.Param}} characters long."
 
 [validation.Contactant.min]
 other = "Contact name must be at least {{.Param}} characters long."

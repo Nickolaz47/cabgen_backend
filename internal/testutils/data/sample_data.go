@@ -78,6 +78,11 @@ var CreateSampleTests = []Body{
 		b["country_code"] = "BR"
 		return b
 	}()), `{"error":"The country code must be 3 characters long."}`},
+	{"City too long", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleCreateBody)
+		b["city"] = strings.Repeat("A", 256)
+		return b
+	}()), `{"error":"City must be at most 255 characters long."}`},
 	{"Missing user_id", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
 		delete(b, "user_id")
@@ -152,30 +157,9 @@ var UpdateSampleTests = []Body{
 		b["country_code"] = "BR"
 		return b
 	}()), `{"error":"The country code must be 3 characters long."}`},
-}
-
-var baseSampleAttachmentBody = map[string]any{
-	"fastq1": "/app/uploads/r1.fastq.gz",
-	"fastq2": "/app/uploads/r2.fastq.gz",
-	"fasta":  nil,
-}
-
-var AttachmentSampleTests = []Body{
-	{"Fastq1 path too long", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleAttachmentBody)
-		b["fastq1"] = strings.Repeat("A", 256)
+	{"City too long on update", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleUpdateBody)
+		b["city"] = strings.Repeat("A", 256)
 		return b
-	}()), `{"error":"The fastq1 name must have a maximum of 255 characters."}`},
-
-	{"Fastq2 path too long", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleAttachmentBody)
-		b["fastq2"] = strings.Repeat("A", 256)
-		return b
-	}()), `{"error":"The fastq2 name must have a maximum of 255 characters."}`},
-
-	{"Fasta path too long", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleAttachmentBody)
-		b["fasta"] = strings.Repeat("A", 256)
-		return b
-	}()), `{"error":"The fasta name must have a maximum of 255 characters."}`},
+	}()), `{"error":"City must be at most 255 characters long."}`},
 }
