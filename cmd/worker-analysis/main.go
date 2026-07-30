@@ -88,7 +88,10 @@ func main() {
 		redisOpt,
 		asynq.Config{
 			Concurrency: 4,
-			Logger:      logging.FileLogger.Sugar(),
+			Queues: map[string]int{
+				tasks.QueueAnalysis: 1,
+			},
+			Logger: logging.FileLogger.Sugar(),
 		},
 	)
 
