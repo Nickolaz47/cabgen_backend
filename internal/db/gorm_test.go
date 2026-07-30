@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
@@ -22,6 +23,24 @@ func TestNewGormDatabase(t *testing.T) {
 		assert.Error(t, err)
 		assert.Empty(t, database)
 		assert.Contains(t, err.Error(), "unknown driver")
+	})
+
+	t.Run("Postgres retries on unreachable DSN", func(t *testing.T) {
+		originalRetries := db.MaxConnectionRetries
+		originalDelay := db.ConnectionRetryDelay
+		defer func() {
+			db.MaxConnectionRetries = originalRetries
+			db.ConnectionRetryDelay = originalDelay
+		}()
+
+		db.MaxConnectionRetries = 3
+		db.ConnectionRetryDelay = time.Millisecond
+
+		database, err := db.NewGormDatabase("postgres",
+			"host=localhost user=x password=x dbname=x port=1")
+
+		assert.Error(t, err)
+		assert.Nil(t, database)
 	})
 }
 

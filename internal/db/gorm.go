@@ -11,6 +11,11 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+var (
+	MaxConnectionRetries = 10
+	ConnectionRetryDelay = 2 * time.Second
+)
+
 type GormDatabase struct {
 	db *gorm.DB
 }
@@ -33,7 +38,21 @@ func NewGormDatabase(driver, dsn string) (*GormDatabase, error) {
 
 	switch driver {
 	case "postgres":
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: newLogger})
+		for attempt := range MaxConnectionRetries {
+			db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: newLogger})
+			if err == nil {
+				break
+			}
+
+			if attempt < MaxConnectionRetries-1 {
+				log.Printf(
+					"failed to connect to database (attempt %d/%d): %v;"+
+						" retrying in %s",
+					attempt+1, MaxConnectionRetries, err,
+					ConnectionRetryDelay)
+				time.Sleep(ConnectionRetryDelay)
+			}
+		}
 	case "sqlite":
 		db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{Logger: newLogger})
 	default:

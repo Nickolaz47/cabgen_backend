@@ -672,3 +672,35 @@ other = """
 <p>Se o problema persistir ou se você tiver novas dúvidas, sinta-se à vontade para abrir um novo ticket em nosso site.</p>
 <p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
 </div>"""
+
+[email.admin_alert.subject]
+other = "CABGen - Novo Usuário Criado: {{.Username}}"
+
+[email.admin_alert.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Novo Usuário Criado - CABGen</h2>
+<p>Prezado administrador,</p>
+<p>Um novo usuário <strong>{{.Username}}</strong> foi criado no CABGen.</p>
+<p>Por favor, acesse o site e realize a ativação do mesmo.</p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""
+
+[email.admin_ticket.subject]
+other = "CABGen - Contato: {{.Name}}"
+
+[email.admin_ticket.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Novo Ticket de Suporte - CABGen</h2>
+<p><strong>Nome:</strong> {{.Name}}</p>
+<p><strong>E-mail:</strong> {{.Email}}</p>
+<p><strong>Assunto:</strong> {{.Subject}}</p>
+<hr>
+<p>{{.Message}}</p>
+<br>
+<p><small>Acesse o painel administrativo para atribuir este ticket a você e respondê-lo.</small></p>
+<hr>
+<p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
+</div>"""

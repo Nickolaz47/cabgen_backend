@@ -9,6 +9,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/workers"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 )
@@ -27,6 +28,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Load translations
+	translation.LoadTranslation()
 
 	// Logs
 	logging.SetupLoggers("./logs/worker-email.log")

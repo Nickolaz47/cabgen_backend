@@ -672,3 +672,35 @@ other = """
 <hr>
 <p>Atentamente,<br><strong>Equipo CABGen</strong></p>
 </div>"""
+
+[email.admin_alert.subject]
+other = "CABGen - Nuevo Usuario Creado: {{.Username}}"
+
+[email.admin_alert.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Nuevo Usuario Creado - CABGen</h2>
+<p>Estimado administrador,</p>
+<p>Un nuevo usuario <strong>{{.Username}}</strong> ha sido creado en CABGen.</p>
+<p>Por favor, acceda al sitio y active la cuenta.</p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""
+
+[email.admin_ticket.subject]
+other = "CABGen - Contacto: {{.Name}}"
+
+[email.admin_ticket.body]
+other = """
+<div style="font-family: Arial, sans-serif; color: #333;">
+<h2>Nuevo Ticket de Soporte - CABGen</h2>
+<p><strong>Nombre:</strong> {{.Name}}</p>
+<p><strong>Correo electrónico:</strong> {{.Email}}</p>
+<p><strong>Asunto:</strong> {{.Subject}}</p>
+<hr>
+<p>{{.Message}}</p>
+<br>
+<p><small>Acceda al panel administrativo para asignarse este ticket y responderlo.</small></p>
+<hr>
+<p>Atentamente,<br><strong>Equipo CABGen</strong></p>
+</div>"""

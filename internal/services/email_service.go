@@ -55,12 +55,22 @@ func (s *emailService) getLocalizer(language string) *i18n.Localizer {
 	return i18n.NewLocalizer(translation.Bundle, language)
 }
 
-func (s *emailService) localize(localizer *i18n.Localizer, messageID string, data map[string]interface{}) string {
+func (s *emailService) localize(localizer *i18n.Localizer, messageID string,
+	data map[string]any) string {
 	cfg := &i18n.LocalizeConfig{MessageID: messageID}
 	if data != nil {
 		cfg.TemplateData = data
 	}
-	return localizer.MustLocalize(cfg)
+
+	msg, err := localizer.Localize(cfg)
+	if err != nil {
+		s.Logger.Error("Missing translation key",
+			zap.String("messageID", messageID),
+			zap.Error(err))
+		return messageID
+	}
+
+	return msg
 }
 
 func (s *emailService) SendAdminAlertEmail(ctx context.Context,
@@ -93,17 +103,16 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 			continue
 		}
 
-		body := `
-		Prezado administrador,
-		<p>Um novo usuário foi criado no CAGBen.</p>
-		<p>Por favor, acesse o site e realize a ativação do mesmo.</p>
-		Obrigado.
-		`
+		localizer := s.getLocalizer(a.Language)
+		subject := s.localize(localizer, "email.admin_alert.subject",
+			map[string]any{"Username": newUser.Username})
+		body := s.localize(localizer, "email.admin_alert.body",
+			map[string]any{"Username": newUser.Username})
 
 		cfg := email.EmailConfig{
 			Sender:    config.SenderEmail,
 			Recipient: a.Email,
-			Subject:   "Novo Usuário Criado: " + newUser.Username,
+			Subject:   subject,
 			Body:      body,
 		}
 		if err := email.SendEmail(cfg, s.EmailSender); err != nil {
@@ -129,7 +138,7 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 
 	localizer := s.getLocalizer(user.Language)
 	subject := s.localize(localizer, "email.welcome.subject", nil)
-	body := s.localize(localizer, "email.welcome.body", map[string]interface{}{
+	body := s.localize(localizer, "email.welcome.body", map[string]any{
 		"Name": user.Name,
 	})
 
@@ -170,7 +179,7 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 		statusText = s.localize(localizer, "email.analysis_done.status_failed", nil)
 	}
 
-	body := s.localize(localizer, "email.analysis_done.body", map[string]interface{}{
+	body := s.localize(localizer, "email.analysis_done.body", map[string]any{
 		"Name":       analysis.User.Name,
 		"SampleName": analysis.Sample.Name,
 		"StatusText": statusText,
@@ -221,26 +230,26 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 		return fmt.Errorf("Failed to get admins: %v", err)
 	}
 
-	body := fmt.Sprintf(`
-    <h2>Novo Ticket de Suporte CABGen</h2>
-    <p><strong>Nome:</strong> %s</p>
-    <p><strong>E-mail:</strong> %s</p>
-    <p><strong>Assunto:</strong> %s</p>
-    <hr>
-    <p>%s</p>
-	<br>
-	<p><small>Acesse o painel administrativo para atribuir este ticket a você e respondê-lo.</small></p>
-    `, ticket.Name, ticket.Email, ticket.Subject, ticket.Message)
-
 	for _, a := range admins {
 		if a.Email == "" {
 			continue
 		}
 
+		localizer := s.getLocalizer(a.Language)
+		subject := s.localize(localizer, "email.admin_ticket.subject",
+			map[string]any{"Name": ticket.Name})
+		body := s.localize(localizer, "email.admin_ticket.body",
+			map[string]any{
+				"Name":    ticket.Name,
+				"Email":   ticket.Email,
+				"Subject": ticket.Subject,
+				"Message": ticket.Message,
+			})
+
 		cfg := email.EmailConfig{
 			Sender:    config.SenderEmail,
 			Recipient: a.Email,
-			Subject:   "Contato CABGen - " + ticket.Name,
+			Subject:   subject,
 			Body:      body,
 		}
 
@@ -268,9 +277,9 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 
 	localizer := s.getLocalizer(ticket.Language)
 	subject := s.localize(localizer, "email.finished_ticket.subject",
-		map[string]interface{}{"Subject": ticket.Subject})
+		map[string]any{"Subject": ticket.Subject})
 	body := s.localize(localizer, "email.finished_ticket.body",
-		map[string]interface{}{
+		map[string]any{
 			"Name":    ticket.Name,
 			"Subject": ticket.Subject,
 			"Message": ticket.Message,
@@ -310,7 +319,7 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.password_reset.subject", nil)
-	body := s.localize(localizer, "email.password_reset.body", map[string]interface{}{
+	body := s.localize(localizer, "email.password_reset.body", map[string]any{
 		"Name":      userName,
 		"ResetLink": resetLink,
 	})
@@ -344,7 +353,7 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.user_deleted.subject", nil)
-	body := s.localize(localizer, "email.user_deleted.body", map[string]interface{}{
+	body := s.localize(localizer, "email.user_deleted.body", map[string]any{
 		"Name": userName,
 	})
 
@@ -382,7 +391,7 @@ func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.email_update_confirmation.subject", nil)
 	body := s.localize(localizer, "email.email_update_confirmation.body",
-		map[string]interface{}{
+		map[string]any{
 			"Name":        userName,
 			"OldEmail":    oldEmail,
 			"NewEmail":    newEmail,
