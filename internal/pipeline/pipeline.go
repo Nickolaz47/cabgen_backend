@@ -78,10 +78,13 @@ func (p *cabgenPipeline) RunFastQC(
 		return "", "", err
 	}
 
+	read1Name := strings.Split(filepath.Base(read1), ".")[0]
+	read2Name := strings.Split(filepath.Base(read2), ".")[0]
+
 	outputHTMLfile1 := filepath.Join(outputDir,
-		fmt.Sprintf("%s_fastqc.html", filepath.Base(read1)))
+		fmt.Sprintf("%s_fastqc.html", read1Name))
 	outputHTMLfile2 := filepath.Join(outputDir,
-		fmt.Sprintf("%s_fastqc.html", filepath.Base(read2)))
+		fmt.Sprintf("%s_fastqc.html", read2Name))
 
 	return outputHTMLfile1, outputHTMLfile2, nil
 }

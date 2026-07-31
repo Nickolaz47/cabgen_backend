@@ -2,10 +2,12 @@ package handlererrors
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/gin-gonic/gin"
 )
 
 func HandleAnalysisError(err error) (int, string) {
@@ -30,4 +32,37 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusInternalServerError,
 			responses.GenericInternalServerError
 	}
+}
+
+var errorPageTemplate = template.Must(template.New(
+	"error").Parse(`<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="utf-8">
+	<title>HTTP {{.Code}}</title>
+	<style>
+		body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f5f5f5; }
+		.box { text-align: center; padding: 2rem; }
+		h1 { font-size: 3rem; margin-bottom: 0.5rem; color: #333; }
+		p { color: #666; }
+	</style>
+</head>
+<body>
+	<div class="box">
+		<h1>{{.Code}}</h1>
+		<p>{{.Message}}</p>
+	</div>
+</body>
+</html>`))
+
+type errorPageData struct {
+	Code    int
+	Message string
+}
+
+func RespondHTMLError(c *gin.Context, code int, message string) {
+	c.Status(code)
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	_ = errorPageTemplate.Execute(c.Writer, errorPageData{Code: code,
+		Message: message})
 }

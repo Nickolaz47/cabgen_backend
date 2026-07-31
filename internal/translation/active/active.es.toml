@@ -493,6 +493,12 @@ other = "Análisis eliminado con éxito."
 [analysis.deleteRunning.error]
 other = "No se puede eliminar un análisis en ejecución. Por favor, espere a que termine."
 
+[analysis.fastqc.notAvailable.error]
+other = "El informe FastQC aún no está disponible."
+
+[analysis.fastqc.invalid.error]
+other = "Tipo de informe FastQC inválido."
+
 [validation.IDs.required]
 other = "Los IDs son necesarios para descargar las tablas de resultados."
 

@@ -79,6 +79,57 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 
+func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	rawID := c.Param("analysisId")
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		handlererrors.RespondHTMLError(c, http.StatusBadRequest,
+			responses.GetResponse(localizer, responses.InvalidURLID))
+		return
+	}
+
+	userToken, ok := validations.GetUserTokenFromContext(c)
+	if !ok {
+		handlererrors.RespondHTMLError(c, http.StatusUnauthorized,
+			responses.GetResponse(localizer, responses.UnauthorizedError))
+		return
+	}
+
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID)
+	if err != nil {
+		code, errMsg := handlererrors.HandleAnalysisError(err)
+		handlererrors.RespondHTMLError(c, code,
+			responses.GetResponse(localizer, errMsg))
+		return
+	}
+
+	var htmlPath *string
+	requestedFastqc := c.Param("fastqcReport")
+
+	switch requestedFastqc {
+	case "fastqc1":
+		htmlPath = analysis.FastQC1
+	case "fastqc2":
+		htmlPath = analysis.FastQC2
+	default:
+		handlererrors.RespondHTMLError(c, http.StatusNotFound,
+			responses.GetResponse(localizer,
+				responses.AnalysisInvalidFastQCReport))
+		return
+	}
+
+	if htmlPath == nil {
+		handlererrors.RespondHTMLError(c, http.StatusNotFound,
+			responses.GetResponse(localizer,
+				responses.AnalysisFastQCReportNotAvailable))
+		return
+	}
+
+	c.File(*htmlPath)
+}
+
 func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
@@ -116,8 +167,9 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
-		Data:    analysis,
-		Message: responses.GetResponse(localizer, responses.AnalysisCreationSuccess),
+		Data: analysis,
+		Message: responses.GetResponse(localizer,
+			responses.AnalysisCreationSuccess),
 	})
 }
 

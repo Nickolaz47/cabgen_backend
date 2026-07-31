@@ -1,6 +1,8 @@
 package responses
 
-import "github.com/nicksnyder/go-i18n/v2/i18n"
+import (
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
 
 const (
 	HealthMessage                             = "public.health.message"
@@ -84,6 +86,8 @@ const (
 	AnalysisInvalidType                       = "analysis.invalidType.error"
 	AnalysisInvalidStatus                     = "analysis.invalidStatus.error"
 	AnalysisNotFoundError                     = "analysis.notFound.error"
+	AnalysisFastQCReportNotAvailable          = "analysis.fastqc.notAvailable.error"
+	AnalysisInvalidFastQCReport               = "analysis.fastqc.invalid.error"
 	AnalysisExceededLimitError                = "analysis.exceededLimit.error"
 	AnalysisZipNotFound                       = "analysis.zipNotFound.error"
 	AnalysisDeleted                           = "analysis.delete.success"

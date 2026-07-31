@@ -493,6 +493,12 @@ other = "Analysis deleted successfully."
 [analysis.deleteRunning.error]
 other = "Cannot delete an analysis that is currently running. Please wait for it to finish."
 
+[analysis.fastqc.notAvailable.error]
+other = "The FastQC report is not available yet."
+
+[analysis.fastqc.invalid.error]
+other = "Invalid FastQC report type."
+
 [validation.IDs.required]
 other = "IDs are required to download the result tables."
 

@@ -88,8 +88,8 @@ func TestRunFastQC(t *testing.T) {
 		html1, html2, err := p.RunFastQC(context.Background(),
 			"/data/r1.fq", "/data/r2.fq", "/out")
 		assert.NoError(t, err)
-		assert.Equal(t, "/out/r1.fq_fastqc.html", html1)
-		assert.Equal(t, "/out/r2.fq_fastqc.html", html2)
+		assert.Equal(t, "/out/r1_fastqc.html", html1)
+		assert.Equal(t, "/out/r2_fastqc.html", html2)
 	})
 
 	t.Run("Error", func(t *testing.T) {
