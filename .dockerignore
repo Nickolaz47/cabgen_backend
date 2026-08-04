@@ -25,7 +25,7 @@ bin/
 *.prof
 *.out
 
-# Dependency directories (we use 'go mod download' in Docker)
+# Dependency directories
 vendor/
 
 # Go build cache (highly recommended for faster builds)
@@ -51,6 +51,9 @@ LICENSE
 logs/
 *.log
 tmp/
+data/
+uploads/
+databases/
 
 # --- OS Specific Files ---
 .DS_Store
