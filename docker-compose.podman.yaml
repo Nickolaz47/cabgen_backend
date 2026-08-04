@@ -1,0 +1,9 @@
+services:
+  api:
+    userns_mode: keep-id
+
+  worker-email:
+    userns_mode: keep-id
+
+  worker-analysis:
+    userns_mode: keep-id

@@ -192,6 +192,28 @@ go build -o cabgen-backend ./cmd/server
 docker compose up -d
 ```
 
+#### Podman (rootless)
+
+No podman rootless, o mapeamento de UIDs entre o container e o host é diferente do Docker. Para que `./logs` e `./uploads` fiquem acessíveis sem `sudo`, utilize o arquivo de override:
+
+```bash
+podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d
+```
+
+Para encurtar, adicione ao seu `~/.bashrc` ou `~/.zshrc`:
+
+```bash
+alias pdc='podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml'
+```
+
+E então:
+
+```bash
+pdc up -d
+```
+
+O arquivo `docker-compose.podman.yaml` aplica `userns_mode: keep-id` apenas nos serviços da aplicação, preservando o comportamento padrão do postgres e redis.
+
 ## Seed
 
 Na inicialização, a API executa o seed automático das seguintes entidades a partir dos arquivos JSON em `jsons/`:

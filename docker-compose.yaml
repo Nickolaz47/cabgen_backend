@@ -1,21 +1,4 @@
 services:
-  init-folders:
-    image: alpine:latest
-    container_name: app_init_folders
-    command: >
-      /bin/sh -c "
-        mkdir -p /mnt/uploads /mnt/logs /mnt/databases /mnt/data/postgres /mnt/data/redis &&
-        chown -R ${UID:-1000}:${GID:-1000} /mnt/uploads /mnt/logs /mnt/databases &&
-        chmod -R 0750 /mnt/uploads /mnt/logs /mnt/databases
-      "
-    volumes:
-      - ./uploads:/mnt/uploads
-      - ./logs:/mnt/logs
-      - ./databases:/mnt/databases
-      - ./data/postgres:/mnt/data/postgres
-      - ./data/redis:/mnt/data/redis
-    restart: "no"
-
   api:
     user: "${UID:-1000}:${GID:-1000}"
     build: .
@@ -26,8 +9,6 @@ services:
     ports:
       - "${PORT}:${PORT}"
     depends_on:
-      init-folders:
-        condition: service_completed_successfully
       database:
         condition: service_healthy
       redis:
@@ -51,8 +32,6 @@ services:
       - DB_HOST=database
     command: ["./worker-email"]
     depends_on:
-      init-folders:
-        condition: service_completed_successfully    
       database:
         condition: service_healthy
       redis:
@@ -78,8 +57,6 @@ services:
     environment:
       - DB_HOST=database
     depends_on:
-      init-folders:
-        condition: service_completed_successfully    
       database:
         condition: service_healthy
       redis:
@@ -99,9 +76,6 @@ services:
 
   database:
     image: "postgres:15-alpine"
-    depends_on:
-      init-folders:
-        condition: service_completed_successfully
     restart: unless-stopped
     env_file:
       - .env
@@ -110,7 +84,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
@@ -125,14 +99,11 @@ services:
 
   redis:
     image: redis/redis-stack:7.4.0-v8
-    depends_on:
-      init-folders:
-        condition: service_completed_successfully
     restart: unless-stopped
     ports:
       - 6379:6379
     volumes:
-      - ./data/redis:/data
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -143,7 +114,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 2G
+
 volumes:
   postgres-data:
-  analysis-databases:
-  analysis-uploads:
+  redis-data:
