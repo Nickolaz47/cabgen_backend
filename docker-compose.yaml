@@ -1,5 +1,23 @@
 services:
+  init-folders:
+    image: alpine:latest
+    container_name: app_init_folders
+    command: >
+      /bin/sh -c "
+        mkdir -p /mnt/uploads /mnt/logs /mnt/databases /mnt/data/postgres /mnt/data/redis &&
+        chown -R ${UID:-1000}:${GID:-1000} /mnt/uploads /mnt/logs /mnt/databases &&
+        chmod -R 0750 /mnt/uploads /mnt/logs /mnt/databases
+      "
+    volumes:
+      - ./uploads:/mnt/uploads
+      - ./logs:/mnt/logs
+      - ./databases:/mnt/databases
+      - ./data/postgres:/mnt/data/postgres
+      - ./data/redis:/mnt/data/redis
+    restart: "no"
+
   api:
+    user: "${UID:-1000}:${GID:-1000}"
     build: .
     env_file:
       - .env
@@ -8,6 +26,8 @@ services:
     ports:
       - "${PORT}:${PORT}"
     depends_on:
+      init-folders:
+        condition: service_completed_successfully
       database:
         condition: service_healthy
       redis:
@@ -23,6 +43,7 @@ services:
           memory: 2G
 
   worker-email:
+    user: "${UID:-1000}:${GID:-1000}"
     build: .
     env_file:
       - .env
@@ -30,6 +51,8 @@ services:
       - DB_HOST=database
     command: ["./worker-email"]
     depends_on:
+      init-folders:
+        condition: service_completed_successfully    
       database:
         condition: service_healthy
       redis:
@@ -46,6 +69,7 @@ services:
           memory: 256M
 
   worker-analysis:
+    user: "${UID:-1000}:${GID:-1000}"
     build:
       context: .
       dockerfile: Dockerfile.analysis
@@ -54,6 +78,8 @@ services:
     environment:
       - DB_HOST=database
     depends_on:
+      init-folders:
+        condition: service_completed_successfully    
       database:
         condition: service_healthy
       redis:
@@ -68,11 +94,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '${ANALYSIS_CPU:-4.0}'
-          memory: '${ANALYSIS_RAM:-16G}'
+          cpus: '${ANALYSIS_CPU}'
+          memory: '${ANALYSIS_RAM}'
 
   database:
     image: "postgres:15-alpine"
+    depends_on:
+      init-folders:
+        condition: service_completed_successfully
     restart: unless-stopped
     env_file:
       - .env
@@ -96,6 +125,9 @@ services:
 
   redis:
     image: redis/redis-stack:7.4.0-v8
+    depends_on:
+      init-folders:
+        condition: service_completed_successfully
     restart: unless-stopped
     ports:
       - 6379:6379
