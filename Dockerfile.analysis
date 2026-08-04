@@ -57,9 +57,6 @@ RUN chmod +x worker-analysis
 COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/databases ./databases
 COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/internal/translation/active ./internal/translation/active
 
-# Volume mount folders
-RUN mkdir ./logs && mkdir -p /app/data/databases && mkdir -p /app/uploads
-
 # Required by micromamba base active
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 

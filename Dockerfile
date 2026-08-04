@@ -38,6 +38,4 @@ COPY --from=builder /app/jsons ./jsons
 
 EXPOSE 8080
 
-RUN mkdir ./logs
-
 CMD ["./api"]
