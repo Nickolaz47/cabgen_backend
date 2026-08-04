@@ -15,10 +15,12 @@ import (
 )
 
 const (
-	Access                 = "AccessCookie"
-	Refresh                = "RefreshCookie"
-	AccessTokenExpiration  = 15 * time.Minute
-	RefreshTokenExpiration = 7 * 24 * time.Hour
+	Access                  = "AccessCookie"
+	Refresh                 = "RefreshCookie"
+	AccessTokenExpiration   = 15 * time.Minute
+	RefreshTokenExpiration  = 7 * 24 * time.Hour
+	AccessCookieExpiration  = AccessTokenExpiration + 5
+	RefreshCookieExpiration = RefreshTokenExpiration + 5
 )
 
 type Cookie string
