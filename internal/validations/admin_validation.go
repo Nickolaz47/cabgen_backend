@@ -49,6 +49,10 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUserUpdateInpu
 }
 
 func ValidateTranslationMap(c *gin.Context, model string, translations map[string]string) (string, bool) {
+	if len(translations) == 0 {
+		return "", true
+	}
+
 	localizer := translation.GetLocalizerFromContext(c)
 	defaultLanguages := translation.Languages
 
