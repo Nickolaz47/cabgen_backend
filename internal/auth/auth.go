@@ -19,8 +19,8 @@ const (
 	Refresh                 = "RefreshCookie"
 	AccessTokenExpiration   = 15 * time.Minute
 	RefreshTokenExpiration  = 7 * 24 * time.Hour
-	AccessCookieExpiration  = AccessTokenExpiration + 5
-	RefreshCookieExpiration = RefreshTokenExpiration + 5
+	AccessCookieExpiration  = AccessTokenExpiration + (5 * 24 * time.Hour) 
+	RefreshCookieExpiration = RefreshTokenExpiration + (5 * 24 * time.Hour)
 )
 
 type Cookie string
