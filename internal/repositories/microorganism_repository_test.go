@@ -8,9 +8,9 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -251,7 +251,7 @@ func TestGetMicroorganismDuplicate(t *testing.T) {
 
 	t.Run("Success - Variety Nil", func(t *testing.T) {
 		micro, err := repo.GetMicroorganismDuplicate(
-			context.Background(), "Escherichia coli", nil, 
+			context.Background(), "Escherichia coli", nil,
 			uuid.New(),
 		)
 

@@ -14,11 +14,10 @@ import (
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -29,19 +28,13 @@ func NewMockDB() *gorm.DB {
 	}
 
 	db.Exec("PRAGMA foreign_keys = ON")
-	db.AutoMigrate(&models.Country{})
-	db.AutoMigrate(&testmodels.User{})
-	db.AutoMigrate(&testmodels.Origin{})
-	db.AutoMigrate(&testmodels.Sequencer{})
-	db.AutoMigrate(&testmodels.SampleSource{})
-	db.AutoMigrate(&testmodels.Laboratory{})
-	db.AutoMigrate(&testmodels.Microorganism{})
-	db.AutoMigrate(&testmodels.HealthService{})
-	db.AutoMigrate(&testmodels.Sample{})
-	db.AutoMigrate(&testmodels.Analysis{})
-	db.AutoMigrate(&testmodels.Ticket{})
-	db.AutoMigrate(&testmodels.PasswordReset{})
-	db.AutoMigrate(&testmodels.EmailUpdateRequest{})
+	db.AutoMigrate(
+		&models.Country{}, &testmodels.User{}, &testmodels.Origin{},
+		&testmodels.Sequencer{}, &testmodels.SampleSource{},
+		&testmodels.Laboratory{}, &testmodels.Microorganism{},
+		&testmodels.HealthService{}, &testmodels.Sample{},
+		&testmodels.Analysis{}, &testmodels.Ticket{},
+		&testmodels.PasswordReset{}, &testmodels.EmailUpdateRequest{})
 
 	return db
 }
