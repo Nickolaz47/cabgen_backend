@@ -72,3 +72,8 @@ func (t *Ticket) ToResponse() TicketResponse {
 
 	return response
 }
+
+type TicketFilter struct {
+	Status  string     `form:"status"`
+	AdminID *uuid.UUID `form:"admin,parser=encoding.TextUnmarshaler"`
+}

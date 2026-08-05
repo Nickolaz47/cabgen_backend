@@ -85,7 +85,7 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 
 	admin, isActive := models.Admin, true
 	filter := models.AdminUserFilter{
-		UserRole: &admin,
+		UserRole: admin,
 		Active:   &isActive,
 	}
 
@@ -217,7 +217,7 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 
 	admin, isActive := models.Admin, true
 	filter := models.AdminUserFilter{
-		UserRole: &admin,
+		UserRole: admin,
 		Active:   &isActive,
 	}
 

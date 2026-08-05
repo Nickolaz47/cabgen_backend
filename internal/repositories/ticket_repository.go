@@ -9,7 +9,8 @@ import (
 )
 
 type TicketRepository interface {
-	GetTickets(ctx context.Context, status string) ([]models.Ticket, error)
+	GetTickets(ctx context.Context, filter models.TicketFilter) (
+		[]models.Ticket, error)
 	GetTicketByID(ctx context.Context, id uuid.UUID) (*models.Ticket, error)
 	CreateTicket(ctx context.Context, ticket *models.Ticket) error
 	UpdateTicket(ctx context.Context, ticket *models.Ticket) error
@@ -24,13 +25,18 @@ func NewTicketRepo(db *gorm.DB) TicketRepository {
 	return &ticketRepository{db: db}
 }
 
-func (r *ticketRepository) GetTickets(ctx context.Context, status string) (
+func (r *ticketRepository) GetTickets(ctx context.Context,
+	filter models.TicketFilter) (
 	[]models.Ticket, error) {
 	var tickets []models.Ticket
 	query := r.db.WithContext(ctx)
 
-	if status != "" {
-		query = query.Where("status = ?", status)
+	if filter.Status != "" {
+		query = query.Where("status = ?", filter.Status)
+	}
+
+	if filter.AdminID != nil {
+		query = query.Where("admin_id = ?", *filter.AdminID)
 	}
 
 	err := query.Preload("Admin").Order("created_at ASC").Find(&tickets).Error

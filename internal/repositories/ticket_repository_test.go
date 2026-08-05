@@ -51,7 +51,7 @@ func TestGetTickets(t *testing.T) {
 	db.Create(&ticket2)
 
 	t.Run("Success - Without Filter", func(t *testing.T) {
-		tickets, err := ticketRepo.GetTickets(ctx, "")
+		tickets, err := ticketRepo.GetTickets(ctx, models.TicketFilter{})
 
 		assert.NoError(t, err)
 		assert.Len(t, tickets, 2)
@@ -66,7 +66,7 @@ func TestGetTickets(t *testing.T) {
 	})
 
 	t.Run("Success - With Filter", func(t *testing.T) {
-		tickets, err := ticketRepo.GetTickets(ctx, models.TicketStatusOpen)
+		tickets, err := ticketRepo.GetTickets(ctx, models.TicketFilter{Status: models.TicketStatusOpen})
 
 		assert.NoError(t, err)
 		assert.Len(t, tickets, 1)
@@ -79,7 +79,7 @@ func TestGetTickets(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockTicketRepo := repositories.NewTicketRepo(mockDB)
-		tickets, err := mockTicketRepo.GetTickets(ctx, "")
+		tickets, err := mockTicketRepo.GetTickets(ctx, models.TicketFilter{})
 
 		assert.Empty(t, tickets)
 		assert.Error(t, err)

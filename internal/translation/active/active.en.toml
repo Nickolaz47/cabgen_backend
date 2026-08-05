@@ -13,6 +13,9 @@ other="There was a server error. Please try again."
 [generic.invalidId.error]
 other = "The URL ID is invalid."
 
+[generic.invalidQueryParam.error]
+other = "Invalid query parameters."
+
 [public.auth.register.createUser.error]
 other="Error creating user. Please try again."
 

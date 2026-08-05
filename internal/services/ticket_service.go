@@ -16,7 +16,8 @@ import (
 )
 
 type TicketService interface {
-	FindAll(ctx context.Context, status string) ([]models.TicketResponse, error)
+	FindAll(ctx context.Context, filter models.TicketFilter) (
+		[]models.TicketResponse, error)
 	FindByID(ctx context.Context, ID uuid.UUID) (*models.TicketResponse, error)
 	Create(ctx context.Context, input models.CreateTicketInput, language string) (
 		*models.TicketResponse, error)
@@ -45,9 +46,9 @@ func NewTicketService(
 	}
 }
 
-func (s *ticketService) FindAll(ctx context.Context, status string) (
+func (s *ticketService) FindAll(ctx context.Context, filter models.TicketFilter) (
 	[]models.TicketResponse, error) {
-	tickets, err := s.Repo.GetTickets(ctx, status)
+	tickets, err := s.Repo.GetTickets(ctx, filter)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"TicketService", "FindAll", logging.DatabaseError, err,

@@ -33,14 +33,14 @@ func TestTicketFindAll(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		ticketRepo := &mocks.MockTicketRepository{
-			GetTicketsFunc: func(ctx context.Context, status string) (
+			GetTicketsFunc: func(ctx context.Context, filter models.TicketFilter) (
 				[]models.Ticket, error) {
 				return []models.Ticket{ticket}, nil
 			},
 		}
 
 		service := services.NewTicketService(ticketRepo, nil, nil)
-		result, err := service.FindAll(ctx, "")
+		result, err := service.FindAll(ctx, models.TicketFilter{})
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -49,7 +49,7 @@ func TestTicketFindAll(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		ticketRepo := &mocks.MockTicketRepository{
-			GetTicketsFunc: func(ctx context.Context, status string) (
+			GetTicketsFunc: func(ctx context.Context, filter models.TicketFilter) (
 				[]models.Ticket, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
@@ -58,7 +58,7 @@ func TestTicketFindAll(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
-		result, err := service.FindAll(ctx, "")
+		result, err := service.FindAll(ctx, models.TicketFilter{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

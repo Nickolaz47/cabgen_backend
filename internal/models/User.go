@@ -184,10 +184,9 @@ type AdminUserUpdateInput struct {
 }
 
 type AdminUserFilter struct {
-	// Name or username or email
-	Input    *string
-	UserRole *UserRole
-	Active   *bool
+	Input    string   `form:"input"`
+	UserRole UserRole `form:"userRole"`
+	Active   *bool    `form:"active"`
 }
 
 type UpdatePasswordInput struct {

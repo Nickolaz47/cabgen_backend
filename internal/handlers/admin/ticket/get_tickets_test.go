@@ -32,7 +32,7 @@ func TestGetTickets(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			FindAllFunc: func(ctx context.Context, status string) (
+			FindAllFunc: func(ctx context.Context, filter models.TicketFilter) (
 				[]models.TicketResponse, error) {
 				return []models.TicketResponse{mockResponse}, nil
 			},
@@ -51,9 +51,72 @@ func TestGetTickets(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Success - With Filter", func(t *testing.T) {
+		svc := &mocks.MockTicketService{
+			FindAllFunc: func(ctx context.Context, filter models.TicketFilter) (
+				[]models.TicketResponse, error) {
+				assert.Equal(t, models.TicketStatusOpen, filter.Status)
+				return []models.TicketResponse{mockResponse}, nil
+			},
+		}
+
+		handler := ticket.NewAdminTicketHandler(svc)
+		c, w := testutils.SetupGinContext(http.MethodGet,
+			"/api/admin/ticket?status="+models.TicketStatusOpen, "", nil, nil)
+		handler.GetTickets(c)
+
+		expected := testutils.ToJSON(map[string][]models.TicketResponse{
+			"data": {mockResponse},
+		})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Success - With Admin Filter", func(t *testing.T) {
+		adminID := uuid.New()
+		svc := &mocks.MockTicketService{
+			FindAllFunc: func(ctx context.Context, filter models.TicketFilter) (
+				[]models.TicketResponse, error) {
+				assert.Equal(t, &adminID, filter.AdminID)
+				return []models.TicketResponse{mockResponse}, nil
+			},
+		}
+
+		handler := ticket.NewAdminTicketHandler(svc)
+		c, w := testutils.SetupGinContext(http.MethodGet,
+			"/api/admin/ticket?admin="+adminID.String(), "", nil, nil)
+		handler.GetTickets(c)
+
+		expected := testutils.ToJSON(map[string][]models.TicketResponse{
+			"data": {mockResponse},
+		})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Invalid Query Param", func(t *testing.T) {
+		svc := &mocks.MockTicketService{}
+		handler := ticket.NewAdminTicketHandler(svc)
+
+		c, w := testutils.SetupGinContext(http.MethodGet,
+			"/api/admin/ticket?admin=not-a-uuid", "", nil, nil)
+		handler.GetTickets(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Invalid query parameters.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockTicketService{
-			FindAllFunc: func(ctx context.Context, status string) (
+			FindAllFunc: func(ctx context.Context, filter models.TicketFilter) (
 				[]models.TicketResponse, error) {
 				return nil, services.ErrInternal
 			},
@@ -62,7 +125,7 @@ func TestGetTickets(t *testing.T) {
 		handler := ticket.NewAdminTicketHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/analysis", "", nil, nil,
+			http.MethodGet, "/api/admin/ticket", "", nil, nil,
 		)
 		handler.GetTickets(c)
 

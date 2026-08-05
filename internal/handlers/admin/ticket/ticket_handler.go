@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -24,9 +25,17 @@ func NewAdminTicketHandler(svc services.TicketService) *AdminTicketHandler {
 
 func (h *AdminTicketHandler) GetTickets(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	statusFilter := c.Query("status")
+	var filter models.TicketFilter
 
-	tickets, err := h.Service.FindAll(c.Request.Context(), statusFilter)
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
+	tickets, err := h.Service.FindAll(c.Request.Context(), filter)
 	if err != nil {
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{

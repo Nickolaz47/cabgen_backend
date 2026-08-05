@@ -13,6 +13,9 @@ other="Houve um erro no servidor. Por favor, tente novamente."
 [generic.invalidId.error]
 other="O ID da URL é inválido."
 
+[generic.invalidQueryParam.error]
+other="Parâmetros de busca inválidos."
+
 [public.auth.register.createUser.error]
 other="Erro ao criar usuário. Por favor, tente novamente."
 

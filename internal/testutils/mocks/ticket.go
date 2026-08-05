@@ -8,7 +8,7 @@ import (
 )
 
 type MockTicketRepository struct {
-	GetTicketsFunc func(ctx context.Context, status string) (
+	GetTicketsFunc func(ctx context.Context, filter models.TicketFilter) (
 		[]models.Ticket, error)
 	GetTicketByIDFunc func(ctx context.Context, id uuid.UUID) (
 		*models.Ticket, error)
@@ -17,10 +17,10 @@ type MockTicketRepository struct {
 	DeleteTicketFunc func(ctx context.Context, ticket *models.Ticket) error
 }
 
-func (r *MockTicketRepository) GetTickets(ctx context.Context, status string) (
+func (r *MockTicketRepository) GetTickets(ctx context.Context, filter models.TicketFilter) (
 	[]models.Ticket, error) {
 	if r.GetTicketsFunc != nil {
-		return r.GetTicketsFunc(ctx, status)
+		return r.GetTicketsFunc(ctx, filter)
 	}
 	return nil, nil
 }
@@ -58,7 +58,7 @@ func (r *MockTicketRepository) DeleteTicket(ctx context.Context,
 }
 
 type MockTicketService struct {
-	FindAllFunc func(ctx context.Context, status string) (
+	FindAllFunc func(ctx context.Context, filter models.TicketFilter) (
 		[]models.TicketResponse, error)
 	FindByIDFunc func(ctx context.Context, ID uuid.UUID) (
 		*models.TicketResponse, error)
@@ -71,10 +71,10 @@ type MockTicketService struct {
 	DeleteFunc func(ctx context.Context, ticketID uuid.UUID) error
 }
 
-func (s *MockTicketService) FindAll(ctx context.Context, status string) (
+func (s *MockTicketService) FindAll(ctx context.Context, filter models.TicketFilter) (
 	[]models.TicketResponse, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx, status)
+		return s.FindAllFunc(ctx, filter)
 	}
 	return nil, nil
 }

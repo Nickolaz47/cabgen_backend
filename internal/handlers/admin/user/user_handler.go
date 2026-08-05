@@ -2,7 +2,6 @@ package user
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -25,28 +24,14 @@ func NewAdminUserHandler(svc services.AdminUserService) *AdminUserHandler {
 func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
-	filter := models.AdminUserFilter{}
 
-	if v := c.Query("input"); v != "" {
-		filter.Input = &v
-	}
-
-	if v := c.Query("userRole"); v != "" {
-		userRole := models.UserRole(v)
-		filter.UserRole = &userRole
-	}
-
-	if v := c.Query("active"); v != "" {
-		b, err := strconv.ParseBool(v)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, responses.APIResponse{
-				Error: responses.GetResponse(
-					localizer, responses.AdminInvalidActiveQuery,
-				),
-			})
-			return
-		}
-		filter.Active = &b
+	var filter models.AdminUserFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
 	}
 
 	users, err := h.Service.Find(c.Request.Context(), filter, language)

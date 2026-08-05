@@ -11,7 +11,6 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,16 +51,15 @@ func TestGetUsers(t *testing.T) {
 	t.Run("Success - With filter", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
 			FindFunc: func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error) {
+				assert.Equal(t, models.Admin, filter.UserRole)
 				return []models.AdminUserResponse{userResponse2}, nil
 			},
 		}
 		handler := user.NewAdminUserHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/users",
-			"", nil, gin.Params{
-				{Key: "userRole", Value: "admin"},
-			},
+			http.MethodGet, "/api/admin/users?userRole="+string(models.Admin),
+			"", nil, nil,
 		)
 		handler.GetUsers(c)
 
@@ -75,6 +73,26 @@ func TestGetUsers(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Invalid Query Param", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/admin/users?active=maybe",
+			"", nil, nil,
+		)
+		handler.GetUsers(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Invalid query parameters.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
 			FindFunc: func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error) {
@@ -85,9 +103,7 @@ func TestGetUsers(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/admin/users",
-			"", nil, gin.Params{
-				{Key: "userRole", Value: "admin"},
-			},
+			"", nil, nil,
 		)
 		handler.GetUsers(c)
 

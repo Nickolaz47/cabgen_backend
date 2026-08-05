@@ -33,16 +33,16 @@ func (r *userRepository) GetUsers(
 	var users []models.User
 
 	query := r.DB.WithContext(ctx).Preload("Country")
-	if filter.Input != nil {
-		like := "%" + *filter.Input + "%"
+	if filter.Input != "" {
+		like := "%" + filter.Input + "%"
 		query = query.Where(
 			"username ILIKE ? OR email ILIKE ? OR name ILIKE ?",
 			like, like, like,
 		)
 	}
 
-	if filter.UserRole != nil {
-		query = query.Where("user_role = ?", *filter.UserRole)
+	if filter.UserRole != "" {
+		query = query.Where("user_role = ?", filter.UserRole)
 	}
 
 	if filter.Active != nil {

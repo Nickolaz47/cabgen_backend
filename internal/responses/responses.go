@@ -10,6 +10,7 @@ const (
 	RegisterEmailAlreadyExistsError           = "public.auth.register.emailAlreadyExists.error"
 	GenericInternalServerError                = "generic.internalServer.error"
 	InvalidURLID                              = "generic.invalidId.error"
+	InvalidQueryParamError                    = "generic.invalidQueryParam.error"
 	RegisterCreateUserError                   = "public.auth.register.createUser.error"
 	RegisterMessage                           = "public.auth.register.success.message"
 	ValidationGeneric                         = "validation.generic"
