@@ -23,13 +23,12 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o api ./cmd/server
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o worker-email ./cmd/worker-email
 
 # Runtime
-FROM scratch
+FROM gcr.io/distroless/static-debian12
 
 WORKDIR /app
 
 COPY --from=builder /app/api .
 COPY --from=builder /app/worker-email .
-
 COPY --from=builder /app/internal/translation/active ./internal/translation/active
 COPY --from=builder /app/jsons ./jsons
 
