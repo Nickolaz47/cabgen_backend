@@ -106,6 +106,7 @@ const (
 	InvalidEmailUpdateTokenError              = "user.emailUpdateToken.invalid.error"
 	EmailUpdateTokenExpiredError              = "user.emailUpdateToken.expired.error"
 	EmailSameError                            = "user.emailSame.error"
+	DuplicateTaskError                        = "generic.duplicateTask.error"
 )
 
 type APIResponse struct {

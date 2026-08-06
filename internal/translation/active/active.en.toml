@@ -577,6 +577,9 @@ other = "Email update link expired. Please request a new one."
 [user.emailSame.error]
 other = "The new email is the same as your current email."
 
+[generic.duplicateTask.error]
+other = "A request is already pending. Please try again later."
+
 [email.email_update_confirmation.subject]
 other = "CABGen - Confirm Your New Email"
 

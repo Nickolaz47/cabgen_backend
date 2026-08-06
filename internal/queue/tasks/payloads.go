@@ -151,6 +151,7 @@ func NewPasswordResetEmailTask(email, name, token string,
 
 	return asynq.NewTask(TaskTypePasswordResetEmail, payload,
 		asynq.MaxRetry(3),
+		asynq.Unique(time.Until(expiresAt)),
 		asynq.Deadline(expiresAt),
 	), nil
 }
@@ -183,6 +184,7 @@ func NewEmailUpdateConfirmationTask(email, name, oldEmail, newEmail,
 
 	return asynq.NewTask(TaskTypeEmailUpdateConfirmation, payload,
 		asynq.MaxRetry(3),
+		asynq.Unique(time.Until(expiresAt)),
 		asynq.Deadline(expiresAt),
 	), nil
 }

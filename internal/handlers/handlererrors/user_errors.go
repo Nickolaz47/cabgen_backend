@@ -26,6 +26,8 @@ func HandleUserError(err error) (int, string) {
 		return http.StatusBadRequest, responses.EmailUpdateTokenExpiredError
 	case errors.Is(err, services.ErrEmailSame):
 		return http.StatusBadRequest, responses.EmailSameError
+	case errors.Is(err, services.ErrDuplicateTask):
+		return http.StatusConflict, responses.DuplicateTaskError
 	default:
 		return http.StatusInternalServerError, responses.GenericInternalServerError
 	}

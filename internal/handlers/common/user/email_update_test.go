@@ -122,6 +122,30 @@ func TestRequestEmailUpdate(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Duplicate Task", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			RequestEmailUpdateFunc: func(ctx context.Context, ID uuid.UUID,
+				input models.RequestEmailUpdateInput) error {
+				return services.ErrDuplicateTask
+			},
+		}
+		handler := user.NewUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/users/me/request-email-update", body,
+			nil, nil,
+		)
+		c.Set("user", &mockToken)
+		handler.RequestEmailUpdate(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "A request is already pending. Please try again later.",
+		})
+
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - User Not Found", func(t *testing.T) {
 		svc := &mocks.MockUserService{
 			RequestEmailUpdateFunc: func(ctx context.Context, ID uuid.UUID,

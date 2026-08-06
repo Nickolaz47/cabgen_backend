@@ -321,6 +321,12 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 
 	if _, err := s.AsynqClient.EnqueueContext(ctx, task,
 		asynq.Queue(tasks.QueueEmail)); err != nil {
+		if errors.Is(err, asynq.ErrDuplicateTask) {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+			)...)
+			return ErrDuplicateTask
+		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
 		)...)

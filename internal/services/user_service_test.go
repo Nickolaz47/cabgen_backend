@@ -602,6 +602,40 @@ func TestRequestEmailUpdate(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
+	t.Run("Error - Duplicate Task", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			GetUserByEmailFunc: func(ctx context.Context,
+				email string) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		emailUpdateRepo := &mocks.MockEmailUpdateRepository{
+			CreateRequestFunc: func(ctx context.Context,
+				req *models.EmailUpdateRequest) error {
+				return nil
+			},
+		}
+		taskEnqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
+				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return nil, asynq.ErrDuplicateTask
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
+			taskEnqueuer, mockLogger, "")
+		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrDuplicateTask)
+		assert.Equal(t, 1, logs.Len())
+	})
+
 	t.Run("Error - User Not Found", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context,

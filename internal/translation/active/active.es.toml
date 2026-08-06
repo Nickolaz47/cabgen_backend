@@ -662,6 +662,9 @@ other = "El enlace de actualización de correo electrónico ha expirado. Por fav
 [user.emailSame.error]
 other = "El nuevo correo electrónico es el mismo que el actual."
 
+[generic.duplicateTask.error]
+other = "Ya existe una solicitud pendiente. Por favor, inténtelo de nuevo más tarde."
+
 [email.email_update_confirmation.subject]
 other = "CABGen - Confirme Su Nuevo Correo Electrónico"
 
