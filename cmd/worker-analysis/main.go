@@ -76,7 +76,8 @@ func main() {
 	)
 
 	// Handler
-	analysisHandler := workers.NewAnalysisTaskHandler(analysisRunnerSvc)
+	analysisHandler := workers.NewAnalysisTaskHandler(analysisRunnerSvc,
+		logging.FileLogger)
 
 	// Mux
 	mux := asynq.NewServeMux()

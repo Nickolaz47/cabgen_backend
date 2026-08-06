@@ -578,5 +578,5 @@ uploads/
 - [ ] Mostrar no resultado as versões de cada programa;
 - [x] Permitir o download de vários resultados;
 - [ ] Migrar os dados do MongoDB para o Postgresql;
-- [ ] Integrar com a pipeline;
-- [ ] Integrar com o frontend;
+- [x] Integrar com a pipeline;
+- [x] Integrar com o frontend;

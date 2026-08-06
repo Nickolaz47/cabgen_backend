@@ -40,12 +40,13 @@ func TestSendAdminAlertEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Fetch New User", func(t *testing.T) {
@@ -125,13 +126,14 @@ func TestSendWelcomeEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(userRepo, nil, nil, sender,
 			mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - User Not Found", func(t *testing.T) {
@@ -189,13 +191,14 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
 			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Success - Failed Status", func(t *testing.T) {
@@ -207,13 +210,14 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
 			mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Analysis Not Found", func(t *testing.T) {
@@ -282,13 +286,14 @@ func TestSendAdminTicketEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(userRepo, nil, ticketRepo,
 			sender, mockLogger)
 		err := svc.SendAdminTicketEmail(ctx, ticketID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Fetch Ticket", func(t *testing.T) {
@@ -381,13 +386,14 @@ func TestSendFinishedTicketEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
 			mockLogger)
 		err := svc.SendFinishedTicketEmail(ctx, ticketID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Fetch Ticket", func(t *testing.T) {
@@ -439,12 +445,13 @@ func TestSendPasswordResetEmail(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
 		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Send Email Failure", func(t *testing.T) {
@@ -469,12 +476,13 @@ func TestSendUserDeletedEmail(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
 		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Send Email Failure", func(t *testing.T) {
@@ -502,13 +510,14 @@ func TestSendEmailUpdateConfirmation(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
-		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
 		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
 			oldEmail, newEmail, token)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Send Email Failure", func(t *testing.T) {

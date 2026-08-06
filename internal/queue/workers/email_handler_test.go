@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestEmailTaskHandlerProcessTask(t *testing.T) {
@@ -26,7 +27,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AdminAlertEmailPayload{
 			NewUserID: userID})
@@ -38,7 +39,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Admin Alert JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeAdminAlertEmail, []byte(
 			`{"new_user_id": "invalid-uuid"`))
@@ -58,7 +59,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("service internal error")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AdminAlertEmailPayload{
 			NewUserID: userID})
@@ -79,7 +80,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.WelcomeEmailPayload{
 			UserID: userID})
@@ -91,7 +92,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Welcome Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeWelcomeEmail, []byte(
 			`broken json`))
@@ -111,7 +112,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AnalysisDoneEmailPayload{
 			AnalysisID: analysisID})
@@ -123,7 +124,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Analysis Done Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeAnalysisDoneEmail, []byte(
 			`[1, 2, 3]`))
@@ -142,7 +143,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("smtp timeout")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AnalysisDoneEmailPayload{
 			AnalysisID: analysisID})
@@ -156,7 +157,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Unknown Task Type", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask("email:alien_task", []byte(`{}`))
 
@@ -175,7 +176,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AdminTicketEmailPayload{
 			TicketID: ticketID})
@@ -187,7 +188,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Admin Ticket Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeAdminTicketEmail,
 			[]byte(`broken json`))
@@ -207,7 +208,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("smtp connection refused")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AdminTicketEmailPayload{
 			TicketID: ticketID})
@@ -228,7 +229,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.FinishedTicketEmailPayload{
 			TicketID: ticketID})
@@ -240,7 +241,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Finished Ticket Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeFinishedTicketEmail,
 			[]byte(`[1, 2, 3]`))
@@ -260,7 +261,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("template render error")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.FinishedTicketEmailPayload{
 			TicketID: ticketID})
@@ -285,7 +286,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.PasswordResetEmailPayload{
 			Email: email,
@@ -300,7 +301,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Password Reset Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypePasswordResetEmail,
 			[]byte(`[1, 2, 3]`))
@@ -322,7 +323,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("smtp timeout")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.PasswordResetEmailPayload{
 			Email: email,
@@ -348,7 +349,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.UserDeletedEmailPayload{
 			Email: email,
@@ -362,7 +363,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - User Deleted Email JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeUserDeletedEmail,
 			[]byte(`[1, 2, 3]`))
@@ -383,7 +384,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("smtp timeout")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.UserDeletedEmailPayload{
 			Email: email,
@@ -415,7 +416,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.EmailUpdateConfirmationPayload{
 			Email:    email,
@@ -432,7 +433,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Email Update Confirmation JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockEmailService{}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeEmailUpdateConfirmation,
 			[]byte(`[1, 2, 3]`))
@@ -457,7 +458,7 @@ func TestEmailTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("smtp timeout")
 			},
 		}
-		handler := workers.NewEmailTaskHandler(mockService)
+		handler := workers.NewEmailTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.EmailUpdateConfirmationPayload{
 			Email:    email,

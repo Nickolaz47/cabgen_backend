@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestAnalysisTaskHandlerProcessTask(t *testing.T) {
@@ -26,7 +27,7 @@ func TestAnalysisTaskHandlerProcessTask(t *testing.T) {
 				return nil
 			},
 		}
-		handler := workers.NewAnalysisTaskHandler(mockService)
+		handler := workers.NewAnalysisTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AnalysisProcessPayload{
 			AnalysisID: analysisID})
@@ -38,7 +39,7 @@ func TestAnalysisTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - JSON Unmarshal", func(t *testing.T) {
 		mockService := &mocks.MockAnalysisRunnerService{}
-		handler := workers.NewAnalysisTaskHandler(mockService)
+		handler := workers.NewAnalysisTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask(tasks.TaskTypeAnalysisProcess,
 			[]byte(`{"analysis_id": "invalid-uuid"`))
@@ -58,7 +59,7 @@ func TestAnalysisTaskHandlerProcessTask(t *testing.T) {
 				return errors.New("pipeline crashed")
 			},
 		}
-		handler := workers.NewAnalysisTaskHandler(mockService)
+		handler := workers.NewAnalysisTaskHandler(mockService, zap.NewNop())
 
 		payloadBytes, _ := json.Marshal(tasks.AnalysisProcessPayload{
 			AnalysisID: analysisID})
@@ -72,7 +73,7 @@ func TestAnalysisTaskHandlerProcessTask(t *testing.T) {
 
 	t.Run("Error - Unknown Task Type", func(t *testing.T) {
 		mockService := &mocks.MockAnalysisRunnerService{}
-		handler := workers.NewAnalysisTaskHandler(mockService)
+		handler := workers.NewAnalysisTaskHandler(mockService, zap.NewNop())
 
 		task := asynq.NewTask("analysis:alien_task", []byte(`{}`))
 

@@ -40,7 +40,7 @@ func main() {
 	emailSvc := container.BuildEmailService(mainDB.DB(), logging.FileLogger)
 
 	// Handler
-	emailHandler := workers.NewEmailTaskHandler(emailSvc)
+	emailHandler := workers.NewEmailTaskHandler(emailSvc, logging.FileLogger)
 
 	// Mux
 	mux := asynq.NewServeMux()

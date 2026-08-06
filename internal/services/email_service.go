@@ -120,6 +120,11 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 				"EmailService", "SendAdminAlertEmail", logging.SendEmailError,
 				fmt.Errorf("Failed to send alert to %s: %v", a.Email, err),
 			)...)
+		} else {
+			s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+				"EmailService", "SendAdminAlertEmail", logging.EmailSentSuccess,
+				zap.String("recipient", a.Email),
+			)...)
 		}
 	}
 
@@ -157,6 +162,11 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 		return fmt.Errorf("Failed to send welcome email to %s: %v", user.Email,
 			err)
 	}
+
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendWelcomeEmail", logging.EmailSentSuccess,
+		zap.String("recipient", user.Email),
+	)...)
 
 	return nil
 }
@@ -201,6 +211,12 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 		return fmt.Errorf("Failed to send analysis email to %s: %v",
 			analysis.User.Email, err)
 	}
+
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendAnalysisDoneEmail", logging.EmailSentSuccess,
+		zap.String("recipient", analysis.User.Email),
+		zap.String("analysis_id", analysisID.String()),
+	)...)
 
 	return nil
 }
@@ -259,6 +275,11 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 				fmt.Errorf("Failed to send ticket email to %s: %v",
 					a.Email, err),
 			)...)
+		} else {
+			s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+				"EmailService", "SendAdminTicketEmail", logging.EmailSentSuccess,
+				zap.String("recipient", a.Email),
+			)...)
 		}
 	}
 
@@ -302,6 +323,12 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 			ticket.Email, err)
 	}
 
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendFinishedTicketEmail", logging.EmailSentSuccess,
+		zap.String("recipient", ticket.Email),
+		zap.String("ticket_id", ticketID.String()),
+	)...)
+
 	return nil
 }
 
@@ -339,6 +366,11 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 		return fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err)
 	}
 
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendPasswordResetEmail", logging.EmailSentSuccess,
+		zap.String("recipient", userEmail),
+	)...)
+
 	return nil
 }
 
@@ -371,6 +403,11 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 		)...)
 		return fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err)
 	}
+
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendUserDeletedEmail", logging.EmailSentSuccess,
+		zap.String("recipient", userEmail),
+	)...)
 
 	return nil
 }
@@ -415,6 +452,12 @@ func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 		return fmt.Errorf("Failed to send email update confirmation to %s: %v",
 			newEmail, err)
 	}
+
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+		"EmailService", "SendEmailUpdateConfirmation", logging.EmailSentSuccess,
+		zap.String("recipient", newEmail),
+		zap.String("old_email", oldEmail),
+	)...)
 
 	return nil
 }

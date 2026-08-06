@@ -38,6 +38,7 @@ const (
 
 const (
 	TaskEnqueuedSuccess = "TASK_ENQUEUED_SUCCESS"
+	EmailSentSuccess    = "EMAIL_SENT_SUCCESS"
 )
 
 const ()
