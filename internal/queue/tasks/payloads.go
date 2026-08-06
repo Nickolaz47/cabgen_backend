@@ -138,7 +138,8 @@ func NewFinishedTicketEmailTask(ticketID uuid.UUID) (*asynq.Task, error) {
 		asynq.MaxRetry(5)), nil
 }
 
-func NewPasswordResetEmailTask(email, name, token string) (*asynq.Task, error) {
+func NewPasswordResetEmailTask(email, name, token string,
+	expiresAt time.Time) (*asynq.Task, error) {
 	payload, err := json.Marshal(PasswordResetEmailPayload{
 		Email: email,
 		Name:  name,
@@ -149,7 +150,9 @@ func NewPasswordResetEmailTask(email, name, token string) (*asynq.Task, error) {
 	}
 
 	return asynq.NewTask(TaskTypePasswordResetEmail, payload,
-		asynq.MaxRetry(3)), nil
+		asynq.MaxRetry(3),
+		asynq.Deadline(expiresAt),
+	), nil
 }
 
 func NewUserDeletedEmailTask(email, name string) (*asynq.Task, error) {
@@ -166,7 +169,7 @@ func NewUserDeletedEmailTask(email, name string) (*asynq.Task, error) {
 }
 
 func NewEmailUpdateConfirmationTask(email, name, oldEmail, newEmail,
-	token string) (*asynq.Task, error) {
+	token string, expiresAt time.Time) (*asynq.Task, error) {
 	payload, err := json.Marshal(EmailUpdateConfirmationPayload{
 		Email:    email,
 		Name:     name,
@@ -179,5 +182,7 @@ func NewEmailUpdateConfirmationTask(email, name, oldEmail, newEmail,
 	}
 
 	return asynq.NewTask(TaskTypeEmailUpdateConfirmation, payload,
-		asynq.MaxRetry(3)), nil
+		asynq.MaxRetry(3),
+		asynq.Deadline(expiresAt),
+	), nil
 }

@@ -311,7 +311,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 	}
 
 	task, err := tasks.NewEmailUpdateConfirmationTask(user.Email, user.Name,
-		user.Email, input.NewEmail, token)
+		user.Email, input.NewEmail, token, req.ExpiresAt)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,

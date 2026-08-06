@@ -355,7 +355,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 	}
 
 	task, err := tasks.NewPasswordResetEmailTask(user.Email, user.Name,
-		tokenStr)
+		tokenStr, reset.ExpiresAt)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AuthService", "ForgotPassword", logging.AsynqTaskError,
