@@ -407,7 +407,6 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lists all users |
 | GET | `/api/admin/users/:id` | Returns a specific user |
-| GET | `/api/admin/users/roles` | Returns valid roles for users |
 | POST | `/api/admin/users` | Creates a pre-activated user |
 | PUT | `/api/admin/users/:id` | Updates a user |
 | PATCH | `/api/admin/users/:id/activate` | Activates a user |
@@ -465,7 +464,6 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/microorganisms` | Lists all microorganisms |
 | GET | `/api/admin/microorganisms/:id` | Returns a specific microorganism |
 | GET | `/api/admin/microorganisms/search` | Searches microorganisms by name or group |
-| GET | `/api/admin/microorganisms/taxons` | Returns valid taxons for microorganisms |
 | POST | `/api/admin/microorganisms` | Creates a new microorganism |
 | PUT | `/api/admin/microorganisms/:id` | Updates a microorganism |
 | DELETE | `/api/admin/microorganisms/:id` | Deletes a microorganism |
@@ -477,7 +475,6 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/health-services` | Lists all health services |
 | GET | `/api/admin/health-services/:id` | Returns a specific health service |
 | GET | `/api/admin/health-services/search` | Searches health services by name or group |
-| GET | `/api/admin/health-services/types` | Returns valid types for health services |
 | POST | `/api/admin/health-services` | Creates a new health service |
 | PUT | `/api/admin/health-services/:id` | Updates a health service |
 | DELETE | `/api/admin/health-services/:id` | Deletes a health service |

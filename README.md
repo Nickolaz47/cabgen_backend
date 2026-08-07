@@ -418,7 +418,6 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lista todos os usuários |
 | GET | `/api/admin/users/:id` | Retorna um usuário específico |
-| GET | `/api/admin/users/roles` | Retorna os papéis válidos para usuários |
 | POST | `/api/admin/users` | Cria um usuário já ativado |
 | PUT | `/api/admin/users/:id` | Atualiza um usuário |
 | PATCH | `/api/admin/users/:id/activate` | Ativa um usuário |
@@ -476,7 +475,6 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/microorganisms` | Lista todos os microrganismos |
 | GET | `/api/admin/microorganisms/:id` | Retorna um microrganismo específico |
 | GET | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo |
-| GET | `/api/admin/microorganisms/taxons` | Retorna os táxons válidos para microrganismos |
 | POST | `/api/admin/microorganisms` | Cria um novo microrganismo |
 | PUT | `/api/admin/microorganisms/:id` | Atualiza um microrganismo |
 | DELETE | `/api/admin/microorganisms/:id` | Deleta um microrganismo |
@@ -488,7 +486,6 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/health-services` | Lista todos os serviços de saúde |
 | GET | `/api/admin/health-services/:id` | Retorna um serviços de saúde específico |
 | GET | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
-| GET | `/api/admin/health-services/types` | Retorna os tipos válidos para serviços de saúde |
 | POST | `/api/admin/health-services` | Cria um novo serviços de saúde |
 | PUT | `/api/admin/health-services/:id` | Atualiza um serviços de saúde |
 | DELETE | `/api/admin/health-services/:id` | Deleta um serviços de saúde |
