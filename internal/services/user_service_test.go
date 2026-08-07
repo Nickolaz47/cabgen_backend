@@ -421,7 +421,7 @@ func TestUpdatePassword(t *testing.T) {
 				return nil
 			},
 		}
-		hasher := &mocks.MockPasswordHasher{
+		hasher := &mocks.MockHasher{
 			CheckPasswordFunc: func(hashPassword, password string) error {
 				return nil
 			},
@@ -444,7 +444,7 @@ func TestUpdatePassword(t *testing.T) {
 				return &user, nil
 			},
 		}
-		hasher := &mocks.MockPasswordHasher{
+		hasher := &mocks.MockHasher{
 			CheckPasswordFunc: func(hashPassword, password string) error {
 				return errors.New(
 					"crypto/bcrypt: hashedPassword is not the hash of the" +
