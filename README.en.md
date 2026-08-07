@@ -410,8 +410,8 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/users/roles` | Returns valid roles for users |
 | POST | `/api/admin/users` | Creates a pre-activated user |
 | PUT | `/api/admin/users/:id` | Updates a user |
-| PATCH | `/api/admin/users/activate/:id` | Activates a user |
-| PATCH | `/api/admin/users/deactivate/:id` | Deactivates a user |
+| PATCH | `/api/admin/users/:id/activate` | Activates a user |
+| PATCH | `/api/admin/users/:id/deactivate` | Deactivates a user |
 | DELETE | `/api/admin/users/:id` | Deletes a user |
 
 #### Origin

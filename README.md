@@ -421,8 +421,8 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/users/roles` | Retorna os papéis válidos para usuários |
 | POST | `/api/admin/users` | Cria um usuário já ativado |
 | PUT | `/api/admin/users/:id` | Atualiza um usuário |
-| PATCH | `/api/admin/users/activate/:id` | Ativa um usuário |
-| PATCH | `/api/admin/users/deactivate/:id` | Desativa um usuário |
+| PATCH | `/api/admin/users/:id/activate` | Ativa um usuário |
+| PATCH | `/api/admin/users/:id/deactivate` | Desativa um usuário |
 | DELETE | `/api/admin/users/:id` | Deleta um usuário |
 
 #### Origem
