@@ -240,6 +240,8 @@ func TestAnalysisCreate(t *testing.T) {
 			Status:   models.AnalysisStatusPending,
 			Sample:   mock.Sample.Name,
 			SampleID: mock.Sample.ID,
+			User:     mock.User.Username,
+			UserID:   mock.User.ID,
 		}
 
 		assert.NoError(t, err)
@@ -279,6 +281,8 @@ func TestAnalysisCreate(t *testing.T) {
 			Status:   models.AnalysisStatusPending,
 			Sample:   mock.Sample.Name,
 			SampleID: mock.Sample.ID,
+			User:     mock.User.Username,
+			UserID:   mock.User.ID,
 		}
 
 		assert.NoError(t, err)
@@ -423,6 +427,8 @@ func TestAnalysisCreate(t *testing.T) {
 				Status:   models.AnalysisStatusPending,
 				Sample:   mock.Sample.Name,
 				SampleID: mock.Sample.ID,
+				User:     mock.User.Username,
+				UserID:   mock.User.ID,
 			}
 
 			assert.NoError(t, err)
@@ -510,6 +516,191 @@ func TestAnalysisCreate(t *testing.T) {
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
 			nil, mockLogger)
 		result, err := svc.Create(ctx, input)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAnalysisUpdate(t *testing.T) {
+	ctx := context.Background()
+	mock := testmodels.CreateMockAnalysis()
+
+	statusRunning := models.AnalysisStatusRunning
+	updateInputRunning := models.AdminAnalysisUpdateInput{
+		Status: &statusRunning,
+	}
+
+	statusDone := models.AnalysisStatusDone
+	updateInputDone := models.AdminAnalysisUpdateInput{
+		Status: &statusDone,
+	}
+
+	statusFailed := models.AnalysisStatusFailed
+	updateInputFailed := models.AdminAnalysisUpdateInput{
+		Status: &statusFailed,
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusRunning, result.Status)
+		assert.NotNil(t, result.StartedAt)
+	})
+
+	t.Run("Success - Status Done Enqueues Email Task", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil,
+			enqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Status Failed Enqueues Email Task", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil,
+			enqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputFailed)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusFailed, result.Status)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Soft Fail Asynq Enqueue Error", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		failingEnqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
+				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return nil, errors.New("redis timeout")
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil,
+			failingEnqueuer, mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal on Get", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal on Update", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			UpdateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

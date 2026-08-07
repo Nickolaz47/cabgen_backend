@@ -15,10 +15,10 @@ import (
 )
 
 type AdminAnalysisHandler struct {
-	Service services.AdminAnalysisService
+	Service services.AnalysisService
 }
 
-func NewAdminAnalysisHandler(svc services.AdminAnalysisService,
+func NewAdminAnalysisHandler(svc services.AnalysisService,
 ) *AdminAnalysisHandler {
 	return &AdminAnalysisHandler{
 		Service: svc,
@@ -28,7 +28,7 @@ func NewAdminAnalysisHandler(svc services.AdminAnalysisService,
 func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 
-	analyses, err := h.Service.FindAll(c.Request.Context())
+	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -52,7 +52,7 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id)
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -62,12 +62,6 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
-}
-
-func (h *AdminAnalysisHandler) GetAnalysisTypes(c *gin.Context) {
-	c.JSON(http.StatusOK, responses.APIResponse{
-		Data: models.AnalysisTypes,
-	})
 }
 
 func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
@@ -155,7 +149,7 @@ func (h *AdminAnalysisHandler) DeleteAnalysis(c *gin.Context) {
 		return
 	}
 
-	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
+	if err = h.Service.Delete(c.Request.Context(), id, uuid.Nil); err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -180,7 +174,7 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id)
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -211,7 +205,7 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	}
 
 	analyses, err := h.Service.FindManyByIDs(c.Request.Context(),
-		downloadInput.IDs)
+		downloadInput.IDs, uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{

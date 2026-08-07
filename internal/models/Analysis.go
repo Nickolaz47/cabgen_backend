@@ -105,7 +105,7 @@ type Analysis struct {
 	User     User      `gorm:"foreignKey:UserID;references:ID"`
 }
 
-type AnalysisAdminResponse struct {
+type AnalysisResponse struct {
 	ID             uuid.UUID      `json:"id"`
 	Type           AnalysisType   `json:"type"`
 	Status         AnalysisStatus `json:"status"`
@@ -122,52 +122,22 @@ type AnalysisAdminResponse struct {
 	FinishedAt     *time.Time     `json:"finished_at"`
 }
 
-func (a *Analysis) ToAdminResponse() AnalysisAdminResponse {
-	return AnalysisAdminResponse{
-		ID:           a.ID,
-		Type:         a.Type,
-		Status:       a.Status,
-		ErrorMessage: a.ErrorMessage,
-		Sample:       a.Sample.Name,
-		SampleID:     a.Sample.ID,
-		User:         a.User.Username,
-		UserID:       a.UserID,
-		Metrics:      a.Metrics,
-		FastQC1:      a.FastQC1,
-		FastQC2:      a.FastQC2,
-		StartedAt:    a.StartedAt,
-		FinishedAt:   a.FinishedAt,
-	}
-}
-
-type AnalysisResponse struct {
-	ID             uuid.UUID      `json:"id"`
-	Type           AnalysisType   `json:"type"`
-	Status         AnalysisStatus `json:"status"`
-	ErrorMessage   *string        `json:"error_message"`
-	Sample         string         `json:"sample"`
-	SampleID       uuid.UUID      `json:"sample_id"`
-	Metrics        datatypes.JSON `json:"metrics"`
-	ResultsZipPath *string        `json:"results_zip_path"`
-	FastQC1        *string        `json:"fastqc1"`
-	FastQC2        *string        `json:"fastqc2"`
-	StartedAt      *time.Time     `json:"started_at"`
-	FinishedAt     *time.Time     `json:"finished_at"`
-}
-
 func (a *Analysis) ToResponse() AnalysisResponse {
 	return AnalysisResponse{
-		ID:           a.ID,
-		Type:         a.Type,
-		Status:       a.Status,
-		ErrorMessage: a.ErrorMessage,
-		Sample:       a.Sample.Name,
-		SampleID:     a.SampleID,
-		Metrics:      a.Metrics,
-		FastQC1:      a.FastQC1,
-		FastQC2:      a.FastQC2,
-		StartedAt:    a.StartedAt,
-		FinishedAt:   a.FinishedAt,
+		ID:             a.ID,
+		Type:           a.Type,
+		Status:         a.Status,
+		ErrorMessage:   a.ErrorMessage,
+		Sample:         a.Sample.Name,
+		SampleID:       a.SampleID,
+		User:           a.User.Username,
+		UserID:         a.UserID,
+		Metrics:        a.Metrics,
+		ResultsZipPath: a.ResultsZipPath,
+		FastQC1:        a.FastQC1,
+		FastQC2:        a.FastQC2,
+		StartedAt:      a.StartedAt,
+		FinishedAt:     a.FinishedAt,
 	}
 }
 

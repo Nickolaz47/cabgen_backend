@@ -23,25 +23,12 @@ func BuildAnalysisService(db *gorm.DB, asynqClient *asynq.Client,
 	return analysisService
 }
 
-func BuildAdminAnalysisService(db *gorm.DB, asynqClient *asynq.Client,
-	logger *zap.Logger) services.AdminAnalysisService {
-	analysisRepo := repositories.NewAnalysisRepository(db)
-	sampleRepo := repositories.NewSampleRepo(db)
-	userRepo := repositories.NewUserRepo(db)
-	adminAnalysisService := services.NewAdminAnalysisService(
-		analysisRepo, sampleRepo,
-		userRepo, asynqClient, logger,
-	)
-
-	return adminAnalysisService
-}
-
 func BuildAnalysisHandler(svc services.AnalysisService,
 ) *analysis.AnalysisHandler {
 	return analysis.NewAnalysisHandler(svc)
 }
 
-func BuildAdminAnalysisHandler(svc services.AdminAnalysisService,
+func BuildAdminAnalysisHandler(svc services.AnalysisService,
 ) *adminHandler.AdminAnalysisHandler {
 	return adminHandler.NewAdminAnalysisHandler(svc)
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,13 +19,13 @@ func TestGetAnalyses(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToAdminResponse()
+	mockResponse := mockAnalysis.ToResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindAllFunc: func(ctx context.Context) (
-				[]models.AnalysisAdminResponse, error) {
-				return []models.AnalysisAdminResponse{mockResponse}, nil
+		svc := &mocks.MockAnalysisService{
+			FindAllFunc: func(ctx context.Context, userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
+				return []models.AnalysisResponse{mockResponse}, nil
 			},
 		}
 
@@ -36,7 +37,7 @@ func TestGetAnalyses(t *testing.T) {
 		handler.GetAnalyses(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.AnalysisAdminResponse{
+			map[string][]models.AnalysisResponse{
 				"data": {mockResponse},
 			},
 		)
@@ -46,9 +47,9 @@ func TestGetAnalyses(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindAllFunc: func(ctx context.Context) (
-				[]models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindAllFunc: func(ctx context.Context, userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

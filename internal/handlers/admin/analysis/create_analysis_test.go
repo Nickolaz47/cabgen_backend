@@ -22,7 +22,7 @@ func TestCreateAnalysis(t *testing.T) {
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToAdminResponse()
+	mockResponse := mockAnalysis.ToResponse()
 
 	mockUserID := uuid.New()
 
@@ -33,10 +33,10 @@ func TestCreateAnalysis(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
+		svc := &mocks.MockAnalysisService{
 			CreateFunc: func(ctx context.Context,
 				input models.AnalysisCreateDTO) (
-				*models.AnalysisAdminResponse, error) {
+				*models.AnalysisResponse, error) {
 				assert.Equal(t, mockUserID, input.UserID)
 				return &mockResponse, nil
 			},
@@ -65,7 +65,7 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid Type", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		invalidInput := testutils.CopyMap(validInput)
@@ -91,7 +91,7 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		for _, test := range data.AdminAnalysisCreateTests {
@@ -112,10 +112,10 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
+		svc := &mocks.MockAnalysisService{
 			CreateFunc: func(ctx context.Context,
 				input models.AnalysisCreateDTO) (
-				*models.AnalysisAdminResponse, error) {
+				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

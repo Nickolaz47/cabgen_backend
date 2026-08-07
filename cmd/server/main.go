@@ -137,8 +137,6 @@ func main() {
 		logging.FileLogger)
 	analysisSvc := container.BuildAnalysisService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
-	admAnalysisSvc := container.BuildAdminAnalysisService(mainDB.DB(),
-		asynqClient, logging.FileLogger)
 	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 
@@ -182,7 +180,7 @@ func main() {
 	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(
 		healthServiceSvc)
 	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc)
-	adminAnalysisHandler := container.BuildAdminAnalysisHandler(admAnalysisSvc)
+	adminAnalysisHandler := container.BuildAdminAnalysisHandler(analysisSvc)
 	adminTicketHandler := container.BuildAdminTicketHandler(ticketSvc)
 
 	// Public routes

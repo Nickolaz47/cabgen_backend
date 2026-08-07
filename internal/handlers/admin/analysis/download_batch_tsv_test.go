@@ -20,9 +20,9 @@ func TestDownloadBatchTSV(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockAnalyses := []models.AnalysisAdminResponse{
-		mockAnalysis.ToAdminResponse(),
-		mockAnalysis.ToAdminResponse(),
+	mockAnalyses := []models.AnalysisResponse{
+		mockAnalysis.ToResponse(),
+		mockAnalysis.ToResponse(),
 	}
 
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
@@ -31,9 +31,10 @@ func TestDownloadBatchTSV(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
-				[]models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
 				return mockAnalyses, nil
 			},
 		}
@@ -72,7 +73,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 	})
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		for _, test := range data.AnalysisTSVDownloadTests {
@@ -93,9 +94,10 @@ func TestDownloadBatchTSV(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
-				[]models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -120,9 +122,10 @@ func TestDownloadBatchTSV(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID) (
-				[]models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

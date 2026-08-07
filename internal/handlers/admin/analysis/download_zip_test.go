@@ -30,10 +30,10 @@ func TestDownloadZip(t *testing.T) {
 	mockAnalysis := testmodels.CreateMockAnalysis()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
-				response := mockAnalysis.ToAdminResponse()
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, id, userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
+				response := mockAnalysis.ToResponse()
 				response.ResultsZipPath = &zipPath
 				return &response, nil
 			},
@@ -64,10 +64,10 @@ func TestDownloadZip(t *testing.T) {
 		noZipAnalysis := testmodels.CreateMockAnalysis()
 		noZipAnalysis.ResultsZipPath = nil
 
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
-				response := noZipAnalysis.ToAdminResponse()
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, id, userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
+				response := noZipAnalysis.ToResponse()
 				return &response, nil
 			},
 		}
@@ -94,7 +94,7 @@ func TestDownloadZip(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
@@ -116,9 +116,9 @@ func TestDownloadZip(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, id, userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -145,9 +145,9 @@ func TestDownloadZip(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, id, userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

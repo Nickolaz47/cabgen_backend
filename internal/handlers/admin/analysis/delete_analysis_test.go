@@ -22,7 +22,7 @@ func TestDeleteAnalysis(t *testing.T) {
 	mockAnalysis := testmodels.CreateMockAnalysis()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 
 		handler := analysis.NewAdminAnalysisHandler(svc)
 		c, w := testutils.SetupGinContext(
@@ -45,7 +45,7 @@ func TestDeleteAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 
 		handler := analysis.NewAdminAnalysisHandler(svc)
 		c, w := testutils.SetupGinContext(
@@ -68,8 +68,9 @@ func TestDeleteAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			DeleteFunc: func(ctx context.Context, analysisID uuid.UUID) error {
+		svc := &mocks.MockAnalysisService{
+			DeleteFunc: func(ctx context.Context, analysisID,
+				userID uuid.UUID) error {
 				return services.ErrNotFound
 			},
 		}
@@ -97,8 +98,9 @@ func TestDeleteAnalysis(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			DeleteFunc: func(ctx context.Context, analysisID uuid.UUID) error {
+		svc := &mocks.MockAnalysisService{
+			DeleteFunc: func(ctx context.Context, analysisID,
+				userID uuid.UUID) error {
 				return services.ErrInternal
 			},
 		}

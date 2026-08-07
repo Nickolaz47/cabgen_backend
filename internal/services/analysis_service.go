@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
@@ -22,6 +23,9 @@ type AnalysisService interface {
 	FindManyByIDs(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.AnalysisResponse, error)
 	Create(ctx context.Context, input models.AnalysisCreateDTO) (
+		*models.AnalysisResponse, error)
+	Update(ctx context.Context, analysisID uuid.UUID,
+		input models.AdminAnalysisUpdateInput) (
 		*models.AnalysisResponse, error)
 	Delete(ctx context.Context, analysisID, userID uuid.UUID) error
 }
@@ -230,6 +234,65 @@ func (s *analysisService) Create(ctx context.Context,
 				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
 			)...)
+		}
+	}
+
+	response := analysis.ToResponse()
+	return &response, nil
+}
+
+func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
+	input models.AdminAnalysisUpdateInput) (
+	*models.AnalysisResponse, error) {
+	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "Update", logging.DatabaseNotFoundError, err,
+		)...)
+		return nil, ErrNotFound
+	}
+
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "Update", logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	validations.ApplyAnalysisUpdate(analysis, &input)
+
+	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(
+				"AnalysisService", "Update",
+				logging.DatabaseError, err,
+			)...)
+		return nil, ErrInternal
+	}
+
+	if analysis.Status == models.AnalysisStatusDone ||
+		analysis.Status == models.AnalysisStatusFailed {
+		task, err := tasks.NewAnalysisDoneEmailTask(analysis.ID)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AnalysisService", "Update", logging.AsynqTaskError,
+				err,
+			)...)
+		} else {
+			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+				asynq.Queue(tasks.QueueEmail))
+			if err != nil {
+				s.Logger.Error("Service Error", logging.ServiceLogging(
+					"AnalysisService", "Update",
+					logging.RedisDispatchError, err,
+				)...)
+			} else {
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+					"AnalysisService", "Update",
+					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+					zap.String("queue", info.Queue),
+				)...)
+			}
 		}
 	}
 

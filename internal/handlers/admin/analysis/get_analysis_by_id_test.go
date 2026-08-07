@@ -20,12 +20,13 @@ func TestGetAnalysisByID(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToAdminResponse()
+	mockResponse := mockAnalysis.ToResponse()
 
 	t.Run("Success", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, analysisID uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, analysisID,
+				userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -49,7 +50,7 @@ func TestGetAnalysisByID(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{}
+		svc := &mocks.MockAnalysisService{}
 		handler := analysis.NewAdminAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
@@ -69,9 +70,10 @@ func TestGetAnalysisByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not found", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, analysisID uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, analysisID,
+				userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -94,9 +96,10 @@ func TestGetAnalysisByID(t *testing.T) {
 	})
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
-		svc := &mocks.MockAdminAnalysisService{
-			FindByIDFunc: func(ctx context.Context, analysisID uuid.UUID) (
-				*models.AnalysisAdminResponse, error) {
+		svc := &mocks.MockAnalysisService{
+			FindByIDFunc: func(ctx context.Context, analysisID,
+				userID uuid.UUID) (
+				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
