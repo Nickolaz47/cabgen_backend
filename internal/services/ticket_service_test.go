@@ -327,7 +327,6 @@ func TestTicketAssign(t *testing.T) {
 			},
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
-		t.Log(ticket)
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
 		result, err := service.Assign(ctx, ticket.ID, admin.ID)
 

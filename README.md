@@ -347,6 +347,12 @@ Os endpoints estão organizados em três níveis de acesso:
 | --- | --- | --- |
 | POST | `/api/contact` | Cria um ticket de contato |
 
+#### Métricas
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/metrics` | Retorna métricas gerais da plataforma (total de amostras, países, espécies e genes de resistência) |
+
 ### Common
 
 #### Auth
@@ -506,7 +512,6 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/analyses` | Lista todas as análises |
 | GET | `/api/admin/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
-| GET | `/api/admin/analyses/types` | Retorna os tipos válidos para análises |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
@@ -521,6 +526,12 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | PUT | `/api/admin/tickets/:ticketId/assign` | Atribui um ticket a um administrador |
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolve um ticket |
 | DELETE | `/api/admin/tickets/:ticketId` | Deleta um ticket |
+
+#### Métricas
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/metrics` | Retorna métricas gerais da plataforma (amostras, países, espécies, genes de resistência, usuários, análises por status, países mais frequentes e espécies) |
 
 ## Organização do Diretório de Uploads
 

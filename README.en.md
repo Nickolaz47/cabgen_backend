@@ -336,6 +336,12 @@ Endpoints are organized into three access levels:
 | --- | --- | --- |
 | POST | `/api/contact` | Creates a contact ticket |
 
+#### Metrics
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/metrics` | Returns general platform metrics (total samples, countries, species, and resistance genes) |
+
 ### Common
 
 #### Authentication
@@ -495,7 +501,6 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/analyses` | Lists all analyses |
 | GET | `/api/admin/analyses/:analysisId` | Returns a specific analysis |
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
-| GET | `/api/admin/analyses/types` | Returns valid types for analyses |
 | POST | `/api/admin/analyses` | Creates and starts a new analysis |
 | POST | `/api/admin/analyses/download/tsv` | Downloads batch TSV |
 | PUT | `/api/admin/analyses/:analysisId` | Updates analysis status/results |
@@ -510,6 +515,12 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | PUT | `/api/admin/tickets/:ticketId/assign` | Assigns a ticket to an administrator |
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolves a ticket |
 | DELETE | `/api/admin/tickets/:ticketId` | Deletes a ticket |
+
+#### Metrics
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/metrics` | Returns general platform metrics (samples, countries, species, resistance genes, users, analyses by status, top countries, and species breakdown) |
 
 ## Uploads Directory Organization
 
