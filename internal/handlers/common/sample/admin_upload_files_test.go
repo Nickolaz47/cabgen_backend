@@ -1,16 +1,13 @@
 package sample_test
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -21,18 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createFormFile(field, file string) (*bytes.Buffer, *multipart.Writer) {
-	var buf bytes.Buffer
-	mw := multipart.NewWriter(&buf)
-
-	fw, _ := mw.CreateFormFile(field, file)
-	io.WriteString(fw, "dummy")
-
-	mw.Close()
-	return &buf, mw
-}
-
-func TestUploadFiles(t *testing.T) {
+func TestAdminUploadFiles(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAdminUser := testmodels.NewAdminLoginUser()

@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeleteSample(t *testing.T) {
+func TestAdminDeleteSample(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockSample := testmodels.CreateMockSample()
@@ -37,6 +38,7 @@ func TestDeleteSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.DeleteSample(c)
 
 		expected := testutils.ToJSON(
@@ -61,6 +63,7 @@ func TestDeleteSample(t *testing.T) {
 			nil,
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.DeleteSample(c)
 
 		expected := testutils.ToJSON(
@@ -91,6 +94,7 @@ func TestDeleteSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.DeleteSample(c)
 
 		expected := testutils.ToJSON(
@@ -121,6 +125,7 @@ func TestDeleteSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.DeleteSample(c)
 
 		expected := testutils.ToJSON(

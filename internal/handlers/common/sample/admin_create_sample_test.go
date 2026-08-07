@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateSample(t *testing.T) {
+func TestAdminCreateSample(t *testing.T) {
 	testutils.SetupTestContext()
 
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
@@ -61,6 +62,7 @@ func TestCreateSample(t *testing.T) {
 			nil,
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.CreateSample(c)
 
 		expected := testutils.ToJSON(
@@ -102,6 +104,7 @@ func TestCreateSample(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(http.MethodPost, "/api/admin/sample",
 			testutils.ToJSON(minimalInput), nil, nil)
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.CreateSample(c)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
@@ -126,6 +129,7 @@ func TestCreateSample(t *testing.T) {
 			nil,
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.CreateSample(c)
 
 		expected := testutils.ToJSON(
@@ -152,6 +156,7 @@ func TestCreateSample(t *testing.T) {
 					nil,
 				)
 
+				c.Set("user", &models.UserToken{ID: uuid.New()})
 				handler.CreateSample(c)
 
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -179,6 +184,7 @@ func TestCreateSample(t *testing.T) {
 			nil,
 		)
 
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 		handler.CreateSample(c)
 
 		expected := testutils.ToJSON(

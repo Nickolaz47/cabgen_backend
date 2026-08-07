@@ -16,14 +16,37 @@ import (
 	"github.com/google/uuid"
 )
 
+type Scope int
+
+const (
+	ScopeSelf Scope = iota // filters by userID
+	ScopeAll               // no filter, returns all data
+)
+
 type SampleHandler struct {
 	Service services.SampleService
+	Scope   Scope
 }
 
 func NewSampleHandler(svc services.SampleService) *SampleHandler {
 	return &SampleHandler{
 		Service: svc,
+		Scope:   ScopeSelf,
 	}
+}
+
+func NewAdminSampleHandler(svc services.SampleService) *SampleHandler {
+	return &SampleHandler{
+		Service: svc,
+		Scope:   ScopeAll,
+	}
+}
+
+func (h *SampleHandler) getUserID(userToken *models.UserToken) uuid.UUID {
+	if h.Scope == ScopeAll {
+		return uuid.Nil
+	}
+	return userToken.ID
 }
 
 func (h *SampleHandler) GetSamples(c *gin.Context) {
@@ -40,7 +63,7 @@ func (h *SampleHandler) GetSamples(c *gin.Context) {
 	}
 
 	samples, err := h.Service.FindAll(c.Request.Context(), input,
-		userToken.ID, language)
+		h.getUserID(userToken), language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
@@ -73,8 +96,8 @@ func (h *SampleHandler) GetSampleByID(c *gin.Context) {
 		return
 	}
 
-	sample, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID,
-		language)
+	sample, err := h.Service.FindByID(c.Request.Context(), id,
+		h.getUserID(userToken), language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(
@@ -93,21 +116,6 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 
-	var newSample models.SampleCreateInput
-	if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
-		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
-		return
-	}
-
-	if newSample.Gender != nil && !newSample.Gender.IsValid() {
-		c.JSON(http.StatusBadRequest,
-			responses.APIResponse{
-				Error: responses.GetResponse(localizer,
-					responses.SampleInvalidGender),
-			})
-		return
-	}
-
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized,
@@ -116,7 +124,43 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 		return
 	}
 
-	payload := models.SampleCreateInputToDTO(newSample, userToken.ID)
+	var payload models.SampleCreateDTO
+	if h.Scope == ScopeAll {
+		var newSample models.AdminSampleCreateInput
+		if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+			return
+		}
+
+		if newSample.Gender != nil && !newSample.Gender.IsValid() {
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{
+					Error: responses.GetResponse(localizer,
+						responses.SampleInvalidGender),
+				})
+			return
+		}
+
+		payload = models.SampleCreateDTO(newSample)
+	} else {
+		var newSample models.SampleCreateInput
+		if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+			return
+		}
+
+		if newSample.Gender != nil && !newSample.Gender.IsValid() {
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{
+					Error: responses.GetResponse(localizer,
+						responses.SampleInvalidGender),
+				})
+			return
+		}
+
+		payload = models.SampleCreateInputToDTO(newSample, userToken.ID)
+	}
+
 	sample, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
@@ -232,7 +276,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 	}
 
 	if err := h.Service.AttachFiles(c.Request.Context(),
-		id, userToken.ID, attachmentInput); err != nil {
+		id, h.getUserID(userToken), attachmentInput); err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -267,27 +311,54 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 		return
 	}
 
-	var sampleUpdateInput models.SampleUpdateInput
-	errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
-	if !ok {
-		c.JSON(http.StatusBadRequest,
-			responses.APIResponse{
-				Error: errMsg,
+	var payload models.SampleUpdateDTO
+	if h.Scope == ScopeAll {
+		var sampleUpdateInput models.AdminSampleUpdateInput
+		errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
+		if !ok {
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{
+					Error: errMsg,
+				})
+			return
+		}
+
+		if sampleUpdateInput.Gender != nil &&
+			!sampleUpdateInput.Gender.IsValid() {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.SampleInvalidGender),
 			})
-		return
+			return
+		}
+
+		payload = models.SampleUpdateDTO(sampleUpdateInput)
+	} else {
+		var sampleUpdateInput models.SampleUpdateInput
+		errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
+		if !ok {
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{
+					Error: errMsg,
+				})
+			return
+		}
+
+		if sampleUpdateInput.Gender != nil &&
+			!sampleUpdateInput.Gender.IsValid() {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.SampleInvalidGender),
+			})
+			return
+		}
+
+		payload = models.SampleUpdateInputToDTO(sampleUpdateInput,
+			userToken.ID)
 	}
 
-	if sampleUpdateInput.Gender != nil && !sampleUpdateInput.Gender.IsValid() {
-		c.JSON(http.StatusBadRequest, responses.APIResponse{
-			Error: responses.GetResponse(localizer,
-				responses.SampleInvalidGender),
-		})
-		return
-	}
-
-	payload := models.SampleUpdateInputToDTO(sampleUpdateInput, userToken.ID)
 	sampleUpdated, err := h.Service.Update(c.Request.Context(), id,
-		userToken.ID, payload, language)
+		h.getUserID(userToken), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
@@ -320,7 +391,7 @@ func (h *SampleHandler) DeleteSample(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id,
-		userToken.ID); err != nil {
+		h.getUserID(userToken)); err != nil {
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(
 			code,

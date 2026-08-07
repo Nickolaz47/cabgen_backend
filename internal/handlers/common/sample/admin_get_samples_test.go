@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/sample"
+	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetSamples(t *testing.T) {
+func TestAdminGetSamples(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockSample := testmodels.CreateMockSample()
@@ -26,6 +26,7 @@ func TestGetSamples(t *testing.T) {
 			FindAllFunc: func(ctx context.Context, input string,
 				userID uuid.UUID, language string) (
 				[]models.SampleResponse, error) {
+				assert.Equal(t, uuid.Nil, userID)
 				return []models.SampleResponse{mockResponse}, nil
 			},
 		}
@@ -39,6 +40,7 @@ func TestGetSamples(t *testing.T) {
 			nil,
 			nil,
 		)
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 
 		handler.GetSamples(c)
 
@@ -70,6 +72,7 @@ func TestGetSamples(t *testing.T) {
 			nil,
 			nil,
 		)
+		c.Set("user", &models.UserToken{ID: uuid.New()})
 
 		handler.GetSamples(c)
 
