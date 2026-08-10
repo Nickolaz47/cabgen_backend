@@ -166,8 +166,9 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 
 	ext := filepath.Ext(*assemblyPath)
 	checkmSample := strings.TrimSuffix(filepath.Base(*assemblyPath), ext)
+	checkMOutput := filepath.Join(folders.AssemblyDir, "checkm_output")
 	checkmResult, err := s.Pipeline.RunCheckM(ctx, threads, checkmSample,
-		folders.AssemblyDir, folders.AssemblyDir)
+		folders.AssemblyDir, checkMOutput)
 	if err != nil {
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed Genome step - CheckM: %v", analysis.ID.String(),
