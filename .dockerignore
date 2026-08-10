@@ -53,7 +53,7 @@ logs/
 tmp/
 data/
 uploads/
-data/
+databases/
 
 # --- OS Specific Files ---
 .DS_Store

@@ -10,7 +10,6 @@ RUN go mod download
 # Source code
 COPY internal/ ./internal
 COPY cmd/ ./cmd
-COPY databases/ ./databases
 
 # Compilation
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o worker-analysis ./cmd/worker-analysis
@@ -35,7 +34,7 @@ RUN micromamba install -y -n base -c bioconda -c conda-forge \
     unicycler \
     "spades=4.3.0" \
     "prokka=1.14.6" \
-    "checkm2" \
+    "checkm-genome" \
     "kraken2=2.17.1" \
     "fastani=1.34" \
     "abricate=1.4.0" \
@@ -46,14 +45,13 @@ RUN micromamba install -y -n base -c bioconda -c conda-forge \
 
 WORKDIR /app
 
+# Data folders needed at runtime
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/internal/translation/active ./internal/translation/active
+
 # Compiled binary
 # Copy Go binary from builder into the bioinformatics environment
 COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/worker-analysis .
 RUN chmod +x worker-analysis
-
-# Data folders needed at runtime
-COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/databases ./databases
-COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /app/internal/translation/active ./internal/translation/active
 
 # Required by micromamba base active
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
