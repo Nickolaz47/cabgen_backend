@@ -8,13 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func AnalysisToResponse(t *testing.T) {
+func TestAnalysisToResponse(t *testing.T) {
 	mockAnalysis := testmodels.CreateMockAnalysis()
+	mockAnalysis.Step = models.StepCheckM
 
 	expected := models.AnalysisResponse{
 		ID:             mockAnalysis.ID,
 		Type:           mockAnalysis.Type,
 		Status:         mockAnalysis.Status,
+		Step:           mockAnalysis.Step,
 		ErrorMessage:   mockAnalysis.ErrorMessage,
 		Sample:         mockAnalysis.Sample.Name,
 		SampleID:       mockAnalysis.Sample.ID,

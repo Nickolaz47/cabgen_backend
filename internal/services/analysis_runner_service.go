@@ -85,6 +85,7 @@ func (s *analysisRunnerService) prepareFolders(
 
 func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	analysis *models.Analysis, outputDir string) error {
+	s.updateStep(ctx, analysis, models.StepFastQC)
 	s.Logger.Info(
 		fmt.Sprintf("%s: Started FastQC step", analysis.ID.String()),
 		logging.ServiceInfoLogging("AnalysisRunnerService", "runFastQC",
@@ -134,6 +135,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		analysis.Sample.Fasta == nil {
+		s.updateStep(ctx, analysis, models.StepUnicycler)
 		assembly, err := s.Pipeline.RunUnicycler(ctx, threads,
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
 			s.Pipeline.GetConfig().SpadesPath, folders.AssemblyDir)
@@ -152,6 +154,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	}
 
 	prokkaOutDir := filepath.Join(folders.AssemblyDir, "prokka")
+	s.updateStep(ctx, analysis, models.StepProkka)
 	if err := s.Pipeline.RunProkka(ctx, threads, *assemblyPath,
 		prokkaOutDir); err != nil {
 		s.Logger.Error(fmt.Sprintf(
@@ -167,6 +170,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	ext := filepath.Ext(*assemblyPath)
 	checkmSample := strings.TrimSuffix(filepath.Base(*assemblyPath), ext)
 	checkMOutput := filepath.Join(folders.AssemblyDir, "checkm_output")
+	s.updateStep(ctx, analysis, models.StepCheckM)
 	checkmResult, err := s.Pipeline.RunCheckM(ctx, threads, checkmSample,
 		folders.AssemblyDir, checkMOutput)
 	if err != nil {
@@ -187,6 +191,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		results.CheckMN50 = checkmResult.N50
 	}
 
+	s.updateStep(ctx, analysis, models.StepKraken2)
 	krakenResult1, krakenResult2, err := s.Pipeline.RunKraken2(ctx, threads,
 		*assemblyPath, folders.AssemblyDir)
 	if err != nil {
@@ -201,6 +206,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	}
 
 	if krakenResult1 != nil {
+		s.updateStep(ctx, analysis, models.StepSpecies)
 		speciesResult, err := s.Pipeline.ProcessSpecies(ctx, threads,
 			analysis.SampleID.String(), krakenResult1.Name, *assemblyPath,
 			folders.AssemblyDir)
@@ -236,6 +242,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		"plasmidfinder": filepath.Join(folders.AMRDir, fmt.Sprintf(
 			"%s_outAbricatePlasmid", analysis.SampleID.String())),
 	}
+	s.updateStep(ctx, analysis, models.StepAbricate)
 	for db, outputFile := range abricateDBs {
 		if err := s.Pipeline.RunAbricate(ctx, threads, db, abricateInput,
 			outputFile); err != nil {
@@ -279,6 +286,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	genomeSize, _ := strconv.Atoi(results.CheckMGenomeSize)
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		genomeSize > 0 {
+		s.updateStep(ctx, analysis, models.StepCoverage)
 		coverage, err := pipeline.CalculateCoverage(
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
 			int64(genomeSize))
@@ -305,10 +313,22 @@ func (s *analysisRunnerService) runComplete(ctx context.Context,
 	return nil
 }
 
+func (s *analysisRunnerService) updateStep(ctx context.Context,
+	analysis *models.Analysis, step models.AnalysisStep) {
+	analysis.Step = step
+	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AnalysisRunnerService", "updateStep",
+			logging.DatabaseError, err,
+		)...)
+	}
+}
+
 func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 	analysis *models.Analysis, results *models.AnalysisResults, runErr error) {
 	finished := time.Now()
 	analysis.FinishedAt = &finished
+	analysis.Step = ""
 
 	if runErr != nil {
 		analysis.Status = models.AnalysisStatusFailed

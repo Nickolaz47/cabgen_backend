@@ -56,7 +56,6 @@ services:
       - .env
     environment:
       - DB_HOST=database
-      - CHECKM_DATA_PATH=${CHECKM_DATA_PATH}
     depends_on:
       database:
         condition: service_healthy

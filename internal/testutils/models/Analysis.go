@@ -15,6 +15,7 @@ type Analysis struct {
 	// Pipeline Control
 	Type   rModels.AnalysisType   `gorm:"type:varchar(20);not null"`
 	Status rModels.AnalysisStatus `gorm:"type:varchar(20);not null;default:'PENDING'"`
+	Step   string                 `gorm:"type:varchar(20);default:''"`
 
 	// Results
 	Metrics        datatypes.JSON `gorm:"type:jsonb"`

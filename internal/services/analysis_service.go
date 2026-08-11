@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -36,6 +38,7 @@ type analysisService struct {
 	UserRepo    repositories.UserRepository
 	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
+	RootDir     string
 }
 
 func NewAnalysisService(
@@ -44,6 +47,7 @@ func NewAnalysisService(
 	userRepo repositories.UserRepository,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
+	rootDir string,
 ) AnalysisService {
 	return &analysisService{
 		Repo:        repo,
@@ -51,7 +55,19 @@ func NewAnalysisService(
 		UserRepo:    userRepo,
 		AsynqClient: asynqClient,
 		Logger:      logger,
+		RootDir:     rootDir,
 	}
+}
+
+func (s *analysisService) getAnalysisFolderPath(
+	userID, sampleID, analysisID uuid.UUID) string {
+	return filepath.Join(
+		s.RootDir,
+		"uploads",
+		"users", userID.String(),
+		"samples", sampleID.String(),
+		"analyses", analysisID.String(),
+	)
 }
 
 func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID) (
@@ -336,6 +352,14 @@ func (s *analysisService) Delete(ctx context.Context,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
+	}
+
+	uploadDir := s.getAnalysisFolderPath(analysis.UserID, analysis.SampleID,
+		analysisID)
+	if err := os.RemoveAll(uploadDir); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AnalysisService", "Delete", logging.DeleteFolderError, err,
+		)...)
 	}
 
 	return nil

@@ -3,6 +3,8 @@ package services_test
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -30,7 +32,7 @@ func TestAnalysisFindAll(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindAll(ctx, uuid.Nil)
 
 		assert.NoError(t, err)
@@ -48,7 +50,7 @@ func TestAnalysisFindAll(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindAll(ctx, uuid.Nil)
 
 		assert.Error(t, err)
@@ -71,7 +73,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID},
 			mock.User.ID)
 
@@ -83,7 +85,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 	t.Run("Success - Empty Analysis IDs", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{},
 			mock.User.ID)
 
@@ -96,7 +98,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, make([]uuid.UUID,
 			models.AnalysesByBatch+1), mock.User.ID)
 
@@ -117,7 +119,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID},
 			mock.User.ID)
 
@@ -140,7 +142,7 @@ func TestAnalysisFindByID(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
 
 		assert.NoError(t, err)
@@ -160,7 +162,7 @@ func TestAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
 
 		assert.Error(t, err)
@@ -179,7 +181,7 @@ func TestAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, uuid.New())
 
 		assert.Error(t, err)
@@ -198,7 +200,7 @@ func TestAnalysisFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
 
 		assert.Error(t, err)
@@ -232,7 +234,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			userRepo, enqueuer, mockLogger)
+			userRepo, enqueuer, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		expected := models.AnalysisResponse{
@@ -273,7 +275,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			userRepo, failingEnqueuer, mockLogger)
+			userRepo, failingEnqueuer, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		expected := models.AnalysisResponse{
@@ -303,7 +305,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			nil, nil, mockLogger)
+			nil, nil, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -324,7 +326,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			nil, nil, mockLogger)
+			nil, nil, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -347,7 +349,7 @@ func TestAnalysisCreate(t *testing.T) {
 			mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				nil, nil, mockLogger)
+				nil, nil, mockLogger, t.TempDir())
 
 			errorInput := models.AnalysisCreateDTO{
 				Type:     models.AnalysisTypeFastQC,
@@ -377,7 +379,7 @@ func TestAnalysisCreate(t *testing.T) {
 			mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				nil, nil, mockLogger)
+				nil, nil, mockLogger, t.TempDir())
 
 			errorInput := models.AnalysisCreateDTO{
 				Type:     models.AnalysisTypeFastQC,
@@ -418,7 +420,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 			enqueuer := &mocks.MockTaskEnqueuer{}
 			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				userRepo, enqueuer, mockLogger)
+				userRepo, enqueuer, mockLogger, t.TempDir())
 
 			result, err := svc.Create(ctx, input)
 
@@ -455,7 +457,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			userRepo, nil, mockLogger)
+			userRepo, nil, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -482,7 +484,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-			userRepo, nil, mockLogger)
+			userRepo, nil, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -514,7 +516,7 @@ func TestAnalysisCreate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
-			nil, mockLogger)
+			nil, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input)
 
 		assert.Error(t, err)
@@ -555,7 +557,7 @@ func TestAnalysisUpdate(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.NoError(t, err)
@@ -580,7 +582,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
-			enqueuer, mockLogger)
+			enqueuer, mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputDone)
 
 		assert.NoError(t, err)
@@ -605,7 +607,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
-			enqueuer, mockLogger)
+			enqueuer, mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputFailed)
 
 		assert.NoError(t, err)
@@ -635,7 +637,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
-			failingEnqueuer, mockLogger)
+			failingEnqueuer, mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputDone)
 
 		assert.NoError(t, err)
@@ -655,7 +657,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
-			mockLogger)
+			mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
@@ -675,7 +677,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
-			mockLogger)
+			mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
@@ -699,7 +701,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
-			mockLogger)
+			mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
 
 		assert.Error(t, err)
@@ -725,10 +727,65 @@ func TestAnalysisDelete(t *testing.T) {
 			},
 		}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, mock.UserID)
 
 		assert.NoError(t, err)
+	})
+
+	t.Run("Success - Deletes Analysis Folder", func(t *testing.T) {
+		rootDir := t.TempDir()
+		analysisFolder := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"analyses", mock.ID.String())
+		err := os.MkdirAll(analysisFolder, 0755)
+		assert.NoError(t, err)
+		_, err = os.Create(filepath.Join(analysisFolder, "result.zip"))
+		assert.NoError(t, err)
+
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			DeleteAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil,
+			rootDir)
+		err = svc.Delete(ctx, mock.ID, mock.UserID)
+
+		assert.NoError(t, err)
+		_, statErr := os.Stat(analysisFolder)
+		assert.True(t, os.IsNotExist(statErr))
+	})
+
+	t.Run("Success - Folder Deletion Failure Logs Warning", func(t *testing.T) {
+		rootDirFile := filepath.Join(t.TempDir(), "root.txt")
+		err := os.WriteFile(rootDirFile, []byte("x"), 0644)
+		assert.NoError(t, err)
+
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+			DeleteAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				return nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger, rootDirFile)
+		err = svc.Delete(ctx, mock.ID, mock.UserID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -741,7 +798,7 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, mock.UserID)
 
 		assert.Error(t, err)
@@ -759,7 +816,7 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, uuid.New())
 
 		assert.Error(t, err)
@@ -777,7 +834,7 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, mock.UserID)
 
 		assert.Error(t, err)
@@ -798,7 +855,7 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, runningMock.ID, runningMock.UserID)
 
 		assert.Error(t, err)
@@ -820,7 +877,7 @@ func TestAnalysisDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, mock.UserID)
 
 		assert.Error(t, err)

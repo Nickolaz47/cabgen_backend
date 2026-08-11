@@ -28,6 +28,19 @@ func (a AnalysisStatus) IsValid() bool {
 	}
 }
 
+type AnalysisStep string
+
+const (
+	StepFastQC    AnalysisStep = "FastQC"
+	StepUnicycler AnalysisStep = "Unicycler"
+	StepProkka    AnalysisStep = "Prokka"
+	StepCheckM    AnalysisStep = "CheckM"
+	StepKraken2   AnalysisStep = "Kraken2"
+	StepSpecies   AnalysisStep = "Species"
+	StepAbricate  AnalysisStep = "Abricate"
+	StepCoverage  AnalysisStep = "Coverage"
+)
+
 type AnalysisType string
 
 const (
@@ -80,6 +93,7 @@ type Analysis struct {
 	// Pipeline Control
 	Type   AnalysisType   `gorm:"type:varchar(20);not null"`
 	Status AnalysisStatus `gorm:"type:varchar(20);not null;default:'PENDING'"`
+	Step   AnalysisStep   `gorm:"type:varchar(20);default:''"`
 
 	// Paths
 	FastQC1 *string `gorm:"type:varchar(255)"`
@@ -109,6 +123,7 @@ type AnalysisResponse struct {
 	ID             uuid.UUID      `json:"id"`
 	Type           AnalysisType   `json:"type"`
 	Status         AnalysisStatus `json:"status"`
+	Step           AnalysisStep   `json:"step"`
 	ErrorMessage   *string        `json:"error_message"`
 	Sample         string         `json:"sample"`
 	SampleID       uuid.UUID      `json:"sample_id"`
@@ -127,6 +142,7 @@ func (a *Analysis) ToResponse() AnalysisResponse {
 		ID:             a.ID,
 		Type:           a.Type,
 		Status:         a.Status,
+		Step:           a.Step,
 		ErrorMessage:   a.ErrorMessage,
 		Sample:         a.Sample.Name,
 		SampleID:       a.SampleID,

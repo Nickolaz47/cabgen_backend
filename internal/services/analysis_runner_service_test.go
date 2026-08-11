@@ -69,6 +69,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.Nil(t, updated.ErrorMessage)
 		assert.NotNil(t, updated.FastQC1)
 		assert.NotNil(t, updated.FastQC2)
+		assert.Empty(t, updated.Step)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -143,6 +144,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock.Sample.Fastq2 = &fq2
 
 		updated := (*models.Analysis)(nil)
+		var steps []models.AnalysisStep
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
@@ -152,6 +154,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			UpdateAnalysisFunc: func(_ context.Context,
 				analysis *models.Analysis) error {
 				updated = analysis
+				steps = append(steps, analysis.Step)
 				return nil
 			},
 		}
@@ -174,6 +177,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.Contains(t, *updated.ErrorMessage,
 			services.ErrFastQC.Error())
 		assert.NotContains(t, *updated.ErrorMessage, "fastqc crashed")
+		assert.Contains(t, steps, models.StepFastQC)
+		assert.Empty(t, updated.Step)
 	})
 
 	t.Run("Error - Unknown Type", func(t *testing.T) {
@@ -256,6 +261,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock.Sample.Fasta = nil
 
 		updated := (*models.Analysis)(nil)
+		var steps []models.AnalysisStep
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
@@ -265,6 +271,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			UpdateAnalysisFunc: func(_ context.Context,
 				analysis *models.Analysis) error {
 				updated = analysis
+				steps = append(steps, analysis.Step)
 				return nil
 			},
 		}
@@ -288,6 +295,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			services.ErrUnicycler.Error())
 		assert.NotContains(t, *updated.ErrorMessage,
 			"spades missing")
+		assert.Contains(t, steps, models.StepUnicycler)
+		assert.Empty(t, updated.Step)
 	})
 
 	t.Run("Error - Enqueue", func(t *testing.T) {
@@ -430,6 +439,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mock.Sample.Fasta = &fasta
 
 		updated := (*models.Analysis)(nil)
+		var steps []models.AnalysisStep
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
@@ -439,6 +449,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			UpdateAnalysisFunc: func(_ context.Context,
 				analysis *models.Analysis) error {
 				updated = analysis
+				steps = append(steps, analysis.Step)
 				return nil
 			},
 		}
@@ -466,6 +477,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			"at least one DB should have failed")
 		assert.NotContains(t, *updated.ErrorMessage,
 			"abricate segfault")
+		assert.Contains(t, steps, models.StepAbricate)
+		assert.Empty(t, updated.Step)
 	})
 
 	t.Run("Error - CheckM", func(t *testing.T) {
@@ -479,6 +492,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mock.Sample.Fasta = &fasta
 
 		updated := (*models.Analysis)(nil)
+		var steps []models.AnalysisStep
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
@@ -488,6 +502,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			UpdateAnalysisFunc: func(_ context.Context,
 				analysis *models.Analysis) error {
 				updated = analysis
+				steps = append(steps, analysis.Step)
 				return nil
 			},
 		}
@@ -511,6 +526,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			services.ErrCheckM.Error())
 		assert.NotContains(t, *updated.ErrorMessage,
 			"checkm db corrupt")
+		assert.Contains(t, steps, models.StepCheckM)
+		assert.Empty(t, updated.Step)
 	})
 }
 

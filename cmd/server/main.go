@@ -136,7 +136,7 @@ func main() {
 	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
 		logging.FileLogger)
 	analysisSvc := container.BuildAnalysisService(mainDB.DB(), asynqClient,
-		logging.FileLogger)
+		logging.FileLogger, rootDir)
 	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),
