@@ -24,6 +24,8 @@ func TestHandleAnalysisError(t *testing.T) {
 	}{
 		{"NotFound", services.ErrNotFound, http.StatusNotFound},
 		{"ExceededDownloadLimit", services.ErrExceededDownloadLimit, http.StatusBadRequest},
+		{"FastQCDownload", services.ErrFastQCDownload, http.StatusBadRequest},
+		{"ZipNotFound", services.ErrZipNotFound, http.StatusNotFound},
 		{"Unauthorized", services.ErrUnauthorized, http.StatusUnauthorized},
 		{"SampleNotFound", services.ErrSampleNotFound, http.StatusNotFound},
 		{"UserNotFound", services.ErrUserNotFound, http.StatusNotFound},

@@ -16,6 +16,10 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusNotFound, responses.AnalysisNotFoundError
 	case errors.Is(err, services.ErrExceededDownloadLimit):
 		return http.StatusBadRequest, responses.AnalysisExceededLimitError
+	case errors.Is(err, services.ErrFastQCDownload):
+		return http.StatusBadRequest, responses.AnalysisFastQCDownloadError
+	case errors.Is(err, services.ErrZipNotFound):
+		return http.StatusNotFound, responses.AnalysisZipNotFound
 	case errors.Is(err, services.ErrUnauthorized):
 		return http.StatusUnauthorized, responses.UnauthorizedError
 	case errors.Is(err, services.ErrSampleNotFound):

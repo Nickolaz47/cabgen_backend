@@ -487,6 +487,9 @@ other = "Analysis not found."
 [analysis.exceededLimit.error]
 other = "Cannot download more than 50 results at once."
 
+[analysis.fastqcDownload.error]
+other = "FASTQC analyses cannot be included in the batch download."
+
 [analysis.zipNotFound.error]
 other = "The zip file is not available for this analysis."
 

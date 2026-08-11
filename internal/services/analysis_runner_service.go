@@ -18,6 +18,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
@@ -343,12 +344,46 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 		analysis.Metrics = jsonData
 	}
 
+	if analysis.Status == models.AnalysisStatusDone {
+		s.zipAnalysisResults(analysis)
+	}
+
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AnalysisRunnerService", "Run",
 			logging.DatabaseError, err,
 		)...)
 	}
+}
+
+func (s *analysisRunnerService) zipAnalysisResults(
+	analysis *models.Analysis) {
+	analysisFolder := filepath.Join(s.RootDir, "uploads", "users",
+		analysis.UserID.String(), "samples", analysis.SampleID.String(),
+		"analyses", analysis.ID.String())
+
+	reportDir := filepath.Join(analysisFolder, "report")
+	if err := os.MkdirAll(reportDir, 0755); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AnalysisRunnerService", "zipAnalysisResults",
+			logging.CreateFolderError, err,
+		)...)
+		return
+	}
+
+	zipName := utils.SanitizeFilename(analysis.Sample.Name) + "_" +
+		string(analysis.Type) + "_results.zip"
+	zipPath := filepath.Join(reportDir, zipName)
+	if err := utils.ZipSubdirectories(analysisFolder,
+		[]string{"qc", "assembly", "amr"}, zipPath); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			"AnalysisRunnerService", "zipAnalysisResults",
+			logging.CreateFolderError, err,
+		)...)
+		return
+	}
+
+	analysis.ResultsZipPath = &zipPath
 }
 
 func (s *analysisRunnerService) Run(ctx context.Context,

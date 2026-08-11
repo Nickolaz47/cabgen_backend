@@ -30,6 +30,10 @@ type AnalysisService interface {
 		input models.AdminAnalysisUpdateInput) (
 		*models.AnalysisResponse, error)
 	Delete(ctx context.Context, analysisID, userID uuid.UUID) error
+	DownloadZip(ctx context.Context, analysisID, userID uuid.UUID) (string,
+		error)
+	DownloadBatchTSV(ctx context.Context, analysisIDs []uuid.UUID,
+		userID uuid.UUID) ([]models.AnalysisResponse, error)
 }
 
 type analysisService struct {
@@ -363,4 +367,95 @@ func (s *analysisService) Delete(ctx context.Context,
 	}
 
 	return nil
+}
+
+func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
+	userID uuid.UUID) (string, error) {
+	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadZip", logging.DatabaseNotFoundError,
+			err,
+		)...)
+		return "", ErrNotFound
+	}
+
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadZip", logging.DatabaseError, err,
+		)...)
+		return "", ErrInternal
+	}
+
+	if userID != uuid.Nil && userID != analysis.UserID {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadZip", logging.Unauthorized, err,
+		)...)
+		return "", ErrUnauthorized
+	}
+
+	zipPath := ""
+	if analysis.Status == models.AnalysisStatusDone &&
+		analysis.ResultsZipPath != nil {
+		zipPath = *analysis.ResultsZipPath
+	}
+
+	if zipPath == "" {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadZip", logging.MissingFileError,
+			ErrZipNotFound,
+		)...)
+		return "", ErrZipNotFound
+	}
+
+	if _, err := os.Stat(zipPath); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadZip", logging.MissingFileError,
+			ErrZipNotFound,
+		)...)
+		return "", ErrZipNotFound
+	}
+
+	return zipPath, nil
+}
+
+func (s *analysisService) DownloadBatchTSV(ctx context.Context,
+	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	[]models.AnalysisResponse, error) {
+	if len(analysisIDs) > models.AnalysesByBatch {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadBatchTSV",
+			logging.ExceededDownloadLimitError, ErrExceededDownloadLimit,
+		)...)
+		return nil, ErrExceededDownloadLimit
+	}
+
+	if len(analysisIDs) == 0 {
+		return []models.AnalysisResponse{}, nil
+	}
+
+	analyses, err := s.Repo.GetAnalysesByIDs(ctx, analysisIDs, userID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"AnalysisService", "DownloadBatchTSV",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	for _, a := range analyses {
+		if a.Type == models.AnalysisTypeFastQC {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AnalysisService", "DownloadBatchTSV",
+				logging.ExceededDownloadLimitError, ErrFastQCDownload,
+			)...)
+			return nil, ErrFastQCDownload
+		}
+	}
+
+	var responses []models.AnalysisResponse
+	for _, a := range analyses {
+		responses = append(responses, a.ToResponse())
+	}
+	return responses, nil
 }

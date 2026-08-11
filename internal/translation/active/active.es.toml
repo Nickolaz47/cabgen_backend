@@ -487,6 +487,9 @@ other = "Análisis no encontrado."
 [analysis.exceededLimit.error]
 other = "No se pueden descargar más de 50 resultados a la vez."
 
+[analysis.fastqcDownload.error]
+other = "Los análisis FASTQC no se pueden incluir en la descarga por lotes."
+
 [analysis.zipNotFound.error]
 other = "El archivo zip no está disponible para este análisis."
 

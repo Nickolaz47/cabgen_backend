@@ -32,7 +32,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
 				userID uuid.UUID) (
 				[]models.AnalysisResponse, error) {
 				return mockAnalyses, nil
@@ -93,9 +93,37 @@ func TestDownloadBatchTSV(t *testing.T) {
 		}
 	})
 
+	t.Run("Error - FASTQC Included", func(t *testing.T) {
+		svc := &mocks.MockAnalysisService{
+			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) (
+				[]models.AnalysisResponse, error) {
+				return nil, services.ErrFastQCDownload
+			},
+		}
+
+		handler := analysis.NewAdminAnalysisHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost,
+			"/api/admin/analysis/download/tsv",
+			testutils.ToJSON(validInput),
+			nil,
+			nil,
+		)
+		handler.DownloadBatchTSV(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "FASTQC analyses cannot be included in the batch download.",
+		})
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
 				userID uuid.UUID) (
 				[]models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
@@ -123,7 +151,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindManyByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
 				userID uuid.UUID) (
 				[]models.AnalysisResponse, error) {
 				return nil, services.ErrInternal

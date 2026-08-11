@@ -86,7 +86,11 @@ type MockAnalysisService struct {
 		*models.AnalysisResponse, error)
 	UpdateFunc func(ctx context.Context, analysisID uuid.UUID,
 		input models.AdminAnalysisUpdateInput) (*models.AnalysisResponse, error)
-	DeleteFunc func(ctx context.Context, analysisID, userID uuid.UUID) error
+	DeleteFunc      func(ctx context.Context, analysisID, userID uuid.UUID) error
+	DownloadZipFunc func(ctx context.Context, analysisID,
+		userID uuid.UUID) (string, error)
+	DownloadBatchTSVFunc func(ctx context.Context, analysisIDs []uuid.UUID,
+		userID uuid.UUID) ([]models.AnalysisResponse, error)
 }
 
 func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID) (
@@ -144,4 +148,23 @@ func (s *MockAnalysisService) Delete(ctx context.Context, analysisID,
 	}
 
 	return nil
+}
+
+func (s *MockAnalysisService) DownloadZip(ctx context.Context, analysisID,
+	userID uuid.UUID) (string, error) {
+	if s.DownloadZipFunc != nil {
+		return s.DownloadZipFunc(ctx, analysisID, userID)
+	}
+
+	return "", nil
+}
+
+func (s *MockAnalysisService) DownloadBatchTSV(ctx context.Context,
+	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	[]models.AnalysisResponse, error) {
+	if s.DownloadBatchTSVFunc != nil {
+		return s.DownloadBatchTSVFunc(ctx, analysisIDs, userID)
+	}
+
+	return nil, nil
 }

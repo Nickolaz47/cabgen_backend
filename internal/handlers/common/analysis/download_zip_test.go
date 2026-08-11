@@ -22,20 +22,18 @@ func TestDownloadZip(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockUserID := uuid.New()
-	rootDir := t.TempDir()
 
-	zipPath := filepath.Join(rootDir, "analysis_results.zip")
+	zipPath := filepath.Join(t.TempDir(), "analysis_results.zip")
 	testutils.WriteMockFile(t, zipPath, []byte("test"))
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
-				response := mockAnalysis.ToResponse()
-				response.ResultsZipPath = &zipPath
-				return &response, nil
+			DownloadZipFunc: func(ctx context.Context, id uuid.UUID,
+				userID uuid.UUID) (string, error) {
+				assert.Equal(t, mockUserID, userID)
+				return zipPath, nil
 			},
 		}
 
@@ -58,17 +56,15 @@ func TestDownloadZip(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, "test", w.Body.String())
+		assert.Equal(t, "attachment; filename=analysis_results.zip",
+			w.Header().Get("Content-Disposition"))
 	})
 
 	t.Run("Error - Zip Not Found", func(t *testing.T) {
-		noZipAnalysis := testmodels.CreateMockAnalysis()
-		noZipAnalysis.ResultsZipPath = nil
-
 		svc := &mocks.MockAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
-				response := noZipAnalysis.ToResponse()
-				return &response, nil
+			DownloadZipFunc: func(ctx context.Context, id uuid.UUID,
+				userID uuid.UUID) (string, error) {
+				return "", services.ErrZipNotFound
 			},
 		}
 
@@ -82,7 +78,7 @@ func TestDownloadZip(t *testing.T) {
 			nil,
 		)
 		c.Params = gin.Params{{Key: "analysisId",
-			Value: noZipAnalysis.ID.String()}}
+			Value: mockAnalysis.ID.String()}}
 		c.Set("user", &models.UserToken{ID: mockUserID})
 
 		handler.DownloadZip(c)
@@ -145,9 +141,9 @@ func TestDownloadZip(t *testing.T) {
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
-				return nil, services.ErrNotFound
+			DownloadZipFunc: func(ctx context.Context, id uuid.UUID,
+				userID uuid.UUID) (string, error) {
+				return "", services.ErrNotFound
 			},
 		}
 
@@ -176,9 +172,9 @@ func TestDownloadZip(t *testing.T) {
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
-			FindByIDFunc: func(ctx context.Context, id uuid.UUID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
-				return nil, services.ErrInternal
+			DownloadZipFunc: func(ctx context.Context, id uuid.UUID,
+				userID uuid.UUID) (string, error) {
+				return "", services.ErrInternal
 			},
 		}
 

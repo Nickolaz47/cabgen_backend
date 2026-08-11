@@ -885,3 +885,221 @@ func TestAnalysisDelete(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestAnalysisDownloadZip(t *testing.T) {
+	ctx := context.Background()
+
+	newRepo := func(analysisReturn func() (*models.Analysis, error)) *mocks.MockAnalysisRepository {
+		return &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return analysisReturn()
+			},
+		}
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		rootDir := t.TempDir()
+		zipPath := filepath.Join(rootDir, "results.zip")
+		err := os.WriteFile(zipPath, []byte("x"), 0644)
+		assert.NoError(t, err)
+
+		mock := testmodels.CreateMockAnalysis()
+		mock.Status = models.AnalysisStatusDone
+		mock.ResultsZipPath = &zipPath
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return &mock, nil
+		}), nil, nil, nil, zap.NewNop(),
+			rootDir)
+		gotPath, err := svc.DownloadZip(ctx, mock.ID, mock.UserID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, zipPath, gotPath)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return nil, gorm.ErrRecordNotFound
+		}), nil, nil, nil,
+			mockLogger, t.TempDir())
+		_, err := svc.DownloadZip(ctx, uuid.New(), uuid.Nil)
+
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal on Get", func(t *testing.T) {
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return nil, gorm.ErrInvalidTransaction
+		}), nil, nil, nil,
+			mockLogger, t.TempDir())
+		_, err := svc.DownloadZip(ctx, uuid.New(), uuid.Nil)
+
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Unauthorized", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.ResultsZipPath = nil
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return &mock, nil
+		}), nil, nil, nil, mockLogger,
+			t.TempDir())
+		_, err := svc.DownloadZip(ctx, mock.ID, uuid.New())
+
+		assert.ErrorIs(t, err, services.ErrUnauthorized)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Analysis Not Done", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Status = models.AnalysisStatusRunning
+		mock.ResultsZipPath = nil
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return &mock, nil
+		}), nil, nil, nil, mockLogger,
+			t.TempDir())
+		_, err := svc.DownloadZip(ctx, mock.ID, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrZipNotFound)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - ResultsZipPath Not Set", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Status = models.AnalysisStatusDone
+		mock.ResultsZipPath = nil
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return &mock, nil
+		}), nil, nil, nil, mockLogger,
+			t.TempDir())
+		_, err := svc.DownloadZip(ctx, mock.ID, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrZipNotFound)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Zip File Missing on Disk", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Status = models.AnalysisStatusDone
+		missingPath := filepath.Join(t.TempDir(), "missing.zip")
+		mock.ResultsZipPath = &missingPath
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
+			error) {
+			return &mock, nil
+		}), nil, nil, nil, mockLogger,
+			t.TempDir())
+		_, err := svc.DownloadZip(ctx, mock.ID, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrZipNotFound)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAnalysisDownloadBatchTSV(t *testing.T) {
+	ctx := context.Background()
+	mock := testmodels.CreateMockAnalysis()
+
+	fastqcMock := testmodels.CreateMockAnalysis()
+	fastqcMock.Type = models.AnalysisTypeFastQC
+
+	analysisRepo := &mocks.MockAnalysisRepository{
+		GetAnalysesByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+			userID uuid.UUID) ([]models.Analysis, error) {
+			return []models.Analysis{mock, fastqcMock}, nil
+		},
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		successRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) ([]models.Analysis, error) {
+				return []models.Analysis{mock}, nil
+			},
+		}
+		svc := services.NewAnalysisService(successRepo, nil, nil, nil,
+			zap.NewNop(), t.TempDir())
+		responses, err := svc.DownloadBatchTSV(ctx,
+			[]uuid.UUID{mock.ID}, mock.UserID)
+
+		assert.NoError(t, err)
+		assert.Len(t, responses, 1)
+	})
+
+	t.Run("Error - Exceeded Limit", func(t *testing.T) {
+		ids := make([]uuid.UUID, models.AnalysesByBatch+1)
+		for i := range ids {
+			ids[i] = uuid.New()
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger, t.TempDir())
+		responses, err := svc.DownloadBatchTSV(ctx, ids, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrExceededDownloadLimit)
+		assert.Nil(t, responses)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Empty IDs Returns Empty List", func(t *testing.T) {
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			zap.NewNop(), t.TempDir())
+		responses, err := svc.DownloadBatchTSV(ctx, []uuid.UUID{},
+			mock.UserID)
+
+		assert.NoError(t, err)
+		assert.Empty(t, responses)
+	})
+
+	t.Run("Error - FASTQC in Batch", func(t *testing.T) {
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
+			mockLogger, t.TempDir())
+		responses, err := svc.DownloadBatchTSV(ctx,
+			[]uuid.UUID{mock.ID, fastqcMock.ID}, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrFastQCDownload)
+		assert.Nil(t, responses)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - DB Internal", func(t *testing.T) {
+		failRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesByIDsFunc: func(ctx context.Context, ids []uuid.UUID,
+				userID uuid.UUID) ([]models.Analysis, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		svc := services.NewAnalysisService(failRepo, nil, nil, nil,
+			mockLogger, t.TempDir())
+		responses, err := svc.DownloadBatchTSV(ctx,
+			[]uuid.UUID{mock.ID}, mock.UserID)
+
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, responses)
+		assert.Equal(t, 1, logs.Len())
+	})
+}

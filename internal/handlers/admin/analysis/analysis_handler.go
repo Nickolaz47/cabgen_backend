@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"net/http"
+	"path/filepath"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -174,7 +175,7 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil)
+	zipPath, err := h.Service.DownloadZip(c.Request.Context(), id, uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -183,15 +184,9 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 		return
 	}
 
-	if analysis.ResultsZipPath == nil {
-		c.JSON(http.StatusNotFound, responses.APIResponse{
-			Error: responses.GetResponse(localizer,
-				responses.AnalysisZipNotFound),
-		})
-		return
-	}
-
-	c.File(*analysis.ResultsZipPath)
+	c.Header("Content-Disposition",
+		"attachment; filename="+filepath.Base(zipPath))
+	c.File(zipPath)
 }
 
 func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
@@ -204,7 +199,7 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 		return
 	}
 
-	analyses, err := h.Service.FindManyByIDs(c.Request.Context(),
+	analyses, err := h.Service.DownloadBatchTSV(c.Request.Context(),
 		downloadInput.IDs, uuid.Nil)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)

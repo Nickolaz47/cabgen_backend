@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"archive/zip"
 	"context"
 	"errors"
 	"fmt"
@@ -656,5 +657,123 @@ func TestAnalysisRunnerPrepareFolders(t *testing.T) {
 					mock.SampleID.String(), "analyses",
 					mock.ID.String(), sub))
 		}
+	})
+}
+
+func TestAnalysisRunnerZipResults(t *testing.T) {
+	ctx := context.Background()
+
+	newRepo := func(updated **models.Analysis, mock models.Analysis) *mocks.MockAnalysisRepository {
+		return &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				*updated = analysis
+				return nil
+			},
+		}
+	}
+
+	t.Run("Success - Creates Zip and Sets ResultsZipPath", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeFastQC
+		mock.Status = models.AnalysisStatusPending
+		mock.ResultsZipPath = nil
+		fq1, fq2 := "r1.fq", "r2.fq"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+
+		updated := (*models.Analysis)(nil)
+		repo := newRepo(&updated, mock)
+		pl := &mocks.MockCabgenPipeline{
+			RunFastQCFunc: func(_ context.Context, read1, read2,
+				outputDir string) (string, string, error) {
+				p1 := filepath.Join(outputDir, "reads1_fastqc.html")
+				p2 := filepath.Join(outputDir, "reads2_fastqc.html")
+				if err := os.WriteFile(p1, []byte("<html>"), 0644); err != nil {
+					return "", "", err
+				}
+				if err := os.WriteFile(p2, []byte("<html>"), 0644); err != nil {
+					return "", "", err
+				}
+				return p1, p2, nil
+			},
+		}
+		enqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(_ context.Context, task *asynq.Task,
+				_ ...asynq.Option) (*asynq.TaskInfo, error) {
+				return &asynq.TaskInfo{ID: "t1", Queue: "emails"}, nil
+			},
+		}
+		rootDir := t.TempDir()
+
+		svc := services.NewAnalysisRunnerService(repo, pl, enqueuer,
+			zap.NewNop(), rootDir)
+		err := svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+		assert.NotNil(t, updated.ResultsZipPath)
+
+		expectedZip := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"analyses", mock.ID.String(), "report",
+			"sample_1_FASTQC_results.zip")
+		assert.Equal(t, expectedZip, *updated.ResultsZipPath)
+		assert.FileExists(t, expectedZip)
+
+		zr, err := zip.OpenReader(expectedZip)
+		assert.NoError(t, err)
+		defer zr.Close()
+
+		var names []string
+		for _, f := range zr.File {
+			names = append(names, f.Name)
+		}
+		assert.Contains(t, names, filepath.Join(mock.ID.String(),
+			"qc", "reads1_fastqc.html"))
+		assert.Contains(t, names, filepath.Join(mock.ID.String(),
+			"qc", "reads2_fastqc.html"))
+		assert.NotContains(t, names, filepath.Join(mock.ID.String(),
+			"report", "sample_1_FASTQC_results.zip"))
+	})
+
+	t.Run("Warning - Zip Failure Does Not Fail Analysis", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeFastQC
+		mock.Status = models.AnalysisStatusPending
+		mock.ResultsZipPath = nil
+		fq1, fq2 := "r1.fq", "r2.fq"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+
+		updated := (*models.Analysis)(nil)
+		repo := newRepo(&updated, mock)
+		pl := &mocks.MockCabgenPipeline{
+			RunFastQCFunc: func(_ context.Context, read1, read2,
+				outputDir string) (string, string, error) {
+				dir := filepath.Dir(outputDir)
+				if err := os.RemoveAll(dir); err != nil {
+					return "", "", err
+				}
+				return "", "", nil
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+		assert.Nil(t, updated.ResultsZipPath)
+		assert.GreaterOrEqual(t, logs.Len(), 1)
 	})
 }
