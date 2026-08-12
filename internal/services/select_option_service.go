@@ -123,7 +123,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.Sequencers = make([]models.SelectOption, len(sequencers))
 	for i, seq := range sequencers {
 		resp.Sequencers[i] = models.SelectOption{
-			Label: seq.Model,
+			Label: seq.Brand,
 			Value: seq.ID.String(),
 		}
 	}

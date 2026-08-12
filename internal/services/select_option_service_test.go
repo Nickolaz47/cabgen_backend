@@ -72,7 +72,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 	seqRepo := &mocks.MockSequencerRepository{
 		GetActiveSequencersFunc: func(ctx context.Context) ([]models.Sequencer, error) {
 			return []models.Sequencer{
-				{ID: seqID, Model: "MiSeq"},
+				{ID: seqID, Brand: "Illumina"},
 			}, nil
 		},
 	}
@@ -110,7 +110,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 			{Label: "LACEN/RJ", Value: labID.String()},
 		},
 		Sequencers: []models.SelectOption{
-			{Label: "MiSeq", Value: seqID.String()},
+			{Label: "Illumina", Value: seqID.String()},
 		},
 		HealthServices: []models.SelectOption{
 			{Label: "Hospital Central", Value: hsID.String()},
