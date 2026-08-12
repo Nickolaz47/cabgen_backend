@@ -204,8 +204,17 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			},
 		}
 
+		emailCalls := 0
+		enqueuer := &mocks.MockTaskEnqueuer{
+			EnqueueContextFunc: func(_ context.Context, task *asynq.Task,
+				_ ...asynq.Option) (*asynq.TaskInfo, error) {
+				emailCalls++
+				return nil, nil
+			},
+		}
+
 		svc := services.NewAnalysisRunnerService(repo,
-			&mocks.MockCabgenPipeline{}, &mocks.MockTaskEnqueuer{},
+			&mocks.MockCabgenPipeline{}, enqueuer,
 			zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
@@ -215,6 +224,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
 			services.ErrUnknownAnalysisType.Error())
+		assert.Equal(t, 0, emailCalls,
+			"email should not be enqueued on non-final failure")
 	})
 
 	t.Run("Error - Prepare Folders", func(t *testing.T) {

@@ -459,24 +459,38 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 
 	s.finalizeAnalysis(ctx, analysis, &results, runErr)
 
-	task, err := tasks.NewAnalysisDoneEmailTask(analysisID)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
-			"AnalysisRunnerService", "Run", logging.AsynqTaskError, err,
-		)...)
-	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task,
-			asynq.Queue(tasks.QueueEmail))
+	shouldEnqueueEmail := runErr == nil
+	if !shouldEnqueueEmail {
+		if retryCount, ok := asynq.GetRetryCount(ctx); ok {
+			if maxRetry, ok := asynq.GetMaxRetry(ctx); ok {
+				shouldEnqueueEmail = retryCount >= maxRetry
+			}
+		}
+	}
+
+	if shouldEnqueueEmail {
+		task, err := tasks.NewAnalysisDoneEmailTask(analysisID)
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(
-				"AnalysisRunnerService", "Run", logging.RedisDispatchError, err,
+				"AnalysisRunnerService", "Run", logging.AsynqTaskError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
-				"AnalysisRunnerService", "Run", logging.TaskEnqueuedSuccess,
-				zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-			)...)
+			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+				asynq.Queue(tasks.QueueEmail))
+			if err != nil {
+				s.Logger.Error("Service Error", logging.ServiceLogging(
+					"AnalysisRunnerService", "Run",
+					logging.RedisDispatchError, err,
+				)...)
+			} else {
+				s.Logger.Info("Redis Task Info",
+					logging.ServiceInfoLogging(
+						"AnalysisRunnerService", "Run",
+						logging.TaskEnqueuedSuccess,
+						zap.String("task_id", info.ID),
+						zap.String("queue", info.Queue),
+					)...)
+			}
 		}
 	}
 

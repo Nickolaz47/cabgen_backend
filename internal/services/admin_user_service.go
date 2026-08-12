@@ -451,8 +451,6 @@ func (s *adminUserService) DeactivateUser(ctx context.Context, ID uuid.UUID) err
 	}
 
 	user.IsActive = false
-	user.ActivatedBy = nil
-	user.ActivatedOn = nil
 
 	if err := s.Repo.UpdateUser(ctx, user); err != nil {
 		s.Logger.Error("Service Error",

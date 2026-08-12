@@ -77,7 +77,7 @@ func NewAnalysisProcessTask(analysisID uuid.UUID) (
 	return asynq.NewTask(
 		TaskTypeAnalysisProcess,
 		payloadBytes,
-		asynq.MaxRetry(3),
+		asynq.MaxRetry(1),
 		asynq.Timeout(5*time.Hour),
 	), nil
 }
