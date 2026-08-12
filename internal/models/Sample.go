@@ -132,7 +132,7 @@ type SampleResponse struct {
 func (s *Sample) ToResponse(language string) SampleResponse {
 	language = translation.ParseLanguage(language)
 
-	sequencer := s.Sequencer.Model
+	sequencer := s.Sequencer.Brand
 	species := fmt.Sprintf("%s %s", s.Microorganism.Species,
 		s.Microorganism.Variety[language])
 	gender := s.Gender.ToTranslatedString(language)
