@@ -3,8 +3,8 @@ package validations
 import "github.com/CABGenOrg/cabgen_backend/internal/models"
 
 func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
-	if input.Name != nil {
-		sample.Name = *input.Name
+	if input.OriginCode != nil {
+		sample.OriginCode = *input.OriginCode
 	}
 
 	if input.CollectionDate != nil {
@@ -21,10 +21,6 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 
 	if input.City != nil {
 		sample.City = input.City
-	}
-
-	if input.OriginCode != nil {
-		sample.OriginCode = input.OriginCode
 	}
 
 	if input.Gender != nil {

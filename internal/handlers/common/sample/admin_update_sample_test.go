@@ -24,10 +24,10 @@ func TestAdminUpdateSample(t *testing.T) {
 	mockResponse := mockSample.ToResponse("")
 
 	validUpdateInput := map[string]any{
-		"name":       "Updated-Sample-Name",
-		"run_number": "RUN-UPDATED-01",
-		"city":       "Niterói",
-		"gender":     "Female",
+		"origin_code": "Updated-Origin-Code",
+		"run_number":  "RUN-UPDATED-01",
+		"city":        "Niterói",
+		"gender":      "Female",
 	}
 
 	t.Run("Success", func(t *testing.T) {

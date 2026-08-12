@@ -75,12 +75,11 @@ var Genders = []Gender{Female, Male, Unspecified}
 
 type Sample struct {
 	ID             uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Name           string     `gorm:"type:varchar(255);not null"`
+	OriginCode     string     `gorm:"type:varchar(255);not null"`
 	CollectionDate time.Time  `gorm:"type:date;not null"`
 	RunNumber      string     `gorm:"type:varchar(255);not null"`
 	RunDate        time.Time  `gorm:"type:date;not null"`
 	City           *string    `gorm:"type:varchar(255);default:null"`
-	OriginCode     *string    `gorm:"type:varchar(255);default:null"`
 	Gender         *Gender    `gorm:"type:varchar(15);default:null"`
 	DateOfBirth    *time.Time `gorm:"type:date;default:null"`
 	CreatedAt      time.Time
@@ -109,12 +108,11 @@ type Sample struct {
 
 type SampleResponse struct {
 	ID             uuid.UUID  `json:"id"`
-	Name           string     `json:"name"`
 	CollectionDate time.Time  `json:"collection_date"`
 	RunNumber      string     `json:"run_number"`
 	RunDate        time.Time  `json:"run_date"`
 	City           *string    `json:"city"`
-	OriginCode     *string    `json:"origin_code"`
+	OriginCode     string     `json:"origin_code"`
 	Gender         *string    `json:"gender"`
 	DateOfBirth    *time.Time `json:"date_of_birth"`
 	Fastq1         *string    `json:"fastq1"`
@@ -156,7 +154,6 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 
 	return SampleResponse{
 		ID:             s.ID,
-		Name:           s.Name,
 		CollectionDate: s.CollectionDate,
 		RunNumber:      s.RunNumber,
 		RunDate:        s.RunDate,
@@ -179,12 +176,11 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 }
 
 type AdminSampleCreateInput struct {
-	Name           string  `json:"name" binding:"required,min=3,max=100"`
+	OriginCode     string  `json:"origin_code" binding:"required,min=3,max=255"`
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
-	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -199,12 +195,11 @@ type AdminSampleCreateInput struct {
 }
 
 type SampleCreateInput struct {
-	Name           string  `json:"name" binding:"required,min=3,max=100"`
+	OriginCode     string  `json:"origin_code" binding:"required,min=3,max=255"`
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
-	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -218,12 +213,11 @@ type SampleCreateInput struct {
 }
 
 type SampleCreateDTO struct {
-	Name            string
+	OriginCode      string
 	CollectionDate  Date
 	RunNumber       string
 	RunDate         Date
 	City            *string
-	OriginCode      *string
 	Gender          *Gender
 	DateOfBirth     *Date
 	CountryCode     string
@@ -237,12 +231,11 @@ type SampleCreateDTO struct {
 }
 
 type AdminSampleUpdateInput struct {
-	Name           *string `json:"name" binding:"omitempty,min=3,max=100"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,min=3,max=255"`
 	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
 	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
 	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
-	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -257,12 +250,11 @@ type AdminSampleUpdateInput struct {
 }
 
 type SampleUpdateInput struct {
-	Name           *string `json:"name" binding:"omitempty,min=3,max=100"`
+	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,min=3,max=255"`
 	CollectionDate *Date   `json:"collection_date" binding:"omitempty"`
 	RunNumber      *string `json:"run_number,omitempty" binding:"omitempty,max=50"`
 	RunDate        *Date   `json:"run_date,omitempty" binding:"omitempty"`
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
-	OriginCode     *string `json:"origin_code,omitempty" binding:"omitempty,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -276,12 +268,11 @@ type SampleUpdateInput struct {
 }
 
 type SampleUpdateDTO struct {
-	Name            *string
+	OriginCode      *string
 	CollectionDate  *Date
 	RunNumber       *string
 	RunDate         *Date
 	City            *string
-	OriginCode      *string
 	Gender          *Gender
 	DateOfBirth     *Date
 	CountryCode     *string
@@ -296,12 +287,11 @@ type SampleUpdateDTO struct {
 
 func SampleCreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateDTO {
 	return SampleCreateDTO{
-		Name:            input.Name,
+		OriginCode:      input.OriginCode,
 		CollectionDate:  input.CollectionDate,
 		RunNumber:       input.RunNumber,
 		RunDate:         input.RunDate,
 		City:            input.City,
-		OriginCode:      input.OriginCode,
 		Gender:          input.Gender,
 		DateOfBirth:     input.DateOfBirth,
 		CountryCode:     input.CountryCode,
@@ -317,12 +307,11 @@ func SampleCreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateD
 
 func SampleUpdateInputToDTO(input SampleUpdateInput, id uuid.UUID) SampleUpdateDTO {
 	return SampleUpdateDTO{
-		Name:            input.Name,
+		OriginCode:      input.OriginCode,
 		CollectionDate:  input.CollectionDate,
 		RunNumber:       input.RunNumber,
 		RunDate:         input.RunDate,
 		City:            input.City,
-		OriginCode:      input.OriginCode,
 		Gender:          input.Gender,
 		DateOfBirth:     input.DateOfBirth,
 		CountryCode:     input.CountryCode,

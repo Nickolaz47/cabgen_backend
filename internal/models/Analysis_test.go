@@ -18,7 +18,7 @@ func TestAnalysisToResponse(t *testing.T) {
 		Status:         mockAnalysis.Status,
 		Step:           mockAnalysis.Step,
 		ErrorMessage:   mockAnalysis.ErrorMessage,
-		Sample:         mockAnalysis.Sample.Name,
+		Sample:         mockAnalysis.Sample.OriginCode,
 		SampleID:       mockAnalysis.Sample.ID,
 		User:           mockAnalysis.User.Username,
 		UserID:         mockAnalysis.UserID,

@@ -250,7 +250,7 @@ func TestSampleCreate(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, mock.Name, result.Name)
+		assert.Equal(t, mock.OriginCode, result.OriginCode)
 	})
 
 	t.Run("Error - Invalid Country Code", func(t *testing.T) {
@@ -895,8 +895,8 @@ func TestSampleAttachFiles(t *testing.T) {
 func TestSampleUpdate(t *testing.T) {
 	mock := testmodels.CreateMockSample()
 
-	newName := "Updated Sample"
-	input := models.SampleUpdateDTO{Name: &newName}
+	newOriginCode := "Updated Origin Code"
+	input := models.SampleUpdateDTO{OriginCode: &newOriginCode}
 
 	t.Run("Success", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
@@ -917,7 +917,7 @@ func TestSampleUpdate(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, newName, result.Name)
+		assert.Equal(t, newOriginCode, result.OriginCode)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {

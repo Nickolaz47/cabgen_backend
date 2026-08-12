@@ -144,7 +144,7 @@ func (a *Analysis) ToResponse() AnalysisResponse {
 		Status:         a.Status,
 		Step:           a.Step,
 		ErrorMessage:   a.ErrorMessage,
-		Sample:         a.Sample.Name,
+		Sample:         a.Sample.OriginCode,
 		SampleID:       a.SampleID,
 		User:           a.User.Username,
 		UserID:         a.UserID,

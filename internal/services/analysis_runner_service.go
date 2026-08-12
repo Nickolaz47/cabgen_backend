@@ -371,7 +371,7 @@ func (s *analysisRunnerService) zipAnalysisResults(
 		return
 	}
 
-	zipName := utils.SanitizeFilename(analysis.Sample.Name) + "_" +
+	zipName := utils.SanitizeFilename(analysis.Sample.OriginCode) + "_" +
 		string(analysis.Type) + "_results.zip"
 	zipPath := filepath.Join(reportDir, zipName)
 	if err := utils.ZipSubdirectories(analysisFolder,

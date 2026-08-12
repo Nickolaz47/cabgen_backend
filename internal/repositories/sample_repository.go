@@ -39,7 +39,7 @@ func (s *sampleRepo) GetSamples(ctx context.Context,
 		Preload("Sequencer").
 		Preload("Laboratory").
 		Preload("HealthService")
-	// Name or Run number or Origin code or Microorganism species
+	// Run number or Origin code or Microorganism species
 	if input != "" {
 		searchTerm := "%" + strings.ToLower(input) + "%"
 
@@ -47,12 +47,11 @@ func (s *sampleRepo) GetSamples(ctx context.Context,
 			"JOIN microorganisms ON microorganisms.id"+
 				" = samples.microorganism_id").Where(
 			`
-			LOWER(samples.name) LIKE ? OR 
-			LOWER(samples.run_number) LIKE ? OR 
+			LOWER(samples.run_number) LIKE ? OR
 			LOWER(samples.origin_code) LIKE ? OR
 			LOWER(microorganisms.species) LIKE ?
 			`,
-			searchTerm, searchTerm, searchTerm, searchTerm,
+			searchTerm, searchTerm, searchTerm,
 		)
 	}
 

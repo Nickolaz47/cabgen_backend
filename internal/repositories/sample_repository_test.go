@@ -83,7 +83,7 @@ func TestGetSampleByID(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, mockSample.ID, resultSample.ID)
-		assert.Equal(t, mockSample.Name, resultSample.Name)
+		assert.Equal(t, mockSample.OriginCode, resultSample.OriginCode)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestCreateSample(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, mockSample.ID, result.ID)
-		assert.Equal(t, mockSample.Name, result.Name)
+		assert.Equal(t, mockSample.OriginCode, result.OriginCode)
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestUpdateSample(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		sampleToUpdate := mockSample
-		sampleToUpdate.Name = "Sample Updated Name"
+		sampleToUpdate.OriginCode = "Updated Origin Code"
 
 		err := sampleRepo.UpdateSample(ctx, &sampleToUpdate)
 		assert.NoError(t, err)
@@ -157,7 +157,7 @@ func TestUpdateSample(t *testing.T) {
 		err = db.Where("id = ?", mockSample.ID).First(&result).Error
 
 		assert.NoError(t, err)
-		assert.Equal(t, "Sample Updated Name", result.Name)
+		assert.Equal(t, "Updated Origin Code", result.OriginCode)
 	})
 
 	t.Run("Error", func(t *testing.T) {

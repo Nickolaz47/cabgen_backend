@@ -298,12 +298,11 @@ func (s *sampleService) Create(
 	}
 
 	sample := models.Sample{
-		Name:            input.Name,
+		OriginCode:      input.OriginCode,
 		CollectionDate:  *models.ToTimePtr(&input.CollectionDate),
 		RunNumber:       input.RunNumber,
 		RunDate:         *models.ToTimePtr(&input.RunDate),
 		City:            input.City,
-		OriginCode:      input.OriginCode,
 		Gender:          input.Gender,
 		DateOfBirth:     models.ToTimePtr(input.DateOfBirth),
 		CountryID:       country.ID,

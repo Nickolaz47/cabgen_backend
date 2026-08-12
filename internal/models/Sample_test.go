@@ -140,7 +140,7 @@ func TestSampleToResponse(t *testing.T) {
 	date := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
 
 	mockSample := testmodels.NewSample(
-		id.String(), "sample 1", date, "R1", date, "", "A01", models.Male, date,
+		id.String(), date, "R1", date, "", "A01", models.Male, date,
 		"sequences/read1.fastq", "sequences/read2.fastq",
 		"sequences/read.fasta", mockCountry,
 		mockUser, mockOrigin, mockSampleSource, mockMicro, mockSequencer,
@@ -154,7 +154,6 @@ func TestSampleToResponse(t *testing.T) {
 
 	expected := models.SampleResponse{
 		ID:             id,
-		Name:           mockSample.Name,
 		CollectionDate: date,
 		RunNumber:      mockSample.RunNumber,
 		RunDate:        mockSample.RunDate,

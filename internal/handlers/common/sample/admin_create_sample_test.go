@@ -25,12 +25,11 @@ func TestAdminCreateSample(t *testing.T) {
 	mockResponse := mockSample.ToResponse("")
 
 	validInput := map[string]any{
-		"name":              "Sample-SARS-CoV-2",
+		"origin_code":       "BR-RJ-01",
 		"collection_date":   "2026-05-20",
 		"run_number":        "RUN-2026-XYZ",
 		"run_date":          "2026-05-25",
 		"city":              "Maricá",
-		"origin_code":       "BR-RJ-01",
 		"gender":            "Male",
 		"date_of_birth":     "1990-01-01",
 		"country_code":      "BRA",
@@ -88,7 +87,7 @@ func TestAdminCreateSample(t *testing.T) {
 		handler := sample.NewAdminSampleHandler(svc)
 
 		minimalInput := map[string]any{
-			"name":              "Minimal-Sample",
+			"origin_code":       "Minimal-Sample",
 			"collection_date":   "2026-05-20",
 			"run_number":        "RUN-01",
 			"run_date":          "2026-05-25",

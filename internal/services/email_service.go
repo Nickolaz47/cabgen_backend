@@ -190,9 +190,9 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 	}
 
 	body := s.localize(localizer, "email.analysis_done.body", map[string]any{
-		"Name":       analysis.User.Name,
-		"SampleName": analysis.Sample.Name,
-		"StatusText": statusText,
+		"Name":             analysis.User.Name,
+		"SampleOriginCode": analysis.Sample.OriginCode,
+		"StatusText":       statusText,
 	})
 
 	cfg := email.EmailConfig{

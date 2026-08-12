@@ -9,12 +9,11 @@ import (
 
 type Sample struct {
 	ID             string          `gorm:"primaryKey;default:(hex(randomblob(16)))" json:"id"`
-	Name           string          `gorm:"type:varchar(255);not null" json:"name"`
 	CollectionDate time.Time       `gorm:"type:date;not null" json:"collection_date"`
 	RunNumber      string          `gorm:"type:varchar(255);not null" json:"run_number"`
 	RunDate        time.Time       `gorm:"type:date;not null" json:"run_date"`
 	City           *string         `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
-	OriginCode     *string         `gorm:"type:varchar(255);default:null" json:"origin_code,omitempty"`
+	OriginCode     string          `gorm:"type:varchar(255);not null" json:"origin_code"`
 	Gender         *rModels.Gender `gorm:"type:varchar(15);default:null" json:"gender,omitempty"`
 	DateOfBirth    *time.Time      `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
 	CreatedAt      time.Time       `json:"created_at"`
@@ -42,7 +41,7 @@ type Sample struct {
 }
 
 func NewSample(
-	ID, name string, collectionDate time.Time, runNumber string,
+	ID string, collectionDate time.Time, runNumber string,
 	runDate time.Time, city, originCode string, gender rModels.Gender,
 	dateOfBirth time.Time, fastq1, fastq2, fasta string, country rModels.Country,
 	user rModels.User, origin rModels.Origin, sampleSource rModels.SampleSource,
@@ -51,12 +50,11 @@ func NewSample(
 ) rModels.Sample {
 	return rModels.Sample{
 		ID:              uuid.MustParse(ID),
-		Name:            name,
 		CollectionDate:  collectionDate,
 		RunNumber:       runNumber,
 		RunDate:         runDate,
 		City:            &city,
-		OriginCode:      &originCode,
+		OriginCode:      originCode,
 		Gender:          &gender,
 		DateOfBirth:     &dateOfBirth,
 		Fastq1:          &fastq1,
@@ -129,7 +127,7 @@ func CreateMockSample() rModels.Sample {
 	id := uuid.New()
 	date := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
 	mockSample := NewSample(
-		id.String(), "sample 1", date, "R1", date, "", "A01", rModels.Male,
+		id.String(), date, "R1", date, "", "A01", rModels.Male,
 		date, "read1.fastq", "read2.fastq", "", mockCountry, mockUser,
 		mockOrigin, mockSampleSource, mockMicro, mockSequencer, mockLab,
 		mockHealthService,
@@ -140,12 +138,11 @@ func CreateMockSample() rModels.Sample {
 
 func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 	return rModels.SampleCreateInput{
-		Name:            sample.Name,
+		OriginCode:      sample.OriginCode,
 		CollectionDate:  rModels.Date{Time: sample.CollectionDate},
 		RunNumber:       sample.RunNumber,
 		RunDate:         rModels.Date{Time: sample.RunDate},
 		City:            sample.City,
-		OriginCode:      sample.OriginCode,
 		Gender:          sample.Gender,
 		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
 		CountryCode:     sample.Country.Code,
@@ -160,12 +157,11 @@ func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 
 func NewSampleCreateDTO(sample rModels.Sample) rModels.SampleCreateDTO {
 	return rModels.SampleCreateDTO{
-		Name:            sample.Name,
+		OriginCode:      sample.OriginCode,
 		CollectionDate:  rModels.Date{Time: sample.CollectionDate},
 		RunNumber:       sample.RunNumber,
 		RunDate:         rModels.Date{Time: sample.RunDate},
 		City:            sample.City,
-		OriginCode:      sample.OriginCode,
 		Gender:          sample.Gender,
 		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
 		CountryCode:     sample.Country.Code,

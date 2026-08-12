@@ -400,6 +400,12 @@ other = "La fecha de corrida es obligatoria."
 [validation.RunDate.time_format]
 other = "La fecha de corrida debe tener el formato RFC3339."
 
+[validation.OriginCode.required]
+other = "El código de origen es obligatorio."
+
+[validation.OriginCode.min]
+other = "El código de origen debe tener un mínimo de {{.Param}} caracteres."
+
 [validation.OriginCode.max]
 other = "El código de origen debe tener un máximo de {{.Param}} caracteres."
 
@@ -622,7 +628,7 @@ other = """
 <div style="font-family: Arial, sans-serif; color: #333;">
 <h2>Análisis Finalizado - CABGen</h2>
 <p>Hola, <strong>{{.Name}}</strong>,</p>
-<p>El análisis de su muestra <strong>{{.SampleName}}</strong> {{.StatusText}}.</p>
+<p>El análisis de su muestra <strong>{{.SampleOriginCode}}</strong> {{.StatusText}}.</p>
 <p>Acceda al sistema para ver los resultados detallados.</p>
 <hr>
 <p>Atentamente,<br><strong>Equipo CABGen</strong></p>

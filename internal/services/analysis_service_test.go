@@ -240,7 +240,7 @@ func TestAnalysisCreate(t *testing.T) {
 		expected := models.AnalysisResponse{
 			Type:     input.Type,
 			Status:   models.AnalysisStatusPending,
-			Sample:   mock.Sample.Name,
+			Sample:   mock.Sample.OriginCode,
 			SampleID: mock.Sample.ID,
 			User:     mock.User.Username,
 			UserID:   mock.User.ID,
@@ -281,7 +281,7 @@ func TestAnalysisCreate(t *testing.T) {
 		expected := models.AnalysisResponse{
 			Type:     input.Type,
 			Status:   models.AnalysisStatusPending,
-			Sample:   mock.Sample.Name,
+			Sample:   mock.Sample.OriginCode,
 			SampleID: mock.Sample.ID,
 			User:     mock.User.Username,
 			UserID:   mock.User.ID,
@@ -430,9 +430,9 @@ func TestAnalysisCreate(t *testing.T) {
 					ID uuid.UUID) (*models.Sample, error) {
 					fasta := "assembly.fasta"
 					sample := &models.Sample{
-						ID:    mock.Sample.ID,
-						Name:  mock.Sample.Name,
-						Fasta: &fasta,
+						ID:         mock.Sample.ID,
+						OriginCode: mock.Sample.OriginCode,
+						Fasta:      &fasta,
 					}
 					return sample, nil
 				},
@@ -511,9 +511,9 @@ func TestAnalysisCreate(t *testing.T) {
 				ID uuid.UUID) (*models.Sample, error) {
 				fasta := "assembly.fasta"
 				return &models.Sample{
-					ID:    mock.Sample.ID,
-					Name:  mock.Sample.Name,
-					Fasta: &fasta,
+					ID:         mock.Sample.ID,
+					OriginCode: mock.Sample.OriginCode,
+					Fasta:      &fasta,
 				}, nil
 			},
 		}
@@ -539,7 +539,7 @@ func TestAnalysisCreate(t *testing.T) {
 		expected := models.AnalysisResponse{
 			Type:     models.AnalysisTypeGenome,
 			Status:   models.AnalysisStatusPending,
-			Sample:   mock.Sample.Name,
+			Sample:   mock.Sample.OriginCode,
 			SampleID: mock.Sample.ID,
 			User:     mock.User.Username,
 			UserID:   mock.User.ID,

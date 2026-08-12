@@ -9,12 +9,11 @@ import (
 const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 var baseSampleCreateBody = map[string]any{
-	"name":              "Sample-SARS-CoV-2",
+	"origin_code":       "BR-RJ-01",
 	"collection_date":   "2026-05-20",
 	"run_number":        "RUN-2026-XYZ",
 	"run_date":          "2026-05-25",
 	"city":              "Maricá",
-	"origin_code":       "BR-RJ-01",
 	"gender":            "Male",
 	"date_of_birth":     "1990-01-01",
 	"country_code":      "BRA",
@@ -28,21 +27,16 @@ var baseSampleCreateBody = map[string]any{
 }
 
 var CreateSampleTests = []Body{
-	{"Missing name", testutils.ToJSON(func() map[string]any {
+	{"Missing origin_code", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
-		delete(b, "name")
+		delete(b, "origin_code")
 		return b
-	}()), `{"error":"Name is required."}`},
-	{"Name too short", testutils.ToJSON(func() map[string]any {
+	}()), `{"error":"The origin code is required."}`},
+	{"Origin code too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
-		b["name"] = "Sa"
+		b["origin_code"] = "Sa"
 		return b
-	}()), `{"error":"Name must be at least 3 characters long."}`},
-	{"Name too long", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleCreateBody)
-		b["name"] = strings.Repeat("A", 101)
-		return b
-	}()), `{"error":"Name must be at most 100 characters long."}`},
+	}()), `{"error":"The origin code must have a minimum of 3 characters."}`},
 	{"Missing collection_date", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
 		delete(b, "collection_date")
@@ -126,36 +120,29 @@ var CreateSampleTests = []Body{
 }
 
 var baseSampleUpdateBody = map[string]any{
-	"name":        "Updated-Sample-Name",
+	"origin_code": "Updated-Origin-Code",
 	"run_number":  "RUN-UPDATED-01",
-	"origin_code": "BR-RJ-NEW",
 	"gender":      "Female",
 }
 
 var UpdateSampleTests = []Body{
-	{"Name too short on update", testutils.ToJSON(func() map[string]any {
+	{"Origin code too short on update", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleUpdateBody)
-		b["name"] = "Ab"
+		b["origin_code"] = "Ab"
 		return b
-	}()), `{"error":"Name must be at least 3 characters long."}`},
-
-	{"Name too long on update", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleUpdateBody)
-		b["name"] = strings.Repeat("A", 101)
-		return b
-	}()), `{"error":"Name must be at most 100 characters long."}`},
-
-	{"Run number too long on update", testutils.ToJSON(func() map[string]any {
-		b := testutils.CopyMap(baseSampleUpdateBody)
-		b["run_number"] = strings.Repeat("1", 51)
-		return b
-	}()), `{"error":"The run number must have a maximum of 50 characters."}`},
+	}()), `{"error":"The origin code must have a minimum of 3 characters."}`},
 
 	{"Origin code too long on update", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleUpdateBody)
 		b["origin_code"] = strings.Repeat("A", 256)
 		return b
 	}()), `{"error":"The origin code must have a maximum of 255 characters."}`},
+
+	{"Run number too long on update", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleUpdateBody)
+		b["run_number"] = strings.Repeat("1", 51)
+		return b
+	}()), `{"error":"The run number must have a maximum of 50 characters."}`},
 
 	{"Invalid country_code len on update", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleUpdateBody)

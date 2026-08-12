@@ -734,7 +734,7 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 		expectedZip := filepath.Join(rootDir, "uploads", "users",
 			mock.UserID.String(), "samples", mock.SampleID.String(),
 			"analyses", mock.ID.String(), "report",
-			"sample_1_FASTQC_results.zip")
+			mock.Sample.OriginCode+"_FASTQC_results.zip")
 		assert.Equal(t, expectedZip, *updated.ResultsZipPath)
 		assert.FileExists(t, expectedZip)
 
@@ -751,7 +751,7 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 		assert.Contains(t, names, filepath.Join(mock.ID.String(),
 			"qc", "reads2_fastqc.html"))
 		assert.NotContains(t, names, filepath.Join(mock.ID.String(),
-			"report", "sample_1_FASTQC_results.zip"))
+			"report", mock.Sample.OriginCode+"_FASTQC_results.zip"))
 	})
 
 	t.Run("Warning - Zip Failure Does Not Fail Analysis", func(t *testing.T) {
