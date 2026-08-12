@@ -335,13 +335,40 @@ func TestAnalysisCreate(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
+	t.Run("Error - No Files At All", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &models.Sample{}, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			nil, nil, mockLogger, t.TempDir())
+
+		result, err := svc.Create(ctx, models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeComplete,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		})
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFiles)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
 	t.Run("Error - Sample Missing Fastq1 in FASTQC analysis",
 		func(t *testing.T) {
 			analysisRepo := &mocks.MockAnalysisRepository{}
 			sampleRepo := &mocks.MockSampleRepository{
 				GetSampleByIDFunc: func(ctx context.Context,
 					ID uuid.UUID) (*models.Sample, error) {
-					sample := &models.Sample{}
+					fasta := "assembly.fasta"
+					sample := &models.Sample{Fasta: &fasta}
 					return sample, nil
 				},
 			}
@@ -371,7 +398,8 @@ func TestAnalysisCreate(t *testing.T) {
 				GetSampleByIDFunc: func(ctx context.Context,
 					ID uuid.UUID) (*models.Sample, error) {
 					fastq1 := "reads1.fastq"
-					sample := &models.Sample{Fastq1: &fastq1}
+					fasta := "assembly.fasta"
+					sample := &models.Sample{Fastq1: &fastq1, Fasta: &fasta}
 					return sample, nil
 				},
 			}
@@ -394,7 +422,7 @@ func TestAnalysisCreate(t *testing.T) {
 			assert.Equal(t, 1, logs.Len())
 		})
 
-	t.Run("Success - Change Analysis Type from Complete To Genome",
+	t.Run("Error - Complete With Only Fasta",
 		func(t *testing.T) {
 			analysisRepo := &mocks.MockAnalysisRepository{}
 			sampleRepo := &mocks.MockSampleRepository{
@@ -409,35 +437,145 @@ func TestAnalysisCreate(t *testing.T) {
 					return sample, nil
 				},
 			}
-			userRepo := &mocks.MockUserRepository{
-				GetUserByIDFunc: func(ctx context.Context,
-					ID uuid.UUID) (*models.User, error) {
-					return &mock.User, nil
-				},
-			}
 
-			mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+			mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-			enqueuer := &mocks.MockTaskEnqueuer{}
 			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
-				userRepo, enqueuer, mockLogger, t.TempDir())
+				nil, nil, mockLogger, t.TempDir())
 
 			result, err := svc.Create(ctx, input)
 
-			expected := models.AnalysisResponse{
-				Type:     models.AnalysisTypeGenome,
-				Status:   models.AnalysisStatusPending,
-				Sample:   mock.Sample.Name,
-				SampleID: mock.Sample.ID,
-				User:     mock.User.Username,
-				UserID:   mock.User.ID,
-			}
-
-			assert.NoError(t, err)
-			assert.NotNil(t, result)
-			assert.Equal(t, expected, *result)
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, services.ErrMissingFastq1)
+			assert.Nil(t, result)
 			assert.Equal(t, 1, logs.Len())
 		})
+
+	t.Run("Error - Complete Missing Fastq1", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &models.Sample{}, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			nil, nil, mockLogger, t.TempDir())
+
+		result, err := svc.Create(ctx, models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeComplete,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		})
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFiles)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Complete Missing Fastq2", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				fastq1 := "reads1.fastq"
+				return &models.Sample{Fastq1: &fastq1}, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			nil, nil, mockLogger, t.TempDir())
+
+		result, err := svc.Create(ctx, models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeComplete,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		})
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFastq2)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Genome With Only Fasta", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				fasta := "assembly.fasta"
+				return &models.Sample{
+					ID:    mock.Sample.ID,
+					Name:  mock.Sample.Name,
+					Fasta: &fasta,
+				}, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &mock.User, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			userRepo, enqueuer, mockLogger, t.TempDir())
+
+		result, err := svc.Create(ctx, models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeGenome,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		})
+
+		expected := models.AnalysisResponse{
+			Type:     models.AnalysisTypeGenome,
+			Status:   models.AnalysisStatusPending,
+			Sample:   mock.Sample.Name,
+			SampleID: mock.Sample.ID,
+			User:     mock.User.Username,
+			UserID:   mock.User.ID,
+		}
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expected, *result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Genome With No Files", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &models.Sample{}, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			nil, nil, mockLogger, t.TempDir())
+
+		result, err := svc.Create(ctx, models.AnalysisCreateDTO{
+			Type:     models.AnalysisTypeGenome,
+			SampleID: input.SampleID,
+			UserID:   input.UserID,
+		})
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFiles)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
 
 	t.Run("Error - User Not Found", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{}

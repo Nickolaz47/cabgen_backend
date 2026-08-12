@@ -174,27 +174,44 @@ func (s *analysisService) Create(ctx context.Context,
 		return nil, ErrInternal
 	}
 
-	if input.Type == models.AnalysisTypeFastQC &&
-		sample.Fastq1 == nil {
+	if sample.Fastq1 == nil && sample.Fastq2 == nil &&
+		sample.Fasta == nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(
 				"AnalysisService", "Create",
-				logging.MissingFileError, ErrMissingFastq1,
+				logging.MissingFileError, ErrMissingFiles,
 			)...)
-		return nil, ErrMissingFastq1
-	} else if input.Type == models.AnalysisTypeFastQC &&
-		sample.Fastq2 == nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
-				"AnalysisService", "Create",
-				logging.MissingFileError, ErrMissingFastq2,
-			)...)
-		return nil, ErrMissingFastq2
+		return nil, ErrMissingFiles
 	}
 
-	if input.Type == models.AnalysisTypeComplete && (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
-		sample.Fasta != nil {
-		input.Type = models.AnalysisTypeGenome
+	switch input.Type {
+	case models.AnalysisTypeFastQC, models.AnalysisTypeComplete:
+		if sample.Fastq1 == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFastq1,
+				)...)
+			return nil, ErrMissingFastq1
+		}
+		if sample.Fastq2 == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFastq2,
+				)...)
+			return nil, ErrMissingFastq2
+		}
+	case models.AnalysisTypeGenome:
+		if (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
+			sample.Fasta == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFiles,
+				)...)
+			return nil, ErrMissingFiles
+		}
 	}
 
 	user, err := s.UserRepo.GetUserByID(ctx, input.UserID)

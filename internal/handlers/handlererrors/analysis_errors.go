@@ -26,6 +26,8 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusNotFound, responses.SampleNotFoundError
 	case errors.Is(err, services.ErrUserNotFound):
 		return http.StatusNotFound, responses.UserNotFoundError
+	case errors.Is(err, services.ErrMissingFiles):
+		return http.StatusBadRequest, responses.SampleMissingFiles
 	case errors.Is(err, services.ErrMissingFastq1):
 		return http.StatusBadRequest, responses.SampleMissingFastq1
 	case errors.Is(err, services.ErrMissingFastq2):
