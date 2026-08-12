@@ -13,12 +13,12 @@ type mockCmd struct {
 	runFunc func() error
 }
 
-func (m *mockCmd) Start() error           { return nil }
-func (m *mockCmd) Run() error             { return m.runFunc() }
-func (m *mockCmd) Wait() error            { return nil }
-func (m *mockCmd) SetStdout(w io.Writer)  {}
-func (m *mockCmd) SetStderr(w io.Writer)  {}
-func (m *mockCmd) SetStdin(r io.Reader)   {}
+func (m *mockCmd) Start() error          { return nil }
+func (m *mockCmd) Run() error            { return m.runFunc() }
+func (m *mockCmd) Wait() error           { return nil }
+func (m *mockCmd) SetStdout(w io.Writer) {}
+func (m *mockCmd) SetStderr(w io.Writer) {}
+func (m *mockCmd) SetStdin(r io.Reader)  {}
 
 type mockCommander struct {
 	cmdFunc func(ctx context.Context, name string, args ...string) Cmd
@@ -382,6 +382,7 @@ func TestBuildKraken2Cmd(t *testing.T) {
 		assert.Equal(t, []string{
 			"kraken2", "--db", "/db", "--use-names",
 			"--output", "/out/out_kraken",
+			"--report", "/out/report_kraken",
 			"--threads", "4", "contigs.fa",
 		}, result)
 	})

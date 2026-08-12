@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -22,14 +23,15 @@ func createMockKrakenFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-func krakenLine(seqID, taxon string) string {
-	return "C\t" + seqID + "\t" + taxon + "\t|0:0|\n"
+func krakenReportLine(name string, cladeReads int) string {
+	return fmt.Sprintf("1.00\t%d\t%d\tS\t0\t%s\n", cladeReads, cladeReads,
+		name)
 }
 
 func TestKrakenSpeciesCounter(t *testing.T) {
-	t.Run("Success - Single Read Each Species", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Escherichia coli") +
-			krakenLine("read2", "Klebsiella pneumoniae")
+	t.Run("Success - Single Clade Each Species", func(t *testing.T) {
+		mockContent := krakenReportLine("Escherichia coli", 1) +
+			krakenReportLine("Klebsiella pneumoniae", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -37,18 +39,15 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.NotNil(t, first)
 		assert.NotNil(t, second)
 
-		// tie broken by name ascending: "Escherichia coli" < "Klebsiella pneumoniae"
 		assert.Equal(t, "Escherichia coli", first.Name)
 		assert.Equal(t, 1, first.Count)
 		assert.Equal(t, "Klebsiella pneumoniae", second.Name)
 		assert.Equal(t, 1, second.Count)
 	})
 
-	t.Run("Success - Multiple Reads Same Species", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Escherichia coli") +
-			krakenLine("read2", "Escherichia coli") +
-			krakenLine("read3", "Escherichia coli") +
-			krakenLine("read4", "Klebsiella pneumoniae")
+	t.Run("Success - Multiple Clades Same Species", func(t *testing.T) {
+		mockContent := krakenReportLine("Escherichia coli", 3) +
+			krakenReportLine("Klebsiella pneumoniae", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -61,10 +60,24 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.Equal(t, 1, second.Count)
 	})
 
-	t.Run("Success - Species With Parentheses", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Escherichia coli (strain K12)") +
-			krakenLine("read2", "Escherichia coli (strain B)") +
-			krakenLine("read3", "Klebsiella pneumoniae")
+	t.Run("Success - Species Name Kept As-Is", func(t *testing.T) {
+		mockContent := krakenReportLine("Escherichia coli (strain K12)", 2) +
+			krakenReportLine("Klebsiella pneumoniae", 1)
+		path := createMockKrakenFile(t, mockContent)
+
+		first, second, err := KrakenSpeciesCounter(path)
+		assert.NoError(t, err)
+		assert.NotNil(t, first)
+		assert.Equal(t, "Escherichia coli (strain K12)", first.Name)
+		assert.Equal(t, 2, first.Count)
+		assert.NotNil(t, second)
+		assert.Equal(t, "Klebsiella pneumoniae", second.Name)
+		assert.Equal(t, 1, second.Count)
+	})
+
+	t.Run("Success - Species Name With Indentation", func(t *testing.T) {
+		mockContent := krakenReportLine("  Escherichia coli", 2) +
+			krakenReportLine("Klebsiella pneumoniae", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -78,8 +91,8 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 	})
 
 	t.Run("Success - Tie Broken By Name Ascending", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Zebra") +
-			krakenLine("read2", "Alpha")
+		mockContent := krakenReportLine("Zebra", 1) +
+			krakenReportLine("Alpha", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -91,8 +104,7 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 	})
 
 	t.Run("Success - Single Species Returns Nil Second", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Escherichia coli") +
-			krakenLine("read2", "Escherichia coli")
+		mockContent := krakenReportLine("Escherichia coli", 2)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -103,9 +115,9 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.Nil(t, second)
 	})
 
-	t.Run("Success - Unclassified Lines Ignored", func(t *testing.T) {
-		mockContent := "U\tread1\t0\t|0:0|" + "\n" +
-			krakenLine("read2", "Escherichia coli")
+	t.Run("Success - Non-Species Ranks Ignored", func(t *testing.T) {
+		mockContent := "50.00\t10\t10\tG\t561\tEscherichia" + "\n" +
+			krakenReportLine("Escherichia coli", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -116,9 +128,9 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.Nil(t, second)
 	})
 
-	t.Run("Success - Lines With Fewer Than 3 Fields Ignored", func(t *testing.T) {
-		mockContent := "C\tread1\n" +
-			krakenLine("read2", "Escherichia coli")
+	t.Run("Success - Lines With Fewer Than 6 Fields Ignored", func(t *testing.T) {
+		mockContent := "1.00\t1\t1\tS\n" +
+			krakenReportLine("Escherichia coli", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -130,9 +142,9 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 	})
 
 	t.Run("Success - Empty Species Name Ignored", func(t *testing.T) {
-		mockContent := krakenLine("read1", "Escherichia coli") +
-			"C\tread2\t\t|0:0|\n" +
-			krakenLine("read3", "Klebsiella pneumoniae")
+		mockContent := krakenReportLine("Escherichia coli", 1) +
+			"1.00\t5\t5\tS\t0\t\n" +
+			krakenReportLine("Klebsiella pneumoniae", 1)
 		path := createMockKrakenFile(t, mockContent)
 
 		first, second, err := KrakenSpeciesCounter(path)
@@ -141,9 +153,23 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.NotNil(t, second)
 
 		names := []string{first.Name, second.Name}
-		assert.ElementsMatch(t, []string{"Escherichia coli", "Klebsiella pneumoniae"}, names)
+		assert.ElementsMatch(t,
+			[]string{"Escherichia coli", "Klebsiella pneumoniae"}, names)
 		assert.Equal(t, 1, first.Count)
 		assert.Equal(t, 1, second.Count)
+	})
+
+	t.Run("Success - Invalid Clade Reads Ignored", func(t *testing.T) {
+		mockContent := "1.00\tnot-a-number\t1\tS\t0\tEscherichia coli\n" +
+			krakenReportLine("Klebsiella pneumoniae", 1)
+		path := createMockKrakenFile(t, mockContent)
+
+		first, second, err := KrakenSpeciesCounter(path)
+		assert.NoError(t, err)
+		assert.NotNil(t, first)
+		assert.Equal(t, "Klebsiella pneumoniae", first.Name)
+		assert.Equal(t, 1, first.Count)
+		assert.Nil(t, second)
 	})
 
 	t.Run("Success - Empty File Returns Error", func(t *testing.T) {
@@ -153,7 +179,7 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, first)
 		assert.Nil(t, second)
-		assert.ErrorContains(t, err, "Empty Kraken result")
+		assert.ErrorContains(t, err, "Empty Kraken report")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
@@ -161,6 +187,6 @@ func TestKrakenSpeciesCounter(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, first)
 		assert.Nil(t, second)
-		assert.Contains(t, err.Error(), "Kraken output file not found")
+		assert.Contains(t, err.Error(), "Kraken report file not found")
 	})
 }

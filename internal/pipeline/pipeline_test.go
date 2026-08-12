@@ -32,11 +32,11 @@ func defaultConfig() pipeline.ToolsConfig {
 		ResfinderDBPath:    "/resfinder_db",
 		PoliDbPseudo:       "/blast/poli/proteins_pseudo_poli.fasta",
 		PoliDbKleb:         "/blast/poli/proteins_kleb_poli.fasta",
-		PoliDbEntero:        "/blast/poli/proteins_Ecloacae_poli.fasta",
+		PoliDbEntero:       "/blast/poli/proteins_Ecloacae_poli.fasta",
 		PoliDbAcineto:      "/blast/poli/proteins_acineto_poli.fasta",
 		OtherDbPseudo:      "/blast/other/proteins_outrasMut_pseudo.fasta",
 		OtherDbKleb:        "/blast/other/proteins_outrasMut_kleb.fasta",
-		OtherDbEntero:       "/blast/other/proteins_outrasMut_Ecloacae.fasta",
+		OtherDbEntero:      "/blast/other/proteins_outrasMut_Ecloacae.fasta",
 		OtherDbAcineto:     "/blast/other/proteins_outrasMut_acineto.fasta",
 		FastaniListKleb:    "/fastani/kleb_database/lista-kleb",
 		FastaniListEntero:  "/fastani/fastANI/list_entero",
@@ -52,9 +52,6 @@ func errorRun(_ context.Context, _ []string) (string, error) {
 	return "", fmt.Errorf("command failed")
 }
 
-// Duplicated from mutations_test.go / kraken_test.go (package pipeline) since
-// this file uses the external test package (pipeline_test) to avoid an import
-// cycle with testutils/mocks.
 const organismMockContent = `
 > GyrA|
 Length=100
@@ -71,8 +68,9 @@ Query  1   ATCG 4
 Sbjct  1   ATAG 4
 `
 
-func krakenLine(seqID, taxon string) string {
-	return "C\t" + seqID + "\t" + taxon + "\t|0:0|\n"
+func krakenReportLine(name string, cladeReads int) string {
+	return fmt.Sprintf("1.00\t%d\t%d\tS\t0\t%s\n", cladeReads, cladeReads,
+		name)
 }
 
 func TestNewCabgenPipeline(t *testing.T) {
@@ -157,8 +155,8 @@ func TestRunCheckM(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		outDir := t.TempDir()
 		writeFile(t, filepath.Join(outDir, "s1_results"),
-			"Bin Id\tML\tG\tM\tMS\tComp\tCont\tC\tGS\tN\tN100\tN50\n"+
-				"s1\tF\t5\t10\t5\t98.5\t0.5\t3\t3500000\t0\t0\t25000\n")
+			"Bin Id\tML\tG\tM\tMS\tComp\tCont\tSH\tGS\tGC\tC\tS\tN\tN50\n"+
+				"s1\tF\t5\t10\t5\t98.5\t0.5\t0\t3500000\t37.5\t3\t2\t0\t25000\n")
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig())
@@ -204,9 +202,9 @@ func TestRunCheckM(t *testing.T) {
 func TestRunKraken2(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		outDir := t.TempDir()
-		writeFile(t, filepath.Join(outDir, "out_kraken"),
-			krakenLine("r1", "Escherichia coli")+
-				krakenLine("r2", "Klebsiella pneumoniae"))
+		writeFile(t, filepath.Join(outDir, "report_kraken"),
+			krakenReportLine("Escherichia coli", 1)+
+				krakenReportLine("Klebsiella pneumoniae", 1))
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig())
@@ -324,7 +322,7 @@ func TestProcessSpecies(t *testing.T) {
 		assert.Equal(t, "abaumannii (ST: ST2)", result.MLSTSpecies)
 	})
 
-	t.Run("Error - BlastX Poli Fails", func(t *testing.T) {
+	t.Run("Success - BlastX Poli Fails Returns Partial Result", func(t *testing.T) {
 		outDir := t.TempDir()
 		sampleID := "s1"
 		calls := 0
@@ -343,8 +341,10 @@ func TestProcessSpecies(t *testing.T) {
 		// call 3, which is the BlastX poli invocation.
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Enterobacter cloacae", "contigs.fa", outDir)
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "blastx failed")
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Enterobacter cloacae", result.DisplayName)
+		assert.Empty(t, result.PoliMutations)
+		assert.Empty(t, result.OtherMutations)
 	})
 }

@@ -129,6 +129,7 @@ func (r *toolRunner) BuildKraken2Cmd(krakenCmd, dbPath, outputDir,
 	return []string{
 		krakenCmd, "--db", dbPath, "--use-names",
 		"--output", outputDir + "/out_kraken",
+		"--report", outputDir + "/report_kraken",
 		"--threads", threads, assemblyPath,
 	}
 }

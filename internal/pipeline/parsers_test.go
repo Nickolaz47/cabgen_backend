@@ -23,10 +23,11 @@ func createMockParserFile(t *testing.T, content string) string {
 }
 
 func TestParseCheckM(t *testing.T) {
-	// CheckM tab: fields[5]=Completeness, [6]=Contamination, [8]=GenomeSize, [11]=N50
+	const header = "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\tStrain heterogeneity\tGenome size\tGC\t# contigs\t# scaffolds\t# N's\tN50\n"
+
 	t.Run("Success - Valid CheckM Output", func(t *testing.T) {
-		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\t# contigs\tGenome size\t# N's\t# N's per 100 kbp\tScaffold N50\n" +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t15\t3500000\t0\t0\t25000\n"
+		content := header +
+			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\t25000\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -39,8 +40,8 @@ func TestParseCheckM(t *testing.T) {
 	})
 
 	t.Run("Success - Header Skipped", func(t *testing.T) {
-		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\t# contigs\tGenome size\t# N's\t# N's per 100 kbp\tScaffold N50\n" +
-			"sample1\tFirmicutes\t543\t124\t58\t99.20\t1.05\t10\t4200000\t0\t0\t30000\n"
+		content := header +
+			"sample1\tFirmicutes\t543\t124\t58\t99.20\t1.05\t0\t4200000\t36.1\t10\t8\t0\t30000\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -62,7 +63,17 @@ func TestParseCheckM(t *testing.T) {
 	})
 
 	t.Run("Error - Only Header No Data", func(t *testing.T) {
-		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\t# contigs\tGenome size\t# N's\t# N's per 100 kbp\tScaffold N50\n"
+		path := createMockParserFile(t, header)
+
+		result, err := ParseCheckM(path)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "No valid data found in checkm result")
+	})
+
+	t.Run("Error - Data Line With Fewer Than 14 Fields", func(t *testing.T) {
+		content := header +
+			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -71,22 +82,11 @@ func TestParseCheckM(t *testing.T) {
 		assert.Contains(t, err.Error(), "No valid data found in checkm result")
 	})
 
-	t.Run("Error - Data Line With Fewer Than 12 Fields", func(t *testing.T) {
-		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\n" +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\n"
-		path := createMockParserFile(t, content)
-
-		result, err := ParseCheckM(path)
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "No valid data found in checkm result")
-	})
-
-	t.Run("Error - Blank Lines Skipped", func(t *testing.T) {
-		content := "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\t# contigs\tGenome size\t# N's\t# N's per 100 kbp\tScaffold N50\n" +
+	t.Run("Success - Blank Lines Skipped", func(t *testing.T) {
+		content := header +
 			"\n" +
 			"\n" +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t15\t3500000\t0\t0\t25000\n"
+			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\t25000\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -105,7 +105,6 @@ func TestParseCheckM(t *testing.T) {
 }
 
 func TestParseFastANI(t *testing.T) {
-	// FastANI tab: fields[1]=ref (strip ext), [2]=ANI, [3]=fragments
 	t.Run("Success - Valid FastANI Output", func(t *testing.T) {
 		content := "/data/contigs.fa\t/data/ref/Ecoli_K12.fasta\t99.87\t1500/1500\n"
 		path := createMockParserFile(t, content)
@@ -115,9 +114,9 @@ func TestParseFastANI(t *testing.T) {
 		assert.Equal(t, "Ecoli_K12", result)
 	})
 
-	t.Run("Success - Multiple Lines Returns First", func(t *testing.T) {
-		content := "/data/contigs.fa\t/data/ref/Ecoli_K12.fasta\t99.87\t1500/1500\n" +
-			"/data/contigs.fa\t/data/ref/Salmonella.fasta\t95.20\t1200/1500\n"
+	t.Run("Success - Multiple Lines Returns Best ANI", func(t *testing.T) {
+		content := "/data/contigs.fa\t/data/ref/Salmonella.fasta\t95.20\t1200/1500\n" +
+			"/data/contigs.fa\t/data/ref/Ecoli_K12.fasta\t99.87\t1500/1500\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseFastANI(path)
@@ -154,23 +153,45 @@ func TestParseFastANI(t *testing.T) {
 		assert.Equal(t, "Ecoli_K12", result)
 	})
 
+	t.Run("Success - Best ANI Below 95% Returns Error", func(t *testing.T) {
+		content := "/data/contigs.fa\t/data/ref/Other.fasta\t94.00\t1500/1500\n"
+		path := createMockParserFile(t, content)
+
+		result, err := ParseFastANI(path)
+		assert.Error(t, err)
+		assert.Equal(t, "", result)
+		assert.Contains(t, err.Error(),
+			"best ANI match below species threshold")
+	})
+
+	t.Run("Success - Invalid ANI Value Ignored", func(t *testing.T) {
+		content := "/data/contigs.fa\t/data/ref/Bad.fasta\tnot-a-number\t1500/1500\n"
+		path := createMockParserFile(t, content)
+
+		result, err := ParseFastANI(path)
+		assert.Error(t, err)
+		assert.Equal(t, "", result)
+		assert.Contains(t, err.Error(),
+			"no valid data found in fastani result")
+	})
+
 	t.Run("Error - Empty File", func(t *testing.T) {
 		path := createMockParserFile(t, "")
 
 		result, err := ParseFastANI(path)
 		assert.Error(t, err)
 		assert.Equal(t, "", result)
-		assert.Contains(t, err.Error(), "No valid data found in fastani result")
+		assert.Contains(t, err.Error(), "no valid data found in fastani result")
 	})
 
-	t.Run("Error - Line With Fewer Than 2 Fields", func(t *testing.T) {
-		content := "/data/contigs.fa\n"
+	t.Run("Error - Line With Fewer Than 3 Fields", func(t *testing.T) {
+		content := "/data/contigs.fa\t/data/ref/Ecoli_K12.fasta\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseFastANI(path)
 		assert.Error(t, err)
 		assert.Equal(t, "", result)
-		assert.Contains(t, err.Error(), "No valid data found in fastani result")
+		assert.Contains(t, err.Error(), "no valid data found in fastani result")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
@@ -182,7 +203,6 @@ func TestParseFastANI(t *testing.T) {
 }
 
 func TestParseMLST(t *testing.T) {
-	// MLST CSV: fields[1]=Scheme, [2]=ST
 	t.Run("Success - Valid MLST CSV Output", func(t *testing.T) {
 		content := "contigs.fa,ecoli,ST131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
 		path := createMockParserFile(t, content)

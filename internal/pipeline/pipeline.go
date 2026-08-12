@@ -159,8 +159,8 @@ func (p *cabgenPipeline) RunKraken2(ctx context.Context, threads int, assembly,
 		return nil, nil, err
 	}
 
-	krakenResult := filepath.Join(outputDir, "out_kraken")
-	kResult1, kResult2, err := KrakenSpeciesCounter(krakenResult)
+	krakenReport := filepath.Join(outputDir, "report_kraken")
+	kResult1, kResult2, err := KrakenSpeciesCounter(krakenReport)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -279,7 +279,7 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 
 		if err := p.RunBlastX(ctx, assemblyPath, poliDbFullPath,
 			blastPoliFile); err != nil {
-			return nil, err
+			return result, nil
 		}
 
 		blastOtherFile := filepath.Join(outputDir, fmt.Sprintf(
@@ -287,7 +287,7 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 
 		if err := p.RunBlastX(ctx, assemblyPath, otherDbFullPath,
 			blastOtherFile); err != nil {
-			return nil, err
+			return result, nil
 		}
 
 		poliFinder := NewMutationFinder(blastPoliFile)
