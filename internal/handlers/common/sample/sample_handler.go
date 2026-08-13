@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -52,7 +53,7 @@ func (h *SampleHandler) getUserID(userToken *models.UserToken) uuid.UUID {
 func (h *SampleHandler) GetSamples(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
-	input := c.Query("input")
+	input := utils.SanitizeQuery(c.Query("input"))
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
@@ -232,10 +233,10 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		}
 
 		formName := part.FormName()
-		fileName := part.FileName()
+		fileName := filepath.Base(part.FileName())
 
 		// Skip form parts that are not files
-		if fileName == "" {
+		if fileName == "" || fileName == "." {
 			continue
 		}
 

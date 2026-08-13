@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 )
@@ -43,7 +44,7 @@ func (h *AdminCountryHandler) GetCountries(c *gin.Context) {
 func (h *AdminCountryHandler) GetCountriesByName(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
-	name := c.Query("name")
+	name := utils.SanitizeQuery(c.Query("name"))
 
 	var (
 		countries []models.CountryFormResponse

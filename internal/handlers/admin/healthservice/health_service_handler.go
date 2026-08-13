@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -69,7 +70,7 @@ func (h *AdminHealthServiceHandler) GetHealthServiceByID(c *gin.Context) {
 
 func (h *AdminHealthServiceHandler) GetHealthServicesByName(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	name := c.Query("name")
+	name := utils.SanitizeQuery(c.Query("name"))
 
 	var (
 		healthServices []models.HealthServiceAdminTableResponse

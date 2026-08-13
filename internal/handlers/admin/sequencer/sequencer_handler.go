@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -66,7 +67,7 @@ func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 
 func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	brandOrModel := c.Query("brandOrModel")
+	brandOrModel := utils.SanitizeQuery(c.Query("brandOrModel"))
 
 	var (
 		sequencers []models.SequencerAdminTableResponse

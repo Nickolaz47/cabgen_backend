@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -68,7 +69,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	nameOrAbbreaviation := c.Query("nameOrAbbreaviation")
+	nameOrAbbreaviation := utils.SanitizeQuery(c.Query("nameOrAbbreaviation"))
 
 	var (
 		labs []models.LaboratoryAdminTableResponse
