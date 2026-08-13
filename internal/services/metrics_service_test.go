@@ -146,6 +146,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 		mockPending.Metrics = []byte(`{"primary_species":"Other","gene":["x"]}`)
 		mockEmptyResult := testmodels.CreateMockAnalysis()
 		mockEmptyResult.Status = models.AnalysisStatusDone
+		mockEmptyResult.Metrics = []byte(`{}`)
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSamplesFunc: func(ctx context.Context, input string,

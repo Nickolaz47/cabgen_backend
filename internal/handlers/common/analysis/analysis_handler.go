@@ -272,7 +272,7 @@ func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 		return
 	}
 
-	tsvBytes, err := utils.GenerateDynamicTSV(analyses)
+	tsvBytes, err := utils.GenerateMetricsTSV(analyses)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer,

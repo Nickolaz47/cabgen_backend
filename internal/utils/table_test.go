@@ -2,132 +2,134 @@ package utils_test
 
 import (
 	"testing"
-	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/datatypes"
 )
 
-type mockItem struct {
-	Name      string    `json:"name"`
-	Age       int       `json:"age"`
-	CreatedAt time.Time `json:"created_at"`
-	Internal  string    `json:"-"`
-	NoTag     string
-}
-
-type mockItemWithPointer struct {
-	Name  string   `json:"name"`
-	Score *float64 `json:"score"`
-}
-
-type mockItemWithJSON struct {
-	Name string `json:"name"`
-	Meta []byte `json:"meta"`
-}
-
-func ptr[T any](v T) *T {
-	return &v
-}
-
-func TestGenerateDynamicTSV(t *testing.T) {
-	fixedTime := time.Date(2024, 6, 15, 10, 30, 0, 0, time.UTC)
-
-	t.Run("Success - Single item", func(t *testing.T) {
-		items := []mockItem{
-			{Name: "Alice", Age: 30, CreatedAt: fixedTime, Internal: "skip", NoTag: "skip"},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "name\tage\tcreated_at")
-		assert.Contains(t, string(result), "Alice\t30\t15-06-2024 10:30:00")
-		assert.NotContains(t, string(result), "skip")
-	})
-
-	t.Run("Success - Multiple items", func(t *testing.T) {
-		items := []mockItem{
-			{Name: "Alice", Age: 30, CreatedAt: fixedTime},
-			{Name: "Bob", Age: 25, CreatedAt: fixedTime},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "Alice")
-		assert.Contains(t, string(result), "Bob")
-	})
-
-	t.Run("Success - Pointer slice", func(t *testing.T) {
-		items := []*mockItem{
-			{Name: "Carol", Age: 22, CreatedAt: fixedTime},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "Carol")
-	})
-
-	t.Run("Success - Nil pointer field", func(t *testing.T) {
-		items := []mockItemWithPointer{
-			{Name: "Dave", Score: nil},
-			{Name: "Eve", Score: ptr(9.5)},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "Dave\t")
-		assert.Contains(t, string(result), "Eve\t9.5")
-	})
-
-	t.Run("Success - JSON bytes field", func(t *testing.T) {
-		items := []mockItemWithJSON{
-			{Name: "Frank", Meta: []byte(`{"key":"value"}`)},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), `"{""key"":""value""}"`)
-	})
-	t.Run("Success - JSON bytes null", func(t *testing.T) {
-		items := []mockItemWithJSON{
-			{Name: "Grace", Meta: []byte("null")},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "Grace\t")
-	})
-
-	t.Run("Success - JSON bytes empty", func(t *testing.T) {
-		items := []mockItemWithJSON{
-			{Name: "Heidi", Meta: []byte{}},
-		}
-
-		result, err := utils.GenerateDynamicTSV(items)
-
-		assert.NoError(t, err)
-		assert.Contains(t, string(result), "Heidi\t")
-	})
-
+func TestGenerateMetricsTSV(t *testing.T) {
 	t.Run("Success - Empty slice", func(t *testing.T) {
-		items := []mockItem{}
-
-		result, err := utils.GenerateDynamicTSV(items)
+		result, err := utils.GenerateMetricsTSV([]models.AnalysisResponse{})
 
 		assert.NoError(t, err)
 		assert.Empty(t, result)
 	})
 
-	t.Run("Error - Not a slice", func(t *testing.T) {
-		_, err := utils.GenerateDynamicTSV("not a slice")
+	t.Run("Success - Single item with all fields", func(t *testing.T) {
+		metrics := datatypes.JSON(`{
+			"coverage": 30.5,
+			"completeness": "95.89",
+			"contamination": "1.23",
+			"genome_size": "4500000",
+			"n50": "12000",
+			"primary_species": "Acinetobacter baumannii",
+			"secondary_species": "Klebsiella pneumoniae",
+			"mlst": "ST502",
+			"poli_mutations": ["blaOXA-23", "blaOXA-51"],
+			"other_mutations": ["gyrA_S83L"],
+			"gene": ["blaOXA-23", "armA"],
+			"resfinder": ["blaOXA-23"],
+			"vfdb": ["abaum_A"],
+			"plasmid": ["IncHI2"]
+		}`)
+		analyses := []models.AnalysisResponse{{Metrics: metrics}}
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "expected a slice")
+		result, err := utils.GenerateMetricsTSV(analyses)
+
+		assert.NoError(t, err)
+		body := string(result)
+		assert.Contains(t, body, "coverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tgene\tresfinder\tvfdb\tplasmid")
+		assert.Contains(t, body, "30.5\t95.89\t1.23\t4500000\t12000\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tblaOXA-23\tabaum_A\tIncHI2")
 	})
+
+	t.Run("Success - Single item with empty metrics", func(t *testing.T) {
+		analyses := []models.AnalysisResponse{{Metrics: nil}}
+
+		result, err := utils.GenerateMetricsTSV(analyses)
+
+		assert.NoError(t, err)
+		body := string(result)
+		assert.Contains(t, body, "coverage\tcompleteness")
+		// Empty row with 14 tab-separated empty cells
+		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
+	})
+
+	t.Run("Success - Multiple items", func(t *testing.T) {
+		m1 := datatypes.JSON(`{"primary_species": "Species A", "mlst": "ST1"}`)
+		m2 := datatypes.JSON(`{"primary_species": "Species B", "mlst": "ST2"}`)
+		analyses := []models.AnalysisResponse{
+			{Metrics: m1},
+			{Metrics: m2},
+		}
+
+		result, err := utils.GenerateMetricsTSV(analyses)
+
+		assert.NoError(t, err)
+		body := string(result)
+		assert.Contains(t, body, "Species A")
+		assert.Contains(t, body, "Species B")
+		assert.Contains(t, body, "ST1")
+		assert.Contains(t, body, "ST2")
+	})
+
+	t.Run("Success - Array fields joined with comma", func(t *testing.T) {
+		metrics := datatypes.JSON(`{
+			"gene": ["blaOXA-23", "armA", "blaNDM-1"],
+			"poli_mutations": ["mut1"]
+		}`)
+		analyses := []models.AnalysisResponse{{Metrics: metrics}}
+
+		result, err := utils.GenerateMetricsTSV(analyses)
+
+		assert.NoError(t, err)
+		body := string(result)
+		assert.Contains(t, body, "blaOXA-23,armA,blaNDM-1")
+		assert.Contains(t, body, "mut1")
+	})
+
+	t.Run("Success - Coverage zero renders empty", func(t *testing.T) {
+		metrics := datatypes.JSON(`{"coverage": 0, "primary_species": "Sp"}`)
+		analyses := []models.AnalysisResponse{{Metrics: metrics}}
+
+		result, err := utils.GenerateMetricsTSV(analyses)
+
+		assert.NoError(t, err)
+		body := string(result)
+		// First data cell should be empty (coverage=0)
+		lines := splitLines(body)
+		assert.Len(t, lines, 2) // header + 1 data row
+		cells := splitTabs(lines[1])
+		assert.Equal(t, "", cells[0]) // coverage empty
+		assert.Equal(t, "Sp", cells[5])
+	})
+}
+
+func splitLines(s string) []string {
+	var lines []string
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\n' {
+			lines = append(lines, s[start:i])
+			start = i + 1
+		}
+	}
+	if start < len(s) {
+		lines = append(lines, s[start:])
+	}
+	return lines
+}
+
+func splitTabs(s string) []string {
+	var cells []string
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\t' {
+			cells = append(cells, s[start:i])
+			start = i + 1
+		}
+	}
+	cells = append(cells, s[start:])
+	return cells
 }
