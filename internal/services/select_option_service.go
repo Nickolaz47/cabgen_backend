@@ -80,7 +80,7 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 			})
 	}
 
-	// Analisis Types
+	// Analysis Types
 	for _, aType := range models.AnalysisTypes {
 		resp.AnalysisTypes = append(resp.AnalysisTypes, models.SelectOption{
 			Label: "option.analysis_type." + strings.ToLower(string(aType)),

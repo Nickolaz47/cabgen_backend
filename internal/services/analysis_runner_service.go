@@ -273,10 +273,18 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		case "resfinder":
 			genes, blast, err := pipeline.ProcessResfinder(rawResult,
 				s.Pipeline.GetConfig().ResfinderDBPath)
-			if err == nil {
-				results.ResfinderGenes = genes
-				results.ResfinderBlast = blast
+			if err != nil {
+				s.Logger.Error(fmt.Sprintf(
+					"%s: Failed Genome step - ProcessResfinder: %v",
+					analysis.ID.String(), err),
+					logging.ServiceLogging(
+						"AnalysisRunnerService", "runGenome",
+						logging.AnalysisRunError, err,
+					)...)
+				return ErrAbricate
 			}
+			results.ResfinderGenes = genes
+			results.ResfinderBlast = blast
 		case "vfdb":
 			results.VFDB = pipeline.ProcessVFDB(rawResult)
 		case "plasmidfinder":
@@ -291,7 +299,15 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		coverage, err := pipeline.CalculateCoverage(
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
 			int64(genomeSize))
-		if err == nil {
+		if err != nil {
+			s.Logger.Error(fmt.Sprintf(
+				"%s: Failed Genome step - CalculateCoverage: %v",
+				analysis.ID.String(), err),
+				logging.ServiceLogging(
+					"AnalysisRunnerService", "runGenome",
+					logging.AnalysisRunError, err,
+				)...)
+		} else {
 			results.Coverage = coverage
 		}
 	}
@@ -340,7 +356,15 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 	}
 
 	jsonData, err := json.Marshal(results)
-	if err == nil {
+	if err != nil {
+		s.Logger.Warn(fmt.Sprintf(
+			"%s: Failed to marshal analysis results: %v",
+			analysis.ID.String(), err),
+			logging.ServiceLogging(
+				"AnalysisRunnerService", "finalizeAnalysis",
+				logging.AnalysisRunError, err,
+			)...)
+	} else {
 		analysis.Metrics = jsonData
 	}
 

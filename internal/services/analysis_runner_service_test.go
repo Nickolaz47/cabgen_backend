@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -349,6 +350,23 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 }
 
+func writeAbricateOutput(outputFile string) error {
+	line := "file\tseq1\t1\t100\t+\tgene\t1-100/100\t=\t0/0\t95.0\t98.0\tresfinder\tAF123\tproduct"
+	return os.WriteFile(outputFile, []byte(line+"\n"), 0644)
+}
+
+func newResfinderRef(t *testing.T) string {
+	t.Helper()
+	ref := strings.Repeat("P", 10000) + "\n" +
+		strings.Join([]string{"blaTEM", "", "", "", "", "", "", "",
+			"", "", "", "", "", "", "", "", "Ampicillin"}, "\t") + "\n"
+	path := filepath.Join(t.TempDir(), "resfinder_ref.txt")
+	if err := os.WriteFile(path, []byte(ref), 0644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
 func TestAnalysisRunnerGenome(t *testing.T) {
 	ctx := context.Background()
 
@@ -375,6 +393,9 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
 			RunUnicyclerFunc: func(_ context.Context, threads int,
 				read1, read2, spadesPath, outputDir string) (
 				string, error) {
@@ -383,8 +404,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 			RunAbricateFunc: func(_ context.Context, threads int,
 				db, input, outputFile string) error {
-				return os.WriteFile(outputFile,
-					[]byte("placeholder\n"), 0644)
+				return writeAbricateOutput(outputFile)
 			},
 		}
 
@@ -419,6 +439,9 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
 			RunUnicyclerFunc: func(_ context.Context, threads int,
 				read1, read2, spadesPath, outputDir string) (
 				string, error) {
@@ -427,8 +450,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 			RunAbricateFunc: func(_ context.Context, threads int,
 				db, input, outputFile string) error {
-				return os.WriteFile(outputFile,
-					[]byte("placeholder\n"), 0644)
+				return writeAbricateOutput(outputFile)
 			},
 		}
 
@@ -541,6 +563,104 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Contains(t, steps, models.StepCheckM)
 		assert.Empty(t, updated.Step)
 	})
+
+	t.Run("Error - ProcessResfinder", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fq1, fq2 := "r1.fq", "r2.fq"
+		fasta := "contigs.fasta"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+		mock.Sample.Fasta = &fasta
+
+		updated := (*models.Analysis)(nil)
+		var steps []models.AnalysisStep
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				steps = append(steps, analysis.Step)
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunAbricateFunc: func(_ context.Context, threads int,
+				db, input, outputFile string) error {
+				line := "file\tseq1\t1\t100\t+\tgene\t1-100/100\t=\t0/0\t95.0\t98.0\tresfinder\tAF123\tproduct"
+				return os.WriteFile(outputFile,
+					[]byte(line+"\n"), 0644)
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, steps, models.StepAbricate)
+		assert.Empty(t, updated.Step)
+	})
+
+	t.Run("Warning - CalculateCoverage", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fq1, fq2 := "r1.fq", "r2.fq"
+		fasta := "contigs.fasta"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+		mock.Sample.Fasta = &fasta
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
+			RunCheckMFunc: func(_ context.Context, threads int,
+				sample, assemblyDir, outputDir string) (
+				*pipeline.CheckMResult, error) {
+				return &pipeline.CheckMResult{
+					Completeness: "99.5", Contamination: "0.5",
+					GenomeSize: "5000000", N50: "100000",
+				}, nil
+			},
+			RunAbricateFunc: func(_ context.Context, threads int,
+				db, input, outputFile string) error {
+				return writeAbricateOutput(outputFile)
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+		assert.GreaterOrEqual(t, logs.Len(), 1)
+	})
 }
 
 func TestAnalysisRunnerComplete(t *testing.T) {
@@ -569,6 +689,9 @@ func TestAnalysisRunnerComplete(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
 			RunFastQCFunc: func(_ context.Context, read1, read2,
 				outputDir string) (string, string, error) {
 				fastqcCalled = true
@@ -576,8 +699,7 @@ func TestAnalysisRunnerComplete(t *testing.T) {
 			},
 			RunAbricateFunc: func(_ context.Context, threads int,
 				db, input, outputFile string) error {
-				return os.WriteFile(outputFile,
-					[]byte("placeholder\n"), 0644)
+				return writeAbricateOutput(outputFile)
 			},
 		}
 
