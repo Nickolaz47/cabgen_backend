@@ -23,11 +23,11 @@ func createMockAbricateFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-// fields: [5]=gene, [7]=accession, [9]=covQ, [10]=identity
-func buildAbricateLine(seqid, gene, covDb, accession, covQ, identity string) string {
-	return seqid + "\t" + "100" + "\t" + "200" + "\t" + "+" + "\t" +
-		"100/100" + "\t" + gene + "\t" + covDb + "\t" + accession + "\t" +
-		"0" + "\t" + covQ + "\t" + identity
+// fields: [0]=file, [5]=gene, [6]=coverage_range, [9]=coverage%, [10]=identity%, [11]=database, [12]=accession
+func buildAbricateLine(file, gene, database, accession, coverage, identity string) string {
+	return file + "\t" + "seq1" + "\t" + "100" + "\t" + "200" + "\t" + "+" + "\t" +
+		gene + "\t" + "1-100/100" + "\t" + "==============" + "\t" + "0/0" + "\t" +
+		coverage + "\t" + identity + "\t" + database + "\t" + accession + "\t" + "product"
 }
 
 func TestGetAbricateResult(t *testing.T) {
@@ -177,9 +177,9 @@ func TestProcessResfinder(t *testing.T) {
 		assert.Contains(t, geneResults[0], "resistance to ampicillin")
 		assert.Contains(t, geneResults[0], "allele confidence 98.0")
 		assert.Contains(t, blastResults[0], "blaTEM")
-		assert.Contains(t, blastResults[0], "ID: 98.0")
-		assert.Contains(t, blastResults[0], "COV_Q: 95.0")
-		assert.Contains(t, blastResults[0], "COV_DB: resfinder")
+		assert.Contains(t, blastResults[0], "IDENTITY: 98.0")
+		assert.Contains(t, blastResults[0], "COVERAGE: 95.0")
+		assert.Contains(t, blastResults[0], "DATABASE: resfinder")
 	})
 
 	t.Run("Success - Gene Not Found In Reference", func(t *testing.T) {
@@ -282,15 +282,16 @@ func TestProcessResfinder(t *testing.T) {
 
 func TestProcessVFDB(t *testing.T) {
 	// VFDB line needs at least 14 fields (0-13)
-	// ProcessVFDB uses fields[1], fields[5], fields[13], fields[10], fields[9], fields[6]
-	buildVFDBLine := func(locus, gene, extra, covQ, identity, covDb string) string {
+	// ProcessVFDB uses fields[1], fields[5], fields[13], fields[10], fields[9], fields[11]
+	buildVFDBLine := func(locus, gene, extra, coverage, identity, database string) string {
 		fields := make([]string, 14)
 		fields[0] = "contig1"
 		fields[1] = locus
 		fields[5] = gene
-		fields[6] = covDb
-		fields[9] = covQ
+		fields[6] = "1-100/100"
+		fields[9] = coverage
 		fields[10] = identity
+		fields[11] = database
 		fields[13] = extra
 		result := ""
 		for i, f := range fields {
@@ -313,9 +314,9 @@ func TestProcessVFDB(t *testing.T) {
 		assert.Contains(t, results[0], "VF0001")
 		assert.Contains(t, results[0], "virB4")
 		assert.Contains(t, results[0], "TypeIV secretion")
-		assert.Contains(t, results[0], "ID: 98.0")
-		assert.Contains(t, results[0], "COV_Q: 95.0")
-		assert.Contains(t, results[0], "COV_DB: vfdb")
+		assert.Contains(t, results[0], "IDENTITY: 98.0")
+		assert.Contains(t, results[0], "COVERAGE: 95.0")
+		assert.Contains(t, results[0], "DATABASE: vfdb")
 	})
 
 	t.Run("Success - Multiple Lines", func(t *testing.T) {
@@ -344,9 +345,9 @@ func TestProcessPlasmidFinder(t *testing.T) {
 		results := ProcessPlasmidFinder([]string{line})
 		assert.Len(t, results, 1)
 		assert.Contains(t, results[0], "repB")
-		assert.Contains(t, results[0], "ID: 98.0")
-		assert.Contains(t, results[0], "COV_Q: 95.0")
-		assert.Contains(t, results[0], "COV_DB: plasmidfinder")
+		assert.Contains(t, results[0], "IDENTITY: 98.0")
+		assert.Contains(t, results[0], "COVERAGE: 95.0")
+		assert.Contains(t, results[0], "DATABASE: plasmidfinder")
 	})
 
 	t.Run("Success - Multiple Lines", func(t *testing.T) {

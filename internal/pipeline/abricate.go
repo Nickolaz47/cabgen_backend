@@ -79,7 +79,7 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 		return nil, nil, errors.New("Empty Resfinder reference file")
 	}
 
-	refScanner := bufio.NewScanner(refFile)
+	refScanner := bufio.NewScanner(br)
 	for refScanner.Scan() {
 		line := strings.TrimSpace(refScanner.Text())
 		if line != "" {
@@ -94,9 +94,9 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 		}
 
 		gene := fields[5]
-		covDb := fields[6]
-		covQ := fields[9]
-		id := fields[10]
+		database := fields[11]
+		coverage := fields[9]
+		identity := fields[10]
 
 		nameGeneParts := strings.Split(gene, "_")
 		baseNameGene := nameGeneParts[0]
@@ -112,7 +112,7 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 				antibioticName := strings.ToLower(refItem[len(refItem)-17])
 				geneResults = append(geneResults, fmt.Sprintf(
 					"%s (resistance to %s) (allele confidence %s)", gene,
-					antibioticName, id))
+					antibioticName, identity))
 				foundAntibiotic = true
 				break
 			}
@@ -120,11 +120,11 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 
 		if !foundAntibiotic {
 			geneResults = append(geneResults, fmt.Sprintf(
-				"%s (allele confidence %s)", gene, id))
+				"%s (allele confidence %s)", gene, identity))
 		}
 
-		blastOut := fmt.Sprintf("%s (ID: %s COV_Q: %s COV_DB: %s)", gene, id,
-			covQ, covDb)
+		blastOut := fmt.Sprintf("%s (IDENTITY: %s COVERAGE: %s DATABASE: %s)", gene,
+			identity, coverage, database)
 		blastOutResults = append(blastOutResults, blastOut)
 	}
 
@@ -141,9 +141,9 @@ func ProcessVFDB(abricateResult []string) []string {
 		}
 
 		results = append(results,
-			fmt.Sprintf("%s: %s %s ID: %s COV_Q: %s COV_DB: %s| ",
+			fmt.Sprintf("%s: %s %s IDENTITY: %s COVERAGE: %s DATABASE: %s| ",
 				fields[1], fields[5], fields[13], fields[10], fields[9],
-				fields[6]))
+				fields[11]))
 	}
 
 	return results
@@ -159,8 +159,8 @@ func ProcessPlasmidFinder(abricateResult []string) []string {
 		}
 
 		results = append(results,
-			fmt.Sprintf("%s (ID: %s COV_Q: %s COV_DB: %s)",
-				fields[5], fields[10], fields[9], fields[6]))
+			fmt.Sprintf("%s (IDENTITY: %s COVERAGE: %s DATABASE: %s)",
+				fields[5], fields[10], fields[9], fields[11]))
 	}
 
 	return results
