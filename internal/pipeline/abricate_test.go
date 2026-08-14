@@ -169,17 +169,12 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, blastResults, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.NoError(t, err)
 		assert.Len(t, geneResults, 1)
-		assert.Len(t, blastResults, 1)
 		assert.Contains(t, geneResults[0], "blaTEM")
 		assert.Contains(t, geneResults[0], "resistance to ampicillin")
 		assert.Contains(t, geneResults[0], "allele confidence 98.0")
-		assert.Contains(t, blastResults[0], "blaTEM")
-		assert.Contains(t, blastResults[0], "IDENTITY: 98.0")
-		assert.Contains(t, blastResults[0], "COVERAGE: 95.0")
-		assert.Contains(t, blastResults[0], "DATABASE: resfinder")
 	})
 
 	t.Run("Success - Gene Not Found In Reference", func(t *testing.T) {
@@ -190,10 +185,9 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, blastResults, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.NoError(t, err)
 		assert.Len(t, geneResults, 1)
-		assert.Len(t, blastResults, 1)
 		assert.Contains(t, geneResults[0], "blaTEM")
 		assert.Contains(t, geneResults[0], "allele confidence 98.0")
 		assert.NotContains(t, geneResults[0], "resistance")
@@ -207,7 +201,7 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM_extra", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, _, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.NoError(t, err)
 		assert.Len(t, geneResults, 1)
 		assert.Contains(t, geneResults[0], "resistance to ampicillin")
@@ -217,10 +211,9 @@ func TestProcessResfinder(t *testing.T) {
 		refContent := buildRefContent("blaTEM", "Ampicillin")
 		refPath := createMockAbricateFile(t, refContent)
 
-		geneResults, blastResults, err := ProcessResfinder([]string{}, refPath)
+		geneResults, err := ProcessResfinder([]string{}, refPath)
 		assert.NoError(t, err)
 		assert.Empty(t, geneResults)
-		assert.Empty(t, blastResults)
 	})
 
 	t.Run("Success - Lines With Fewer Than 11 Fields Skipped", func(t *testing.T) {
@@ -231,10 +224,9 @@ func TestProcessResfinder(t *testing.T) {
 			"seq1\t100\t200\t+\t100/100\tblaTEM",
 		}
 
-		geneResults, blastResults, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.NoError(t, err)
 		assert.Empty(t, geneResults)
-		assert.Empty(t, blastResults)
 	})
 
 	t.Run("Error - Empty Reference File", func(t *testing.T) {
@@ -244,10 +236,9 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, blastResults, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.Error(t, err)
 		assert.Nil(t, geneResults)
-		assert.Nil(t, blastResults)
 		assert.Contains(t, err.Error(), "Empty Resfinder reference file")
 	})
 
@@ -256,10 +247,9 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, blastResults, err := ProcessResfinder(abricateResult, "nonexistent.txt")
+		geneResults, err := ProcessResfinder(abricateResult, "nonexistent.txt")
 		assert.Error(t, err)
 		assert.Nil(t, geneResults)
-		assert.Nil(t, blastResults)
 		assert.Contains(t, err.Error(), "Failed to open Resfinder reference file")
 	})
 
@@ -272,7 +262,7 @@ func TestProcessResfinder(t *testing.T) {
 			buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123", "95.0", "98.0"),
 		}
 
-		geneResults, _, err := ProcessResfinder(abricateResult, refPath)
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
 		assert.NoError(t, err)
 		assert.Len(t, geneResults, 1)
 		assert.Contains(t, geneResults[0], "allele confidence")

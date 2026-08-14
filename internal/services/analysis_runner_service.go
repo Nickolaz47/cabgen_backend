@@ -283,7 +283,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 
 		switch db {
 		case "resfinder":
-			genes, blast, err := pipeline.ProcessResfinder(rawResult,
+			genes, err := pipeline.ProcessResfinder(rawResult,
 				s.Pipeline.GetConfig().ResfinderDBPath)
 			if err != nil {
 				s.Logger.Error(fmt.Sprintf(
@@ -295,8 +295,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					)...)
 				return pipeline.ErrAbricate
 			}
-			results.ResfinderGenes = genes
-			results.ResfinderBlast = blast
+			results.AcquiredResistance = genes
 		case "vfdb":
 			results.VFDB = pipeline.ProcessVFDB(rawResult)
 		case "plasmidfinder":

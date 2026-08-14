@@ -29,10 +29,9 @@ func TestGenerateMetricsTSV(t *testing.T) {
 			"mlst": "ST502",
 			"poli_mutations": ["blaOXA-23", "blaOXA-51"],
 			"other_mutations": ["gyrA_S83L"],
-			"gene": ["blaOXA-23", "armA"],
-			"resfinder": ["blaOXA-23"],
-			"vfdb": ["abaum_A"],
-			"plasmid": ["IncHI2"]
+		"acquired_resistance": ["blaOXA-23", "armA"],
+		"vfdb": ["abaum_A"],
+		"plasmid": ["IncHI2"]
 		}`)
 		analyses := []models.AnalysisResponse{{Metrics: metrics}}
 
@@ -40,8 +39,8 @@ func TestGenerateMetricsTSV(t *testing.T) {
 
 		assert.NoError(t, err)
 		body := string(result)
-		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tgene\tresfinder\tvfdb\tplasmid")
-		assert.Contains(t, body, "\t30.5\t95.89\t1.23\t4500000\t12000\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tblaOXA-23\tabaum_A\tIncHI2")
+		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tacquired_resistance\tvfdb\tplasmid")
+		assert.Contains(t, body, "\t30.5\t95.89\t1.23\t4500000\t12000\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tabaum_A\tIncHI2")
 	})
 
 	t.Run("Success - Single item with empty metrics", func(t *testing.T) {
@@ -52,8 +51,8 @@ func TestGenerateMetricsTSV(t *testing.T) {
 		assert.NoError(t, err)
 		body := string(result)
 		assert.Contains(t, body, "coverage\tcompleteness")
-		// Empty row with 15 tab-separated empty cells
-		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
+		// Empty row with 14 tab-separated empty cells
+		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
 	})
 
 	t.Run("Success - Multiple items", func(t *testing.T) {
@@ -76,7 +75,7 @@ func TestGenerateMetricsTSV(t *testing.T) {
 
 	t.Run("Success - Array fields joined with comma", func(t *testing.T) {
 		metrics := datatypes.JSON(`{
-			"gene": ["blaOXA-23", "armA", "blaNDM-1"],
+			"acquired_resistance": ["blaOXA-23", "armA", "blaNDM-1"],
 			"poli_mutations": ["mut1"]
 		}`)
 		analyses := []models.AnalysisResponse{{Metrics: metrics}}

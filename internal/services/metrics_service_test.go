@@ -25,7 +25,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockDone := testmodels.CreateMockAnalysis()
 		mockDone.Status = models.AnalysisStatusDone
-		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","gene":["blaOXA-23"]}`)
+		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","acquired_resistance":["blaOXA-23"]}`)
 
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSamplesFunc: func(ctx context.Context, input string,
@@ -100,10 +100,10 @@ func TestMetricsGetMetrics(t *testing.T) {
 	t.Run("Success - Aggregates Species and Genes", func(t *testing.T) {
 		mockDone := testmodels.CreateMockAnalysis()
 		mockDone.Status = models.AnalysisStatusDone
-		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","gene":["blaOXA-23","armA"]}`)
+		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","acquired_resistance":["blaOXA-23","armA"]}`)
 		mockDuplicate := testmodels.CreateMockAnalysis()
 		mockDuplicate.Status = models.AnalysisStatusDone
-		mockDuplicate.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","gene":["blaOXA-23"]}`)
+		mockDuplicate.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","acquired_resistance":["blaOXA-23"]}`)
 		mockInvalid := testmodels.CreateMockAnalysis()
 		mockInvalid.Status = models.AnalysisStatusDone
 		mockInvalid.Metrics = []byte(`{"primary_species":`)
@@ -140,10 +140,10 @@ func TestMetricsGetMetrics(t *testing.T) {
 	t.Run("Non-Done Analyses Excluded", func(t *testing.T) {
 		mockDone := testmodels.CreateMockAnalysis()
 		mockDone.Status = models.AnalysisStatusDone
-		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","gene":["blaOXA-23"]}`)
+		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","acquired_resistance":["blaOXA-23"]}`)
 		mockPending := testmodels.CreateMockAnalysis()
 		mockPending.Status = models.AnalysisStatusPending
-		mockPending.Metrics = []byte(`{"primary_species":"Other","gene":["x"]}`)
+		mockPending.Metrics = []byte(`{"primary_species":"Other","acquired_resistance":["x"]}`)
 		mockEmptyResult := testmodels.CreateMockAnalysis()
 		mockEmptyResult.Status = models.AnalysisStatusDone
 		mockEmptyResult.Metrics = []byte(`{}`)

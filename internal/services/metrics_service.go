@@ -167,7 +167,7 @@ func uniqueSpeciesResults(analyses []models.Analysis) (map[string]struct{}, map[
 		if results.PrimarySpeciesName != "" {
 			species[results.PrimarySpeciesName] = struct{}{}
 		}
-		for _, gene := range results.ResfinderGenes {
+		for _, gene := range results.AcquiredResistance {
 			if gene != "" {
 				genes[gene] = struct{}{}
 			}

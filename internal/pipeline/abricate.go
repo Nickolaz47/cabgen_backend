@@ -61,14 +61,13 @@ func GetAbricateResult(filePath string) ([]string, error) {
 }
 
 func ProcessResfinder(abricateResult []string, refCatalogPath string) (
-	[]string, []string, error) {
+	[]string, error) {
 	var geneResults []string
-	var blastOutResults []string
 	var refList [][]string
 
 	refFile, err := os.Open(refCatalogPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"Failed to open Resfinder reference file:%v", err)
 	}
 	defer refFile.Close()
@@ -76,7 +75,7 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 	br := bufio.NewReader(refFile)
 	_, err = br.Peek(1)
 	if err == io.EOF {
-		return nil, nil, errors.New("Empty Resfinder reference file")
+		return nil, errors.New("Empty Resfinder reference file")
 	}
 
 	refScanner := bufio.NewScanner(br)
@@ -94,8 +93,6 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 		}
 
 		gene := fields[5]
-		database := fields[11]
-		coverage := fields[9]
 		identity := fields[10]
 
 		nameGeneParts := strings.Split(gene, "_")
@@ -122,13 +119,9 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 			geneResults = append(geneResults, fmt.Sprintf(
 				"%s (allele confidence %s)", gene, identity))
 		}
-
-		blastOut := fmt.Sprintf("%s (IDENTITY: %s COVERAGE: %s DATABASE: %s)", gene,
-			identity, coverage, database)
-		blastOutResults = append(blastOutResults, blastOut)
 	}
 
-	return geneResults, blastOutResults, nil
+	return geneResults, nil
 }
 
 func ProcessVFDB(abricateResult []string) []string {

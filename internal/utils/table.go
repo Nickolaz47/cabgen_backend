@@ -13,7 +13,7 @@ import (
 var metricsHeaders = []string{
 	"origin_code", "coverage", "completeness", "contamination", "genome_size",
 	"n50", "primary_species", "secondary_species", "mlst", "poli_mutations",
-	"other_mutations", "gene", "resfinder", "vfdb", "plasmid",
+	"other_mutations", "acquired_resistance", "vfdb", "plasmid",
 }
 
 func GenerateMetricsTSV(analyses []models.AnalysisResponse) ([]byte, error) {
@@ -46,8 +46,7 @@ func GenerateMetricsTSV(analyses []models.AnalysisResponse) ([]byte, error) {
 			r.MLST,
 			strings.Join(r.PoliMutations, ","),
 			strings.Join(r.OtherMutations, ","),
-			strings.Join(r.ResfinderGenes, ","),
-			strings.Join(r.ResfinderBlast, ","),
+			strings.Join(r.AcquiredResistance, ","),
 			strings.Join(r.VFDB, ","),
 			strings.Join(r.PlasmidFinder, ","),
 		}

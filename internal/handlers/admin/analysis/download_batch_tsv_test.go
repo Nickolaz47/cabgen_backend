@@ -57,14 +57,13 @@ func TestDownloadBatchTSV(t *testing.T) {
 			w.Header().Get("Content-Disposition"))
 		body := w.Body.String()
 
-		assert.Contains(t, body, "coverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tgene\tresfinder\tvfdb\tplasmid")
+		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tacquired_resistance\tvfdb\tplasmid")
 		assert.Contains(t, body, "30.5")
 		assert.Contains(t, body, "95.89")
 		assert.Contains(t, body, "1.23")
 		assert.Contains(t, body, "Acinetobacter sp")
 		assert.Contains(t, body, "ST502")
 		assert.Contains(t, body, "blaOXA-23")
-		assert.Contains(t, body, "blaOXA-23,armA")
 	})
 
 	t.Run("Error - Bad Request", func(t *testing.T) {

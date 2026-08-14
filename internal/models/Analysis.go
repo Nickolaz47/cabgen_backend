@@ -146,10 +146,9 @@ type AnalysisResults struct {
 	OtherMutations []string `json:"other_mutations,omitempty"`
 
 	// --- Virulence (Abricate) ---
-	ResfinderGenes []string `json:"gene,omitempty"`
-	ResfinderBlast []string `json:"resfinder,omitempty"`
-	VFDB           []string `json:"vfdb,omitempty"`
-	PlasmidFinder  []string `json:"plasmid,omitempty"`
+	AcquiredResistance []string `json:"acquired_resistance,omitempty"`
+	VFDB               []string `json:"vfdb,omitempty"`
+	PlasmidFinder      []string `json:"plasmid,omitempty"`
 }
 
 type Analysis struct {
