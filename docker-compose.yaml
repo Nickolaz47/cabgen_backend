@@ -56,6 +56,7 @@ services:
       - .env
     environment:
       - DB_HOST=database
+      - TERM=xterm
     depends_on:
       database:
         condition: service_healthy

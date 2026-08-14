@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
@@ -26,6 +27,32 @@ func main() {
 	// Load env
 	if err := config.LoadEnvVariables(""); err != nil {
 		log.Fatal(err)
+	}
+
+	// Fail fast: refuse to start without all DB paths configured
+	dbPaths := []struct{ name, path string }{
+		{"RESFINDER_DB_PATH", config.ResfinderDBPath},
+		{"KRAKEN_DB_PATH", config.KrakenDBPath},
+		{"CHECKM_DATA_PATH", os.Getenv("CHECKM_DATA_PATH")},
+		{"POLI_DB_PSEUDO", config.PoliDbPseudo},
+		{"POLI_DB_KLEB", config.PoliDbKleb},
+		{"POLI_DB_ENTERO", config.PoliDbEntero},
+		{"POLI_DB_ACINETO", config.PoliDbAcineto},
+		{"OTHER_DB_PSEUDO", config.OtherDbPseudo},
+		{"OTHER_DB_KLEB", config.OtherDbKleb},
+		{"OTHER_DB_ENTERO", config.OtherDbEntero},
+		{"OTHER_DB_ACINETO", config.OtherDbAcineto},
+		{"FASTANI_LIST_KLEB", config.FastaniListKleb},
+		{"FASTANI_LIST_ENTERO", config.FastaniListEntero},
+		{"FASTANI_LIST_ACINETO", config.FastaniListAcineto},
+	}
+	for _, db := range dbPaths {
+		if db.path == "" {
+			log.Fatalf("%s is not configured; refusing to start", db.name)
+		}
+		if _, err := os.Stat(db.path); err != nil {
+			log.Fatalf("%s: path %s not accessible: %v", db.name, db.path, err)
+		}
 	}
 
 	// Setup database
