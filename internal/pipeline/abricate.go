@@ -134,9 +134,8 @@ func ProcessVFDB(abricateResult []string) []string {
 		}
 
 		results = append(results,
-			fmt.Sprintf("%s: %s %s IDENTITY: %s COVERAGE: %s DATABASE: %s| ",
-				fields[1], fields[5], fields[13], fields[10], fields[9],
-				fields[11]))
+			fmt.Sprintf("%s: %s (%s)",
+				fields[1], fields[5], fields[13]))
 	}
 
 	return results

@@ -301,12 +301,7 @@ func TestProcessVFDB(t *testing.T) {
 		line := buildVFDBLine("VF0001", "virB4", "TypeIV secretion", "95.0", "98.0", "vfdb")
 		results := ProcessVFDB([]string{line})
 		assert.Len(t, results, 1)
-		assert.Contains(t, results[0], "VF0001")
-		assert.Contains(t, results[0], "virB4")
-		assert.Contains(t, results[0], "TypeIV secretion")
-		assert.Contains(t, results[0], "IDENTITY: 98.0")
-		assert.Contains(t, results[0], "COVERAGE: 95.0")
-		assert.Contains(t, results[0], "DATABASE: vfdb")
+		assert.Equal(t, "VF0001: virB4 (TypeIV secretion)", results[0])
 	})
 
 	t.Run("Success - Multiple Lines", func(t *testing.T) {

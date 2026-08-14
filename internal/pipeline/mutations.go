@@ -95,9 +95,9 @@ func (f *mutationFinder) findMutation(mutations []string) (
 
 			if float64(identitiesTotal) < (float64(subjectLength)/100.0)*90.0 &&
 				percentualIdentity > 80 {
-				mutation := fmt.Sprintf(
-					"%s truncation: %d/%d,", subject, identitiesTotal,
-					subjectLength)
+								mutation := fmt.Sprintf(
+									"%s truncation: %d/%d", subject,
+									identitiesTotal, subjectLength)
 				foundMutations = append(foundMutations, mutation)
 			}
 			continue
@@ -155,9 +155,9 @@ func (f *mutationFinder) findMutation(mutations []string) (
 							if mutationsMap[subject] && queryAA != subjectAA {
 								if float64(identitiesTotal) > (float64(
 									subjectLength)/100.0)*90.0 {
-									mutation := fmt.Sprintf(
-										"%s:%s%d%s,", subject, subjectAA,
-										position, queryAA)
+								mutation := fmt.Sprintf(
+									"%s:%s%d%s", subject, subjectAA,
+									position, queryAA)
 									foundMutations = append(foundMutations,
 										mutation)
 								}

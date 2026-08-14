@@ -59,8 +59,8 @@ Identities = 85/85 (85%)
 		res, err := finder.findMutation([]string{"GyrA", "PmrA"})
 		assert.NoError(t, err)
 		assert.Len(t, res, 2)
-		assert.Contains(t, res, "GyrA:A3C,")
-		assert.Contains(t, res, "PmrA truncation: 85/100,")
+		assert.Contains(t, res, "GyrA:A3C")
+		assert.Contains(t, res, "PmrA truncation: 85/100")
 	})
 
 	t.Run("Error - Empty File", func(t *testing.T) {
@@ -89,8 +89,8 @@ func TestAcinetoMutations(t *testing.T) {
 	other, poli, err := finder.FindAcinetoMutations()
 
 	assert.NoError(t, err)
-	assert.Contains(t, other, "GyrA:A3C,")
-	assert.Contains(t, poli, "PmrA:A3C,")
+	assert.Contains(t, other, "GyrA:A3C")
+	assert.Contains(t, poli, "PmrA:A3C")
 }
 
 func TestEcloacaeMutations(t *testing.T) {
@@ -100,8 +100,8 @@ func TestEcloacaeMutations(t *testing.T) {
 	other, poli, err := finder.FindEcloacaeMutations()
 
 	assert.NoError(t, err)
-	assert.Contains(t, other, "GyrA:A3C,")
-	assert.Contains(t, poli, "PmrA:A3C,")
+	assert.Contains(t, other, "GyrA:A3C")
+	assert.Contains(t, poli, "PmrA:A3C")
 }
 
 func TestKlebMutations(t *testing.T) {
@@ -111,8 +111,8 @@ func TestKlebMutations(t *testing.T) {
 	other, poli, err := finder.FindKlebMutations()
 
 	assert.NoError(t, err)
-	assert.Contains(t, other, "GyrA:A3C,")
-	assert.Contains(t, poli, "PmrA:A3C,")
+	assert.Contains(t, other, "GyrA:A3C")
+	assert.Contains(t, poli, "PmrA:A3C")
 }
 
 func TestPseudoMutations(t *testing.T) {
@@ -122,6 +122,6 @@ func TestPseudoMutations(t *testing.T) {
 	other, poli, err := finder.FindPseudoMutations()
 
 	assert.NoError(t, err)
-	assert.Contains(t, other, "GyrA:A3C,")
-	assert.Contains(t, poli, "PmrA:A3C,")
+	assert.Contains(t, other, "GyrA:A3C")
+	assert.Contains(t, poli, "PmrA:A3C")
 }

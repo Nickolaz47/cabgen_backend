@@ -264,8 +264,8 @@ func TestProcessSpecies(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, "Acinetobacter baumannii", result.DisplayName)
-		assert.Contains(t, result.OtherMutations, "GyrA:A3C,")
-		assert.Contains(t, result.PoliMutations, "PmrA:A3C,")
+		assert.Contains(t, result.OtherMutations, "GyrA:A3C")
+		assert.Contains(t, result.PoliMutations, "PmrA:A3C")
 	})
 
 	t.Run("Success - Klebsiella Finds Mutations", func(t *testing.T) {
@@ -281,7 +281,7 @@ func TestProcessSpecies(t *testing.T) {
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Klebsiella pneumoniae", "contigs.fa", outDir)
 		assert.NoError(t, err)
-		assert.Contains(t, result.OtherMutations, "GyrA:A3C,")
+		assert.Contains(t, result.OtherMutations, "GyrA:A3C")
 	})
 
 	t.Run("Success - Single Word Species Name", func(t *testing.T) {
