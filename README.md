@@ -12,8 +12,16 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 3. [Instalação](#instalação)
 4. [Configuração](#configuração)
 5. [Executando a API](#executando-a-api)
-6. [Endpoints](#endpoints)
+6. [Seed](#seed)
 7. [Internacionalização (i18n)](#internacionalização-i18n)
+8. [Formato das Respostas e Códigos HTTP](#formato-das-respostas-e-códigos-http)
+9. [Endpoints](#endpoints)
+10. [Organização do Diretório de Uploads](#organização-do-diretório-de-uploads)
+11. [Testes](#testes)
+12. [Padrões de Código](#padrões-de-código)
+13. [Middlewares](#middlewares)
+14. [Banco de Dados](#banco-de-dados)
+15. [Workers Assíncronos](#workers-assíncronos)
 
 ## Tecnologias
 
@@ -339,7 +347,6 @@ Os endpoints estão organizados em três níveis de acesso:
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
 | GET | `/api/countries` | Lista todos os países |
-| GET | `/api/countries/:code` | Retorna um país específico |
 
 #### Contato
 
@@ -355,7 +362,7 @@ Os endpoints estão organizados em três níveis de acesso:
 
 ### Common
 
-#### Auth
+#### Autenticação
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
@@ -570,6 +577,112 @@ uploads/
 - **`amr/`**: resultados de resistência, virulência, plasmídeos, MLST e mutações pontuais (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
 - **`report/`**: relatório final consolidado com os resultados clinicamente relevantes.
 - **`logs/`**: logs de execução do pipeline.
+
+## Testes
+
+### Executando Testes
+
+```bash
+# Executar todos os testes
+go test ./...
+
+# Executar com output verbose
+go test -v ./...
+
+# Executar pacote específico
+go test ./internal/services/...
+```
+
+### Padrões de Teste
+
+- **Table-driven tests**: testes parametrizados com slices de structs de caso
+- **Mocks**: localizados em `internal/testutils/mocks/`
+- **Test data factories**: builders de modelos em `internal/testutils/models/`
+- **Test context helpers**: funções utilitárias em `internal/testutils/` para criação de contextos Gin e requests de teste
+- **Banco de dados**: SQLite in-memory para testes de integração, sem dependência de PostgreSQL
+
+## Padrões de Código
+
+### Arquitetura
+
+O código segue arquitetura em camadas:
+
+```
+model -> repository -> service -> handler -> route
+```
+
+Cada camada tem uma responsabilidade única e depende apenas da camada imediatamente abaixo.
+
+### Tratamento de Erros
+
+- Services retornam **sentinel errors** (ex: `ErrNotFound`, `ErrConflict`)
+- Handlers mapeiam erros via `errors.Is()` para códigos de status HTTP apropriados
+
+### Validação
+
+- **Validação de entrada**: [go-playground/validator](https://github.com/go-playground/validator) via struct tags
+- **Sanitização**: [go-sanitize](https://github.com/mrz1836/go-sanitize) para limpeza de entrada do usuário
+
+### Formato de Resposta
+
+Todas as respostas utilizam o struct `responses.APIResponse`:
+
+```go
+type APIResponse struct {
+    Error   string `json:"error,omitempty"`
+    Message string `json:"message,omitempty"`
+    Data    any    `json:"data,omitempty"`
+}
+```
+
+O campo `Message` utiliza IDs de mensagens do sistema de i18n.
+
+### Internacionalização (i18n)
+
+- Biblioteca: [go-i18n](https://github.com/nicksnyder/go-i18n)
+- Idiomas suportados: `pt-BR`, `en-US`, `es-ES`
+- Detecção via header `Accept-Language`
+- Idioma padrão: `en-US`
+
+## Middlewares
+
+| Middleware | Descrição |
+| --- | --- |
+| `AuthMiddleware` | Valida JWT de cookies e injeta o usuário no contexto |
+| `AdminMiddleware` | Verifica se o usuário autenticado tem papel de administrador |
+| `LoggerMiddleware` | Registra detalhes da requisição no console e em arquivo |
+| `I18nMiddleware` | Detecta o idioma pelo header `Accept-Language` e injeta o localizer no contexto |
+
+## Banco de Dados
+
+- **Produção**: PostgreSQL
+- **Testes**: SQLite in-memory
+- **ORM**: [GORM](https://gorm.io/) com AutoMigrate (sem migrações manuais)
+- **Seed**: dados iniciais carregados automaticamente a partir de arquivos JSON no diretório `jsons/` na inicialização (somente se a tabela estiver vazia)
+
+### Models
+
+User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest
+
+## Workers Assíncronos
+
+- **Fila de tarefas**: [Redis](https://redis.io/) com [Asynq](https://github.com/hibiken/asynq)
+- **Containers**: workers rodam em containers separados via Docker Compose
+
+### Workers Disponíveis
+
+| Worker | Descrição |
+| --- | --- |
+| `worker-email` | Envia emails de forma assíncrona (ativação de conta, redefinição de senha, atualização de email) |
+| `worker-analysis` | Executa o pipeline bioinformático nas amostras |
+
+### Ferramentas do Pipeline de Análise
+
+FastQC, Unicycler, SPAdes, Prokka, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
+
+### Docker Compose
+
+Os workers rodam em containers separados junto com a API. Veja `docker-compose.yaml` para a configuração completa.
 
 ## TODO
 

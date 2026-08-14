@@ -12,8 +12,16 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 3. [Installation](#installation)
 4. [Configuration](#configuration)
 5. [Running the API](#running-the-api)
-6. [Endpoints](#endpoints)
+6. [Seeding](#seeding)
 7. [Internationalization (i18n)](#internationalization-i18n)
+8. [Response Format and HTTP Status Codes](#response-format-and-http-status-codes)
+9. [Endpoints](#endpoints)
+10. [Uploads Directory Organization](#uploads-directory-organization)
+11. [Tests](#tests)
+12. [Code Standards](#code-standards)
+13. [Middlewares](#middlewares)
+14. [Database](#database)
+15. [Async Workers](#async-workers)
 
 ## Technologies
 
@@ -264,15 +272,25 @@ The API uses a standardized response format:
 
 #### **data**
 
-Used to return API data. Present in `GET` responses, resource creation (`POST`), and updates (`PUT`).
+Used to return API data.
+Present in the following cases:
+
+- Read responses (`GET`)
+- Resource creation (`POST`)
+- Resource updates (`PUT`)
 
 #### **message**
 
-Used for informative success messages. Primarily present in resource creation (`POST`) and deletion (`DELETE`).
+Used for informative success messages.
+Present mainly in:
+
+- Resource creation (`POST`)
+- Resource deletion (`DELETE`)
 
 #### **error**
 
-Present **exclusively** when an error occurs. Contains a descriptive message of the problem.
+Present **exclusively** when an error occurs during request processing.
+Contains a descriptive message of the problem.
 
 ### Behavior by HTTP Method
 
@@ -328,7 +346,6 @@ Endpoints are organized into three access levels:
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/countries` | Lists all countries |
-| GET | `/api/countries/:code` | Returns a specific country |
 
 #### Contact
 
@@ -559,3 +576,109 @@ uploads/
 - **`amr/`**: resistance, virulence, plasmid, MLST, and point mutation results (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
 - **`report/`**: consolidated final report with the clinically relevant results.
 - **`logs/`**: pipeline execution logs.
+
+## Tests
+
+### Running Tests
+
+```bash
+# Run all tests
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run a specific package
+go test ./internal/services/...
+```
+
+### Testing Patterns
+
+- **Table-driven tests**: data-driven test cases using test tables
+- **Mocks**: mock implementations in `internal/testutils/mocks/`
+- **Test data factories**: factory functions in `internal/testutils/models/`
+- **Context helpers**: test utilities in `internal/testutils/`
+- **Database tests**: SQLite in-memory for fast, isolated database testing
+
+## Code Standards
+
+### Architecture
+
+The project follows a layered architecture:
+
+```
+model -> repository -> service -> handler -> route
+```
+
+Each layer has a single responsibility and depends only on the layer below it.
+
+### Error Handling
+
+- Services return **sentinel errors** (e.g., `ErrNotFound`, `ErrConflict`)
+- Handlers use `errors.Is()` to map sentinel errors to appropriate HTTP status codes
+
+### Validation
+
+- **Input validation**: [go-playground/validator](https://github.com/go-playground/validator) via struct tags
+- **Sanitization**: [go-sanitize](https://github.com/mrz1836/go-sanitize) for cleaning user input
+
+### Response Format
+
+All API responses follow the `APIResponse` struct:
+
+```go
+type APIResponse struct {
+    Error   string `json:"error,omitempty"`
+    Message string `json:"message,omitempty"`
+    Data    any    `json:"data,omitempty"`
+}
+```
+
+Messages use i18n message IDs for translation.
+
+### Internationalization (i18n)
+
+- Library: [go-i18n](https://github.com/nicksnyder/go-i18n)
+- Supported languages: `pt-BR`, `en-US`, `es-ES`
+- Detection: `Accept-Language` header
+- Default language: `en-US`
+
+## Middlewares
+
+| Middleware | Description |
+| --- | --- |
+| `AuthMiddleware` | Validates JWT from cookies and injects user into context |
+| `AdminMiddleware` | Checks if the authenticated user has admin role |
+| `LoggerMiddleware` | Logs request details to console and file |
+| `I18nMiddleware` | Detects language from `Accept-Language` header and injects localizer into context |
+
+## Database
+
+- **Production**: PostgreSQL
+- **Tests**: SQLite in-memory
+- **ORM**: [GORM](https://gorm.io/) with `AutoMigrate` (no manual migrations)
+- **Seed data**: loaded from JSON files in `jsons/` on startup (only if table is empty)
+
+### Models
+
+User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest
+
+## Async Workers
+
+- **Task queue**: [Redis](https://redis.io/) with [Asynq](https://github.com/hibiken/asynq)
+- **Containers**: workers run in separate containers via Docker Compose
+
+### Workers
+
+| Worker | Description |
+| --- | --- |
+| `worker-email` | Sends emails asynchronously (account activation, password reset, email update) |
+| `worker-analysis` | Runs bioinformatics pipeline on samples |
+
+### Bioinformatics Tools
+
+FastQC, Unicycler, SPAdes, Prokka, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
+
+### Docker Compose
+
+Workers run in separate containers alongside the API. See `docker-compose.yaml` for the full setup.
