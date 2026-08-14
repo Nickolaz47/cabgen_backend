@@ -11,8 +11,8 @@ import (
 )
 
 var metricsHeaders = []string{
-	"coverage", "completeness", "contamination", "genome_size", "n50",
-	"primary_species", "secondary_species", "mlst", "poli_mutations",
+	"origin_code", "coverage", "completeness", "contamination", "genome_size",
+	"n50", "primary_species", "secondary_species", "mlst", "poli_mutations",
 	"other_mutations", "gene", "resfinder", "vfdb", "plasmid",
 }
 
@@ -35,6 +35,7 @@ func GenerateMetricsTSV(analyses []models.AnalysisResponse) ([]byte, error) {
 			_ = json.Unmarshal(a.Metrics, &r)
 		}
 		row := []string{
+			a.Sample,
 			formatTSVValue(r.Coverage),
 			r.CheckMCompleteness,
 			r.CheckMContamination,
