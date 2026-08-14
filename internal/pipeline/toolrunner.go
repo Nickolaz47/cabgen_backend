@@ -202,10 +202,35 @@ func (r *toolRunner) Run(ctx context.Context, args []string) (string, error) {
 	cmd.SetStderr(&stderr)
 
 	if err := cmd.Run(); err != nil {
+		stderrStr := stderr.String()
+		if userErr := classifyToolError(stderrStr); userErr != nil {
+			return "", fmt.Errorf(
+				"%w: command '%s' failed. Output: %s. Error: %s",
+				userErr, strings.Join(args, " "), stdout.String(), stderrStr)
+		}
 		return "", fmt.Errorf(
 			"Command '%s' failed with return code %w. Output: %s. Error: %s",
-			strings.Join(args, " "), err, stdout.String(), stderr.String())
+			strings.Join(args, " "), err, stdout.String(), stderrStr)
 	}
 
 	return stdout.String(), nil
+}
+
+func classifyToolError(stderr string) error {
+	s := strings.ToLower(stderr)
+	switch {
+	case strings.Contains(s, "no such file or directory"):
+		return ErrFileNotFound
+	case strings.Contains(s, "corrupt"),
+		strings.Contains(s, "truncated"):
+		return ErrCorruptedInput
+	case strings.Contains(s, "invalid") &&
+		(strings.Contains(s, "format") ||
+			strings.Contains(s, "file") ||
+			strings.Contains(s, "fastq") ||
+			strings.Contains(s, "fasta")):
+		return ErrInvalidFormat
+	default:
+		return nil
+	}
 }

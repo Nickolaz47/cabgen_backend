@@ -18,22 +18,22 @@ import (
 )
 
 type AnalysisService interface {
-	FindAll(ctx context.Context, userID uuid.UUID) (
+	FindAll(ctx context.Context, userID uuid.UUID, language string) (
 		[]models.AnalysisResponse, error)
-	FindByID(ctx context.Context, analysisID, userID uuid.UUID) (
-		*models.AnalysisResponse, error)
+	FindByID(ctx context.Context, analysisID, userID uuid.UUID,
+		language string) (*models.AnalysisResponse, error)
 	FindManyByIDs(ctx context.Context, analysisIDs []uuid.UUID,
-		userID uuid.UUID) ([]models.AnalysisResponse, error)
-	Create(ctx context.Context, input models.AnalysisCreateDTO) (
-		*models.AnalysisResponse, error)
+		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
+	Create(ctx context.Context, input models.AnalysisCreateDTO,
+		language string) (*models.AnalysisResponse, error)
 	Update(ctx context.Context, analysisID uuid.UUID,
-		input models.AdminAnalysisUpdateInput) (
+		input models.AdminAnalysisUpdateInput, language string) (
 		*models.AnalysisResponse, error)
 	Delete(ctx context.Context, analysisID, userID uuid.UUID) error
 	DownloadZip(ctx context.Context, analysisID, userID uuid.UUID) (string,
 		error)
 	DownloadBatchTSV(ctx context.Context, analysisIDs []uuid.UUID,
-		userID uuid.UUID) ([]models.AnalysisResponse, error)
+		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
 }
 
 type analysisService struct {
@@ -74,8 +74,8 @@ func (s *analysisService) getAnalysisFolderPath(
 	)
 }
 
-func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID) (
-	[]models.AnalysisResponse, error) {
+func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
+	language string) ([]models.AnalysisResponse, error) {
 	analyses, err := s.Repo.GetAnalyses(ctx, userID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
@@ -87,14 +87,14 @@ func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID) (
 
 	responses := make([]models.AnalysisResponse, len(analyses))
 	for i, analysis := range analyses {
-		responses[i] = analysis.ToResponse()
+		responses[i] = analysis.ToResponse(language)
 	}
 
 	return responses, nil
 }
 
 func (s *analysisService) FindManyByIDs(ctx context.Context,
-	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if len(analysisIDs) > models.AnalysesByBatch {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
@@ -119,13 +119,13 @@ func (s *analysisService) FindManyByIDs(ctx context.Context,
 
 	var responses []models.AnalysisResponse
 	for _, a := range analyses {
-		responses = append(responses, a.ToResponse())
+		responses = append(responses, a.ToResponse(language))
 	}
 	return responses, nil
 }
 
 func (s *analysisService) FindByID(ctx context.Context, analysisID,
-	userID uuid.UUID) (
+	userID uuid.UUID, language string) (
 	*models.AnalysisResponse, error) {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -149,12 +149,12 @@ func (s *analysisService) FindByID(ctx context.Context, analysisID,
 		return nil, ErrUnauthorized
 	}
 
-	response := analysis.ToResponse()
+	response := analysis.ToResponse(language)
 	return &response, nil
 }
 
 func (s *analysisService) Create(ctx context.Context,
-	input models.AnalysisCreateDTO) (
+	input models.AnalysisCreateDTO, language string) (
 	*models.AnalysisResponse, error) {
 	sample, err := s.SampleRepo.GetSampleByID(ctx, input.SampleID)
 	if err != nil {
@@ -274,12 +274,12 @@ func (s *analysisService) Create(ctx context.Context,
 		}
 	}
 
-	response := analysis.ToResponse()
+	response := analysis.ToResponse(language)
 	return &response, nil
 }
 
 func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
-	input models.AdminAnalysisUpdateInput) (
+	input models.AdminAnalysisUpdateInput, language string) (
 	*models.AnalysisResponse, error) {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -333,7 +333,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 		}
 	}
 
-	response := analysis.ToResponse()
+	response := analysis.ToResponse(language)
 	return &response, nil
 }
 
@@ -437,7 +437,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 }
 
 func (s *analysisService) DownloadBatchTSV(ctx context.Context,
-	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if len(analysisIDs) > models.AnalysesByBatch {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
@@ -472,7 +472,7 @@ func (s *analysisService) DownloadBatchTSV(ctx context.Context,
 
 	var responses []models.AnalysisResponse
 	for _, a := range analyses {
-		responses = append(responses, a.ToResponse())
+		responses = append(responses, a.ToResponse(language))
 	}
 	return responses, nil
 }

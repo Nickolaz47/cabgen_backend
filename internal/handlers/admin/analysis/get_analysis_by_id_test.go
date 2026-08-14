@@ -20,12 +20,12 @@ func TestGetAnalysisByID(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToResponse("en")
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
@@ -72,7 +72,7 @@ func TestGetAnalysisByID(t *testing.T) {
 	t.Run("Error - Not found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				*models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
@@ -98,7 +98,7 @@ func TestGetAnalysisByID(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},

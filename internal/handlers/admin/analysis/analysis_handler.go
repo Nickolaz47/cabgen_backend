@@ -28,8 +28,9 @@ func NewAdminAnalysisHandler(svc services.AnalysisService,
 
 func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
-	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil)
+	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -43,6 +44,7 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
@@ -53,7 +55,7 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil)
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -67,6 +69,7 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	var newAnalysis models.AdminAnalysisCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newAnalysis); !valid {
@@ -83,7 +86,7 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	}
 
 	payload := models.AnalysisCreateDTO(newAnalysis)
-	analysis, err := h.Service.Create(c.Request.Context(), payload)
+	analysis, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -101,6 +104,7 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
@@ -126,7 +130,7 @@ func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 	}
 
 	analysisUpdated, err := h.Service.Update(c.Request.Context(),
-		id, updateInput)
+		id, updateInput, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -191,6 +195,7 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	var downloadInput models.AnalysisTSVDownloadInput
 	if errMsg, valid := validations.Validate(c, localizer,
@@ -200,7 +205,7 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	}
 
 	analyses, err := h.Service.DownloadBatchTSV(c.Request.Context(),
-		downloadInput.IDs, uuid.Nil)
+		downloadInput.IDs, uuid.Nil, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{

@@ -33,11 +33,11 @@ func TestAnalysisFindAll(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil)
+		result, err := svc.FindAll(ctx, uuid.Nil, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, mock.ToResponse(), result[0])
+		assert.Equal(t, mock.ToResponse("en"), result[0])
 	})
 
 	t.Run("Error", func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestAnalysisFindAll(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil)
+		result, err := svc.FindAll(ctx, uuid.Nil, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -75,11 +75,11 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID},
-			mock.User.ID)
+			mock.User.ID, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, mock.ToResponse(), result[0])
+		assert.Equal(t, mock.ToResponse("en"), result[0])
 	})
 
 	t.Run("Success - Empty Analysis IDs", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{},
-			mock.User.ID)
+			mock.User.ID, "en")
 
 		assert.NoError(t, err)
 		assert.Empty(t, result)
@@ -100,7 +100,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, make([]uuid.UUID,
-			models.AnalysesByBatch+1), mock.User.ID)
+			models.AnalysesByBatch+1), mock.User.ID, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrExceededDownloadLimit)
@@ -121,7 +121,7 @@ func TestAnalysisFindManyByIDs(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindManyByIDs(ctx, []uuid.UUID{mock.ID},
-			mock.User.ID)
+			mock.User.ID, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -143,12 +143,12 @@ func TestAnalysisFindByID(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		result, err := svc.FindByID(ctx, mock.ID, mock.UserID, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 
-		expected := mock.ToResponse()
+		expected := mock.ToResponse("en")
 		assert.Equal(t, expected, *result)
 	})
 
@@ -163,7 +163,7 @@ func TestAnalysisFindByID(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		result, err := svc.FindByID(ctx, mock.ID, mock.UserID, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -182,7 +182,7 @@ func TestAnalysisFindByID(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindByID(ctx, mock.ID, uuid.New())
+		result, err := svc.FindByID(ctx, mock.ID, uuid.New(), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrUnauthorized)
@@ -201,7 +201,7 @@ func TestAnalysisFindByID(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindByID(ctx, mock.ID, mock.UserID)
+		result, err := svc.FindByID(ctx, mock.ID, mock.UserID, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -235,7 +235,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			userRepo, enqueuer, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		expected := models.AnalysisResponse{
 			Type:     input.Type,
@@ -276,7 +276,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			userRepo, failingEnqueuer, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		expected := models.AnalysisResponse{
 			Type:     input.Type,
@@ -306,7 +306,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			nil, nil, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrSampleNotFound)
@@ -327,7 +327,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			nil, nil, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -353,7 +353,7 @@ func TestAnalysisCreate(t *testing.T) {
 			Type:     models.AnalysisTypeComplete,
 			SampleID: input.SampleID,
 			UserID:   input.UserID,
-		})
+		}, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrMissingFiles)
@@ -383,7 +383,7 @@ func TestAnalysisCreate(t *testing.T) {
 				SampleID: input.SampleID,
 				UserID:   input.UserID,
 			}
-			result, err := svc.Create(ctx, errorInput)
+			result, err := svc.Create(ctx, errorInput, "en")
 
 			assert.Error(t, err)
 			assert.ErrorIs(t, err, services.ErrMissingFastq1)
@@ -414,7 +414,7 @@ func TestAnalysisCreate(t *testing.T) {
 				SampleID: input.SampleID,
 				UserID:   input.UserID,
 			}
-			result, err := svc.Create(ctx, errorInput)
+			result, err := svc.Create(ctx, errorInput, "en")
 
 			assert.Error(t, err)
 			assert.ErrorIs(t, err, services.ErrMissingFastq2)
@@ -443,7 +443,7 @@ func TestAnalysisCreate(t *testing.T) {
 			svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 				nil, nil, mockLogger, t.TempDir())
 
-			result, err := svc.Create(ctx, input)
+			result, err := svc.Create(ctx, input, "en")
 
 			assert.Error(t, err)
 			assert.ErrorIs(t, err, services.ErrMissingFastq1)
@@ -469,7 +469,7 @@ func TestAnalysisCreate(t *testing.T) {
 			Type:     models.AnalysisTypeComplete,
 			SampleID: input.SampleID,
 			UserID:   input.UserID,
-		})
+		}, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrMissingFiles)
@@ -496,7 +496,7 @@ func TestAnalysisCreate(t *testing.T) {
 			Type:     models.AnalysisTypeComplete,
 			SampleID: input.SampleID,
 			UserID:   input.UserID,
-		})
+		}, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrMissingFastq2)
@@ -534,7 +534,7 @@ func TestAnalysisCreate(t *testing.T) {
 			Type:     models.AnalysisTypeGenome,
 			SampleID: input.SampleID,
 			UserID:   input.UserID,
-		})
+		}, "en")
 
 		expected := models.AnalysisResponse{
 			Type:     models.AnalysisTypeGenome,
@@ -569,7 +569,7 @@ func TestAnalysisCreate(t *testing.T) {
 			Type:     models.AnalysisTypeGenome,
 			SampleID: input.SampleID,
 			UserID:   input.UserID,
-		})
+		}, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrMissingFiles)
@@ -596,7 +596,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			userRepo, nil, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrUserNotFound)
@@ -623,7 +623,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			userRepo, nil, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -655,7 +655,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
 			nil, mockLogger, t.TempDir())
-		result, err := svc.Create(ctx, input)
+		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -696,7 +696,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -721,7 +721,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
 			enqueuer, mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -746,7 +746,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
 			enqueuer, mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputFailed)
+		result, err := svc.Update(ctx, mock.ID, updateInputFailed, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -776,7 +776,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
 			failingEnqueuer, mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputDone)
+		result, err := svc.Update(ctx, mock.ID, updateInputDone, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -796,7 +796,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -816,7 +816,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -840,7 +840,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning)
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -1178,7 +1178,7 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		svc := services.NewAnalysisService(successRepo, nil, nil, nil,
 			zap.NewNop(), t.TempDir())
 		responses, err := svc.DownloadBatchTSV(ctx,
-			[]uuid.UUID{mock.ID}, mock.UserID)
+			[]uuid.UUID{mock.ID}, mock.UserID, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, responses, 1)
@@ -1193,7 +1193,7 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		responses, err := svc.DownloadBatchTSV(ctx, ids, mock.UserID)
+		responses, err := svc.DownloadBatchTSV(ctx, ids, mock.UserID, "en")
 
 		assert.ErrorIs(t, err, services.ErrExceededDownloadLimit)
 		assert.Nil(t, responses)
@@ -1204,7 +1204,7 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			zap.NewNop(), t.TempDir())
 		responses, err := svc.DownloadBatchTSV(ctx, []uuid.UUID{},
-			mock.UserID)
+			mock.UserID, "en")
 
 		assert.NoError(t, err)
 		assert.Empty(t, responses)
@@ -1215,7 +1215,7 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
 		responses, err := svc.DownloadBatchTSV(ctx,
-			[]uuid.UUID{mock.ID, fastqcMock.ID}, mock.UserID)
+			[]uuid.UUID{mock.ID, fastqcMock.ID}, mock.UserID, "en")
 
 		assert.ErrorIs(t, err, services.ErrFastQCDownload)
 		assert.Nil(t, responses)
@@ -1234,7 +1234,7 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		svc := services.NewAnalysisService(failRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
 		responses, err := svc.DownloadBatchTSV(ctx,
-			[]uuid.UUID{mock.ID}, mock.UserID)
+			[]uuid.UUID{mock.ID}, mock.UserID, "en")
 
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, responses)

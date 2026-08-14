@@ -23,7 +23,7 @@ func TestUpdateAnalysis(t *testing.T) {
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToResponse("en")
 
 	validInput := map[string]any{
 		"status":           models.AnalysisStatusDone,
@@ -37,7 +37,7 @@ func TestUpdateAnalysis(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			UpdateFunc: func(ctx context.Context, analysisID uuid.UUID,
-				input models.AdminAnalysisUpdateInput) (
+				input models.AdminAnalysisUpdateInput, language string) (
 				*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
@@ -112,7 +112,7 @@ func TestUpdateAnalysis(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			UpdateFunc: func(ctx context.Context, analysisID uuid.UUID,
-				input models.AdminAnalysisUpdateInput) (
+				input models.AdminAnalysisUpdateInput, language string) (
 				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},

@@ -22,7 +22,7 @@ func TestCreateAnalysis(t *testing.T) {
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToResponse("en")
 
 	mockUserID := uuid.New()
 
@@ -35,7 +35,7 @@ func TestCreateAnalysis(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			CreateFunc: func(ctx context.Context,
-				input models.AnalysisCreateDTO) (
+				input models.AnalysisCreateDTO, language string) (
 				*models.AnalysisResponse, error) {
 				assert.Equal(t, mockUserID, input.UserID)
 				return &mockResponse, nil
@@ -114,7 +114,7 @@ func TestCreateAnalysis(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			CreateFunc: func(ctx context.Context,
-				input models.AnalysisCreateDTO) (
+				input models.AnalysisCreateDTO, language string) (
 				*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},

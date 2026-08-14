@@ -172,15 +172,236 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrFastQC.Error())
+			pipeline.ErrFastQC.Error())
 		assert.NotContains(t, *updated.ErrorMessage, "fastqc crashed")
 		assert.Contains(t, steps, models.StepFastQC)
 		assert.Empty(t, updated.Step)
+	})
+
+	t.Run("Error - FastQC Input Error Preserved", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeFastQC
+		mock.Status = models.AnalysisStatusPending
+		fq1, fq2 := "r1.fq", "r2.fq"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunFastQCFunc: func(_ context.Context, read1, read2,
+				outputDir string) (string, string, error) {
+				return "", "", pipeline.ErrCorruptedInput
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, *updated.ErrorMessage,
+			pipeline.ErrCorruptedInput.Error())
+		assert.NotContains(t, *updated.ErrorMessage,
+			pipeline.ErrFastQC.Error())
+	})
+
+	t.Run("Error - Unicycler Input Error Preserved", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fq1, fq2 := "r1.fq", "r2.fq"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+		mock.Sample.Fasta = nil
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunUnicyclerFunc: func(_ context.Context, threads int,
+				read1, read2, spadesPath, outputDir string) (
+				string, error) {
+				return "", pipeline.ErrInvalidFormat
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, *updated.ErrorMessage,
+			pipeline.ErrInvalidFormat.Error())
+		assert.NotContains(t, *updated.ErrorMessage,
+			pipeline.ErrUnicycler.Error())
+	})
+
+	t.Run("Error - Prokka", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fasta := "contigs.fasta"
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+		mock.Sample.Fasta = &fasta
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunProkkaFunc: func(_ context.Context, threads int,
+				assembly, outputDir string) error {
+				return errors.New("prokka crashed")
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, *updated.ErrorMessage,
+			pipeline.ErrProkka.Error())
+		assert.NotContains(t, *updated.ErrorMessage, "prokka crashed")
+	})
+
+	t.Run("Error - Kraken2", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fasta := "contigs.fasta"
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+		mock.Sample.Fasta = &fasta
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunKraken2Func: func(_ context.Context, threads int,
+				assembly, outputDir string) (*pipeline.KrakenSpecies,
+				*pipeline.KrakenSpecies, error) {
+				return nil, nil, errors.New("kraken2 crashed")
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, *updated.ErrorMessage,
+			pipeline.ErrKraken2.Error())
+		assert.NotContains(t, *updated.ErrorMessage, "kraken2 crashed")
+	})
+
+	t.Run("Error - Species", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fasta := "contigs.fasta"
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+		mock.Sample.Fasta = &fasta
+
+		updated := (*models.Analysis)(nil)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				analysis *models.Analysis) error {
+				updated = analysis
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			RunKraken2Func: func(_ context.Context, threads int,
+				assembly, outputDir string) (*pipeline.KrakenSpecies,
+				*pipeline.KrakenSpecies, error) {
+				return &pipeline.KrakenSpecies{
+					Name: "Escherichia coli", Count: 100,
+				}, nil, nil
+			},
+			ProcessSpeciesFunc: func(_ context.Context, threads int,
+				sampleID, mostCommon, assemblyPath, outputDir string) (
+				*pipeline.SpeciesResult, error) {
+				return nil, errors.New("species crashed")
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
+		assert.NotNil(t, updated)
+		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
+		assert.NotNil(t, updated.ErrorMessage)
+		assert.Contains(t, *updated.ErrorMessage,
+			pipeline.ErrSpecies.Error())
+		assert.NotContains(t, *updated.ErrorMessage, "species crashed")
 	})
 
 	t.Run("Error - Unknown Type", func(t *testing.T) {
@@ -219,12 +440,12 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrUnknownAnalysisType.Error())
+			pipeline.ErrUnknownAnalysisType.Error())
 		assert.Equal(t, 0, emailCalls,
 			"email should not be enqueued on non-final failure")
 	})
@@ -256,12 +477,12 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			zap.NewNop(), "/nonexistent_root_no_perms/x")
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrPrepareFolders.Error())
+			pipeline.ErrPrepareFolders.Error())
 	})
 
 	t.Run("Error - Unicycler", func(t *testing.T) {
@@ -300,12 +521,12 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrUnicycler.Error())
+			pipeline.ErrUnicycler.Error())
 		assert.NotContains(t, *updated.ErrorMessage,
 			"spades missing")
 		assert.Contains(t, steps, models.StepUnicycler)
@@ -502,11 +723,11 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrAbricate.Error())
+			pipeline.ErrAbricate.Error())
 		assert.NotEmpty(t, failedDB,
 			"at least one DB should have failed")
 		assert.NotContains(t, *updated.ErrorMessage,
@@ -552,12 +773,12 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrCheckM.Error())
+			pipeline.ErrCheckM.Error())
 		assert.NotContains(t, *updated.ErrorMessage,
 			"checkm db corrupt")
 		assert.Contains(t, steps, models.StepCheckM)
@@ -602,7 +823,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
@@ -746,12 +967,12 @@ func TestAnalysisRunnerComplete(t *testing.T) {
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
-		assert.ErrorIs(t, err, services.ErrAnalysisRun)
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 		assert.NotNil(t, updated)
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			services.ErrFastQC.Error())
+			pipeline.ErrFastQC.Error())
 	})
 }
 

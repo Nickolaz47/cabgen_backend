@@ -21,8 +21,8 @@ func TestDownloadBatchTSV(t *testing.T) {
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
 	mockAnalyses := []models.AnalysisResponse{
-		mockAnalysis.ToResponse(),
-		mockAnalysis.ToResponse(),
+		mockAnalysis.ToResponse("en"),
+		mockAnalysis.ToResponse("en"),
 	}
 
 	const validUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
@@ -33,7 +33,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				[]models.AnalysisResponse, error) {
 				return mockAnalyses, nil
 			},
@@ -91,7 +91,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 	t.Run("Error - FASTQC Included", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				[]models.AnalysisResponse, error) {
 				return nil, services.ErrFastQCDownload
 			},
@@ -119,7 +119,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				[]models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
@@ -147,7 +147,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			DownloadBatchTSVFunc: func(ctx context.Context, ids []uuid.UUID,
-				userID uuid.UUID) (
+				userID uuid.UUID, language string) (
 				[]models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},

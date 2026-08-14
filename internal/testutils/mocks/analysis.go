@@ -76,66 +76,68 @@ func (r *MockAnalysisRepository) DeleteAnalysis(ctx context.Context,
 }
 
 type MockAnalysisService struct {
-	FindAllFunc func(ctx context.Context, userID uuid.UUID) (
+	FindAllFunc func(ctx context.Context, userID uuid.UUID, language string) (
 		[]models.AnalysisResponse, error)
-	FindByIDFunc func(ctx context.Context, analysisID, userID uuid.UUID) (
-		*models.AnalysisResponse, error)
+	FindByIDFunc func(ctx context.Context, analysisID, userID uuid.UUID,
+		language string) (*models.AnalysisResponse, error)
 	FindManyByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
-		userID uuid.UUID) ([]models.AnalysisResponse, error)
-	CreateFunc func(ctx context.Context, input models.AnalysisCreateDTO) (
-		*models.AnalysisResponse, error)
+		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
+	CreateFunc func(ctx context.Context, input models.AnalysisCreateDTO,
+		language string) (*models.AnalysisResponse, error)
 	UpdateFunc func(ctx context.Context, analysisID uuid.UUID,
-		input models.AdminAnalysisUpdateInput) (*models.AnalysisResponse, error)
+		input models.AdminAnalysisUpdateInput, language string) (
+		*models.AnalysisResponse, error)
 	DeleteFunc      func(ctx context.Context, analysisID, userID uuid.UUID) error
 	DownloadZipFunc func(ctx context.Context, analysisID,
 		userID uuid.UUID) (string, error)
 	DownloadBatchTSVFunc func(ctx context.Context, analysisIDs []uuid.UUID,
-		userID uuid.UUID) ([]models.AnalysisResponse, error)
+		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
 }
 
-func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID) (
-	[]models.AnalysisResponse, error) {
+func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID,
+	language string) ([]models.AnalysisResponse, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx, userID)
+		return s.FindAllFunc(ctx, userID, language)
 	}
 
 	return nil, nil
 }
 
 func (s *MockAnalysisService) FindManyByIDs(ctx context.Context,
-	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if s.FindManyByIDsFunc != nil {
-		return s.FindManyByIDsFunc(ctx, analysisIDs, userID)
+		return s.FindManyByIDsFunc(ctx, analysisIDs, userID, language)
 	}
 
 	return nil, nil
 }
 
 func (s *MockAnalysisService) FindByID(ctx context.Context, analysisID,
-	userID uuid.UUID) (
+	userID uuid.UUID, language string) (
 	*models.AnalysisResponse, error) {
 	if s.FindByIDFunc != nil {
-		return s.FindByIDFunc(ctx, analysisID, userID)
+		return s.FindByIDFunc(ctx, analysisID, userID, language)
 	}
 
 	return nil, nil
 }
 
 func (s *MockAnalysisService) Create(ctx context.Context,
-	input models.AnalysisCreateDTO) (
+	input models.AnalysisCreateDTO, language string) (
 	*models.AnalysisResponse, error) {
 	if s.CreateFunc != nil {
-		return s.CreateFunc(ctx, input)
+		return s.CreateFunc(ctx, input, language)
 	}
 
 	return nil, nil
 }
 
 func (s *MockAnalysisService) Update(ctx context.Context, analysisID uuid.UUID,
-	input models.AdminAnalysisUpdateInput) (*models.AnalysisResponse, error) {
+	input models.AdminAnalysisUpdateInput, language string) (
+	*models.AnalysisResponse, error) {
 	if s.UpdateFunc != nil {
-		return s.UpdateFunc(ctx, analysisID, input)
+		return s.UpdateFunc(ctx, analysisID, input, language)
 	}
 
 	return nil, nil
@@ -160,10 +162,10 @@ func (s *MockAnalysisService) DownloadZip(ctx context.Context, analysisID,
 }
 
 func (s *MockAnalysisService) DownloadBatchTSV(ctx context.Context,
-	analysisIDs []uuid.UUID, userID uuid.UUID) (
+	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if s.DownloadBatchTSVFunc != nil {
-		return s.DownloadBatchTSVFunc(ctx, analysisIDs, userID)
+		return s.DownloadBatchTSVFunc(ctx, analysisIDs, userID, language)
 	}
 
 	return nil, nil

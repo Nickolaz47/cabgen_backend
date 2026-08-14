@@ -25,12 +25,12 @@ func TestGetAnalysisByID(t *testing.T) {
 	testutils.SetupTestContext()
 
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToResponse("en")
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -98,7 +98,7 @@ func TestGetAnalysisByID(t *testing.T) {
 	t.Run("Error - Not found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -124,7 +124,7 @@ func TestGetAnalysisByID(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}
@@ -167,12 +167,12 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 
 	mockAnalysis.FastQC1 = strPtr(f1.Name())
 	mockAnalysis.FastQC2 = strPtr(f2.Name())
-	mockResponse := mockAnalysis.ToResponse()
+	mockResponse := mockAnalysis.ToResponse("en")
 
 	t.Run("Success - fastqc1", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -195,7 +195,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 	t.Run("Success - fastqc2", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -251,7 +251,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 	t.Run("Error - Not found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return nil, services.ErrNotFound
 			},
 		}
@@ -273,7 +273,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 	t.Run("Error - Invalid fastqcReport param", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return &mockResponse, nil
 			},
 		}
@@ -293,13 +293,13 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 	})
 
 	t.Run("Error - FastQC report not available", func(t *testing.T) {
-		nilResponse := mockAnalysis.ToResponse()
+		nilResponse := mockAnalysis.ToResponse("en")
 		nilResponse.FastQC1 = nil
 		nilResponse.FastQC2 = nil
 
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return &nilResponse, nil
 			},
 		}
@@ -321,7 +321,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID,
-				userID uuid.UUID) (*models.AnalysisResponse, error) {
+				userID uuid.UUID, language string) (*models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

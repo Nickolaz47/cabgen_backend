@@ -102,7 +102,10 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 				"AnalysisRunnerService", "runFastQC",
 				logging.AnalysisRunError, err,
 			)...)
-		return ErrFastQC
+		if isInputError(err) {
+			return err
+		}
+		return pipeline.ErrFastQC
 	}
 
 	analysis.FastQC1 = &fastqc1
@@ -130,7 +133,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			"CabgenPipeline")...,
 	)
 
-	// Using 20% of the total cores
+	// Using 25% of the total cores
 	threads := int(math.Round((float64(runtime.NumCPU()) * 0.8) / 4))
 	assemblyPath := analysis.Sample.Fasta
 
@@ -148,7 +151,10 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
-			return ErrUnicycler
+			if isInputError(err) {
+				return err
+			}
+			return pipeline.ErrUnicycler
 		}
 		assemblyPath = &assembly
 		analysis.Sample.Fasta = &assembly
@@ -165,7 +171,10 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
-		return ErrProkka
+		if isInputError(err) {
+			return err
+		}
+		return pipeline.ErrProkka
 	}
 
 	ext := filepath.Ext(*assemblyPath)
@@ -182,7 +191,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
-		return ErrCheckM
+		return pipeline.ErrCheckM
 	}
 
 	if checkmResult != nil {
@@ -203,7 +212,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
-		return ErrKraken2
+		return pipeline.ErrKraken2
 	}
 
 	if krakenResult1 != nil {
@@ -219,7 +228,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
-			return ErrSpecies
+			return pipeline.ErrSpecies
 		}
 
 		if speciesResult != nil {
@@ -254,7 +263,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
-			return ErrAbricate
+			return pipeline.ErrAbricate
 		}
 
 		rawResult, err := pipeline.GetAbricateResult(outputFile)
@@ -266,7 +275,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
-			return ErrAbricate
+			return pipeline.ErrAbricate
 		}
 
 		switch db {
@@ -281,7 +290,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 						"AnalysisRunnerService", "runGenome",
 						logging.AnalysisRunError, err,
 					)...)
-				return ErrAbricate
+				return pipeline.ErrAbricate
 			}
 			results.ResfinderGenes = genes
 			results.ResfinderBlast = blast
@@ -299,17 +308,17 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		coverage, err := pipeline.CalculateCoverage(
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
 			int64(genomeSize))
-		if err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - CalculateCoverage: %v",
-				analysis.ID.String(), err),
-				logging.ServiceLogging(
-					"AnalysisRunnerService", "runGenome",
-					logging.AnalysisRunError, err,
-				)...)
-		} else {
-			results.Coverage = coverage
-		}
+	if err != nil {
+		s.Logger.Error(fmt.Sprintf(
+			"%s: Failed Genome step - CalculateCoverage: %v",
+			analysis.ID.String(), err),
+			logging.ServiceLogging(
+				"AnalysisRunnerService", "runGenome",
+				logging.AnalysisRunError, err,
+			)...)
+	} else {
+		results.Coverage = coverage
+	}
 	}
 
 	return nil
@@ -450,8 +459,8 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 				"AnalysisRunnerService", "Run",
 				logging.CreateFolderError, err,
 			)...)
-		s.finalizeAnalysis(ctx, analysis, &results, ErrPrepareFolders)
-		return ErrAnalysisRun
+		s.finalizeAnalysis(ctx, analysis, &results, pipeline.ErrPrepareFolders)
+		return pipeline.ErrAnalysisRun
 	}
 
 	s.Logger.Info(
@@ -478,7 +487,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 				logging.AnalysisRunError,
 				fmt.Errorf("unknown type: %s", analysis.Type),
 			)...)
-		runErr = ErrUnknownAnalysisType
+		runErr = pipeline.ErrUnknownAnalysisType
 	}
 
 	s.finalizeAnalysis(ctx, analysis, &results, runErr)
@@ -526,7 +535,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 				"AnalysisRunnerService", "Run",
 				logging.AnalysisRunError, runErr,
 			)...)
-		return ErrAnalysisRun
+		return pipeline.ErrAnalysisRun
 	}
 
 	s.Logger.Info(
@@ -537,4 +546,11 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	)
 
 	return nil
+}
+
+func isInputError(err error) bool {
+	return errors.Is(err, pipeline.ErrCorruptedInput) ||
+		errors.Is(err, pipeline.ErrEmptyReads) ||
+		errors.Is(err, pipeline.ErrInvalidFormat) ||
+		errors.Is(err, pipeline.ErrFileNotFound)
 }

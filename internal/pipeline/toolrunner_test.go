@@ -11,13 +11,18 @@ import (
 
 type mockCmd struct {
 	runFunc func() error
+	stderr  string
 }
 
-func (m *mockCmd) Start() error          { return nil }
-func (m *mockCmd) Run() error            { return m.runFunc() }
-func (m *mockCmd) Wait() error           { return nil }
+func (m *mockCmd) Start() error { return nil }
+func (m *mockCmd) Run() error   { return m.runFunc() }
+func (m *mockCmd) Wait() error  { return nil }
 func (m *mockCmd) SetStdout(w io.Writer) {}
-func (m *mockCmd) SetStderr(w io.Writer) {}
+func (m *mockCmd) SetStderr(w io.Writer) {
+	if m.stderr != "" {
+		_, _ = w.Write([]byte(m.stderr))
+	}
+}
 func (m *mockCmd) SetStdin(r io.Reader)  {}
 
 type mockCommander struct {
@@ -207,6 +212,60 @@ func TestToolRunnerRun(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "signal: killed")
+	})
+
+	t.Run("Error - Classifies File Not Found", func(t *testing.T) {
+		runner := NewToolRunner(&mockCommander{
+			cmdFunc: func(ctx context.Context, name string, args ...string) Cmd {
+				return &mockCmd{
+					runFunc: func() error {
+						return fmt.Errorf("exit status 1")
+					},
+					stderr: "No such file or directory: reads.fq",
+				}
+			},
+		})
+
+		_, err := runner.Run(ctx, []string{"tool", "reads.fq"})
+
+		assert.ErrorIs(t, err, ErrFileNotFound)
+		assert.Contains(t, err.Error(), "No such file or directory")
+	})
+
+	t.Run("Error - Classifies Invalid Format", func(t *testing.T) {
+		runner := NewToolRunner(&mockCommander{
+			cmdFunc: func(ctx context.Context, name string, args ...string) Cmd {
+				return &mockCmd{
+					runFunc: func() error {
+						return fmt.Errorf("exit status 1")
+					},
+					stderr: "Invalid FASTQ format",
+				}
+			},
+		})
+
+		_, err := runner.Run(ctx, []string{"tool", "reads.fq"})
+
+		assert.ErrorIs(t, err, ErrInvalidFormat)
+		assert.Contains(t, err.Error(), "Invalid FASTQ format")
+	})
+
+	t.Run("Error - Classifies Corrupted Input", func(t *testing.T) {
+		runner := NewToolRunner(&mockCommander{
+			cmdFunc: func(ctx context.Context, name string, args ...string) Cmd {
+				return &mockCmd{
+					runFunc: func() error {
+						return fmt.Errorf("exit status 1")
+					},
+					stderr: "gzip: corrupted input data",
+				}
+			},
+		})
+
+		_, err := runner.Run(ctx, []string{"tool", "reads.fq.gz"})
+
+		assert.ErrorIs(t, err, ErrCorruptedInput)
+		assert.Contains(t, err.Error(), "corrupted input data")
 	})
 
 	t.Run("Error - Multiple Args", func(t *testing.T) {

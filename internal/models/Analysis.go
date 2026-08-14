@@ -3,11 +3,76 @@ package models
 import (
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
 )
 
 const AnalysesByBatch = 50
+
+var errorMessageTranslations = map[error]map[string]string{
+	pipeline.ErrFileNotFound: {
+		"en": "Input file not found.",
+		"pt": "Arquivo de entrada não encontrado.",
+		"es": "Archivo de entrada no encontrado.",
+	},
+	pipeline.ErrCorruptedInput: {
+		"en": "The input file is corrupted or truncated.",
+		"pt": "O arquivo de entrada está corrompido ou truncado.",
+		"es": "El archivo de entrada está corrupto o truncado.",
+	},
+	pipeline.ErrEmptyReads: {
+		"en": "No reads found in the input file.",
+		"pt": "Nenhum read encontrado no arquivo de entrada.",
+		"es": "No se encontraron reads en el archivo de entrada.",
+	},
+	pipeline.ErrInvalidFormat: {
+		"en": "Invalid file format.",
+		"pt": "Formato de arquivo inválido.",
+		"es": "Formato de archivo inválido.",
+	},
+	pipeline.ErrFastQC: {
+		"en": "The FastQC step failed. Create a new analysis.",
+		"pt": "A etapa do FastQC falhou. Crie uma nova análise.",
+		"es": "El paso de FastQC falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrUnicycler: {
+		"en": "The Unicycler step failed. Create a new analysis.",
+		"pt": "A etapa do Unicycler falhou. Crie uma nova análise.",
+		"es": "El paso de Unicycler falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrProkka: {
+		"en": "The Prokka step failed. Create a new analysis.",
+		"pt": "A etapa do Prokka falhou. Crie uma nova análise.",
+		"es": "El paso de Prokka falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrCheckM: {
+		"en": "The CheckM step failed. Create a new analysis.",
+		"pt": "A etapa do CheckM falhou. Crie uma nova análise.",
+		"es": "El paso de CheckM falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrKraken2: {
+		"en": "The Kraken2 step failed. Create a new analysis.",
+		"pt": "A etapa do Kraken2 falhou. Crie uma nova análise.",
+		"es": "El paso de Kraken2 falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrSpecies: {
+		"en": "The Species identification (mlst, fastani) step failed. Create a new analysis.",
+		"pt": "A etapa de identificação de espécie (mlst, fastani) falhou. Crie uma nova análise.",
+		"es": "El paso de identificación de especie (mlst, fastani) falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrAbricate: {
+		"en": "The Abricate step failed. Create a new analysis.",
+		"pt": "A etapa do Abricate falhou. Crie uma nova análise.",
+		"es": "El paso de Abricate falló. Cree un nuevo análisis.",
+	},
+	pipeline.ErrPrepareFolders: {
+		"en": "Folder preparation failed. Create a new analysis.",
+		"pt": "Falha ao preparar os arquivos da análise. Crie uma nova análise.",
+		"es": "Error al preparar los archivos del análisis. Cree un nuevo análisis.",
+	},
+}
 
 type AnalysisStatus string
 
@@ -137,13 +202,33 @@ type AnalysisResponse struct {
 	FinishedAt     *time.Time     `json:"finished_at"`
 }
 
-func (a *Analysis) ToResponse() AnalysisResponse {
+func (a *Analysis) ToResponse(language string) AnalysisResponse {
+	lang := translation.ParseLanguage(language)
+
+	var errorMsg *string
+	if a.ErrorMessage != nil {
+		msg := *a.ErrorMessage
+		for errVal, translations := range errorMessageTranslations {
+			if errVal.Error() == msg {
+				if translated, ok := translations[lang]; ok {
+					errorMsg = &translated
+				} else {
+					errorMsg = a.ErrorMessage
+				}
+				break
+			}
+		}
+		if errorMsg == nil {
+			errorMsg = a.ErrorMessage
+		}
+	}
+
 	return AnalysisResponse{
 		ID:             a.ID,
 		Type:           a.Type,
 		Status:         a.Status,
 		Step:           a.Step,
-		ErrorMessage:   a.ErrorMessage,
+		ErrorMessage:   errorMsg,
 		Sample:         a.Sample.OriginCode,
 		SampleID:       a.SampleID,
 		User:           a.User.Username,

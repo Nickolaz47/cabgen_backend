@@ -27,6 +27,7 @@ func NewAnalysisHandler(svc services.AnalysisService) *AnalysisHandler {
 
 func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
@@ -36,7 +37,7 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 		return
 	}
 
-	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID)
+	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -50,6 +51,7 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 
 func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
@@ -68,7 +70,7 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID)
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -82,6 +84,7 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
@@ -98,7 +101,7 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID)
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		handlererrors.RespondHTMLError(c, code,
@@ -133,6 +136,7 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 
 func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	var newAnalysis models.AnalysisCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newAnalysis); !valid {
@@ -158,7 +162,7 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	}
 
 	payload := models.AnalysisCreateInputToDTO(newAnalysis, userToken.ID)
-	analysis, err := h.Service.Create(c.Request.Context(), payload)
+	analysis, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
@@ -245,6 +249,7 @@ func (h *AnalysisHandler) DownloadZip(c *gin.Context) {
 
 func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
 	var downloadInput models.AnalysisTSVDownloadInput
 	if errMsg, valid := validations.Validate(c, localizer,
@@ -263,7 +268,7 @@ func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	}
 
 	analyses, err := h.Service.DownloadBatchTSV(c.Request.Context(),
-		downloadInput.IDs, userToken.ID)
+		downloadInput.IDs, userToken.ID, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{

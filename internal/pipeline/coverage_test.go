@@ -96,11 +96,38 @@ func TestProcessFastq(t *testing.T) {
 		assert.Equal(t, int64(16), totalBases)
 	})
 
-	t.Run("Error - Empty File Returns EOF", func(t *testing.T) {
+	t.Run("Error - Empty File Returns Empty Reads", func(t *testing.T) {
 		path := createMockFastqFile(t, "")
 
 		readCount, totalBases, err := processFastq(path)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrEmptyReads)
+		assert.Equal(t, int64(0), readCount)
+		assert.Equal(t, int64(0), totalBases)
+	})
+
+	t.Run("Error - FASTA File Returns Invalid Format", func(t *testing.T) {
+		path := createMockFastqFile(t, ">seq1\nATCGATCG\n")
+
+		readCount, totalBases, err := processFastq(path)
+		assert.ErrorIs(t, err, ErrInvalidFormat)
+		assert.Equal(t, int64(0), readCount)
+		assert.Equal(t, int64(0), totalBases)
+	})
+
+	t.Run("Error - Invalid Header Returns Invalid Format", func(t *testing.T) {
+		path := createMockFastqFile(t, "not_a_header\nATCG\n")
+
+		readCount, totalBases, err := processFastq(path)
+		assert.ErrorIs(t, err, ErrInvalidFormat)
+		assert.Equal(t, int64(0), readCount)
+		assert.Equal(t, int64(0), totalBases)
+	})
+
+	t.Run("Error - Truncated FASTQ Returns Corrupted Input", func(t *testing.T) {
+		path := createMockFastqFile(t, "@read1\nATCGATCG\n+\n")
+
+		readCount, totalBases, err := processFastq(path)
+		assert.ErrorIs(t, err, ErrCorruptedInput)
 		assert.Equal(t, int64(0), readCount)
 		assert.Equal(t, int64(0), totalBases)
 	})
@@ -117,7 +144,7 @@ func TestProcessFastq(t *testing.T) {
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
 		readCount, totalBases, err := processFastq("nonexistent.fastq")
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrFileNotFound)
 		assert.Equal(t, int64(0), readCount)
 		assert.Equal(t, int64(0), totalBases)
 	})
@@ -187,7 +214,7 @@ func TestCalculateCoverage(t *testing.T) {
 		read2 := createMockFastqFile(t, fastqRead("@r2", "GCTA"))
 
 		coverage, err := CalculateCoverage("nonexistent.fastq", read2, 100)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrFileNotFound)
 		assert.Equal(t, float64(0), coverage)
 		assert.Contains(t, err.Error(), "Failed to process read1")
 	})
@@ -196,18 +223,36 @@ func TestCalculateCoverage(t *testing.T) {
 		read1 := createMockFastqFile(t, fastqRead("@r1", "ATCG"))
 
 		coverage, err := CalculateCoverage(read1, "nonexistent.fastq", 100)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrFileNotFound)
 		assert.Equal(t, float64(0), coverage)
 		assert.Contains(t, err.Error(), "Failed to process read2")
 	})
 
-	t.Run("Error - Empty Read1 Returns Error", func(t *testing.T) {
+	t.Run("Error - Empty Read1 Returns Empty Reads", func(t *testing.T) {
 		read1 := createMockFastqFile(t, "")
 		read2 := createMockFastqFile(t, fastqRead("@r2", "GCTA"))
 
 		coverage, err := CalculateCoverage(read1, read2, 100)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrEmptyReads)
 		assert.Equal(t, float64(0), coverage)
 		assert.Contains(t, err.Error(), "Failed to process read1")
+	})
+
+	t.Run("Error - FASTA Read1 Returns Invalid Format", func(t *testing.T) {
+		read1 := createMockFastqFile(t, ">seq1\nATCG\n")
+		read2 := createMockFastqFile(t, fastqRead("@r2", "GCTA"))
+
+		coverage, err := CalculateCoverage(read1, read2, 100)
+		assert.ErrorIs(t, err, ErrInvalidFormat)
+		assert.Equal(t, float64(0), coverage)
+	})
+
+	t.Run("Error - Truncated Read1 Returns Corrupted Input", func(t *testing.T) {
+		read1 := createMockFastqFile(t, "@r1\nATCG\n+\n")
+		read2 := createMockFastqFile(t, fastqRead("@r2", "GCTA"))
+
+		coverage, err := CalculateCoverage(read1, read2, 100)
+		assert.ErrorIs(t, err, ErrCorruptedInput)
+		assert.Equal(t, float64(0), coverage)
 	})
 }
