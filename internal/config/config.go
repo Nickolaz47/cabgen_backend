@@ -44,6 +44,7 @@ var (
 	FastaniListKleb          = ""
 	FastaniListEntero        = ""
 	FastaniListAcineto       = ""
+	AnalysisConcurrency      = 0
 )
 
 /*
@@ -76,6 +77,11 @@ func LoadEnvVariables(envFile string) error {
 	}
 
 	SMTPPort, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return err
+	}
+
+	AnalysisConcurrency, err = strconv.Atoi(os.Getenv("ANALYSIS_CONCURRENCY"))
 	if err != nil {
 		return err
 	}

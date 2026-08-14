@@ -115,7 +115,7 @@ func main() {
 	srv := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
-			Concurrency: 4,
+			Concurrency: config.AnalysisConcurrency,
 			Queues: map[string]int{
 				tasks.QueueAnalysis: 1,
 			},

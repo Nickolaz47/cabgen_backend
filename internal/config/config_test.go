@@ -56,6 +56,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			FASTANI_LIST_KLEB=/dbs/fastani/kleb_database/lista-kleb
 			FASTANI_LIST_ENTERO=/dbs/fastani/fastANI/list_entero
 			FASTANI_LIST_ACINETO=/dbs/fastani/fastANI_acineto/list-acineto
+			ANALYSIS_CONCURRENCY=4
 		`
 		expectedAppRoot := "/app"
 		expectedDbHost := "localhost"
@@ -95,6 +96,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedFastaniListKleb := "/dbs/fastani/kleb_database/lista-kleb"
 		expectedFastaniListEntero := "/dbs/fastani/fastANI/list_entero"
 		expectedFastaniListAcineto := "/dbs/fastani/fastANI_acineto/list-acineto"
+		expectedAnalysisConcurrency := 4
 
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
@@ -140,6 +142,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedFastaniListKleb, os.Getenv("FASTANI_LIST_KLEB"), "expected fastani list kleb to be equal")
 	    assert.Equal(t, expectedFastaniListEntero, os.Getenv("FASTANI_LIST_ENTERO"), "expected fastani list entero to be equal")
 		assert.Equal(t, expectedFastaniListAcineto, os.Getenv("FASTANI_LIST_ACINETO"), "expected fastani list acineto to be equal")
+		assert.Equal(t, expectedAnalysisConcurrency, config.AnalysisConcurrency, "expected analysis concurrency to be equal")
 
 		Port, err := strconv.Atoi(os.Getenv("PORT"))
 		assert.NoError(t, err)

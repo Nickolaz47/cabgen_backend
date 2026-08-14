@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
@@ -26,6 +27,10 @@ import (
 
 func TestAnalysisRunnerRun(t *testing.T) {
 	ctx := context.Background()
+
+	originalConcurrency := config.AnalysisConcurrency
+	config.AnalysisConcurrency = 4
+	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
 
 	t.Run("Success", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
@@ -591,6 +596,10 @@ func newResfinderRef(t *testing.T) string {
 func TestAnalysisRunnerGenome(t *testing.T) {
 	ctx := context.Background()
 
+	originalConcurrency := config.AnalysisConcurrency
+	config.AnalysisConcurrency = 4
+	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
+
 	t.Run("Success - Existing FASTA", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
@@ -886,6 +895,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 func TestAnalysisRunnerComplete(t *testing.T) {
 	ctx := context.Background()
+
+	originalConcurrency := config.AnalysisConcurrency
+	config.AnalysisConcurrency = 4
+	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
 
 	t.Run("Success", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()

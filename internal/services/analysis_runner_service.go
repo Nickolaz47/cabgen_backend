@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
@@ -133,8 +134,10 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			"CabgenPipeline")...,
 	)
 
-	// Using 25% of the total cores
-	threads := int(math.Round((float64(runtime.NumCPU()) * 0.8) / 4))
+	// Using 80% of total cores
+	threads := int(math.Round(
+		(float64(runtime.NumCPU()) * 0.8) /
+			float64(config.AnalysisConcurrency)))
 	assemblyPath := analysis.Sample.Fasta
 
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
@@ -308,17 +311,17 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		coverage, err := pipeline.CalculateCoverage(
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
 			int64(genomeSize))
-	if err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed Genome step - CalculateCoverage: %v",
-			analysis.ID.String(), err),
-			logging.ServiceLogging(
-				"AnalysisRunnerService", "runGenome",
-				logging.AnalysisRunError, err,
-			)...)
-	} else {
-		results.Coverage = coverage
-	}
+		if err != nil {
+			s.Logger.Error(fmt.Sprintf(
+				"%s: Failed Genome step - CalculateCoverage: %v",
+				analysis.ID.String(), err),
+				logging.ServiceLogging(
+					"AnalysisRunnerService", "runGenome",
+					logging.AnalysisRunError, err,
+				)...)
+		} else {
+			results.Coverage = coverage
+		}
 	}
 
 	return nil

@@ -125,7 +125,12 @@ SMTP_PORT=
 # Redis URL
 REDIS_URL=
 
-# Analysis Worker — Bioinformatics tool paths (optional)
+# Analysis Worker — Resources and concurrency (required)
+ANALYSIS_CONCURRENCY=   # Number of concurrent analyses
+ANALYSIS_CPU=           # CPU limit per analysis (e.g., 6.0)
+ANALYSIS_RAM=           # RAM limit per analysis (e.g., 24G)
+
+# Analysis Worker — Bioinformatics tool paths
 FASTQC_PATH=
 UNICYCLER_PATH=
 SPADES_PATH=
@@ -137,7 +142,8 @@ ABRICATE_PATH=
 MLST_PATH=
 RESFINDER_DB_PATH=
 
-# Analysis Worker — Database paths (optional)
+# Analysis Worker — Database paths
+CHECKM_DATA_PATH=
 POLI_DB_PSEUDO=
 POLI_DB_KLEB=
 POLI_DB_ENTERO=
@@ -614,8 +620,10 @@ Each layer has a single responsibility and depends only on the layer below it.
 
 ### Error Handling
 
-- Services return **sentinel errors** (e.g., `ErrNotFound`, `ErrConflict`)
+- Services return **sentinel errors** (e.g., `ErrNotFound`, `ErrConflict`) defined in `services/errors.go`
+- Pipeline errors live in `pipeline/errors.go` (e.g., `ErrFastQC`, `ErrCorruptedInput`)
 - Handlers use `errors.Is()` to map sentinel errors to appropriate HTTP status codes
+- Analysis errors are translated by language via `errorMessageTranslations`
 
 ### Validation
 
