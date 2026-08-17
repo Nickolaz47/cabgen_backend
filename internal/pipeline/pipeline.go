@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type ToolsConfig struct {
@@ -55,12 +57,15 @@ type CabgenPipeline interface {
 type cabgenPipeline struct {
 	Runner ToolRunner
 	Config ToolsConfig
+	Logger *zap.Logger
 }
 
-func NewCabgenPipeline(runner ToolRunner, config ToolsConfig) CabgenPipeline {
+func NewCabgenPipeline(runner ToolRunner, config ToolsConfig,
+	logger *zap.Logger) CabgenPipeline {
 	return &cabgenPipeline{
 		Runner: runner,
 		Config: config,
+		Logger: logger,
 	}
 }
 
@@ -254,6 +259,21 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 		poliDbFullPath = p.Config.PoliDbAcineto
 		otherDbFullPath = p.Config.OtherDbAcineto
 		fastAniRefFullPath = p.Config.FastaniListAcineto
+	} else {
+		if p.Logger != nil {
+			p.Logger.Debug("Species did not match any known genus, skipping BlastX/FastANI",
+				zap.String("sampleID", sampleID),
+				zap.String("species", mostCommon),
+				zap.String("normalizedName", normalizedName))
+		}
+	}
+
+	if (isEntero || isAcineto || isKleb) && fastAniRefFullPath == "" {
+		if p.Logger != nil {
+			p.Logger.Warn("Matched genus but FASTANI ref list not configured, skipping FastANI",
+				zap.String("sampleID", sampleID),
+				zap.String("species", mostCommon))
+		}
 	}
 
 	if (isEntero || isAcineto || isKleb) && fastAniRefFullPath != "" {
@@ -264,9 +284,21 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 			p.Config.FastANIPath, assemblyPath, fastAniRefFullPath,
 			fastAniOut, threadsStr,
 		)
-		if _, err := p.Runner.Run(ctx, fastAniArgs); err == nil {
+		if _, err := p.Runner.Run(ctx, fastAniArgs); err != nil {
+			if p.Logger != nil {
+				p.Logger.Error("FastANI failed",
+					zap.String("sampleID", sampleID),
+					zap.Error(err))
+			}
+		} else {
 			fastAniSpecies, parseErr := ParseFastANI(fastAniOut)
-			if parseErr == nil && fastAniSpecies != "" {
+			if parseErr != nil {
+				if p.Logger != nil {
+					p.Logger.Warn("FastANI output parse failed",
+						zap.String("sampleID", sampleID),
+						zap.Error(parseErr))
+				}
+			} else if fastAniSpecies != "" {
 				result.DisplayName = strings.ReplaceAll(fastAniSpecies, "_",
 					" ")
 			}

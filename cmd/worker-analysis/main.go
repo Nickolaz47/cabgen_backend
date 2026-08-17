@@ -34,6 +34,7 @@ func main() {
 		{"RESFINDER_DB_PATH", config.ResfinderDBPath},
 		{"KRAKEN_DB_PATH", config.KrakenDBPath},
 		{"CHECKM_DATA_PATH", os.Getenv("CHECKM_DATA_PATH")},
+		{"FASTANI_PATH", config.FastaniPath},
 		{"POLI_DB_PSEUDO", config.PoliDbPseudo},
 		{"POLI_DB_KLEB", config.PoliDbKleb},
 		{"POLI_DB_ENTERO", config.PoliDbEntero},

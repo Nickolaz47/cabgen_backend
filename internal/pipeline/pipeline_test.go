@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zapcore"
 )
 
 func writeFile(t *testing.T, path, content string) {
@@ -75,14 +77,14 @@ func krakenReportLine(name string, cladeReads int) string {
 
 func TestNewCabgenPipeline(t *testing.T) {
 	p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-		defaultConfig())
+		defaultConfig(), nil)
 	assert.NotNil(t, p)
 }
 
 func TestRunFastQC(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		html1, html2, err := p.RunFastQC(context.Background(),
 			"/data/r1.fq", "/data/r2.fq", "/out")
 		assert.NoError(t, err)
@@ -92,7 +94,7 @@ func TestRunFastQC(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		_, _, err := p.RunFastQC(context.Background(), "r1", "r2", "/out")
 		assert.Error(t, err)
 	})
@@ -101,7 +103,7 @@ func TestRunFastQC(t *testing.T) {
 func TestRunUnicycler(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		path, err := p.RunUnicycler(context.Background(), 4, "r1", "r2",
 			"/spades", "/out")
 		assert.NoError(t, err)
@@ -110,7 +112,7 @@ func TestRunUnicycler(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		_, err := p.RunUnicycler(context.Background(), 4, "r1", "r2", "",
 			"/out")
 		assert.Error(t, err)
@@ -120,14 +122,14 @@ func TestRunUnicycler(t *testing.T) {
 func TestRunProkka(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		err := p.RunProkka(context.Background(), 8, "contigs.fa", "/out")
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		err := p.RunProkka(context.Background(), 8, "contigs.fa", "/out")
 		assert.Error(t, err)
 	})
@@ -136,7 +138,7 @@ func TestRunProkka(t *testing.T) {
 func TestRunBlastX(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		err := p.RunBlastX(context.Background(), "contigs.fa", "/db",
 			"out.txt")
 		assert.NoError(t, err)
@@ -144,7 +146,7 @@ func TestRunBlastX(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		err := p.RunBlastX(context.Background(), "contigs.fa", "/db",
 			"out.txt")
 		assert.Error(t, err)
@@ -159,7 +161,7 @@ func TestRunCheckM(t *testing.T) {
 				"s1\tF\t5\t10\t5\t98.5\t0.5\t0\t3500000\t37.5\t3\t2\t0\t25000\n")
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
 			outDir)
 		assert.NoError(t, err)
@@ -172,7 +174,7 @@ func TestRunCheckM(t *testing.T) {
 
 	t.Run("Error - Lineage Fails", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
 			"/out")
 		assert.Error(t, err)
@@ -189,7 +191,7 @@ func TestRunCheckM(t *testing.T) {
 				}
 				return "", nil
 			},
-		}, defaultConfig())
+		}, defaultConfig(), nil)
 
 		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
 			"/out")
@@ -207,7 +209,7 @@ func TestRunKraken2(t *testing.T) {
 				krakenReportLine("Klebsiella pneumoniae", 1))
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		first, second, err := p.RunKraken2(context.Background(), 4,
 			"contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -219,7 +221,7 @@ func TestRunKraken2(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		first, second, err := p.RunKraken2(context.Background(), 4,
 			"contigs.fa", "/out")
 		assert.Error(t, err)
@@ -238,7 +240,7 @@ func TestProcessSpecies(t *testing.T) {
 			organismMockContent)
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Staphylococcus aureus", "contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -258,7 +260,7 @@ func TestProcessSpecies(t *testing.T) {
 			organismMockContent)
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Acinetobacter baumannii", "contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -277,7 +279,7 @@ func TestProcessSpecies(t *testing.T) {
 			organismMockContent)
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Klebsiella pneumoniae", "contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -293,7 +295,7 @@ func TestProcessSpecies(t *testing.T) {
 			organismMockContent)
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig())
+			defaultConfig(), nil)
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Acinetobacter", "contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -315,7 +317,7 @@ func TestProcessSpecies(t *testing.T) {
 			RunFunc: func(ctx context.Context, args []string) (string, error) {
 				return mlstPath, nil
 			},
-		}, defaultConfig())
+		}, defaultConfig(), nil)
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Acinetobacter baumannii", "contigs.fa", outDir)
 		assert.NoError(t, err)
@@ -334,7 +336,7 @@ func TestProcessSpecies(t *testing.T) {
 				}
 				return "", nil
 			},
-		}, defaultConfig())
+		}, defaultConfig(), nil)
 
 		// Enterobacter cloacae triggers the Enterobacter branch, which
 		// runs MLST, FastANI, then BlastX (poli first). The mock fails on
@@ -346,5 +348,113 @@ func TestProcessSpecies(t *testing.T) {
 		assert.Equal(t, "Enterobacter cloacae", result.DisplayName)
 		assert.Empty(t, result.PoliMutations)
 		assert.Empty(t, result.OtherMutations)
+	})
+}
+
+func TestProcessSpeciesLogging(t *testing.T) {
+	t.Run("Logs debug when no species matches", func(t *testing.T) {
+		outDir := t.TempDir()
+		logger, logs := testutils.NewMockLogger(zapcore.DebugLevel)
+
+		p := pipeline.NewCabgenPipeline(
+			&mocks.MockToolRunner{RunFunc: successRun},
+			defaultConfig(), logger)
+
+		result, err := p.ProcessSpecies(context.Background(), 4, "s1",
+			"Staphylococcus aureus", "contigs.fa", outDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Staphylococcus aureus", result.DisplayName)
+
+		found := false
+		for _, entry := range logs.All() {
+			if entry.Level == zapcore.DebugLevel &&
+				entry.Message == "Species did not match any known genus, skipping BlastX/FastANI" {
+				found = true
+			}
+		}
+		assert.True(t, found, "expected debug log about unknown genus")
+	})
+
+	t.Run("Logs warning when FastANI ref list is empty", func(t *testing.T) {
+		outDir := t.TempDir()
+		logger, logs := testutils.NewMockLogger(zapcore.WarnLevel)
+
+		cfg := defaultConfig()
+		cfg.FastaniListAcineto = ""
+
+		p := pipeline.NewCabgenPipeline(
+			&mocks.MockToolRunner{RunFunc: successRun},
+			cfg, logger)
+
+		result, err := p.ProcessSpecies(context.Background(), 4, "s1",
+			"Acinetobacter baumannii", "contigs.fa", outDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+
+		found := false
+		for _, entry := range logs.All() {
+			if entry.Level == zapcore.WarnLevel &&
+				entry.Message == "Matched genus but FASTANI ref list not configured, skipping FastANI" {
+				found = true
+			}
+		}
+		assert.True(t, found, "expected warning log about missing FastANI ref list")
+	})
+
+	t.Run("Logs error when FastANI execution fails", func(t *testing.T) {
+		outDir := t.TempDir()
+		logger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		calls := 0
+		p := pipeline.NewCabgenPipeline(
+			&mocks.MockToolRunner{
+				RunFunc: func(ctx context.Context, args []string) (string, error) {
+					calls++
+					if calls == 2 {
+						return "", fmt.Errorf("fastani binary not found")
+					}
+					return "", nil
+				},
+			}, defaultConfig(), logger)
+
+		result, err := p.ProcessSpecies(context.Background(), 4, "s1",
+			"Acinetobacter baumannii", "contigs.fa", outDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Acinetobacter baumannii", result.DisplayName)
+
+		found := false
+		for _, entry := range logs.All() {
+			if entry.Level == zapcore.ErrorLevel &&
+				entry.Message == "FastANI failed" {
+				found = true
+			}
+		}
+		assert.True(t, found, "expected error log about FastANI failure")
+	})
+
+	t.Run("Logs warning when ParseFastANI fails", func(t *testing.T) {
+		outDir := t.TempDir()
+		logger, logs := testutils.NewMockLogger(zapcore.WarnLevel)
+
+		p := pipeline.NewCabgenPipeline(
+			&mocks.MockToolRunner{RunFunc: successRun},
+			defaultConfig(), logger)
+
+		result, err := p.ProcessSpecies(context.Background(), 4, "s1",
+			"Acinetobacter baumannii", "contigs.fa", outDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Acinetobacter baumannii", result.DisplayName)
+
+		found := false
+		for _, entry := range logs.All() {
+			if entry.Level == zapcore.WarnLevel &&
+				entry.Message == "FastANI output parse failed" {
+				found = true
+			}
+		}
+		assert.True(t, found, "expected warning log about FastANI parse failure")
 	})
 }
