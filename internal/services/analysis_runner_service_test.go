@@ -657,6 +657,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mock.Sample.Fasta = nil
 
 		unicyclerCalled := false
+		var persistedSample *models.Sample
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
@@ -665,6 +666,11 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 			UpdateAnalysisFunc: func(_ context.Context,
 				_ *models.Analysis) error {
+				return nil
+			},
+			UpdateSampleFunc: func(_ context.Context,
+				sample *models.Sample) error {
+				persistedSample = sample
 				return nil
 			},
 		}
@@ -690,6 +696,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.True(t, unicyclerCalled)
+		assert.NotNil(t, persistedSample)
+		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
 	})
 
 	t.Run("Error - Abricate", func(t *testing.T) {

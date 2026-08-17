@@ -163,6 +163,42 @@ func TestUpdateAnalysis(t *testing.T) {
 	})
 }
 
+func TestAnalysisUpdateSample(t *testing.T) {
+	ctx := context.Background()
+
+	db := testutils.NewMockDB()
+	repo := repositories.NewAnalysisRepository(db)
+
+	analysis := testmodels.CreateMockAnalysis()
+	db.Create(&analysis)
+
+	t.Run("Success", func(t *testing.T) {
+		sampleToUpdate := analysis.Sample
+		fasta := "/new/path/assembly.fasta"
+		sampleToUpdate.Fasta = &fasta
+
+		err := repo.UpdateSample(ctx, &sampleToUpdate)
+		assert.NoError(t, err)
+
+		var result models.Sample
+		err = db.Where("id = ?", analysis.Sample.ID).First(&result).Error
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result.Fasta)
+		assert.Equal(t, fasta, *result.Fasta)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockAnalysisRepo := repositories.NewAnalysisRepository(mockDB)
+		err = mockAnalysisRepo.UpdateSample(ctx, &models.Sample{})
+
+		assert.Error(t, err)
+	})
+}
+
 func TestDeleteAnalysis(t *testing.T) {
 	ctx := context.Background()
 

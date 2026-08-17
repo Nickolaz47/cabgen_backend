@@ -18,6 +18,8 @@ type MockAnalysisRepository struct {
 		analysis *models.Analysis) error
 	UpdateAnalysisFunc func(ctx context.Context,
 		analysis *models.Analysis) error
+	UpdateSampleFunc func(ctx context.Context,
+		sample *models.Sample) error
 	DeleteAnalysisFunc func(ctx context.Context,
 		analysis *models.Analysis) error
 }
@@ -61,6 +63,15 @@ func (r *MockAnalysisRepository) UpdateAnalysis(ctx context.Context,
 	analysis *models.Analysis) error {
 	if r.UpdateAnalysisFunc != nil {
 		return r.UpdateAnalysisFunc(ctx, analysis)
+	}
+
+	return nil
+}
+
+func (r *MockAnalysisRepository) UpdateSample(ctx context.Context,
+	sample *models.Sample) error {
+	if r.UpdateSampleFunc != nil {
+		return r.UpdateSampleFunc(ctx, sample)
 	}
 
 	return nil

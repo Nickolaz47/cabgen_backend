@@ -161,6 +161,16 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		}
 		assemblyPath = &assembly
 		analysis.Sample.Fasta = &assembly
+
+		if err := s.Repo.UpdateSample(ctx, &analysis.Sample); err != nil {
+			s.Logger.Warn(fmt.Sprintf(
+				"%s: Failed to persist assembly path to sample",
+				analysis.ID.String()),
+				logging.ServiceLogging(
+					"AnalysisRunnerService", "runGenome",
+					logging.AnalysisRunError, err,
+				)...)
+		}
 	}
 
 	prokkaOutDir := filepath.Join(folders.AssemblyDir, "prokka")

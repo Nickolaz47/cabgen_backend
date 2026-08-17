@@ -17,6 +17,7 @@ type AnalysisRepository interface {
 		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
 	UpdateAnalysis(ctx context.Context, analysis *models.Analysis) error
+	UpdateSample(ctx context.Context, sample *models.Sample) error
 	DeleteAnalysis(ctx context.Context, analysis *models.Analysis) error
 }
 
@@ -69,7 +70,7 @@ func (r *analysisRepo) GetAnalysisByID(ctx context.Context,
 	analysisID uuid.UUID) (*models.Analysis, error) {
 	var analysis models.Analysis
 	if err := r.DB.WithContext(ctx).Preload("Sample").Preload("User").
-	Where("id = ?", analysisID).First(
+		Where("id = ?", analysisID).First(
 		&analysis).Error; err != nil {
 		return nil, err
 	}
@@ -85,6 +86,11 @@ func (r *analysisRepo) CreateAnalysis(ctx context.Context,
 func (r *analysisRepo) UpdateAnalysis(ctx context.Context,
 	analysis *models.Analysis) error {
 	return r.DB.WithContext(ctx).Save(analysis).Error
+}
+
+func (r *analysisRepo) UpdateSample(ctx context.Context,
+	sample *models.Sample) error {
+	return r.DB.WithContext(ctx).Save(sample).Error
 }
 
 func (r *analysisRepo) DeleteAnalysis(ctx context.Context,
