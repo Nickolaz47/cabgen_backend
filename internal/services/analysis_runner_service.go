@@ -140,6 +140,16 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			float64(config.AnalysisConcurrency)))
 	assemblyPath := analysis.Sample.Fasta
 
+	if analysis.Sample.Fastq1 == nil && analysis.Sample.Fastq2 == nil &&
+		analysis.Sample.Fasta != nil {
+		dst := filepath.Join(folders.AssemblyDir,
+			filepath.Base(*analysis.Sample.Fasta))
+		if err := utils.CopyFile(*analysis.Sample.Fasta, dst); err != nil {
+			return fmt.Errorf("failed to prepare assembly: %w", err)
+		}
+		assemblyPath = &dst
+	}
+
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		analysis.Sample.Fasta == nil {
 		s.updateStep(ctx, analysis, models.StepUnicycler)

@@ -278,7 +278,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := "contigs.fasta"
+		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
+		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
 		mock.Sample.Fasta = &fasta
@@ -320,7 +321,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := "contigs.fasta"
+		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
+		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
 		mock.Sample.Fasta = &fasta
@@ -363,7 +365,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := "contigs.fasta"
+		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
+		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
 		mock.Sample.Fasta = &fasta
@@ -645,6 +648,59 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.NoError(t, err)
 		assert.False(t, unicyclerCalled,
 			"Unicycler should not run when Fasta already present")
+	})
+
+	t.Run("Success - FASTA Only Copies to AssemblyDir", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		fastaContent := ">seq1\nATCGATCG\n"
+		fastaPath := filepath.Join(tmpDir, "user_genome.fasta")
+		err := os.WriteFile(fastaPath, []byte(fastaContent), 0644)
+		assert.NoError(t, err)
+
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+		mock.Sample.Fasta = &fastaPath
+
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				_ *models.Analysis) error {
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
+			RunAbricateFunc: func(_ context.Context, threads int,
+				db, input, outputFile string) error {
+				return writeAbricateOutput(outputFile)
+			},
+		}
+
+		rootDir := t.TempDir()
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+		err = svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+
+		assemblyDir := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"analyses", mock.ID.String(), "assembly")
+		copiedFasta := filepath.Join(assemblyDir, "user_genome.fasta")
+		assert.FileExists(t, copiedFasta)
+
+		content, err := os.ReadFile(copiedFasta)
+		assert.NoError(t, err)
+		assert.Equal(t, fastaContent, string(content))
 	})
 
 	t.Run("Success - No FASTA", func(t *testing.T) {

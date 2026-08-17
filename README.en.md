@@ -552,36 +552,23 @@ uploads/
     └── {user_id}/
         └── samples/
             └── {sample_id}/
-                ├── reads.fastq
+                ├── reads_R1.fastq
+                ├── reads_R2.fastq
+                ├── genome.fasta
                 └── analyses/
                     └── {analysis_id}/
-                        ├── qc/                    
-                        │   ├── fastqc.html
-                        │   └── fastqc.zip
+                        ├── qc/
                         ├── assembly/
-                        │   ├── contigs.fasta           
-                        │   ├── assembly.gfa
-                        │   ├── coverage.json           
-                        │   ├── checkm_report.tsv        
-                        │   ├── species_id.tsv           
-                        │   └── annotation/               
-                        ├── amr/                       
-                        │   ├── resfinder.tsv
-                        │   ├── virulence.tsv
-                        │   ├── plasmids.tsv
-                        │   ├── mlst.tsv
-                        │   └── mutations.json
-                        ├── report/
-                        │   └── summary.json        
-                        ├── logs/
-                        │   └── pipeline.log
+                        ├── amr/
+                        └── report/
 ```
+
+> **Note:** For `FASTQC` analyses, only FastQ files are required. For `GENOME` analyses, both FastQ and FASTA are accepted. For `COMPLETE` analyses, FastQ is required.
 
 - **`qc/`**: quality control of the raw reads (FastQC).
 - **`assembly/`**: everything derived from the assembly — contigs (Unicycler), coverage, assembly quality (CheckM), species identification (Kraken2/FastANI), and annotation (Prokka).
 - **`amr/`**: resistance, virulence, plasmid, MLST, and point mutation results (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
 - **`report/`**: consolidated final report with the clinically relevant results.
-- **`logs/`**: pipeline execution logs.
 
 ## Tests
 
@@ -686,6 +673,18 @@ User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, Healt
 ### Bioinformatics Tools
 
 FastQC, Unicycler, SPAdes, Prokka, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
+
+### Analysis Types
+
+The platform supports three analysis types, each with different input requirements:
+
+| Type | Description | Input Files |
+| --- | --- | --- |
+| `FASTQC` | Raw reads quality control | FastQ (R1 + R2) |
+| `GENOME` | Full genomics pipeline | FastQ (R1 + R2) **or** FASTA |
+| `COMPLETE` | FastQC + Full genomics | FastQ (R1 + R2) |
+
+**FASTA-only support:** The `GENOME` type accepts both FastQ read pairs and pre-assembled FASTA files. When only FASTA is provided, Unicycler is skipped and the file is used directly for subsequent steps (Prokka, CheckM, Kraken2, ABRicate, etc.).
 
 ### Docker Compose
 
