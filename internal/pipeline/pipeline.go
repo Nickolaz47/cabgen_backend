@@ -231,7 +231,8 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 		assemblyPath, mlstResultPath)
 	if _, err := p.Runner.Run(ctx, mlstArgs); err == nil {
 		if mlstData, err := ParseMLST(mlstResultPath); err == nil &&
-			mlstData != nil {
+			mlstData != nil &&
+			(mlstData.Scheme != "-" || mlstData.ST != "-") {
 			result.MLSTSpecies = fmt.Sprintf(
 				"%s (ST: %s)", mlstData.Scheme, mlstData.ST)
 		}

@@ -26,6 +26,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const SecondarySpeciesContaminationThreshold = 5.0
+
 type AnalysisRunnerFolders struct {
 	QCDir       string
 	AssemblyDir string
@@ -263,7 +265,20 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	}
 
 	if krakenResult2 != nil {
-		results.SecondarySpeciesName = krakenResult2.Name
+		contamination, err := strconv.ParseFloat(
+			results.CheckMContamination, 32)
+		if err != nil {
+			s.Logger.Warn(fmt.Sprintf(
+				"%s: Invalid CheckM contamination value: %q",
+				analysis.ID.String(), results.CheckMContamination),
+				logging.ServiceLogging(
+					"AnalysisRunnerService", "runGenome",
+					logging.AnalysisRunError, err,
+				)...)
+		}
+		if contamination > SecondarySpeciesContaminationThreshold {
+			results.SecondarySpeciesName = krakenResult2.Name
+		}
 	}
 
 	abricateInput := filepath.Join(prokkaOutDir, "genome.ffn")

@@ -3,6 +3,7 @@ package services_test
 import (
 	"archive/zip"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -955,6 +956,118 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Equal(t, models.AnalysisStatusDone, updated.Status)
 		assert.GreaterOrEqual(t, logs.Len(), 1)
 	})
+
+	t.Run("Success - Secondary Species Written When Contamination > 5%",
+		func(t *testing.T) {
+			mock := testmodels.CreateMockAnalysis()
+			mock.Type = models.AnalysisTypeGenome
+			mock.Status = models.AnalysisStatusPending
+			fasta := filepath.Join(t.TempDir(), "contigs.fasta")
+			os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+			mock.Sample.Fastq1 = nil
+			mock.Sample.Fastq2 = nil
+			mock.Sample.Fasta = &fasta
+
+			updated := (*models.Analysis)(nil)
+			repo := &mocks.MockAnalysisRepository{
+				GetAnalysisByIDFunc: func(_ context.Context,
+					_ uuid.UUID) (*models.Analysis, error) {
+					mockCopy := mock
+					return &mockCopy, nil
+				},
+				UpdateAnalysisFunc: func(_ context.Context,
+					analysis *models.Analysis) error {
+					updated = analysis
+					return nil
+				},
+			}
+			pl := &mocks.MockCabgenPipeline{
+				Config: pipeline.ToolsConfig{
+					ResfinderDBPath: newResfinderRef(t),
+				},
+				RunCheckMFunc: func(_ context.Context, threads int,
+					sample, assemblyDir, outputDir string) (
+					*pipeline.CheckMResult, error) {
+					return &pipeline.CheckMResult{
+						Completeness: "99.5", Contamination: "8.0",
+						GenomeSize: "5000000", N50: "100000",
+					}, nil
+				},
+				RunAbricateFunc: func(_ context.Context, threads int,
+					db, input, outputFile string) error {
+					return writeAbricateOutput(outputFile)
+				},
+			}
+
+			svc := services.NewAnalysisRunnerService(repo, pl,
+				&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			err := svc.Run(ctx, mock.ID)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, updated)
+			assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+
+			var results models.AnalysisResults
+			assert.NoError(t, json.Unmarshal(updated.Metrics, &results))
+			assert.NotEmpty(t, results.SecondarySpeciesName)
+			assert.Equal(t, "Klebsiella pneumoniae",
+				results.SecondarySpeciesName)
+		})
+
+	t.Run("Success - Secondary Species Not Written When Contamination <= 5%",
+		func(t *testing.T) {
+			mock := testmodels.CreateMockAnalysis()
+			mock.Type = models.AnalysisTypeGenome
+			mock.Status = models.AnalysisStatusPending
+			fasta := filepath.Join(t.TempDir(), "contigs.fasta")
+			os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+			mock.Sample.Fastq1 = nil
+			mock.Sample.Fastq2 = nil
+			mock.Sample.Fasta = &fasta
+
+			updated := (*models.Analysis)(nil)
+			repo := &mocks.MockAnalysisRepository{
+				GetAnalysisByIDFunc: func(_ context.Context,
+					_ uuid.UUID) (*models.Analysis, error) {
+					mockCopy := mock
+					return &mockCopy, nil
+				},
+				UpdateAnalysisFunc: func(_ context.Context,
+					analysis *models.Analysis) error {
+					updated = analysis
+					return nil
+				},
+			}
+			pl := &mocks.MockCabgenPipeline{
+				Config: pipeline.ToolsConfig{
+					ResfinderDBPath: newResfinderRef(t),
+				},
+				RunCheckMFunc: func(_ context.Context, threads int,
+					sample, assemblyDir, outputDir string) (
+					*pipeline.CheckMResult, error) {
+					return &pipeline.CheckMResult{
+						Completeness: "99.5", Contamination: "0.5",
+						GenomeSize: "5000000", N50: "100000",
+					}, nil
+				},
+				RunAbricateFunc: func(_ context.Context, threads int,
+					db, input, outputFile string) error {
+					return writeAbricateOutput(outputFile)
+				},
+			}
+
+			svc := services.NewAnalysisRunnerService(repo, pl,
+				&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			err := svc.Run(ctx, mock.ID)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, updated)
+			assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+
+			var results models.AnalysisResults
+			assert.NoError(t, json.Unmarshal(updated.Metrics, &results))
+			assert.Empty(t, results.SecondarySpeciesName)
+		})
 }
 
 func TestAnalysisRunnerComplete(t *testing.T) {

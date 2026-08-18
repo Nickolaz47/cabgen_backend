@@ -324,6 +324,31 @@ func TestProcessSpecies(t *testing.T) {
 		assert.Equal(t, "abaumannii (ST: ST2)", result.MLSTSpecies)
 	})
 
+	t.Run("Success - MLST Skips When Scheme And ST Are Dash",
+		func(t *testing.T) {
+			outDir := t.TempDir()
+			sampleID := "s1"
+			mlstPath := filepath.Join(outDir, "mlst.csv")
+			writeFile(t, mlstPath,
+				"contigs.fa,-,-,oxa0001,ompA0001\n")
+			writeFile(t, filepath.Join(outDir, sampleID+"_blastPoli"),
+				organismMockContent)
+			writeFile(t, filepath.Join(outDir, sampleID+"_blastOther"),
+				organismMockContent)
+
+			p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{
+				RunFunc: func(ctx context.Context, args []string) (
+					string, error) {
+					return mlstPath, nil
+				},
+			}, defaultConfig(), nil)
+			result, err := p.ProcessSpecies(context.Background(), 4,
+				sampleID, "Acinetobacter baumannii", "contigs.fa",
+				outDir)
+			assert.NoError(t, err)
+			assert.Empty(t, result.MLSTSpecies)
+		})
+
 	t.Run("Success - BlastX Poli Fails Returns Partial Result", func(t *testing.T) {
 		outDir := t.TempDir()
 		sampleID := "s1"
