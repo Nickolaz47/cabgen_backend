@@ -128,7 +128,7 @@ type MockCabgenPipeline struct {
 	RunFastQCFunc func(ctx context.Context, read1, read2,
 		outputDir string) (string, string, error)
 	RunUnicyclerFunc func(ctx context.Context, threads int,
-		read1, read2, spadesPath, outputDir string) (string, error)
+		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
 	RunProkkaFunc func(ctx context.Context, threads int,
 		assembly, outputDir string) error
 	RunCheckMFunc func(ctx context.Context, threads int, sample,
@@ -158,10 +158,10 @@ func (m *MockCabgenPipeline) RunFastQC(ctx context.Context, read1, read2,
 }
 
 func (m *MockCabgenPipeline) RunUnicycler(ctx context.Context, threads int,
-	read1, read2, spadesPath, outputDir string) (string, error) {
+	read1, read2, spadesPath, outputDir, outputFile string) (string, error) {
 	if m.RunUnicyclerFunc != nil {
 		return m.RunUnicyclerFunc(ctx, threads, read1, read2, spadesPath,
-			outputDir)
+			outputDir, outputFile)
 	}
 	return "assembly.fasta", nil
 }

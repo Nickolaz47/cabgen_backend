@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -39,7 +40,7 @@ type CabgenPipeline interface {
 	RunFastQC(ctx context.Context, read1, read2, outputDir string) (
 		string, string, error)
 	RunUnicycler(ctx context.Context, threads int,
-		read1, read2, spadesPath, outputDir string) (string, error)
+		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
 	RunProkka(ctx context.Context, threads int,
 		assembly, outputDir string) error
 	RunCheckM(ctx context.Context, threads int, sample, assemblyDir,
@@ -95,7 +96,7 @@ func (p *cabgenPipeline) RunFastQC(
 }
 
 func (p *cabgenPipeline) RunUnicycler(ctx context.Context, threads int,
-	read1, read2, spadesPath, outputDir string) (string, error) {
+	read1, read2, spadesPath, outputDir, outputFile string) (string, error) {
 	threadsStr := strconv.Itoa(threads)
 
 	unicyclerCmdArgs := p.Runner.BuildUnicyclerCmd(
@@ -106,7 +107,13 @@ func (p *cabgenPipeline) RunUnicycler(ctx context.Context, threads int,
 		return "", err
 	}
 
-	assemblyPath := filepath.Join(outputDir, "assembly.fasta")
+	originalAssemblyPath := filepath.Join(outputDir, "assembly.fasta")
+	newAssemblyPath := filepath.Join(outputDir, outputFile)
+
+	assemblyPath := originalAssemblyPath
+	if err := os.Rename(originalAssemblyPath, newAssemblyPath); err == nil {
+		assemblyPath = newAssemblyPath
+	}
 
 	return assemblyPath, nil
 }

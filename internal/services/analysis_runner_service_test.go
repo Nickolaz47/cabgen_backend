@@ -255,7 +255,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 		pl := &mocks.MockCabgenPipeline{
 			RunUnicyclerFunc: func(_ context.Context, threads int,
-				read1, read2, spadesPath, outputDir string) (
+				read1, read2, spadesPath, outputDir, outputFile string) (
 				string, error) {
 				return "", pipeline.ErrInvalidFormat
 			},
@@ -520,7 +520,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 		pl := &mocks.MockCabgenPipeline{
 			RunUnicyclerFunc: func(_ context.Context, threads int,
-				read1, read2, spadesPath, outputDir string) (
+				read1, read2, spadesPath, outputDir, outputFile string) (
 				string, error) {
 				return "", errors.New("spades missing")
 			},
@@ -631,7 +631,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 				ResfinderDBPath: newResfinderRef(t),
 			},
 			RunUnicyclerFunc: func(_ context.Context, threads int,
-				read1, read2, spadesPath, outputDir string) (
+				read1, read2, spadesPath, outputDir, outputFile string) (
 				string, error) {
 				unicyclerCalled = true
 				return "assembly.fa", nil
@@ -714,6 +714,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mock.Sample.Fasta = nil
 
 		unicyclerCalled := false
+		var capturedOutputFile string
 		var persistedSample *models.Sample
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
@@ -736,9 +737,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 				ResfinderDBPath: newResfinderRef(t),
 			},
 			RunUnicyclerFunc: func(_ context.Context, threads int,
-				read1, read2, spadesPath, outputDir string) (
+				read1, read2, spadesPath, outputDir, outputFile string) (
 				string, error) {
 				unicyclerCalled = true
+				capturedOutputFile = outputFile
 				return "assembly.fa", nil
 			},
 			RunAbricateFunc: func(_ context.Context, threads int,
@@ -755,6 +757,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.True(t, unicyclerCalled)
 		assert.NotNil(t, persistedSample)
 		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
+		assert.Equal(t, mock.Sample.OriginCode+"_assembly.fasta",
+			capturedOutputFile)
 	})
 
 	t.Run("Error - Abricate", func(t *testing.T) {

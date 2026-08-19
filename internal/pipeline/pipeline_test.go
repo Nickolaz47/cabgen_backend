@@ -102,10 +102,25 @@ func TestRunFastQC(t *testing.T) {
 
 func TestRunUnicycler(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
+		outDir := t.TempDir()
+		assemblyFile := filepath.Join(outDir, "assembly.fasta")
+		os.WriteFile(assemblyFile, []byte(">seq1\nATCG\n"), 0644)
+
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig(), nil)
 		path, err := p.RunUnicycler(context.Background(), 4, "r1", "r2",
-			"/spades", "/out")
+			"/spades", outDir, "A01_assembly.fasta")
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(outDir, "A01_assembly.fasta"), path)
+		assert.FileExists(t, path)
+		assert.NoFileExists(t, assemblyFile)
+	})
+
+	t.Run("Success - File Missing Falls Back", func(t *testing.T) {
+		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
+			defaultConfig(), nil)
+		path, err := p.RunUnicycler(context.Background(), 4, "r1", "r2",
+			"/spades", "/out", "A01_assembly.fasta")
 		assert.NoError(t, err)
 		assert.Equal(t, "/out/assembly.fasta", path)
 	})
@@ -114,7 +129,7 @@ func TestRunUnicycler(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
 			defaultConfig(), nil)
 		_, err := p.RunUnicycler(context.Background(), 4, "r1", "r2", "",
-			"/out")
+			"/out", "A01_assembly.fasta")
 		assert.Error(t, err)
 	})
 }

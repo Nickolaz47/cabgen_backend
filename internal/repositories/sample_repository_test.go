@@ -39,13 +39,12 @@ func TestGetSamples(t *testing.T) {
 	})
 
 	t.Run("Success - Filtered samples", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, "neis", uuid.Nil)
+		result, err := sampleRepo.GetSamples(ctx, mockSample.OriginCode, uuid.Nil)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
 		assert.Equal(t, mockSample.ID, result[0].ID)
-		assert.Equal(t, mockSample.Microorganism.Species,
-			result[0].Microorganism.Species)
+		assert.Equal(t, mockSample.OriginCode, result[0].OriginCode)
 	})
 
 	t.Run("Success - Filtered samples by user", func(t *testing.T) {

@@ -155,9 +155,13 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		analysis.Sample.Fasta == nil {
 		s.updateStep(ctx, analysis, models.StepUnicycler)
+
+		assemblyOutPath := fmt.Sprintf("%s_assembly.fasta",
+			analysis.Sample.OriginCode)
 		assembly, err := s.Pipeline.RunUnicycler(ctx, threads,
 			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
-			s.Pipeline.GetConfig().SpadesPath, folders.AssemblyDir)
+			s.Pipeline.GetConfig().SpadesPath, folders.AssemblyDir,
+			assemblyOutPath)
 		if err != nil {
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - Unicycler: %v",
