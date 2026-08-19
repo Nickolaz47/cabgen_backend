@@ -29,6 +29,15 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 
+	var filter models.AnalysisFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
@@ -37,7 +46,8 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 		return
 	}
 
-	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID, language)
+	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID, filter,
+		language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{

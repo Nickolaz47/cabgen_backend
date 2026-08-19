@@ -31,7 +31,7 @@ func TestGetAnalyses(t *testing.T) {
 	db.Create(&analysis)
 
 	t.Run("Success - userID is nil", func(t *testing.T) {
-		analyses, err := repo.GetAnalyses(ctx, uuid.Nil)
+		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -39,7 +39,7 @@ func TestGetAnalyses(t *testing.T) {
 	})
 
 	t.Run("Success - userID filter", func(t *testing.T) {
-		analyses, err := repo.GetAnalyses(ctx, uuid.New())
+		analyses, err := repo.GetAnalyses(ctx, uuid.New(), models.AnalysisFilter{})
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 0)
@@ -50,10 +50,123 @@ func TestGetAnalyses(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockAnalysisRepo := repositories.NewAnalysisRepository(mockDB)
-		analyses, err := mockAnalysisRepo.GetAnalyses(ctx, uuid.Nil)
+		analyses, err := mockAnalysisRepo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
 
 		assert.Error(t, err)
 		assert.Empty(t, analyses)
+	})
+}
+
+func TestGetAnalysesFilters(t *testing.T) {
+	ctx := context.Background()
+
+	mockUser := testmodels.NewLoginUser()
+	mockAnalysis := testmodels.CreateMockAnalysis()
+
+	t.Run("Collaborator - Filter by Type", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		filter := models.AnalysisFilter{Type: models.AnalysisTypeComplete}
+		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+	})
+
+	t.Run("Admin - Filter by Type", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		filter := models.AnalysisFilter{Type: models.AnalysisTypeComplete}
+		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+	})
+
+	t.Run("Admin - Filter by Username", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		filter := models.AnalysisFilter{Username: mockUser.Username}
+		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+	})
+
+	t.Run("Collaborator - Filter by Type Returns Subset", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		genomeAnalysis := mockAnalysis
+		genomeAnalysis.ID = uuid.New()
+		genomeAnalysis.Type = models.AnalysisTypeGenome
+		filterDB.Create(&genomeAnalysis)
+
+		completeAnalysis := mockAnalysis
+		completeAnalysis.ID = uuid.New()
+		completeAnalysis.Type = models.AnalysisTypeComplete
+		filterDB.Create(&completeAnalysis)
+
+		filter := models.AnalysisFilter{Type: models.AnalysisTypeGenome}
+		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+		assert.Equal(t, genomeAnalysis.ID, analyses[0].ID)
+	})
+
+	t.Run("Collaborator - Filter by OriginCode", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		filter := models.AnalysisFilter{
+			OriginCode: mockAnalysis.Sample.OriginCode,
+		}
+		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+	})
+
+	t.Run("Admin - Filter by OriginCode", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		filter := models.AnalysisFilter{
+			OriginCode: mockAnalysis.Sample.OriginCode,
+		}
+		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+	})
+
+	t.Run("Empty filter - both paths", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(filterDB)
+
+		filterDB.Create(&mockAnalysis)
+
+		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, models.AnalysisFilter{})
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+
+		analyses, err = repo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
 	})
 }
 

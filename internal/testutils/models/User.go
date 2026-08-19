@@ -62,6 +62,28 @@ func NewLoginUser() models.User {
 	}
 }
 
+func NewInactiveUser() models.User {
+	return models.User{
+		ID:        uuid.MustParse("f7e8d9c0-a1b2-3c4d-e5f6-a7b8c9d0e1f2"),
+		Name:      "Inactive User",
+		Username:  "inactive",
+		Password:  "$2a$10$P8SRTHBxlK09pYuj8Nn1A.2WMufAH1tZZKAPQel1bt0X5S82zbRGO",
+		Email:     "inactive@mail.com",
+		CountryID: countryID,
+		Country: models.Country{
+			ID:   countryID,
+			Code: "BRA",
+			Names: map[string]string{
+				"pt": "Brasil",
+				"en": "Brazil",
+				"es": "Brazil",
+			},
+		},
+		IsActive: false,
+		UserRole: models.Collaborator,
+	}
+}
+
 func NewAdminLoginUser() models.User {
 	return models.User{
 		ID:        uuid.MustParse("e6d36ae2-4855-5bae-a76d-d29e3d57e76d"),

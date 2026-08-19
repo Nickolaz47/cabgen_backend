@@ -24,7 +24,7 @@ func TestGetAnalyses(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindAllFunc: func(ctx context.Context,
-				userID uuid.UUID, language string) ([]models.AnalysisResponse, error) {
+				userID uuid.UUID, filter models.AnalysisFilter, language string) ([]models.AnalysisResponse, error) {
 				return []models.AnalysisResponse{mockResponse}, nil
 			},
 		}
@@ -70,7 +70,7 @@ func TestGetAnalyses(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindAllFunc: func(ctx context.Context,
-				userID uuid.UUID, language string) ([]models.AnalysisResponse, error) {
+				userID uuid.UUID, filter models.AnalysisFilter, language string) ([]models.AnalysisResponse, error) {
 				return nil, services.ErrInternal
 			},
 		}

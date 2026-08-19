@@ -36,7 +36,7 @@ func (r *userRepository) GetUsers(
 	if filter.Input != "" {
 		like := "%" + filter.Input + "%"
 		query = query.Where(
-			"username ILIKE ? OR email ILIKE ? OR name ILIKE ?",
+			"LOWER(username) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)",
 			like, like, like,
 		)
 	}

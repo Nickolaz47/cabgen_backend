@@ -35,7 +35,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return []models.Analysis{mockDone}, nil
 			},
 		}
@@ -76,7 +76,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return nil, nil
 			},
 		}
@@ -116,7 +116,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return []models.Analysis{mockDone, mockDuplicate, mockInvalid}, nil
 			},
 		}
@@ -156,7 +156,7 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return []models.Analysis{mockDone, mockPending, mockEmptyResult}, nil
 			},
 		}

@@ -9,8 +9,8 @@ import (
 )
 
 type AnalysisRepository interface {
-	GetAnalyses(ctx context.Context, userID uuid.UUID) (
-		[]models.Analysis, error)
+	GetAnalyses(ctx context.Context, userID uuid.UUID,
+		filter models.AnalysisFilter) ([]models.Analysis, error)
 	GetAnalysesByIDs(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
@@ -31,13 +31,48 @@ func NewAnalysisRepository(db *gorm.DB) AnalysisRepository {
 	}
 }
 
-func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID) (
+func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID,
+	filter models.AnalysisFilter) (
 	[]models.Analysis, error) {
 	var analyses []models.Analysis
 
 	query := r.DB.WithContext(ctx).Preload("Sample").Preload("User")
+	// Collaborator path
 	if userID != uuid.Nil {
-		query = query.Where("user_id = ?", userID)
+		query = query.Where("analyses.user_id = ?", userID)
+
+		if filter.OriginCode != "" {
+			like := "%" + filter.OriginCode + "%"
+			query = query.Joins("JOIN samples ON samples.id"+
+				" = analyses.sample_id").Where(
+				"LOWER(samples.origin_code) LIKE LOWER(?)", like,
+			)
+		}
+
+		if filter.Type != "" {
+			query = query.Where("type = ?", filter.Type)
+		}
+	}
+
+	// Admin path
+	if userID == uuid.Nil {
+		if filter.OriginCode != "" {
+			like := "%" + filter.OriginCode + "%"
+			query = query.Joins("JOIN samples ON samples.id"+
+				" = analyses.sample_id").Where(
+				"LOWER(samples.origin_code) LIKE LOWER(?)", like,
+			)
+		}
+
+		if filter.Type != "" {
+			query = query.Where("type = ?", filter.Type)
+		}
+
+		if filter.Username != "" {
+			query = query.Joins("JOIN users ON users.id"+
+				" = analyses.user_id").Where("users.username = ?",
+				filter.Username)
+		}
 	}
 
 	if err := query.Find(&analyses).Error; err != nil {

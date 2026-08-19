@@ -27,13 +27,13 @@ func TestAnalysisFindAll(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return []models.Analysis{mock}, nil
 			},
 		}
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil, "en")
+		result, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -43,7 +43,7 @@ func TestAnalysisFindAll(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID) ([]models.Analysis, error) {
+				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}
@@ -51,7 +51,7 @@ func TestAnalysisFindAll(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil, "en")
+		result, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

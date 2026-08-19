@@ -64,6 +64,102 @@ func TestGetAllUsers(t *testing.T) {
 		assert.Empty(t, users)
 		assert.Error(t, err)
 	})
+
+	t.Run("Success - Filter by Input", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+		filterDB.Create(&mockUser2)
+
+		filter := models.AdminUserFilter{Input: "nick"}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, mockUser.Username, users[0].Username)
+	})
+
+	t.Run("Success - Filter by UserRole", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+		filterDB.Create(&mockUser2)
+
+		filter := models.AdminUserFilter{UserRole: models.Admin}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, mockUser2.Username, users[0].Username)
+	})
+
+	t.Run("Success - Filter by Active true", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+		filterDB.Create(&mockUser2)
+		inactiveUser := testmodels.NewInactiveUser()
+		filterDB.Create(&inactiveUser)
+
+		active := true
+		filter := models.AdminUserFilter{Active: &active}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 2)
+	})
+
+	t.Run("Success - Filter by Active false", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+		filterDB.Create(&mockUser2)
+		inactiveUser := testmodels.NewInactiveUser()
+		filterDB.Create(&inactiveUser)
+
+		inactive := false
+		filter := models.AdminUserFilter{Active: &inactive}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, inactiveUser.Username, users[0].Username)
+	})
+
+	t.Run("Success - Filter Input + UserRole combined", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+		filterDB.Create(&mockUser2)
+
+		filter := models.AdminUserFilter{
+			Input:    "admin",
+			UserRole: models.Admin,
+		}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, mockUser2.Username, users[0].Username)
+	})
+
+	t.Run("Success - Filter no match", func(t *testing.T) {
+		filterDB := testutils.NewMockDB()
+		userRepo := repositories.NewUserRepo(filterDB)
+
+		filterDB.Create(&mockUser)
+
+		filter := models.AdminUserFilter{Input: "nonexistent"}
+		users, err := userRepo.GetUsers(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 0)
+	})
 }
 
 func TestGetUserByID(t *testing.T) {

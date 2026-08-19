@@ -30,7 +30,17 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 
-	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil, language)
+	var filter models.AnalysisFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
+	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil,
+		filter, language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{

@@ -18,7 +18,8 @@ import (
 )
 
 type AnalysisService interface {
-	FindAll(ctx context.Context, userID uuid.UUID, language string) (
+	FindAll(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter,
+		language string) (
 		[]models.AnalysisResponse, error)
 	FindByID(ctx context.Context, analysisID, userID uuid.UUID,
 		language string) (*models.AnalysisResponse, error)
@@ -75,8 +76,9 @@ func (s *analysisService) getAnalysisFolderPath(
 }
 
 func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
-	language string) ([]models.AnalysisResponse, error) {
-	analyses, err := s.Repo.GetAnalyses(ctx, userID)
+	filter models.AnalysisFilter, language string) (
+		[]models.AnalysisResponse, error) {
+	analyses, err := s.Repo.GetAnalyses(ctx, userID, filter)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"AnalysisService", "FindAll",

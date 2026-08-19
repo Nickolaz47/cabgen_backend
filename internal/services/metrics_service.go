@@ -47,7 +47,8 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 		return nil, ErrInternal
 	}
 
-	analyses, err := s.AnalysisRepo.GetAnalyses(ctx, uuid.Nil)
+	analyses, err := s.AnalysisRepo.GetAnalyses(ctx, uuid.Nil,
+		models.AnalysisFilter{})
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,

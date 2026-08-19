@@ -8,8 +8,8 @@ import (
 )
 
 type MockAnalysisRepository struct {
-	GetAnalysesFunc func(ctx context.Context, userID uuid.UUID) (
-		[]models.Analysis, error)
+	GetAnalysesFunc func(ctx context.Context, userID uuid.UUID,
+		filter models.AnalysisFilter) ([]models.Analysis, error)
 	GetAnalysesByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetAnalysisByIDFunc func(ctx context.Context, analysisID uuid.UUID) (
@@ -25,9 +25,10 @@ type MockAnalysisRepository struct {
 }
 
 func (r *MockAnalysisRepository) GetAnalyses(ctx context.Context,
-	userID uuid.UUID) ([]models.Analysis, error) {
+	userID uuid.UUID, filter models.AnalysisFilter) (
+	[]models.Analysis, error) {
 	if r.GetAnalysesFunc != nil {
-		return r.GetAnalysesFunc(ctx, userID)
+		return r.GetAnalysesFunc(ctx, userID, filter)
 	}
 	return nil, nil
 }
@@ -87,7 +88,8 @@ func (r *MockAnalysisRepository) DeleteAnalysis(ctx context.Context,
 }
 
 type MockAnalysisService struct {
-	FindAllFunc func(ctx context.Context, userID uuid.UUID, language string) (
+	FindAllFunc func(ctx context.Context, userID uuid.UUID,
+		filter models.AnalysisFilter, language string) (
 		[]models.AnalysisResponse, error)
 	FindByIDFunc func(ctx context.Context, analysisID, userID uuid.UUID,
 		language string) (*models.AnalysisResponse, error)
@@ -106,9 +108,10 @@ type MockAnalysisService struct {
 }
 
 func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID,
-	language string) ([]models.AnalysisResponse, error) {
+	filter models.AnalysisFilter, language string) (
+	[]models.AnalysisResponse, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx, userID, language)
+		return s.FindAllFunc(ctx, userID, filter, language)
 	}
 
 	return nil, nil

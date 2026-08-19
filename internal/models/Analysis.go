@@ -279,3 +279,9 @@ type AdminAnalysisUpdateInput struct {
 type AnalysisTSVDownloadInput struct {
 	IDs []uuid.UUID `json:"ids" binding:"required,min=1"`
 }
+
+type AnalysisFilter struct {
+	OriginCode string       `form:"originCode"`
+	Type       AnalysisType `form:"type"`
+	Username   string       `form:"username"`
+}
