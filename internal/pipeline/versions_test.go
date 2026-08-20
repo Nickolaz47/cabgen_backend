@@ -38,11 +38,11 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 		assert.Len(t, result, 9)
 
 		expected := map[string]string{
-			"fastqc": "1.2.3", "unicycler": "1.2.3",
-			"prokka": "1.2.3", "checkm": "1.2.3",
-			"kraken2": "1.2.3", "fastANI": "1.2.3",
-			"abricate": "1.2.3", "mlst": "1.2.3",
-			"blastx": "1.2.3",
+			"FastQC": "1.2.3", "Unicycler": "1.2.3",
+			"Prokka": "1.2.3", "CheckM": "1.2.3",
+			"Kraken2": "1.2.3", "FastANI": "1.2.3",
+			"Abricate": "1.2.3", "MLST": "1.2.3",
+			"Blast": "1.2.3",
 		}
 
 		for _, tv := range result {
@@ -70,7 +70,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 		)
 
 		for _, tv := range result {
-			if tv.Name == "checkm" {
+			if tv.Name == "CheckM" {
 				assert.Equal(t, "2.1.0", tv.Version)
 			} else {
 				assert.Equal(t, "1.2.3", tv.Version)
@@ -79,14 +79,17 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 	})
 
 	t.Run("Partial Failure", func(t *testing.T) {
-		failing := map[string]bool{
+		failingCmds := map[string]bool{
 			"fastqc": true, "unicycler": true, "prokka": true,
+		}
+		failingNames := map[string]bool{
+			"FastQC": true, "Unicycler": true, "Prokka": true,
 		}
 
 		cmd := &mocks.MockCommander{
 			CommandFunc: func(_ context.Context, name string,
 				_ ...string) pipeline.Cmd {
-				if failing[name] {
+				if failingCmds[name] {
 					return &mocks.MockCmd{
 						RunErr: fmt.Errorf("not found"),
 					}
@@ -102,7 +105,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 		assert.Len(t, result, 9)
 
 		for _, tv := range result {
-			if failing[tv.Name] {
+			if failingNames[tv.Name] {
 				assert.Equal(t, "unknown", tv.Version)
 			} else {
 				assert.Equal(t, "1.2.3", tv.Version)

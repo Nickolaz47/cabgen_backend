@@ -51,7 +51,7 @@ func GetBioinfoProgramVersions(ctx context.Context,
 			version = m[1]
 		}
 
-		result = append(result, ToolVersion{Name: name, Version: version})
+		result = append(result, ToolVersion{Name: t.Name, Version: version})
 	}
 
 	return result
