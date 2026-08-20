@@ -149,6 +149,9 @@ type AnalysisResults struct {
 	AcquiredResistance []string `json:"acquired_resistance,omitempty"`
 	VFDB               []string `json:"vfdb,omitempty"`
 	PlasmidFinder      []string `json:"plasmid,omitempty"`
+
+	// --- Versions ---
+	Versions []pipeline.ToolVersion `json:"versions,omitempty"`
 }
 
 type Analysis struct {

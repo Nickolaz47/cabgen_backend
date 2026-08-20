@@ -13,10 +13,11 @@ func BuildAnalysisRunnerService(db *gorm.DB, config pipeline.ToolsConfig,
 	asynqClient *asynq.Client, rootDir string,
 	logger *zap.Logger) services.AnalysisRunnerService {
 	analysisRepo := repositories.NewAnalysisRepository(db)
-	runner := pipeline.NewToolRunner(&pipeline.RealCommander{})
+	cmdr := &pipeline.RealCommander{}
+	runner := pipeline.NewToolRunner(cmdr)
 	pipeline := pipeline.NewCabgenPipeline(runner, config, logger)
 
 	return services.NewAnalysisRunnerService(
-		analysisRepo, pipeline, asynqClient, logger, rootDir,
+		analysisRepo, pipeline, cmdr, asynqClient, logger, rootDir,
 	)
 }

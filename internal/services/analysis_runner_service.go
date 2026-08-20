@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -28,6 +29,11 @@ import (
 
 const SecondarySpeciesContaminationThreshold = 5.0
 
+var (
+	versionsOnce sync.Once
+	versions     []pipeline.ToolVersion
+)
+
 type AnalysisRunnerFolders struct {
 	QCDir       string
 	AssemblyDir string
@@ -42,6 +48,7 @@ type AnalysisRunnerService interface {
 type analysisRunnerService struct {
 	Repo        repositories.AnalysisRepository
 	Pipeline    pipeline.CabgenPipeline
+	Commander   pipeline.Commander
 	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
 	RootDir     string
@@ -50,11 +57,13 @@ type analysisRunnerService struct {
 func NewAnalysisRunnerService(
 	repo repositories.AnalysisRepository,
 	pipeline pipeline.CabgenPipeline,
+	commander pipeline.Commander,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger, rootDir string) AnalysisRunnerService {
 	return &analysisRunnerService{
 		Repo:        repo,
 		Pipeline:    pipeline,
+		Commander:   commander,
 		AsynqClient: asynqClient,
 		Logger:      logger,
 		RootDir:     rootDir,
@@ -85,6 +94,13 @@ func (s *analysisRunnerService) prepareFolders(
 		QCDir: qcDir, AssemblyDir: assemblyDir, AMRDir: amrDir,
 		ReportDir: reportDir,
 	}, nil
+}
+
+func (s *analysisRunnerService) getVersions(ctx context.Context,
+) {
+	versionsOnce.Do(func() {
+		versions = pipeline.GetBioinfoProgramVersions(ctx, s.Commander)
+	})
 }
 
 func (s *analysisRunnerService) runFastQC(ctx context.Context,
@@ -397,6 +413,8 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 	analysis.FinishedAt = &finished
 	analysis.Step = ""
 
+	results.Versions = versions
+
 	if runErr != nil {
 		analysis.Status = models.AnalysisStatusFailed
 		msg := runErr.Error()
@@ -477,6 +495,8 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 		)...)
 		return ErrInternal
 	}
+
+	s.getVersions(ctx)
 
 	start := time.Now()
 	analysis.Status = models.AnalysisStatusRunning
