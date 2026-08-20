@@ -36,3 +36,24 @@ func TestNewAsynqClient(t *testing.T) {
 		assert.Nil(t, client)
 	})
 }
+
+func TestNewAsynqInspector(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		mr, err := miniredis.Run()
+		require.NoError(t, err)
+		defer mr.Close()
+
+		inspector, err := queue.NewAsynqInspector(mr.Addr())
+
+		assert.NoError(t, err)
+		assert.NotNil(t, inspector)
+	})
+
+	t.Run("Error - Empty Address", func(t *testing.T) {
+		inspector, err := queue.NewAsynqInspector("")
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Redis address is empty")
+		assert.Nil(t, inspector)
+	})
+}

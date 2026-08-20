@@ -67,6 +67,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Asynq Inspector
+	asynqInspector, err := queue.NewAsynqInspector(config.RedisURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Load translations
 	translation.LoadTranslation()
 
@@ -136,7 +142,7 @@ func main() {
 	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
 		logging.FileLogger)
 	analysisSvc := container.BuildAnalysisService(mainDB.DB(), asynqClient,
-		logging.FileLogger, rootDir)
+		asynqInspector, logging.FileLogger, rootDir)
 	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),

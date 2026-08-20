@@ -24,3 +24,16 @@ func NewAsynqClient(redisAddr string) (*asynq.Client, error) {
 
 	return client, nil
 }
+
+func NewAsynqInspector(redisAddr string) (*asynq.Inspector, error) {
+	if redisAddr == "" {
+		return nil, errors.New("Redis address is empty")
+	}
+
+	opt := asynq.RedisClientOpt{
+		Addr: redisAddr,
+		DB:   0,
+	}
+
+	return asynq.NewInspector(opt), nil
+}

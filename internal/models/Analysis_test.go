@@ -121,3 +121,17 @@ func TestAnalysisStatusCanTransitionTo(t *testing.T) {
 		})
 	}
 }
+
+func TestAnalysisTaskID(t *testing.T) {
+	t.Run("Default is nil", func(t *testing.T) {
+		analysis := models.Analysis{}
+		assert.Nil(t, analysis.TaskID)
+	})
+
+	t.Run("Can be set", func(t *testing.T) {
+		taskID := "asynq:task-123"
+		analysis := models.Analysis{TaskID: &taskID}
+		assert.NotNil(t, analysis.TaskID)
+		assert.Equal(t, "asynq:task-123", *analysis.TaskID)
+	})
+}

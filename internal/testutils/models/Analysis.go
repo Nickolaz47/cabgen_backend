@@ -16,6 +16,7 @@ type Analysis struct {
 	Type   rModels.AnalysisType   `gorm:"type:varchar(20);not null"`
 	Status rModels.AnalysisStatus `gorm:"type:varchar(20);not null;default:'PENDING'"`
 	Step   string                 `gorm:"type:varchar(20);default:''"`
+	TaskID *string                `gorm:"type:varchar(255)"`
 
 	// Results
 	Metrics        datatypes.JSON `gorm:"type:jsonb"`

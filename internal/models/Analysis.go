@@ -175,6 +175,7 @@ type Analysis struct {
 	Type   AnalysisType   `gorm:"type:varchar(20);not null"`
 	Status AnalysisStatus `gorm:"type:varchar(20);not null;default:'PENDING'"`
 	Step   AnalysisStep   `gorm:"type:varchar(20);default:''"`
+	TaskID *string        `gorm:"type:varchar(255)"`
 
 	// Paths
 	FastQC1 *string `gorm:"type:varchar(255)"`

@@ -42,6 +42,7 @@ type analysisService struct {
 	SampleRepo  repositories.SampleRepository
 	UserRepo    repositories.UserRepository
 	AsynqClient TaskEnqueuer
+	Canceller   TaskCanceller
 	Logger      *zap.Logger
 	RootDir     string
 }
@@ -51,6 +52,7 @@ func NewAnalysisService(
 	sampleRepo repositories.SampleRepository,
 	userRepo repositories.UserRepository,
 	asynqClient TaskEnqueuer,
+	canceller TaskCanceller,
 	logger *zap.Logger,
 	rootDir string,
 ) AnalysisService {
@@ -59,6 +61,7 @@ func NewAnalysisService(
 		SampleRepo:  sampleRepo,
 		UserRepo:    userRepo,
 		AsynqClient: asynqClient,
+		Canceller:   canceller,
 		Logger:      logger,
 		RootDir:     rootDir,
 	}
@@ -273,6 +276,15 @@ func (s *analysisService) Create(ctx context.Context,
 				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
 			)...)
+
+			taskID := info.ID
+			analysis.TaskID = &taskID
+			if err := s.Repo.UpdateAnalysis(ctx, &analysis); err != nil {
+				s.Logger.Warn("Service Warning", logging.ServiceLogging(
+					"AnalysisService", "Create",
+					logging.DatabaseError, err,
+				)...)
+			}
 		}
 	}
 
@@ -312,6 +324,16 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				logging.DatabaseError, err,
 			)...)
 		return nil, ErrInternal
+	}
+
+	if analysis.Status == models.AnalysisStatusFailed &&
+		analysis.TaskID != nil {
+		if err := s.Canceller.CancelProcessing(*analysis.TaskID); err != nil {
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+				"AnalysisService", "Update",
+				logging.RedisDispatchError, err,
+			)...)
+		}
 	}
 
 	if analysis.Status == models.AnalysisStatusDone ||
@@ -361,6 +383,15 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
 				)...)
+
+				taskID := info.ID
+				analysis.TaskID = &taskID
+				if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
+					s.Logger.Warn("Service Warning", logging.ServiceLogging(
+						"AnalysisService", "Update",
+						logging.DatabaseError, err,
+					)...)
+				}
 			}
 		}
 	}

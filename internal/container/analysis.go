@@ -11,13 +11,14 @@ import (
 )
 
 func BuildAnalysisService(db *gorm.DB, asynqClient *asynq.Client,
-	logger *zap.Logger, rootDir string) services.AnalysisService {
+	inspector *asynq.Inspector, logger *zap.Logger,
+	rootDir string) services.AnalysisService {
 	analysisRepo := repositories.NewAnalysisRepository(db)
 	sampleRepo := repositories.NewSampleRepo(db)
 	userRepo := repositories.NewUserRepo(db)
 	analysisService := services.NewAnalysisService(
 		analysisRepo, sampleRepo,
-		userRepo, asynqClient, logger, rootDir,
+		userRepo, asynqClient, inspector, logger, rootDir,
 	)
 
 	return analysisService

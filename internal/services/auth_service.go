@@ -22,10 +22,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type TaskEnqueuer interface {
-	EnqueueContext(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error)
-}
-
 type AuthService interface {
 	Register(ctx context.Context, input models.UserRegisterInput,
 		language string) (*models.UserResponse, error)
