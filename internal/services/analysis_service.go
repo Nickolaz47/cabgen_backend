@@ -298,6 +298,11 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 		return nil, ErrInternal
 	}
 
+	if input.Status != nil &&
+		!analysis.Status.CanTransitionTo(*input.Status) {
+		return nil, ErrInvalidStatusTransition
+	}
+
 	validations.ApplyAnalysisUpdate(analysis, &input)
 
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
@@ -320,6 +325,31 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 		} else {
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueEmail))
+			if err != nil {
+				s.Logger.Error("Service Error", logging.ServiceLogging(
+					"AnalysisService", "Update",
+					logging.RedisDispatchError, err,
+				)...)
+			} else {
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+					"AnalysisService", "Update",
+					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+					zap.String("queue", info.Queue),
+				)...)
+			}
+		}
+	}
+
+	if analysis.Status == models.AnalysisStatusPending {
+		task, err := tasks.NewAnalysisProcessTask(analysis.ID)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(
+				"AnalysisService", "Update", logging.AsynqTaskError,
+				err,
+			)...)
+		} else {
+			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+				asynq.Queue(tasks.QueueAnalysis))
 			if err != nil {
 				s.Logger.Error("Service Error", logging.ServiceLogging(
 					"AnalysisService", "Update",

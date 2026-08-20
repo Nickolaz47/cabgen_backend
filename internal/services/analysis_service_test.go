@@ -668,14 +668,9 @@ func TestAnalysisUpdate(t *testing.T) {
 	ctx := context.Background()
 	mock := testmodels.CreateMockAnalysis()
 
-	statusRunning := models.AnalysisStatusRunning
-	updateInputRunning := models.AdminAnalysisUpdateInput{
-		Status: &statusRunning,
-	}
-
-	statusDone := models.AnalysisStatusDone
-	updateInputDone := models.AdminAnalysisUpdateInput{
-		Status: &statusDone,
+	statusPending := models.AnalysisStatusPending
+	updateInputPending := models.AdminAnalysisUpdateInput{
+		Status: &statusPending,
 	}
 
 	statusFailed := models.AnalysisStatusFailed
@@ -683,28 +678,12 @@ func TestAnalysisUpdate(t *testing.T) {
 		Status: &statusFailed,
 	}
 
-	t.Run("Success", func(t *testing.T) {
-		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysisByIDFunc: func(ctx context.Context,
-				analysisID uuid.UUID) (*models.Analysis, error) {
-				return &mock, nil
-			},
-			UpdateAnalysisFunc: func(ctx context.Context,
-				analysis *models.Analysis) error {
-				return nil
-			},
-		}
+	statusRunning := models.AnalysisStatusRunning
+	updateInputRunning := models.AdminAnalysisUpdateInput{
+		Status: &statusRunning,
+	}
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
-
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, models.AnalysisStatusRunning, result.Status)
-		assert.NotNil(t, result.StartedAt)
-	})
-
-	t.Run("Success - Status Done Enqueues Email Task", func(t *testing.T) {
+	t.Run("Success - PENDING Enqueues Process Task", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(ctx context.Context,
 				analysisID uuid.UUID) (*models.Analysis, error) {
@@ -721,15 +700,19 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
 			enqueuer, mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputDone, "en")
+		result, err := svc.Update(ctx, mock.ID, updateInputPending, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, models.AnalysisStatusPending, result.Status)
+		assert.Nil(t, result.Metrics)
+		assert.Nil(t, result.ErrorMessage)
+		assert.Nil(t, result.StartedAt)
+		assert.Nil(t, result.FinishedAt)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Success - Status Failed Enqueues Email Task", func(t *testing.T) {
+	t.Run("Success - Failed Enqueues Email Task", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(ctx context.Context,
 				analysisID uuid.UUID) (*models.Analysis, error) {
@@ -751,6 +734,7 @@ func TestAnalysisUpdate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, models.AnalysisStatusFailed, result.Status)
+		assert.NotNil(t, result.FinishedAt)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -776,12 +760,29 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil,
 			failingEnqueuer, mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputDone, "en")
+		result, err := svc.Update(ctx, mock.ID, updateInputFailed, "en")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, models.AnalysisStatusDone, result.Status)
+		assert.Equal(t, models.AnalysisStatusFailed, result.Status)
 		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Invalid Transition", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(ctx context.Context,
+				analysisID uuid.UUID) (*models.Analysis, error) {
+				return &mock, nil
+			},
+		}
+
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil,
+			t.TempDir())
+		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInvalidStatusTransition)
+		assert.Nil(t, result)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -796,7 +797,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
+		result, err := svc.Update(ctx, mock.ID, updateInputPending, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -816,7 +817,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
+		result, err := svc.Update(ctx, mock.ID, updateInputPending, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -840,7 +841,7 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil,
 			mockLogger, t.TempDir())
-		result, err := svc.Update(ctx, mock.ID, updateInputRunning, "en")
+		result, err := svc.Update(ctx, mock.ID, updateInputFailed, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

@@ -76,3 +76,48 @@ func TestAnalysisToResponseTranslation(t *testing.T) {
 		assert.Nil(t, result.ErrorMessage)
 	})
 }
+
+func TestAnalysisStatusCanTransitionTo(t *testing.T) {
+	tests := []struct {
+		name   string
+		from   models.AnalysisStatus
+		to     models.AnalysisStatus
+		expect bool
+	}{
+		{"DONE to PENDING", models.AnalysisStatusDone,
+			models.AnalysisStatusPending, true},
+		{"DONE to FAILED", models.AnalysisStatusDone,
+			models.AnalysisStatusFailed, true},
+		{"DONE to RUNNING", models.AnalysisStatusDone,
+			models.AnalysisStatusRunning, false},
+		{"DONE to DONE", models.AnalysisStatusDone,
+			models.AnalysisStatusDone, false},
+
+		{"FAILED to PENDING", models.AnalysisStatusFailed,
+			models.AnalysisStatusPending, true},
+		{"FAILED to FAILED", models.AnalysisStatusFailed,
+			models.AnalysisStatusFailed, true},
+		{"FAILED to RUNNING", models.AnalysisStatusFailed,
+			models.AnalysisStatusRunning, false},
+
+		{"RUNNING to FAILED", models.AnalysisStatusRunning,
+			models.AnalysisStatusFailed, true},
+		{"RUNNING to PENDING", models.AnalysisStatusRunning,
+			models.AnalysisStatusPending, false},
+		{"RUNNING to DONE", models.AnalysisStatusRunning,
+			models.AnalysisStatusDone, false},
+
+		{"PENDING to FAILED", models.AnalysisStatusPending,
+			models.AnalysisStatusFailed, true},
+		{"PENDING to PENDING", models.AnalysisStatusPending,
+			models.AnalysisStatusPending, false},
+		{"PENDING to RUNNING", models.AnalysisStatusPending,
+			models.AnalysisStatusRunning, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expect, tt.from.CanTransitionTo(tt.to))
+		})
+	}
+}

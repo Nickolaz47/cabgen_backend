@@ -215,13 +215,15 @@ func ApplyAnalysisUpdate(analysis *models.Analysis,
 	if input.Status != nil {
 		analysis.Status = *input.Status
 
-		if *input.Status == models.AnalysisStatusRunning {
-			startedAt := time.Now()
-			analysis.StartedAt = &startedAt
+		if *input.Status == models.AnalysisStatusPending {
+			analysis.ErrorMessage = nil
+			analysis.Metrics = nil
+			analysis.FinishedAt = nil
+			analysis.StartedAt = nil
+			analysis.Step = ""
 		}
 
-		if *input.Status == models.AnalysisStatusDone ||
-			*input.Status == models.AnalysisStatusFailed {
+		if *input.Status == models.AnalysisStatusFailed {
 			finishedAt := time.Now()
 			analysis.FinishedAt = &finishedAt
 		}

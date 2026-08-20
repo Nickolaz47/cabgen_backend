@@ -93,6 +93,20 @@ func (a AnalysisStatus) IsValid() bool {
 	}
 }
 
+func (a AnalysisStatus) CanTransitionTo(target AnalysisStatus) bool {
+	switch a {
+	case AnalysisStatusDone, AnalysisStatusFailed:
+		return target == AnalysisStatusPending ||
+			target == AnalysisStatusFailed
+	case AnalysisStatusRunning:
+		return target == AnalysisStatusFailed
+	case AnalysisStatusPending:
+		return target == AnalysisStatusFailed
+	default:
+		return false
+	}
+}
+
 type AnalysisStep string
 
 const (

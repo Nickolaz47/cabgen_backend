@@ -34,6 +34,8 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusBadRequest, responses.SampleMissingFastq2
 	case errors.Is(err, services.ErrDeleteRunningAnalysis):
 		return http.StatusBadRequest, responses.AnalysisDeleteRunningError
+	case errors.Is(err, services.ErrInvalidStatusTransition):
+		return http.StatusBadRequest, responses.AnalysisInvalidStatus
 	default:
 		return http.StatusInternalServerError,
 			responses.GenericInternalServerError

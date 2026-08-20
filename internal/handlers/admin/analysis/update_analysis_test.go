@@ -26,7 +26,7 @@ func TestUpdateAnalysis(t *testing.T) {
 	mockResponse := mockAnalysis.ToResponse("en")
 
 	validInput := map[string]any{
-		"status":           models.AnalysisStatusDone,
+		"status":           models.AnalysisStatusPending,
 		"metrics":          map[string]any{"coverage": 98.5, "reads": 1500000},
 		"fastqc1":          "/app/uploads/fastqc1_report.html",
 		"fastqc2":          "/app/uploads/fastqc2_report.html",
