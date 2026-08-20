@@ -384,22 +384,24 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		return ErrInternal
 	}
 
+	sampleDir := s.getSampleFolderPath(userID, sampleID)
+
 	if oldFastq1 != nil && input.Fastq1 != nil && *oldFastq1 != *input.Fastq1 {
-		if err := os.Remove(*oldFastq1); err != nil {
+		if err := os.Remove(filepath.Join(sampleDir, *oldFastq1)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)
 		}
 	}
 	if oldFastq2 != nil && input.Fastq2 != nil && *oldFastq2 != *input.Fastq2 {
-		if err := os.Remove(*oldFastq2); err != nil {
+		if err := os.Remove(filepath.Join(sampleDir, *oldFastq2)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)
 		}
 	}
 	if oldFasta != nil && input.Fasta != nil && *oldFasta != *input.Fasta {
-		if err := os.Remove(*oldFasta); err != nil {
+		if err := os.Remove(filepath.Join(sampleDir, *oldFasta)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)

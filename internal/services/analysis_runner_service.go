@@ -112,8 +112,29 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 			"CabgenPipeline")...,
 	)
 
+	fastq1Path, ok := utils.ResolveSampleFilePath(
+		s.RootDir,
+		analysis.UserID.String(),
+		analysis.SampleID.String(),
+		*analysis.Sample.Fastq1,
+		"fastq", "",
+	)
+	if !ok {
+		return fmt.Errorf("fastq1 file not found: %s", *analysis.Sample.Fastq1)
+	}
+	fastq2Path, ok := utils.ResolveSampleFilePath(
+		s.RootDir,
+		analysis.UserID.String(),
+		analysis.SampleID.String(),
+		*analysis.Sample.Fastq2,
+		"fastq", "",
+	)
+	if !ok {
+		return fmt.Errorf("fastq2 file not found: %s", *analysis.Sample.Fastq2)
+	}
+
 	fastqc1, fastqc2, err := s.Pipeline.RunFastQC(
-		ctx, *analysis.Sample.Fastq1, *analysis.Sample.Fastq2, outputDir)
+		ctx, fastq1Path, fastq2Path, outputDir)
 	if err != nil {
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed FastQC step: %v", analysis.ID.String(), err),
@@ -159,19 +180,26 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	var assemblyPath *string
 
 	if analysis.Sample.Fasta != nil {
-		if _, err := os.Stat(*analysis.Sample.Fasta); err != nil {
+		resolved, ok := utils.ResolveSampleFilePath(
+			s.RootDir,
+			analysis.UserID.String(),
+			analysis.SampleID.String(),
+			*analysis.Sample.Fasta,
+			"fasta", analysis.ID.String(),
+		)
+		if !ok {
 			s.Logger.Warn(fmt.Sprintf(
 				"%s: FASTA file not found at %s, falling back to reads",
 				analysis.ID.String(), *analysis.Sample.Fasta),
 				logging.ServiceLogging(
 					"AnalysisRunnerService", "runGenome",
-					logging.MissingFileError, err,
+					logging.MissingFileError, fmt.Errorf("file not found"),
 				)...)
 			analysis.Sample.Fasta = nil
 		} else {
 			dst := filepath.Join(folders.AssemblyDir,
 				filepath.Base(*analysis.Sample.Fasta))
-			if err := utils.CopyFile(*analysis.Sample.Fasta, dst); err != nil {
+			if err := utils.CopyFile(resolved, dst); err != nil {
 				return fmt.Errorf("failed to prepare assembly: %w", err)
 			}
 			assemblyPath = &dst
@@ -182,10 +210,31 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		analysis.Sample.Fasta == nil {
 		s.updateStep(ctx, analysis, models.StepUnicycler)
 
+		fastq1Path, ok := utils.ResolveSampleFilePath(
+			s.RootDir,
+			analysis.UserID.String(),
+			analysis.SampleID.String(),
+			*analysis.Sample.Fastq1,
+			"fastq", "",
+		)
+		if !ok {
+			return fmt.Errorf("fastq1 file not found: %s", *analysis.Sample.Fastq1)
+		}
+		fastq2Path, ok := utils.ResolveSampleFilePath(
+			s.RootDir,
+			analysis.UserID.String(),
+			analysis.SampleID.String(),
+			*analysis.Sample.Fastq2,
+			"fastq", "",
+		)
+		if !ok {
+			return fmt.Errorf("fastq2 file not found: %s", *analysis.Sample.Fastq2)
+		}
+
 		assemblyOutPath := fmt.Sprintf("%s_assembly.fasta",
 			analysis.Sample.OriginCode)
 		assembly, err := s.Pipeline.RunUnicycler(ctx, threads,
-			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
+			fastq1Path, fastq2Path,
 			s.Pipeline.GetConfig().SpadesPath, folders.AssemblyDir,
 			assemblyOutPath)
 		if err != nil {
@@ -202,7 +251,8 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			return pipeline.ErrUnicycler
 		}
 		assemblyPath = &assembly
-		analysis.Sample.Fasta = &assembly
+		assemblyFileName := filepath.Base(assembly)
+		analysis.Sample.Fasta = &assemblyFileName
 
 		if err := s.Repo.UpdateSample(ctx, &analysis.Sample); err != nil {
 			s.Logger.Warn(fmt.Sprintf(
@@ -376,9 +426,28 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		genomeSize > 0 {
 		s.updateStep(ctx, analysis, models.StepCoverage)
+		fastq1Path, ok := utils.ResolveSampleFilePath(
+			s.RootDir,
+			analysis.UserID.String(),
+			analysis.SampleID.String(),
+			*analysis.Sample.Fastq1,
+			"fastq", "",
+		)
+		if !ok {
+			return fmt.Errorf("fastq1 file not found: %s", *analysis.Sample.Fastq1)
+		}
+		fastq2Path, ok := utils.ResolveSampleFilePath(
+			s.RootDir,
+			analysis.UserID.String(),
+			analysis.SampleID.String(),
+			*analysis.Sample.Fastq2,
+			"fastq", "",
+		)
+		if !ok {
+			return fmt.Errorf("fastq2 file not found: %s", *analysis.Sample.Fastq2)
+		}
 		coverage, err := pipeline.CalculateCoverage(
-			*analysis.Sample.Fastq1, *analysis.Sample.Fastq2,
-			int64(genomeSize))
+			fastq1Path, fastq2Path, int64(genomeSize))
 		if err != nil {
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - CalculateCoverage: %v",

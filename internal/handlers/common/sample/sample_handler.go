@@ -242,7 +242,6 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 		// Save to the disk
 		dstPath := filepath.Join(uploadDir, fileName)
-		dstPathPointer := &dstPath
 
 		out, err := os.Create(dstPath)
 		if err != nil {
@@ -268,11 +267,11 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 		switch formName {
 		case "fastq1":
-			attachmentInput.Fastq1 = dstPathPointer
+			attachmentInput.Fastq1 = &fileName
 		case "fastq2":
-			attachmentInput.Fastq2 = dstPathPointer
+			attachmentInput.Fastq2 = &fileName
 		case "fasta":
-			attachmentInput.Fasta = dstPathPointer
+			attachmentInput.Fasta = &fileName
 		}
 	}
 

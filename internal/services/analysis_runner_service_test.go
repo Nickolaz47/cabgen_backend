@@ -34,12 +34,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
 
 	t.Run("Success", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeFastQC
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -66,7 +69,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{}, enqueuer,
-			zap.NewNop(), t.TempDir())
+			zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -144,12 +147,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - FastQC", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeFastQC
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		var steps []models.AnalysisStep
@@ -175,7 +181,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mockLogger, _ := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskEnqueuer{}, mockLogger, rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -190,12 +196,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - FastQC Input Error Preserved", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeFastQC
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -218,7 +227,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -232,6 +241,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Unicycler Input Error Preserved", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
@@ -239,6 +249,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
 		mock.Sample.Fasta = nil
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -262,7 +274,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -276,14 +288,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Prokka", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
-		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+		relFasta := createTestFasta(t, rootDir, mock.UserID,
+			mock.SampleID, "contigs.fasta", ">seq1\nATCG\n")
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
-		mock.Sample.Fasta = &fasta
+		mock.Sample.Fasta = &relFasta
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -306,7 +319,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -319,14 +332,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Kraken2", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
-		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+		relFasta := createTestFasta(t, rootDir, mock.UserID,
+			mock.SampleID, "contigs.fasta", ">seq1\nATCG\n")
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
-		mock.Sample.Fasta = &fasta
+		mock.Sample.Fasta = &relFasta
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -350,7 +364,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -363,14 +377,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Species", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
-		fasta := filepath.Join(t.TempDir(), "contigs.fasta")
-		os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+		relFasta := createTestFasta(t, rootDir, mock.UserID,
+			mock.SampleID, "contigs.fasta", ">seq1\nATCG\n")
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
-		mock.Sample.Fasta = &fasta
+		mock.Sample.Fasta = &relFasta
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -401,7 +416,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -414,12 +429,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Unknown Type", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = "NONSENSE"
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		repo := &mocks.MockAnalysisRepository{
@@ -446,7 +464,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 
 		svc := services.NewAnalysisRunnerService(repo,
 			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, enqueuer,
-			zap.NewNop(), t.TempDir())
+			zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -495,6 +513,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Unicycler", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
@@ -502,6 +521,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
 		mock.Sample.Fasta = nil
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		updated := (*models.Analysis)(nil)
 		var steps []models.AnalysisStep
@@ -527,7 +548,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -543,12 +564,15 @@ func TestAnalysisRunnerRun(t *testing.T) {
 	})
 
 	t.Run("Error - Enqueue", func(t *testing.T) {
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeFastQC
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+		createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
 
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
@@ -572,7 +596,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 
 		svc := services.NewAnalysisRunnerService(repo,
 			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, enqueuer, mockLogger,
-			t.TempDir())
+			rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -597,6 +621,29 @@ func newResfinderRef(t *testing.T) string {
 	return path
 }
 
+func createTestFasta(t *testing.T, rootDir string,
+	userID, sampleID uuid.UUID, fileName, content string) string {
+	t.Helper()
+	fullPath := filepath.Join(rootDir, "uploads", "users",
+		userID.String(), "samples", sampleID.String(), fileName)
+	os.MkdirAll(filepath.Dir(fullPath), 0755)
+	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+	return fileName
+}
+
+func createTestFastq(t *testing.T, rootDir string,
+	userID, sampleID uuid.UUID, fileName string) {
+	t.Helper()
+	fullPath := filepath.Join(rootDir, "uploads", "users",
+		userID.String(), "samples", sampleID.String(), fileName)
+	os.MkdirAll(filepath.Dir(fullPath), 0755)
+	if err := os.WriteFile(fullPath, []byte("@read\nATCG\n+\nIIII\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestAnalysisRunnerGenome(t *testing.T) {
 	ctx := context.Background()
 
@@ -605,18 +652,16 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
 
 	t.Run("Success - Existing FASTA", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		fastaPath := filepath.Join(tmpDir, "contigs.fasta")
-		err := os.WriteFile(fastaPath, []byte(">seq1\nATCGATCG\n"), 0644)
-		assert.NoError(t, err)
-
+		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
+		relFasta := createTestFasta(t, rootDir, mock.UserID,
+			mock.SampleID, "contigs.fasta", ">seq1\nATCGATCG\n")
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
-		mock.Sample.Fasta = &fastaPath
+		mock.Sample.Fasta = &relFasta
 
 		unicyclerCalled := false
 		repo := &mocks.MockAnalysisRepository{
@@ -647,8 +692,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
-		err = svc.Run(ctx, mock.ID)
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
 		assert.False(t, unicyclerCalled,
@@ -656,18 +701,17 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 	})
 
 	t.Run("Success - FASTA Only Copies to AssemblyDir", func(t *testing.T) {
-		tmpDir := t.TempDir()
+		rootDir := t.TempDir()
 		fastaContent := ">seq1\nATCGATCG\n"
-		fastaPath := filepath.Join(tmpDir, "user_genome.fasta")
-		err := os.WriteFile(fastaPath, []byte(fastaContent), 0644)
-		assert.NoError(t, err)
 
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
+		relFasta := createTestFasta(t, rootDir, mock.UserID,
+			mock.SampleID, "user_genome.fasta", fastaContent)
 		mock.Sample.Fastq1 = nil
 		mock.Sample.Fastq2 = nil
-		mock.Sample.Fasta = &fastaPath
+		mock.Sample.Fasta = &relFasta
 
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
@@ -690,10 +734,9 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 		}
 
-		rootDir := t.TempDir()
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
-		err = svc.Run(ctx, mock.ID)
+		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
 
@@ -760,7 +803,9 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, unicyclerCalled)
 		assert.NotNil(t, persistedSample)
-		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
+		assert.Contains(t, *persistedSample.Fasta, "assembly.fa")
+		assert.False(t, filepath.IsAbs(*persistedSample.Fasta),
+			"persisted path should be relative")
 		assert.Equal(t, mock.Sample.OriginCode+"_assembly.fasta",
 			capturedOutputFile)
 	})
@@ -770,7 +815,8 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
-		fasta := "/nonexistent/path/genome.fasta"
+		fasta := "uploads/users/" + mock.UserID.String() +
+			"/samples/" + mock.SampleID.String() + "/genome.fasta"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
 		mock.Sample.Fasta = &fasta
@@ -818,7 +864,9 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.True(t, unicyclerCalled,
 			"Unicycler should run when FASTA file is missing")
 		assert.NotNil(t, persistedSample)
-		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
+		assert.Contains(t, *persistedSample.Fasta, "assembly.fa")
+		assert.False(t, filepath.IsAbs(*persistedSample.Fasta),
+			"persisted path should be relative")
 
 		found := false
 		for _, entry := range logs.All() {
@@ -1060,14 +1108,15 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 	t.Run("Success - Secondary Species Written When Contamination > 5%",
 		func(t *testing.T) {
+			rootDir := t.TempDir()
 			mock := testmodels.CreateMockAnalysis()
 			mock.Type = models.AnalysisTypeGenome
 			mock.Status = models.AnalysisStatusPending
-			fasta := filepath.Join(t.TempDir(), "contigs.fasta")
-			os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+			relFasta := createTestFasta(t, rootDir, mock.UserID,
+				mock.SampleID, "contigs.fasta", ">seq1\nATCG\n")
 			mock.Sample.Fastq1 = nil
 			mock.Sample.Fastq2 = nil
-			mock.Sample.Fasta = &fasta
+			mock.Sample.Fasta = &relFasta
 
 			updated := (*models.Analysis)(nil)
 			repo := &mocks.MockAnalysisRepository{
@@ -1101,7 +1150,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			}
 
 			svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-				&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+				&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 			err := svc.Run(ctx, mock.ID)
 
 			assert.NoError(t, err)
@@ -1117,14 +1166,15 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 	t.Run("Success - Secondary Species Not Written When Contamination <= 5%",
 		func(t *testing.T) {
+			rootDir := t.TempDir()
 			mock := testmodels.CreateMockAnalysis()
 			mock.Type = models.AnalysisTypeGenome
 			mock.Status = models.AnalysisStatusPending
-			fasta := filepath.Join(t.TempDir(), "contigs.fasta")
-			os.WriteFile(fasta, []byte(">seq1\nATCG\n"), 0644)
+			relFasta := createTestFasta(t, rootDir, mock.UserID,
+				mock.SampleID, "contigs.fasta", ">seq1\nATCG\n")
 			mock.Sample.Fastq1 = nil
 			mock.Sample.Fastq2 = nil
-			mock.Sample.Fasta = &fasta
+			mock.Sample.Fasta = &relFasta
 
 			updated := (*models.Analysis)(nil)
 			repo := &mocks.MockAnalysisRepository{
@@ -1158,7 +1208,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			}
 
 			svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-				&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+				&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
 			err := svc.Run(ctx, mock.ID)
 
 			assert.NoError(t, err)
