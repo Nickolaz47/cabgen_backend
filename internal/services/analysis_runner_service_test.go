@@ -605,14 +605,18 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 	t.Cleanup(func() { config.AnalysisConcurrency = originalConcurrency })
 
 	t.Run("Success - Existing FASTA", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		fastaPath := filepath.Join(tmpDir, "contigs.fasta")
+		err := os.WriteFile(fastaPath, []byte(">seq1\nATCGATCG\n"), 0644)
+		assert.NoError(t, err)
+
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
 		fq1, fq2 := "r1.fq", "r2.fq"
-		fasta := "contigs.fasta"
 		mock.Sample.Fastq1 = &fq1
 		mock.Sample.Fastq2 = &fq2
-		mock.Sample.Fasta = &fasta
+		mock.Sample.Fasta = &fastaPath
 
 		unicyclerCalled := false
 		repo := &mocks.MockAnalysisRepository{
@@ -644,7 +648,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
 			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
-		err := svc.Run(ctx, mock.ID)
+		err = svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
 		assert.False(t, unicyclerCalled,
@@ -759,6 +763,99 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
 		assert.Equal(t, mock.Sample.OriginCode+"_assembly.fasta",
 			capturedOutputFile)
+	})
+
+	t.Run("Success - FASTA not found, fallback to reads", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		fq1, fq2 := "r1.fq", "r2.fq"
+		fasta := "/nonexistent/path/genome.fasta"
+		mock.Sample.Fastq1 = &fq1
+		mock.Sample.Fastq2 = &fq2
+		mock.Sample.Fasta = &fasta
+
+		unicyclerCalled := false
+		var persistedSample *models.Sample
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				_ *models.Analysis) error {
+				return nil
+			},
+			UpdateSampleFunc: func(_ context.Context,
+				sample *models.Sample) error {
+				persistedSample = sample
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
+			RunUnicyclerFunc: func(_ context.Context, threads int,
+				read1, read2, spadesPath, outputDir, outputFile string) (
+				string, error) {
+				unicyclerCalled = true
+				return "assembly.fa", nil
+			},
+			RunAbricateFunc: func(_ context.Context, threads int,
+				db, input, outputFile string) error {
+				return writeAbricateOutput(outputFile)
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
+			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+		assert.True(t, unicyclerCalled,
+			"Unicycler should run when FASTA file is missing")
+		assert.NotNil(t, persistedSample)
+		assert.Equal(t, "assembly.fa", *persistedSample.Fasta)
+
+		found := false
+		for _, entry := range logs.All() {
+			if strings.Contains(entry.Message, "FASTA file not found") {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "should warn about missing FASTA file")
+	})
+
+	t.Run("Error - No input files", func(t *testing.T) {
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+		mock.Sample.Fasta = nil
+
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				_ *models.Analysis) error {
+				return nil
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo,
+			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{},
+			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+		err := svc.Run(ctx, mock.ID)
+
+		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
 	})
 
 	t.Run("Error - Abricate", func(t *testing.T) {

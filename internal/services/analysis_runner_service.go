@@ -156,16 +156,26 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	threads := int(math.Round(
 		(float64(runtime.NumCPU()) * 0.8) /
 			float64(config.AnalysisConcurrency)))
-	assemblyPath := analysis.Sample.Fasta
+	var assemblyPath *string
 
-	if analysis.Sample.Fastq1 == nil && analysis.Sample.Fastq2 == nil &&
-		analysis.Sample.Fasta != nil {
-		dst := filepath.Join(folders.AssemblyDir,
-			filepath.Base(*analysis.Sample.Fasta))
-		if err := utils.CopyFile(*analysis.Sample.Fasta, dst); err != nil {
-			return fmt.Errorf("failed to prepare assembly: %w", err)
+	if analysis.Sample.Fasta != nil {
+		if _, err := os.Stat(*analysis.Sample.Fasta); err != nil {
+			s.Logger.Warn(fmt.Sprintf(
+				"%s: FASTA file not found at %s, falling back to reads",
+				analysis.ID.String(), *analysis.Sample.Fasta),
+				logging.ServiceLogging(
+					"AnalysisRunnerService", "runGenome",
+					logging.MissingFileError, err,
+				)...)
+			analysis.Sample.Fasta = nil
+		} else {
+			dst := filepath.Join(folders.AssemblyDir,
+				filepath.Base(*analysis.Sample.Fasta))
+			if err := utils.CopyFile(*analysis.Sample.Fasta, dst); err != nil {
+				return fmt.Errorf("failed to prepare assembly: %w", err)
+			}
+			assemblyPath = &dst
 		}
-		assemblyPath = &dst
 	}
 
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
@@ -203,6 +213,10 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 					logging.AnalysisRunError, err,
 				)...)
 		}
+	}
+
+	if assemblyPath == nil {
+		return fmt.Errorf("no input files: need FASTA or FASTQ pair")
 	}
 
 	prokkaOutDir := filepath.Join(folders.AssemblyDir, "prokka")
