@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -889,6 +890,125 @@ func TestSampleAttachFiles(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.FilterLevelExact(zapcore.WarnLevel).Len())
+	})
+}
+
+func TestGetSampleForUpload(t *testing.T) {
+	mock := testmodels.CreateMockSample()
+
+	t.Run("Success", func(t *testing.T) {
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &mock, nil
+			},
+		}
+
+		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
+			nil, nil, nil, nil, t.TempDir(), nil)
+		result, err := svc.GetSampleForUpload(context.Background(), mock.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, mock.ID, result.ID)
+		assert.Equal(t, mock.UserID, result.UserID)
+	})
+
+	t.Run("Error - Not Found", func(t *testing.T) {
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
+			nil, nil, nil, nil, t.TempDir(), mockLogger)
+		result, err := svc.GetSampleForUpload(context.Background(), uuid.New())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.Nil(t, result)
+		assert.Equal(t, 0, logs.Len())
+	})
+
+	t.Run("Error - Internal", func(t *testing.T) {
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
+			nil, nil, nil, nil, t.TempDir(), mockLogger)
+		result, err := svc.GetSampleForUpload(context.Background(), uuid.New())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAttachFilesUsesSampleOwnerID(t *testing.T) {
+	ownerID := uuid.New()
+
+	mock := testmodels.CreateMockSample()
+	mock.UserID = ownerID
+	mock.Fastq2 = nil
+	mock.Fasta = nil
+
+	oldFastq1 := "old_read1.fastq"
+	mock.Fastq1 = &oldFastq1
+
+	newFastq1 := "new_read1.fastq"
+	newFastq2 := "new_read2.fastq"
+
+	t.Run("Deletion uses sample owner ID", func(t *testing.T) {
+		rootDir := t.TempDir()
+
+		// Create old file in owner's directory
+		ownerDir := filepath.Join(rootDir, "uploads", "users",
+			ownerID.String(), "samples", mock.ID.String())
+		os.MkdirAll(ownerDir, 0755)
+		os.WriteFile(filepath.Join(ownerDir, oldFastq1),
+			[]byte("old content"), 0644)
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &mock, nil
+			},
+			UpdateSampleFunc: func(ctx context.Context,
+				sample *models.Sample) error {
+				return nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
+
+		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
+			nil, nil, nil, nil, rootDir, mockLogger)
+
+		// Call with uuid.Nil (admin scope) to bypass auth check
+		err := svc.AttachFiles(context.Background(), mock.ID, uuid.Nil,
+			models.SampleAttachmentInput{
+				Fastq1: &newFastq1, Fastq2: &newFastq2,
+			})
+
+		assert.NoError(t, err)
+
+		// Old file should be deleted (owner's directory)
+		_, statErr := os.Stat(filepath.Join(ownerDir, oldFastq1))
+		assert.True(t, os.IsNotExist(statErr),
+			"old file should be deleted from owner's directory")
+
+		// No warnings (file was found and deleted)
+		assert.Equal(t, 0, logs.FilterLevelExact(zapcore.WarnLevel).Len())
 	})
 }
 

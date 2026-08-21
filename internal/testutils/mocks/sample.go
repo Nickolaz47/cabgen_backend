@@ -64,7 +64,9 @@ func (r *MockSampleRepository) DeleteSample(ctx context.Context,
 
 type MockSampleService struct {
 	PrepareSampleFolderFunc func(userID, sampleID uuid.UUID) (string, error)
-	FindAllFunc             func(ctx context.Context, input string,
+	GetSampleForUploadFunc  func(ctx context.Context,
+		sampleID uuid.UUID) (*models.Sample, error)
+	FindAllFunc func(ctx context.Context, input string,
 		userID uuid.UUID, language string) ([]models.SampleResponse, error)
 	FindByIDFunc func(ctx context.Context, sampleID, userID uuid.UUID,
 		language string) (*models.SampleResponse, error)
@@ -85,6 +87,14 @@ func (r *MockSampleService) PrepareSampleFolder(
 	}
 
 	return "", nil
+}
+
+func (r *MockSampleService) GetSampleForUpload(ctx context.Context,
+	sampleID uuid.UUID) (*models.Sample, error) {
+	if r.GetSampleForUploadFunc != nil {
+		return r.GetSampleForUploadFunc(ctx, sampleID)
+	}
+	return nil, nil
 }
 
 func (r *MockSampleService) FindAll(ctx context.Context, input string,

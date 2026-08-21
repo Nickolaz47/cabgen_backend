@@ -208,7 +208,16 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		return
 	}
 
-	uploadDir, err := h.Service.PrepareSampleFolder(userToken.ID, id)
+	sample, err := h.Service.GetSampleForUpload(c.Request.Context(), id)
+	if err != nil {
+		code, errMsg := handlererrors.HandleSampleError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+
+	uploadDir, err := h.Service.PrepareSampleFolder(sample.UserID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,

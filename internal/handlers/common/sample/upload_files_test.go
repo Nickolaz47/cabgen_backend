@@ -15,6 +15,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
+	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -34,21 +35,26 @@ func createFormFile(field, file string) (*bytes.Buffer, *multipart.Writer) {
 func TestUploadFiles(t *testing.T) {
 	testutils.SetupTestContext()
 	mockUserID := uuid.New()
+	mockOwnerID := uuid.New()
 
 	t.Run("Success", func(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 		dir := t.TempDir()
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
 				string, error) {
-
-				assert.Equal(t, mockUserID, userID)
+				assert.Equal(t, mockOwnerID, userID)
 				return dir, nil
 			},
 			AttachFilesFunc: func(ctx context.Context, sampleID,
 				userID uuid.UUID, input models.SampleAttachmentInput) error {
-
 				assert.Equal(t, mockUserID, userID)
 				return nil
 			},
@@ -80,6 +86,120 @@ func TestUploadFiles(t *testing.T) {
 		assert.Equal(t, expected, w.Body.String())
 	})
 
+	t.Run("Success - Collaborator uploads to owner's sample",
+		func(t *testing.T) {
+			buf, mw := createFormFile("fasta", "contigs.fasta")
+			dir := t.TempDir()
+
+			svc := &mocks.MockSampleService{
+				GetSampleForUploadFunc: func(_ context.Context,
+					_ uuid.UUID) (*models.Sample, error) {
+					sample := testmodels.CreateMockSample()
+					sample.UserID = mockOwnerID
+					return &sample, nil
+				},
+				PrepareSampleFolderFunc: func(userID,
+					sampleID uuid.UUID) (string, error) {
+					assert.Equal(t, mockOwnerID, userID,
+						"should use owner's ID, not collaborator's")
+					return dir, nil
+				},
+				AttachFilesFunc: func(ctx context.Context, sampleID,
+					userID uuid.UUID,
+					input models.SampleAttachmentInput) error {
+					assert.Equal(t, mockUserID, userID,
+						"should pass collaborator's ID for auth")
+					assert.NotNil(t, input.Fasta)
+					return nil
+				},
+			}
+			handler := sample.NewSampleHandler(svc)
+
+			c, w := testutils.SetupGinMultipartContext(
+				http.MethodPut,
+				"/api/sample",
+				buf,
+				mw.FormDataContentType(),
+				nil,
+				gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+			)
+			c.Set("user", &models.UserToken{ID: mockUserID})
+			handler.UploadFiles(c)
+
+			expectedFilePath := filepath.Join(dir, "contigs.fasta")
+			fileContent, err := os.ReadFile(expectedFilePath)
+
+			assert.NoError(t, err)
+			assert.Equal(t, "dummy", string(fileContent))
+
+			expected := testutils.ToJSON(map[string]string{
+				"message": "Sample files submitted successfully.",
+			})
+
+			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, expected, w.Body.String())
+		})
+
+	t.Run("Error - GetSampleForUpload Not Found", func(t *testing.T) {
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+
+		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				return nil, services.ErrNotFound
+			},
+		}
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut,
+			"/api/sample",
+			buf,
+			mw.FormDataContentType(),
+			nil,
+			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "Sample not found.",
+		})
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - GetSampleForUpload Internal Error", func(t *testing.T) {
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+
+		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				return nil, services.ErrInternal
+			},
+		}
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut,
+			"/api/sample",
+			buf,
+			mw.FormDataContentType(),
+			nil,
+			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		expected := testutils.ToJSON(map[string]string{
+			"error": "There was a server error. Please try again.",
+		})
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 		svc := &mocks.MockSampleService{}
@@ -108,6 +228,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
 				string, error) {
 				return dir, nil
@@ -205,6 +331,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq2", "reads_R2.fastq.gz")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
@@ -242,6 +374,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
@@ -279,6 +417,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("", "")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
@@ -316,6 +460,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
 				string, error) {
 				return dir, services.ErrInternal
@@ -349,6 +499,12 @@ func TestUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 
 		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockOwnerID
+				return &sample, nil
+			},
 			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
 				string, error) {
 				return dir, nil

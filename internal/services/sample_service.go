@@ -17,6 +17,8 @@ import (
 
 type SampleService interface {
 	PrepareSampleFolder(userID, sampleID uuid.UUID) (string, error)
+	GetSampleForUpload(ctx context.Context,
+		sampleID uuid.UUID) (*models.Sample, error)
 	FindAll(ctx context.Context, input string, userID uuid.UUID,
 		language string) ([]models.SampleResponse, error)
 	FindByID(ctx context.Context, sampleID, userID uuid.UUID,
@@ -94,6 +96,22 @@ func (s *sampleService) PrepareSampleFolder(
 	}
 
 	return basePath, nil
+}
+
+func (s *sampleService) GetSampleForUpload(ctx context.Context,
+	sampleID uuid.UUID) (*models.Sample, error) {
+	sample, err := s.Repo.GetSampleByID(ctx, sampleID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(
+			"SampleService", "GetSampleForUpload",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+	return sample, nil
 }
 
 func (s *sampleService) FindAll(ctx context.Context, input string,
@@ -384,7 +402,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		return ErrInternal
 	}
 
-	sampleDir := s.getSampleFolderPath(userID, sampleID)
+	sampleDir := s.getSampleFolderPath(sample.UserID, sampleID)
 
 	if oldFastq1 != nil && input.Fastq1 != nil && *oldFastq1 != *input.Fastq1 {
 		if err := os.Remove(filepath.Join(sampleDir, *oldFastq1)); err != nil {
