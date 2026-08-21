@@ -251,13 +251,13 @@ func TestParseMLST(t *testing.T) {
 		assert.Equal(t, "ecoli (New ST)", result)
 	})
 
-	t.Run("Success - Not available for this specie", func(t *testing.T) {
+	t.Run("Success - Not available for this species", func(t *testing.T) {
 		content := "contigs.fa,-,-,adek0001,fyhn0001\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.Equal(t, "Not available for this specie", result)
+		assert.Equal(t, "Not available for this species", result)
 	})
 
 	t.Run("Error - Empty File", func(t *testing.T) {

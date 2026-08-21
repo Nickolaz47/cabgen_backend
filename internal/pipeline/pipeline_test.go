@@ -361,7 +361,7 @@ func TestProcessSpecies(t *testing.T) {
 				sampleID, "Acinetobacter baumannii", "contigs.fa",
 				outDir)
 			assert.NoError(t, err)
-			assert.Equal(t, "Not available for this specie",
+			assert.Equal(t, "Not available for this species",
 				result.MLSTSpecies)
 		})
 

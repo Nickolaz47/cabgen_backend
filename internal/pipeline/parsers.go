@@ -127,7 +127,7 @@ func ParseMLST(filePath string) (string, error) {
 		} else if scheme != "-" && st == "-" {
 			return fmt.Sprintf("%s (New ST)", scheme), nil
 		} else if scheme == "-" && st == "-" {
-			return "Not available for this specie", nil
+			return "Not available for this species", nil
 		}
 	}
 
