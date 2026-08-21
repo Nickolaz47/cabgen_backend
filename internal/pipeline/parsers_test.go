@@ -209,9 +209,7 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "ecoli", result.Scheme)
-		assert.Equal(t, "ST131", result.ST)
+		assert.Equal(t, "ecoli (ST131)", result)
 	})
 
 	t.Run("Success - Quoted Fields In CSV", func(t *testing.T) {
@@ -220,9 +218,7 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "\"abaumannii\"", result.Scheme)
-		assert.Equal(t, "\"ST2\"", result.ST)
+		assert.Equal(t, "\"abaumannii\" (\"ST2\")", result)
 	})
 
 	t.Run("Success - Multiple Lines Returns First", func(t *testing.T) {
@@ -232,9 +228,7 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "ecoli", result.Scheme)
-		assert.Equal(t, "ST131", result.ST)
+		assert.Equal(t, "ecoli (ST131)", result)
 	})
 
 	t.Run("Success - Blank Lines Skipped", func(t *testing.T) {
@@ -245,9 +239,25 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "ecoli", result.Scheme)
-		assert.Equal(t, "ST131", result.ST)
+		assert.Equal(t, "ecoli (ST131)", result)
+	})
+
+	t.Run("Success - New ST", func(t *testing.T) {
+		content := "contigs.fa,ecoli,-,adek0001,fyhn0001,gyrA0001\n"
+		path := createMockParserFile(t, content)
+
+		result, err := ParseMLST(path)
+		assert.NoError(t, err)
+		assert.Equal(t, "ecoli (New ST)", result)
+	})
+
+	t.Run("Success - Not available for this specie", func(t *testing.T) {
+		content := "contigs.fa,-,-,adek0001,fyhn0001\n"
+		path := createMockParserFile(t, content)
+
+		result, err := ParseMLST(path)
+		assert.NoError(t, err)
+		assert.Equal(t, "Not available for this specie", result)
 	})
 
 	t.Run("Error - Empty File", func(t *testing.T) {
@@ -255,7 +265,7 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.Error(t, err)
-		assert.Nil(t, result)
+		assert.Equal(t, "", result)
 		assert.Contains(t, err.Error(), "No valid data found in mlst result")
 	})
 
@@ -265,14 +275,14 @@ func TestParseMLST(t *testing.T) {
 
 		result, err := ParseMLST(path)
 		assert.Error(t, err)
-		assert.Nil(t, result)
+		assert.Equal(t, "", result)
 		assert.Contains(t, err.Error(), "No valid data found in mlst result")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
 		result, err := ParseMLST("nonexistent.txt")
 		assert.Error(t, err)
-		assert.Nil(t, result)
+		assert.Equal(t, "", result)
 		assert.Contains(t, err.Error(), "Failed to open mlst result")
 	})
 }

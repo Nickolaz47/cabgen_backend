@@ -27,12 +27,10 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
-// ResolveSampleFilePath resolves the absolute path for a file in a sample's
-// upload directory. For FastQ files, it returns the path without checking
-// existence. For FASTA files, it first checks the sample directory, then
-// falls back to the analysis assembly directory.
-func ResolveSampleFilePath(rootDir, userID, sampleID, fileName, fileType string, analysisID string) (string, bool) {
-	sampleDir := filepath.Join(rootDir, "uploads", "users", userID, "samples", sampleID)
+func ResolveSampleFilePath(rootDir, userID, sampleID, fileName, 
+	fileType string, analysisID string) (string, bool) {
+	sampleDir := filepath.Join(rootDir, "uploads", "users", userID, 
+	"samples", sampleID)
 
 	if fileType != "fasta" {
 		return filepath.Join(sampleDir, fileName), true
@@ -46,7 +44,8 @@ func ResolveSampleFilePath(rootDir, userID, sampleID, fileName, fileType string,
 
 	// Fallback: analysis assembly directory
 	if analysisID != "" {
-		assemblyPath := filepath.Join(sampleDir, "analyses", analysisID, "assembly", fileName)
+		assemblyPath := filepath.Join(sampleDir, "analyses", analysisID, 
+		"assembly", fileName)
 		if _, err := os.Stat(assemblyPath); err == nil {
 			return assemblyPath, true
 		}

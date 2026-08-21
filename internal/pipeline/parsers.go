@@ -98,17 +98,14 @@ func ParseFastANI(filePath string) (string, error) {
 	return bestName, nil
 }
 
-type MLSTResult struct {
-	Scheme string
-	ST     string
-}
-
-func ParseMLST(filePath string) (*MLSTResult, error) {
+func ParseMLST(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open mlst result: %v", err)
+		return "", fmt.Errorf("Failed to open mlst result: %v", err)
 	}
 	defer file.Close()
+
+	scheme, st := "-", "-"
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -122,11 +119,17 @@ func ParseMLST(filePath string) (*MLSTResult, error) {
 			continue
 		}
 
-		return &MLSTResult{
-			Scheme: fields[1],
-			ST:     fields[2],
-		}, nil
+		scheme = fields[1]
+		st = fields[2]
+
+		if scheme != "-" && st != "-" {
+			return fmt.Sprintf("%s (%s)", scheme, st), nil
+		} else if scheme != "-" && st == "-" {
+			return fmt.Sprintf("%s (New ST)", scheme), nil
+		} else if scheme == "-" && st == "-" {
+			return "Not available for this specie", nil
+		}
 	}
 
-	return nil, errors.New("No valid data found in mlst result")
+	return "", errors.New("No valid data found in mlst result")
 }

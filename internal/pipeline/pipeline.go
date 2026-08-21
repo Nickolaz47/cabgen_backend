@@ -84,8 +84,8 @@ func (p *cabgenPipeline) RunFastQC(
 		return "", "", err
 	}
 
-	read1Name := strings.Split(filepath.Base(read1), ".")[0]
-	read2Name := strings.Split(filepath.Base(read2), ".")[0]
+	read1Name, _, _ := strings.Cut(filepath.Base(read1), ".")
+	read2Name, _, _ := strings.Cut(filepath.Base(read2), ".")
 
 	outputHTMLfile1 := filepath.Join(outputDir,
 		fmt.Sprintf("%s_fastqc.html", read1Name))
@@ -237,11 +237,9 @@ func (p *cabgenPipeline) ProcessSpecies(ctx context.Context, threads int,
 	mlstArgs := p.Runner.BuildMLSTCmd(p.Config.MLSTPath, threadsStr,
 		assemblyPath, mlstResultPath)
 	if _, err := p.Runner.Run(ctx, mlstArgs); err == nil {
-		if mlstData, err := ParseMLST(mlstResultPath); err == nil &&
-			mlstData != nil &&
-			(mlstData.Scheme != "-" || mlstData.ST != "-") {
-			result.MLSTSpecies = fmt.Sprintf(
-				"%s (ST: %s)", mlstData.Scheme, mlstData.ST)
+		if mlstResult, err := ParseMLST(mlstResultPath); err == nil &&
+			mlstResult != "" {
+			result.MLSTSpecies = mlstResult
 		}
 	}
 

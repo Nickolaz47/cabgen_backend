@@ -336,7 +336,7 @@ func TestProcessSpecies(t *testing.T) {
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Acinetobacter baumannii", "contigs.fa", outDir)
 		assert.NoError(t, err)
-		assert.Equal(t, "abaumannii (ST: ST2)", result.MLSTSpecies)
+		assert.Equal(t, "abaumannii (ST2)", result.MLSTSpecies)
 	})
 
 	t.Run("Success - MLST Skips When Scheme And ST Are Dash",
@@ -361,7 +361,8 @@ func TestProcessSpecies(t *testing.T) {
 				sampleID, "Acinetobacter baumannii", "contigs.fa",
 				outDir)
 			assert.NoError(t, err)
-			assert.Empty(t, result.MLSTSpecies)
+			assert.Equal(t, "Not available for this specie",
+				result.MLSTSpecies)
 		})
 
 	t.Run("Success - BlastX Poli Fails Returns Partial Result", func(t *testing.T) {

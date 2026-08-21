@@ -199,8 +199,10 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		} else {
 			dst := filepath.Join(folders.AssemblyDir,
 				filepath.Base(*analysis.Sample.Fasta))
-			if err := utils.CopyFile(resolved, dst); err != nil {
-				return fmt.Errorf("failed to prepare assembly: %w", err)
+			if resolved != dst {
+				if err := utils.CopyFile(resolved, dst); err != nil {
+					return fmt.Errorf("failed to prepare assembly: %w", err)
+				}
 			}
 			assemblyPath = &dst
 		}

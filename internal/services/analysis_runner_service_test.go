@@ -751,6 +751,61 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Equal(t, fastaContent, string(content))
 	})
 
+	t.Run("Success - FASTA Already in AssemblyDir Skips Copy", func(t *testing.T) {
+		rootDir := t.TempDir()
+		fastaContent := ">seq1\nACGTACGT\n"
+
+		mock := testmodels.CreateMockAnalysis()
+		mock.Type = models.AnalysisTypeGenome
+		mock.Status = models.AnalysisStatusPending
+		mock.Sample.Fastq1 = nil
+		mock.Sample.Fastq2 = nil
+
+		assemblyDir := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"analyses", mock.ID.String(), "assembly")
+		os.MkdirAll(assemblyDir, 0755)
+		fastaInAssembly := filepath.Join(assemblyDir, "assembly.fasta")
+		if err := os.WriteFile(fastaInAssembly,
+			[]byte(fastaContent), 0644); err != nil {
+			t.Fatal(err)
+		}
+		relFasta := "assembly.fasta"
+		mock.Sample.Fasta = &relFasta
+
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				mockCopy := mock
+				return &mockCopy, nil
+			},
+			UpdateAnalysisFunc: func(_ context.Context,
+				_ *models.Analysis) error {
+				return nil
+			},
+		}
+		pl := &mocks.MockCabgenPipeline{
+			Config: pipeline.ToolsConfig{
+				ResfinderDBPath: newResfinderRef(t),
+			},
+			RunAbricateFunc: func(_ context.Context, threads int,
+				db, input, outputFile string) error {
+				return writeAbricateOutput(outputFile)
+			},
+		}
+
+		svc := services.NewAnalysisRunnerService(repo, pl,
+			&mocks.MockCommander{}, &mocks.MockTaskEnqueuer{},
+			zap.NewNop(), rootDir)
+		err := svc.Run(ctx, mock.ID)
+
+		assert.NoError(t, err)
+
+		content, err := os.ReadFile(fastaInAssembly)
+		assert.NoError(t, err)
+		assert.Equal(t, fastaContent, string(content))
+	})
+
 	t.Run("Success - No FASTA", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
