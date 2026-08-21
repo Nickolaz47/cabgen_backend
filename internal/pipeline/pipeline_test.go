@@ -322,7 +322,7 @@ func TestProcessSpecies(t *testing.T) {
 		sampleID := "s1"
 		mlstPath := filepath.Join(outDir, "mlst.csv")
 		writeFile(t, mlstPath,
-			"contigs.fa,abaumannii,ST2,oxa0001,ompA0001\n")
+			"contigs.fa,abaumannii,2,oxa0001,ompA0001\n")
 		writeFile(t, filepath.Join(outDir, sampleID+"_blastPoli"),
 			organismMockContent)
 		writeFile(t, filepath.Join(outDir, sampleID+"_blastOther"),

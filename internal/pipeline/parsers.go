@@ -123,7 +123,7 @@ func ParseMLST(filePath string) (string, error) {
 		st = fields[2]
 
 		if scheme != "-" && st != "-" {
-			return fmt.Sprintf("%s (%s)", scheme, st), nil
+			return fmt.Sprintf("%s (ST%s)", scheme, st), nil
 		} else if scheme != "-" && st == "-" {
 			return fmt.Sprintf("%s (New ST)", scheme), nil
 		} else if scheme == "-" && st == "-" {

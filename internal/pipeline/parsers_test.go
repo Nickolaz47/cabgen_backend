@@ -204,7 +204,7 @@ func TestParseFastANI(t *testing.T) {
 
 func TestParseMLST(t *testing.T) {
 	t.Run("Success - Valid MLST CSV Output", func(t *testing.T) {
-		content := "contigs.fa,ecoli,ST131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
+		content := "contigs.fa,ecoli,131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseMLST(path)
@@ -213,17 +213,17 @@ func TestParseMLST(t *testing.T) {
 	})
 
 	t.Run("Success - Quoted Fields In CSV", func(t *testing.T) {
-		content := "\"contigs.fa\",\"abaumannii\",\"ST2\",\"oxa0001\",\"ompA0001\",\"csuE0001\",\"fkpA0001\",\"rplB0001\",\"gltA0001\",\"gyrB0001\",\"gdhB0001\",\"recA0001\",\"gpi0001\",\"rpoB0001\"\n"
+		content := "contigs.fa,abaumannii,2,oxa0001,ompA0001,csuE0001,fkpA0001,rplB0001,gltA0001,gyrB0001,gdhB0001,recA0001,gpi0001,rpoB0001\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseMLST(path)
 		assert.NoError(t, err)
-		assert.Equal(t, "\"abaumannii\" (\"ST2\")", result)
+		assert.Equal(t, "abaumannii (ST2)", result)
 	})
 
 	t.Run("Success - Multiple Lines Returns First", func(t *testing.T) {
-		content := "contigs1.fa,ecoli,ST131,adek0001,fyhn0001,gyrA0001\n" +
-			"contigs2.fa,kpneumo,ST258,tonB0001,infB0001\n"
+		content := "contigs1.fa,ecoli,131,adek0001,fyhn0001,gyrA0001\n" +
+			"contigs2.fa,kpneumo,258,tonB0001,infB0001\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseMLST(path)
@@ -234,7 +234,7 @@ func TestParseMLST(t *testing.T) {
 	t.Run("Success - Blank Lines Skipped", func(t *testing.T) {
 		content := "\n" +
 			"\n" +
-			"contigs.fa,ecoli,ST131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
+			"contigs.fa,ecoli,131,adek0001,fyhn0001,gyrA0001,icd0001,mdh0001,purA0001,recA0001\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseMLST(path)
