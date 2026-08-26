@@ -78,12 +78,17 @@ func LoadEnvVariables(envFile string) error {
 
 	SMTPPort, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
 	if err != nil {
-		return err
+		return fmt.Errorf("SMTP_PORT must be a valid integer: %w", err)
 	}
 
-	AnalysisConcurrency, err = strconv.Atoi(os.Getenv("ANALYSIS_CONCURRENCY"))
-	if err != nil {
-		return err
+	if acStr := os.Getenv("ANALYSIS_CONCURRENCY"); acStr != "" {
+		AnalysisConcurrency, err = strconv.Atoi(acStr)
+		if err != nil {
+			return fmt.Errorf(
+				"ANALYSIS_CONCURRENCY must be a valid integer: %w", err)
+		}
+	} else {
+		AnalysisConcurrency = 1
 	}
 
 	DatabaseConnectionString = fmt.Sprintf(

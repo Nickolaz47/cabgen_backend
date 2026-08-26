@@ -703,7 +703,7 @@ Os workers rodam em containers separados junto com a API. Veja `docker-compose.y
 - [x] Adicionar rotas para select
 - [x] API pública -> Postgres -> Redis -> Pipeline -> API privada -> Postgres
 - [x] Adicionar cidade como select no cadastro da amostra;
-- [ ] Mostrar no resultado as versões de cada programa;
+- [x] Mostrar no resultado as versões de cada programa;
 - [x] Permitir o download de vários resultados;
 - [ ] Migrar os dados do MongoDB para o Postgresql;
 - [x] Integrar com a pipeline;

@@ -13,7 +13,7 @@ const (
 )
 
 type Ticket struct {
-	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID          uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
 	Name        string    `gorm:"not null"`
 	Email       string    `gorm:"not null"`
 	Institution string    `gorm:"not null"`

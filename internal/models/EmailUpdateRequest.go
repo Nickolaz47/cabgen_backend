@@ -7,7 +7,7 @@ import (
 )
 
 type EmailUpdateRequest struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
 	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	OldEmail  string    `gorm:"not null"`
 	NewEmail  string    `gorm:"not null"`

@@ -5,7 +5,7 @@ import (
 )
 
 type Origin struct {
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
 	Names    JSONMap   `gorm:"type:jsonb;not null"`
 	IsActive bool      `gorm:"not null" json:"is_active"`
 }

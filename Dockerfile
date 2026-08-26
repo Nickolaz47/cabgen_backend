@@ -1,5 +1,5 @@
 # Build
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o api ./cmd/server
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o worker-email ./cmd/worker-email
 
 # Runtime
-FROM gcr.io/distroless/static-debian12
+FROM gcr.io/distroless/static-debian13
 
 WORKDIR /app
 

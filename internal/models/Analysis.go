@@ -169,7 +169,7 @@ type AnalysisResults struct {
 }
 
 type Analysis struct {
-	ID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
 
 	// Pipeline Control
 	Type   AnalysisType   `gorm:"type:varchar(20);not null"`
