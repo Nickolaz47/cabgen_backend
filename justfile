@@ -51,29 +51,29 @@ restore file:
 # --- Podman ---
 
 up-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
 
 down-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml down
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml down
 
 build-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml build
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml build
 
 restart-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml down
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml down
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
 
 status-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml ps
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml ps
 
 logs-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f
 
 logs-api-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f api
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f api
 
 logs-worker-podman:
-    podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f worker-analysis worker-email
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml logs -f worker-analysis worker-email
 
 backup-podman:
     #!/usr/bin/env bash
