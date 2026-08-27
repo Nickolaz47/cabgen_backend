@@ -80,6 +80,7 @@ model -> repository -> service -> handler -> route
 - [Go](https://go.dev/dl/) `>= 1.24.0`
 - [PostgreSQL](https://www.postgresql.org/download/)
 - [SQLite](https://sqlite.org/) (utilizado nos testes)
+- [Just](https://just.systems/) (opcional, para command runner)
 
 ### Passos
 
@@ -198,35 +199,34 @@ go build -o cabgen-backend ./cmd/server
 ./cabgen-backend
 ```
 
-#### Docker
+#### Just (Command Runner)
 
-1. Após configurar o `.env`, suba o compose:
+O projeto inclui um `justfile` para facilitar comandos comuns (requer [Just](https://just.systems/) instalado).
 
-```bash
-docker compose up -d
-```
+| Comando | Descrição |
+| --- | --- |
+| `just up` | Sobe containers Docker com build |
+| `just down` | Para containers Docker |
+| `just build` | Reconstrói imagens Docker |
+| `just restart` | Reinicia containers Docker |
+| `just status` | Mostra status dos containers Docker |
+| `just logs` | Logs de todos os containers Docker |
+| `just logs-api` | Logs da API (Docker) |
+| `just logs-worker` | Logs dos workers (Docker) |
+| `just backup` | Backup do banco de dados (Docker) |
+| `just restore <arquivo>` | Restaura backup do banco (Docker) |
+| `just up-podman` | Sobe containers Podman (rootless) |
+| `just down-podman` | Para containers Podman |
+| `just build-podman` | Reconstrói imagens Podman |
+| `just restart-podman` | Reinicia containers Podman |
+| `just status-podman` | Mostra status dos containers Podman |
+| `just logs-podman` | Logs de todos os containers Podman |
+| `just logs-api-podman` | Logs da API (Podman) |
+| `just logs-worker-podman` | Logs dos workers (Podman) |
+| `just backup-podman` | Backup do banco de dados (Podman) |
+| `just restore-podman <arquivo>` | Restaura backup do banco (Podman) |
 
-#### Podman (rootless)
-
-No podman rootless, o mapeamento de UIDs entre o container e o host é diferente do Docker. Para que `./logs` e `./uploads` fiquem acessíveis sem `sudo`, utilize o arquivo de override:
-
-```bash
-podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d
-```
-
-Para encurtar, adicione ao seu `~/.bashrc` ou `~/.zshrc`:
-
-```bash
-alias pdc='podman-compose -f docker-compose.yaml -f docker-compose.podman.yaml'
-```
-
-E então:
-
-```bash
-pdc up -d
-```
-
-O arquivo `docker-compose.podman.yaml` aplica `userns_mode: keep-id` apenas nos serviços da aplicação, preservando o comportamento padrão do postgres e redis.
+O `justfile` carrega automaticamente as variáveis do `.env`.
 
 ## Seed
 

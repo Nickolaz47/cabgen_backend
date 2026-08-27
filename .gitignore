@@ -3,6 +3,7 @@
 .air.toml
 /tmp
 .vscode
+/backups
 /jsons/h*.json
 /jsons/l*.json
 /jsons/m*.json
