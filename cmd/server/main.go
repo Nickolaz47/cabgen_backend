@@ -106,9 +106,10 @@ func main() {
 	corsConfig.AllowCredentials = true
 	corsConfig.MaxAge = 12 * time.Hour
 
-	gin.SetMode(gin.DebugMode)
-	if config.Environment != "dev" {
+	if config.Environment != "dev" && config.Environment != "" {
 		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
 	}
 
 	r.Use(
