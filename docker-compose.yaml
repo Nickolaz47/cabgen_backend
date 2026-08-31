@@ -6,8 +6,6 @@ services:
       - .env
     environment:
       - DB_HOST=database
-    ports:
-      - "${PORT}:${PORT}"
     depends_on:
       database:
         condition: service_healthy
@@ -22,6 +20,16 @@ services:
         limits:
           cpus: '2.0'
           memory: 2G
+    networks:
+      - proxy-network
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy-network"
+      - "traefik.http.routers.api-backend.rule=Host(`${API_HOST}`)"
+      - "traefik.http.routers.api-backend.entrypoints=websecure"
+      - "traefik.http.routers.api-backend.tls.certresolver=mycertresolver"
+      - "traefik.http.services.api-backend.loadbalancer.server.port=${PORT}"
 
   worker-email:
     user: "${UID:-1000}:${GID:-1000}"
@@ -100,8 +108,6 @@ services:
   redis:
     image: redis:8-alpine
     restart: unless-stopped
-    ports:
-      - 6379:6379
     volumes:
       - redis-data:/data
     healthcheck:
@@ -118,3 +124,9 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  proxy-network:
+    external: true
+  default:
+    driver: bridge
