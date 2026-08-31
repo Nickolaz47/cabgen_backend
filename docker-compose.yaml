@@ -26,9 +26,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy-network"
-      - "traefik.http.routers.api-backend.rule=Host(`${API_HOST}`)"
+      - "traefik.http.routers.api-backend.rule=Host(`${API_HOST}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-backend.entrypoints=websecure"
-      - "traefik.http.routers.api-backend.tls.certresolver=mycertresolver"
+      - "traefik.http.routers.api-backend.tls=true"
       - "traefik.http.services.api-backend.loadbalancer.server.port=${PORT}"
 
   worker-email:
