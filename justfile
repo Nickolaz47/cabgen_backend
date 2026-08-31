@@ -50,18 +50,28 @@ restore file:
 
 # --- Podman ---
 
-up-podman:
+up-dev-podman:
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml -f docker-compose.override.yaml up -d --build
+
+down-dev-podman:
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml -f docker-compose.override.yaml down
+
+restart-dev-podman:
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml -f docker-compose.override.yaml down
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml -f docker-compose.override.yaml up -d --build
+
+up-prod-podman:
     podman compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
 
-down-podman:
+down-prod-podman:
     podman compose -f docker-compose.yaml -f docker-compose.podman.yaml down
+
+restart-prod-podman:
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml down
+    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
 
 build-podman:
     podman compose -f docker-compose.yaml -f docker-compose.podman.yaml build
-
-restart-podman:
-    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml down
-    podman compose -f docker-compose.yaml -f docker-compose.podman.yaml up -d --build
 
 status-podman:
     podman compose -f docker-compose.yaml -f docker-compose.podman.yaml ps
