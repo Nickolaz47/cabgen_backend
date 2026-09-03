@@ -70,13 +70,13 @@ func (s *authService) Register(
 		ctx, &input.Email, uuid.Nil,
 	)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseConflictEmailError, err,
 		)...)
 		return nil, ErrConflictEmail
@@ -84,13 +84,13 @@ func (s *authService) Register(
 
 	existingUser, err = s.UserRepo.ExistsByUsername(ctx, &input.Username, uuid.Nil)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 	if existingUser != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseConflictUsernameError, err,
 		)...)
 		return nil, ErrConflictUsername
@@ -98,7 +98,7 @@ func (s *authService) Register(
 
 	if ok := validations.IsEmailMatch(
 		input.Email, input.ConfirmEmail); !ok {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.EmailMismatchError, err,
 		)...)
 		return nil, ErrEmailMismatch
@@ -107,7 +107,7 @@ func (s *authService) Register(
 	if ok := validations.IsPasswordMatch(
 		input.Password, input.ConfirmPassword,
 	); !ok {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.PasswordMismatchError, err,
 		)...)
 		return nil, ErrPasswordMismatch
@@ -115,7 +115,7 @@ func (s *authService) Register(
 
 	hashedPassword, err := s.Hasher.Hash(input.Password)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.HasherError, err,
 		)...)
 		return nil, ErrInternal
@@ -124,12 +124,12 @@ func (s *authService) Register(
 	country, err := s.CountryRepo.GetCountryByCode(ctx, input.CountryCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AuthService", "Register", logging.ExternalRepositoryNotFoundError, err,
 			)...)
 			return nil, ErrInvalidCountryCode
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.ExternalRepositoryError, err,
 		)...)
 		return nil, ErrInternal
@@ -150,7 +150,7 @@ func (s *authService) Register(
 	}
 
 	if err := s.UserRepo.CreateUser(ctx, &user); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -160,17 +160,17 @@ func (s *authService) Register(
 
 	task, err := tasks.NewAdminAlertEmailTask(user.ID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.AsynqTaskError, err,
 		)...)
 	} else {
 		info, err := s.AsynqClient.EnqueueContext(ctx, task, asynq.Queue(tasks.QueueEmail))
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AuthService", "Register", logging.RedisDispatchError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 				"AuthService", "Register", logging.TaskEnqueuedSuccess,
 				zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
@@ -187,19 +187,19 @@ func (s *authService) Login(
 	existingUser, err := s.UserRepo.GetUserByUsername(ctx, input.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "Login", logging.UsernameNotFoundError, err,
 			)...)
 			return nil, ErrInvalidCredentials
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 
 	if !existingUser.IsActive {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.DisabledUserError, err,
 		)...)
 		return nil, ErrDisabledUser
@@ -208,12 +208,12 @@ func (s *authService) Login(
 	if err = s.Hasher.CheckPassword(existingUser.Password,
 		input.Password); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "Login", logging.WrongPasswordError, err,
 			)...)
 			return nil, ErrInvalidCredentials
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.HasherError, err,
 		)...)
 		return nil, ErrInternal
@@ -221,7 +221,7 @@ func (s *authService) Login(
 
 	accessKey, err := auth.GetSecretKey(auth.Access)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GetSecretKeyError, err,
 		)...)
 		return nil, ErrInternal
@@ -229,7 +229,7 @@ func (s *authService) Login(
 
 	refreshKey, err := auth.GetSecretKey(auth.Refresh)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GetSecretKeyError, err,
 		)...)
 		return nil, ErrInternal
@@ -238,7 +238,7 @@ func (s *authService) Login(
 	accessToken, err := s.TokenProvider.GenerateToken(
 		existingUser.ToToken(), accessKey, auth.AccessTokenExpiration)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GenerateTokenError, err,
 		)...)
 		return nil, ErrInternal
@@ -247,7 +247,7 @@ func (s *authService) Login(
 	refreshToken, err := s.TokenProvider.GenerateToken(
 		existingUser.ToToken(), refreshKey, auth.RefreshTokenExpiration)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GenerateTokenError, err,
 		)...)
 		return nil, ErrInternal
@@ -268,7 +268,7 @@ func (s *authService) Login(
 func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cookie, error) {
 	refreshSecret, err := auth.GetSecretKey(auth.Refresh)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GetSecretKeyError, err,
 		)...)
 		return nil, ErrInternal
@@ -276,7 +276,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 
 	userToken, err := s.TokenProvider.ValidateToken(tokenStr, refreshSecret)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.ValidateTokenError, err,
 		)...)
 		return nil, ErrUnauthorized
@@ -284,7 +284,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 
 	accessSecret, err := auth.GetSecretKey(auth.Access)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GetSecretKeyError, err,
 		)...)
 		return nil, ErrInternal
@@ -293,7 +293,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 	accessToken, err := s.TokenProvider.GenerateToken(
 		*userToken, accessSecret, auth.AccessTokenExpiration)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GenerateTokenError, err,
 		)...)
 		return nil, ErrInternal
@@ -314,7 +314,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 				zap.String("email", input.Email))
 			return nil
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -323,7 +323,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 	if err = s.PasswordResetRepo.DeleteTokensByEmail(ctx,
 		user.Email); err != nil {
 		err = fmt.Errorf("%s: %v", user.Email, err)
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword",
 			logging.DeletePasswordResetTokenError, err,
 		)...)
@@ -331,7 +331,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 
 	tokenStr, err := security.GenerateSecureToken()
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword", logging.HasherError, err,
 		)...)
 		return ErrInternal
@@ -344,7 +344,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 	}
 
 	if err := s.PasswordResetRepo.CreateToken(ctx, &reset); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -353,7 +353,7 @@ func (s *authService) ForgotPassword(ctx context.Context,
 	task, err := tasks.NewPasswordResetEmailTask(user.Email, user.Name,
 		tokenStr, reset.ExpiresAt)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword", logging.AsynqTaskError,
 			err,
 		)...)
@@ -361,12 +361,12 @@ func (s *authService) ForgotPassword(ctx context.Context,
 		info, err := s.AsynqClient.EnqueueContext(ctx, task,
 			asynq.Queue(tasks.QueueEmail))
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AuthService", "ForgotPassword",
 				logging.RedisDispatchError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 				"AuthService", "ForgotPassword",
 				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
@@ -382,12 +382,12 @@ func (s *authService) ResetPassword(ctx context.Context,
 	reset, err := s.PasswordResetRepo.GetByToken(ctx, input.Token)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "ResetPassword", logging.DatabaseNotFoundError,
 				err)...)
 			return ErrInvalidToken
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ResetPassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -397,7 +397,7 @@ func (s *authService) ResetPassword(ctx context.Context,
 		if err = s.PasswordResetRepo.DeleteTokensByEmail(ctx,
 			reset.Email); err != nil {
 			err = fmt.Errorf("%s: %v", reset.Email, err)
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "ForgotPassword",
 				logging.DeletePasswordResetTokenError, err,
 			)...)
@@ -408,12 +408,12 @@ func (s *authService) ResetPassword(ctx context.Context,
 	user, err := s.UserRepo.GetUserByEmail(ctx, reset.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "ResetPassword", logging.DatabaseNotFoundError,
 				err)...)
 			return ErrNotFound
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ResetPassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -421,7 +421,7 @@ func (s *authService) ResetPassword(ctx context.Context,
 
 	hashedPassword, err := s.Hasher.Hash(input.NewPassword)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ResetPassword", logging.HasherError, err,
 		)...)
 		return ErrInternal
@@ -430,7 +430,7 @@ func (s *authService) ResetPassword(ctx context.Context,
 	user.Password = hashedPassword
 
 	if err := s.UserRepo.UpdateUser(ctx, user); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ResetPassword", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -439,7 +439,7 @@ func (s *authService) ResetPassword(ctx context.Context,
 	if err := s.PasswordResetRepo.DeleteTokensByEmail(ctx,
 		reset.Email); err != nil {
 		err = fmt.Errorf("%s: %v", user.Email, err)
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword",
 			logging.DeletePasswordResetTokenError, err,
 		)...)

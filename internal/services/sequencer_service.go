@@ -36,7 +36,7 @@ func (s *sequencerService) FindAll(ctx context.Context) ([]models.SequencerAdmin
 	sequencers, err := s.Repo.GetSequencers(ctx)
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
@@ -56,7 +56,7 @@ func (s *sequencerService) FindByID(
 	ID uuid.UUID) (*models.SequencerAdminTableResponse, error) {
 	sequencer, err := s.Repo.GetSequencerByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "FindByID",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -64,7 +64,7 @@ func (s *sequencerService) FindByID(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "FindByID",
 			logging.DatabaseError, err,
 		)...)
@@ -80,7 +80,7 @@ func (s *sequencerService) FindByBrandOrModel(
 	input string) ([]models.SequencerAdminTableResponse, error) {
 	sequencers, err := s.Repo.GetSequencersByBrandOrModel(ctx, input)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "FindByBrandOrModel",
 			logging.DatabaseError, err,
 		)...)
@@ -106,7 +106,7 @@ func (s *sequencerService) Create(
 
 	existingSequencer, err := s.Repo.GetSequencerDuplicate(ctx, sequencer.Model, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -114,7 +114,7 @@ func (s *sequencerService) Create(
 	}
 
 	if existingSequencer != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Create",
 			logging.DatabaseConflictError, err,
 		)...)
@@ -122,7 +122,7 @@ func (s *sequencerService) Create(
 	}
 
 	if err := s.Repo.CreateSequencer(ctx, &sequencer); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -139,7 +139,7 @@ func (s *sequencerService) Update(
 	input models.SequencerUpdateInput) (*models.SequencerAdminTableResponse, error) {
 	existingSequencer, err := s.Repo.GetSequencerByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Update",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -147,7 +147,7 @@ func (s *sequencerService) Update(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -159,7 +159,7 @@ func (s *sequencerService) Update(
 	if input.Model != nil {
 		duplicate, err := s.Repo.GetSequencerDuplicate(ctx, *input.Model, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"SequencerService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -167,7 +167,7 @@ func (s *sequencerService) Update(
 		}
 
 		if duplicate != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"SequencerService", "Update",
 				logging.DatabaseConflictError, err,
 			)...)
@@ -176,7 +176,7 @@ func (s *sequencerService) Update(
 	}
 
 	if err := s.Repo.UpdateSequencer(ctx, existingSequencer); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -190,7 +190,7 @@ func (s *sequencerService) Update(
 func (s *sequencerService) Delete(ctx context.Context, ID uuid.UUID) error {
 	sequencer, err := s.Repo.GetSequencerByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Delete",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -198,7 +198,7 @@ func (s *sequencerService) Delete(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Delete",
 			logging.DatabaseError, err,
 		)...)
@@ -206,7 +206,7 @@ func (s *sequencerService) Delete(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if err := s.Repo.DeleteSequencer(ctx, sequencer); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SequencerService", "Delete",
 			logging.DatabaseError, err,
 		)...)

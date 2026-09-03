@@ -93,7 +93,7 @@ func TestHealthServiceFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewHealthServiceService(repo, nil, mockLogger)
 		result, err := service.FindByID(context.Background(), healthService.ID)

@@ -217,7 +217,8 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		return
 	}
 
-	uploadDir, err := h.Service.PrepareSampleFolder(sample.UserID, id)
+	uploadDir, err := h.Service.PrepareSampleFolder(c.Request.Context(),
+		sample.UserID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,

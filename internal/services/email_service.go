@@ -77,7 +77,7 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 	newUserID uuid.UUID) error {
 	newUser, err := s.UserRepo.GetUserByID(ctx, newUserID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminAlertEmail", logging.DatabaseError, err,
 		)...)
 		return fmt.Errorf("Failed to fetch new user: %v", err)
@@ -91,7 +91,7 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 
 	admins, err := s.UserRepo.GetUsers(ctx, filter)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendActivationUserEmail",
 			logging.DatabaseError, err,
 		)...)
@@ -116,12 +116,12 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 			Body:      body,
 		}
 		if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"EmailService", "SendAdminAlertEmail", logging.SendEmailError,
 				fmt.Errorf("Failed to send alert to %s: %v", a.Email, err),
 			)...)
 		} else {
-			s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+			s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 				"EmailService", "SendAdminAlertEmail", logging.EmailSentSuccess,
 				zap.String("recipient", a.Email),
 			)...)
@@ -135,7 +135,7 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 	userID uuid.UUID) error {
 	user, err := s.UserRepo.GetUserByID(ctx, userID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendWelcomeEmail", logging.DatabaseError, err,
 		)...)
 		return fmt.Errorf("Failed to fetch user: %v", err)
@@ -155,7 +155,7 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendWelcomeEmail", logging.SendEmailError,
 			fmt.Errorf("Failed to send welcome to %s: %v", user.Email, err),
 		)...)
@@ -163,7 +163,7 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 			err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendWelcomeEmail", logging.EmailSentSuccess,
 		zap.String("recipient", user.Email),
 	)...)
@@ -175,7 +175,7 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 	analysisID uuid.UUID) error {
 	analysis, err := s.AnalysisRepo.GetAnalysisByID(ctx, analysisID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAnalysisDoneEmail", logging.DatabaseError, err,
 		)...)
 		return fmt.Errorf("Failed to fetch analysis: %v", err)
@@ -203,7 +203,7 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAnalysisDoneEmail", logging.SendEmailError,
 			fmt.Errorf("Failed to send analysis email to %s: %v",
 				analysis.User.Email, err),
@@ -212,7 +212,7 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 			analysis.User.Email, err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendAnalysisDoneEmail", logging.EmailSentSuccess,
 		zap.String("recipient", analysis.User.Email),
 		zap.String("analysis_id", analysisID.String()),
@@ -225,7 +225,7 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 	ticketID uuid.UUID) error {
 	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminTicketEmail", logging.DatabaseError, err,
 		)...)
 		return fmt.Errorf("Failed to fetch ticket: %v", err)
@@ -239,7 +239,7 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 
 	admins, err := s.UserRepo.GetUsers(ctx, filter)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminTicketEmail",
 			logging.DatabaseError, err,
 		)...)
@@ -270,13 +270,13 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 		}
 
 		if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"EmailService", "SendAdminTicketEmail", logging.SendEmailError,
 				fmt.Errorf("Failed to send ticket email to %s: %v",
 					a.Email, err),
 			)...)
 		} else {
-			s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+			s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 				"EmailService", "SendAdminTicketEmail", logging.EmailSentSuccess,
 				zap.String("recipient", a.Email),
 			)...)
@@ -290,7 +290,7 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 	ticketID uuid.UUID) error {
 	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendFinishedTicketEmail", logging.DatabaseError,
 			err)...)
 		return fmt.Errorf("Failed to fetch ticket: %v", err)
@@ -314,7 +314,7 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendFinishedTicketEmail", logging.SendEmailError,
 			fmt.Errorf("Failed to send ticket email to %s: %v", ticket.Email,
 				err),
@@ -323,7 +323,7 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 			ticket.Email, err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendFinishedTicketEmail", logging.EmailSentSuccess,
 		zap.String("recipient", ticket.Email),
 		zap.String("ticket_id", ticketID.String()),
@@ -359,14 +359,14 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendPasswordResetEmail", logging.SendEmailError,
 			fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err),
 		)...)
 		return fmt.Errorf("Failed to send reset email to %s: %v", userEmail, err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendPasswordResetEmail", logging.EmailSentSuccess,
 		zap.String("recipient", userEmail),
 	)...)
@@ -397,14 +397,14 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendUserDeletedEmail", logging.SendEmailError,
 			fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err),
 		)...)
 		return fmt.Errorf("Failed to send deletion email to %s: %v", userEmail, err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendUserDeletedEmail", logging.EmailSentSuccess,
 		zap.String("recipient", userEmail),
 	)...)
@@ -443,7 +443,7 @@ func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 	}
 
 	if err := email.SendEmail(cfg, s.EmailSender); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendEmailUpdateConfirmation",
 			logging.SendEmailError,
 			fmt.Errorf("Failed to send email update confirmation to %s: %v",
@@ -453,7 +453,7 @@ func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 			newEmail, err)
 	}
 
-	s.Logger.Info("Email sent", logging.ServiceInfoLogging(
+	s.Logger.Info("Email sent", logging.ServiceInfoLogging(ctx,
 		"EmailService", "SendEmailUpdateConfirmation", logging.EmailSentSuccess,
 		zap.String("recipient", newEmail),
 		zap.String("old_email", oldEmail),

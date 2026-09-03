@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,16 +15,19 @@ func LoggerMiddleware(consoleLogger, fileLogger *zap.Logger) gin.HandlerFunc {
 		latency := time.Since(start)
 		status := c.Writer.Status()
 
-		logMsg := fmt.Sprintf(
-			"status=%d method=%s path=%s client_ip=%s latency=%s",
-			status,
-			c.Request.Method,
-			c.Request.URL.Path,
-			c.ClientIP(),
-			latency,
-		)
+		var logAt func(*zap.Logger, string, ...zap.Field)
+		var msg string
+		switch {
+		case status >= 500:
+			logAt, msg = (*zap.Logger).Error, "Server Error"
+		case status >= 400:
+			logAt, msg = (*zap.Logger).Warn, "Client Error"
+		default:
+			logAt, msg = (*zap.Logger).Info, "Request processed"
+		}
 
 		fields := []zap.Field{
+			zap.String("request_id", c.GetString("request_id")),
 			zap.Int("status", status),
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
@@ -34,23 +36,8 @@ func LoggerMiddleware(consoleLogger, fileLogger *zap.Logger) gin.HandlerFunc {
 		}
 
 		if gin.Mode() == gin.DebugMode {
-			switch {
-			case status >= 500:
-				consoleLogger.Error("Server Error - " + logMsg)
-			case status >= 400:
-				consoleLogger.Warn("Client Error - " + logMsg)
-			default:
-				consoleLogger.Info("Request processed - " + logMsg)
-			}
+			logAt(consoleLogger, msg, fields...)
 		}
-
-		switch {
-		case status >= 500:
-			fileLogger.Error("Server Error", fields...)
-		case status >= 400:
-			fileLogger.Warn("Client Error", fields...)
-		default:
-			fileLogger.Info("Request processed", fields...)
-		}
+		logAt(fileLogger, msg, fields...)
 	}
 }

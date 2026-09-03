@@ -83,7 +83,7 @@ func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
 		[]models.AnalysisResponse, error) {
 	analyses, err := s.Repo.GetAnalyses(ctx, userID, filter)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
@@ -102,7 +102,7 @@ func (s *analysisService) FindManyByIDs(ctx context.Context,
 	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if len(analysisIDs) > models.AnalysesByBatch {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindManyByIDs",
 			logging.ExceededDownloadLimitError, ErrExceededDownloadLimit,
 		)...)
@@ -115,7 +115,7 @@ func (s *analysisService) FindManyByIDs(ctx context.Context,
 
 	analyses, err := s.Repo.GetAnalysesByIDs(ctx, analysisIDs, userID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindManyByIDs",
 			logging.DatabaseError, err,
 		)...)
@@ -134,21 +134,21 @@ func (s *analysisService) FindByID(ctx context.Context, analysisID,
 	*models.AnalysisResponse, error) {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID",
 			logging.DatabaseError, err)...)
 		return nil, ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != analysis.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID", logging.Unauthorized, err,
 		)...)
 		return nil, ErrUnauthorized
@@ -165,14 +165,14 @@ func (s *analysisService) Create(ctx context.Context,
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrSampleNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -182,7 +182,7 @@ func (s *analysisService) Create(ctx context.Context,
 	if sample.Fastq1 == nil && sample.Fastq2 == nil &&
 		sample.Fasta == nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.MissingFileError, ErrMissingFiles,
 			)...)
@@ -193,7 +193,7 @@ func (s *analysisService) Create(ctx context.Context,
 	case models.AnalysisTypeFastQC, models.AnalysisTypeComplete:
 		if sample.Fastq1 == nil {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFastq1,
 				)...)
@@ -201,7 +201,7 @@ func (s *analysisService) Create(ctx context.Context,
 		}
 		if sample.Fastq2 == nil {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFastq2,
 				)...)
@@ -211,7 +211,7 @@ func (s *analysisService) Create(ctx context.Context,
 		if (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
 			sample.Fasta == nil {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFiles,
 				)...)
@@ -223,14 +223,14 @@ func (s *analysisService) Create(ctx context.Context,
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrUserNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -249,7 +249,7 @@ func (s *analysisService) Create(ctx context.Context,
 
 	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.DatabaseError, err,
 			)...)
@@ -258,7 +258,7 @@ func (s *analysisService) Create(ctx context.Context,
 
 	task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Create", logging.AsynqTaskError,
 			err,
 		)...)
@@ -266,12 +266,12 @@ func (s *analysisService) Create(ctx context.Context,
 		info, err := s.AsynqClient.EnqueueContext(ctx, task,
 			asynq.Queue(tasks.QueueAnalysis))
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.RedisDispatchError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 				"AnalysisService", "Create",
 				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
@@ -280,7 +280,7 @@ func (s *analysisService) Create(ctx context.Context,
 			taskID := info.ID
 			analysis.TaskID = &taskID
 			if err := s.Repo.UpdateAnalysis(ctx, &analysis); err != nil {
-				s.Logger.Warn("Service Warning", logging.ServiceLogging(
+				s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 					"AnalysisService", "Create",
 					logging.DatabaseError, err,
 				)...)
@@ -297,14 +297,14 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	*models.AnalysisResponse, error) {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Update", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Update", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -319,7 +319,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -329,7 +329,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	if analysis.Status == models.AnalysisStatusFailed &&
 		analysis.TaskID != nil {
 		if err := s.Canceller.CancelProcessing(*analysis.TaskID); err != nil {
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update",
 				logging.RedisDispatchError, err,
 			)...)
@@ -340,7 +340,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 		analysis.Status == models.AnalysisStatusFailed {
 		task, err := tasks.NewAnalysisDoneEmailTask(analysis.ID)
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update", logging.AsynqTaskError,
 				err,
 			)...)
@@ -348,12 +348,12 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueEmail))
 			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(
+				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AnalysisService", "Update",
 					logging.RedisDispatchError, err,
 				)...)
 			} else {
-				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 					"AnalysisService", "Update",
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
@@ -365,7 +365,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	if analysis.Status == models.AnalysisStatusPending {
 		task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update", logging.AsynqTaskError,
 				err,
 			)...)
@@ -373,12 +373,12 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueAnalysis))
 			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(
+				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AnalysisService", "Update",
 					logging.RedisDispatchError, err,
 				)...)
 			} else {
-				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 					"AnalysisService", "Update",
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
@@ -387,7 +387,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				taskID := info.ID
 				analysis.TaskID = &taskID
 				if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-					s.Logger.Warn("Service Warning", logging.ServiceLogging(
+					s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 						"AnalysisService", "Update",
 						logging.DatabaseError, err,
 					)...)
@@ -404,35 +404,35 @@ func (s *analysisService) Delete(ctx context.Context,
 	analysisID, userID uuid.UUID) error {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != analysis.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.Unauthorized, err,
 		)...)
 		return ErrUnauthorized
 	}
 
 	if analysis.Status == models.AnalysisStatusRunning {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrDeleteRunningAnalysis
 	}
 
 	if err := s.Repo.DeleteAnalysis(ctx, analysis); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -441,7 +441,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	uploadDir := s.getAnalysisFolderPath(analysis.UserID, analysis.SampleID,
 		analysisID)
 	if err := os.RemoveAll(uploadDir); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DeleteFolderError, err,
 		)...)
 	}
@@ -453,7 +453,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	userID uuid.UUID) (string, error) {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.DatabaseNotFoundError,
 			err,
 		)...)
@@ -461,14 +461,14 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.DatabaseError, err,
 		)...)
 		return "", ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != analysis.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.Unauthorized, err,
 		)...)
 		return "", ErrUnauthorized
@@ -481,7 +481,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	}
 
 	if zipPath == "" {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.MissingFileError,
 			ErrZipNotFound,
 		)...)
@@ -489,7 +489,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	}
 
 	if _, err := os.Stat(zipPath); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.MissingFileError,
 			ErrZipNotFound,
 		)...)
@@ -503,7 +503,7 @@ func (s *analysisService) DownloadBatchTSV(ctx context.Context,
 	analysisIDs []uuid.UUID, userID uuid.UUID, language string) (
 	[]models.AnalysisResponse, error) {
 	if len(analysisIDs) > models.AnalysesByBatch {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadBatchTSV",
 			logging.ExceededDownloadLimitError, ErrExceededDownloadLimit,
 		)...)
@@ -516,7 +516,7 @@ func (s *analysisService) DownloadBatchTSV(ctx context.Context,
 
 	analyses, err := s.Repo.GetAnalysesByIDs(ctx, analysisIDs, userID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadBatchTSV",
 			logging.DatabaseError, err,
 		)...)
@@ -525,7 +525,7 @@ func (s *analysisService) DownloadBatchTSV(ctx context.Context,
 
 	for _, a := range analyses {
 		if a.Type == models.AnalysisTypeFastQC {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "DownloadBatchTSV",
 				logging.ExceededDownloadLimitError, ErrFastQCDownload,
 			)...)

@@ -41,7 +41,7 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 	*models.AdminMetricsResponse, error) {
 	samples, err := s.SampleRepo.GetSamples(ctx, "", uuid.Nil)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -50,7 +50,7 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 	analyses, err := s.AnalysisRepo.GetAnalyses(ctx, uuid.Nil,
 		models.AnalysisFilter{})
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -58,7 +58,7 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 
 	users, err := s.UserRepo.GetUsers(ctx, models.AdminUserFilter{})
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal

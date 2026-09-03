@@ -36,7 +36,7 @@ func (s *laboratoryService) FindAll(ctx context.Context) ([]models.LaboratoryAdm
 	labs, err := s.Repo.GetLaboratories(ctx)
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "FindAll", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -53,14 +53,14 @@ func (s *laboratoryService) FindByID(ctx context.Context, ID uuid.UUID) (*models
 	lab, err := s.Repo.GetLaboratoryByID(ctx, ID)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"LaboratoryService", "FindByID", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "FindByID", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -76,7 +76,7 @@ func (s *laboratoryService) FindByNameOrAbbreviation(
 	labs, err := s.Repo.GetLaboratoriesByNameOrAbbreviation(ctx, input)
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "FindByNameOrAbbreviation",
 			logging.DatabaseError, err,
 		)...)
@@ -101,7 +101,7 @@ func (s *laboratoryService) Create(
 
 	existingLab, err := s.Repo.GetLaboratoryDuplicate(ctx, lab.Name, uuid.UUID{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -109,7 +109,7 @@ func (s *laboratoryService) Create(
 	}
 
 	if existingLab != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Create",
 			logging.DatabaseConflictError, err,
 		)...)
@@ -117,7 +117,7 @@ func (s *laboratoryService) Create(
 	}
 
 	if err := s.Repo.CreateLaboratory(ctx, &lab); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -134,7 +134,7 @@ func (s *laboratoryService) Update(
 	input models.LaboratoryUpdateInput) (*models.LaboratoryAdminTableResponse, error) {
 	existingLab, err := s.Repo.GetLaboratoryByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Update",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -142,7 +142,7 @@ func (s *laboratoryService) Update(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -154,7 +154,7 @@ func (s *laboratoryService) Update(
 	if input.Name != nil {
 		duplicate, err := s.Repo.GetLaboratoryDuplicate(ctx, *input.Name, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"LaboratoryService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -162,7 +162,7 @@ func (s *laboratoryService) Update(
 		}
 
 		if duplicate != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"LaboratoryService", "Update",
 				logging.DatabaseConflictError, err,
 			)...)
@@ -171,7 +171,7 @@ func (s *laboratoryService) Update(
 	}
 
 	if err := s.Repo.UpdateLaboratory(ctx, existingLab); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -185,14 +185,14 @@ func (s *laboratoryService) Update(
 func (s *laboratoryService) Delete(ctx context.Context, ID uuid.UUID) error {
 	lab, err := s.Repo.GetLaboratoryByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Delete",
 			logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Delete",
 			logging.DatabaseError, err,
 		)...)
@@ -200,7 +200,7 @@ func (s *laboratoryService) Delete(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if err := s.Repo.DeleteLaboratory(ctx, lab); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"LaboratoryService", "Delete",
 			logging.DatabaseError, err,
 		)...)

@@ -66,7 +66,9 @@ func main() {
 	}
 
 	// Logs
-	logging.SetupLoggers("./logs/worker-analysis.log")
+	if err := logging.SetupLoggers("./logs/worker-analysis.log"); err != nil {
+		log.Fatal(err)
+	}
 	defer logging.FileLogger.Sync()
 
 	// Asynq Client
@@ -126,7 +128,7 @@ func main() {
 
 	logging.FileLogger.Info("Starting CABGen Analysis Worker...",
 		zap.String("redis_addr", config.RedisURL),
-		zap.Int("concurrency", 4))
+		zap.Int("concurrency", config.AnalysisConcurrency))
 
 	if err := srv.Run(mux); err != nil {
 		logging.FileLogger.Fatal("Analysis worker execution failed.",

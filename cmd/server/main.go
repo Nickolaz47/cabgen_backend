@@ -82,7 +82,9 @@ func main() {
 	}
 
 	// Logs
-	logging.SetupLoggers("./logs/api.log")
+	if err := logging.SetupLoggers("./logs/api.log"); err != nil {
+		log.Fatal(err)
+	}
 	defer logging.ConsoleLogger.Sync()
 	defer logging.FileLogger.Sync()
 
@@ -114,6 +116,7 @@ func main() {
 
 	r.Use(
 		cors.New(corsConfig),
+		middlewares.RequestIDMiddleware(),
 		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
 		middlewares.I18nMiddleware(),
 		gin.Recovery(),

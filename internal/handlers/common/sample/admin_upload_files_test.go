@@ -40,7 +40,8 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (
 				string, error) {
 				assert.Equal(t, mockOwnerID, userID)
 				return dir, nil
@@ -88,7 +89,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID,
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
 				sampleID uuid.UUID) (string, error) {
 				assert.Equal(t, mockOwnerID, userID,
 					"should use owner's ID, not admin's")
@@ -224,7 +225,8 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (
 				string, error) {
 				return dir, nil
 			},
@@ -259,7 +261,8 @@ func TestAdminUploadFiles(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
 
 		svc := &mocks.MockSampleService{
-			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (
 				string, error) {
 				return dir, nil
 			},
@@ -326,7 +329,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID,
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
 			},
@@ -369,7 +372,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID,
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
 			},
@@ -412,7 +415,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID,
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
 				sampleID uuid.UUID) (string, error) {
 				return dir, nil
 			},
@@ -455,7 +458,8 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (
 				string, error) {
 				return dir, services.ErrInternal
 			},
@@ -494,7 +498,8 @@ func TestAdminUploadFiles(t *testing.T) {
 				sample.UserID = mockOwnerID
 				return &sample, nil
 			},
-			PrepareSampleFolderFunc: func(userID, sampleID uuid.UUID) (
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (
 				string, error) {
 				return dir, nil
 			},

@@ -104,7 +104,7 @@ func TestTicketFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
 		result, err := service.FindByID(ctx, ticket.ID)
@@ -266,7 +266,7 @@ func TestTicketAssign(t *testing.T) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
 		result, err := service.Assign(ctx, ticket.ID, admin.ID)
@@ -417,7 +417,7 @@ func TestTicketResolve(t *testing.T) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
 		result, err := service.Resolve(ctx, ticket.ID)
@@ -525,7 +525,7 @@ func TestTicketDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewTicketService(ticketRepo, nil, mockLogger)
 		err := service.Delete(ctx, ticket.ID)

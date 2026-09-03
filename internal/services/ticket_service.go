@@ -50,7 +50,7 @@ func (s *ticketService) FindAll(ctx context.Context, filter models.TicketFilter)
 	[]models.TicketResponse, error) {
 	tickets, err := s.Repo.GetTickets(ctx, filter)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "FindAll", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -69,13 +69,13 @@ func (s *ticketService) FindByID(ctx context.Context, ID uuid.UUID) (
 	ticket, err := s.Repo.GetTicketByID(ctx, ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"TicketService", "FindByID", logging.DatabaseNotFoundError, err,
 			)...)
 			return nil, ErrNotFound
 		}
 
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "FindByID", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -98,7 +98,7 @@ func (s *ticketService) Create(ctx context.Context,
 	}
 
 	if err := s.Repo.CreateTicket(ctx, &ticket); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Create", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -106,18 +106,18 @@ func (s *ticketService) Create(ctx context.Context,
 
 	task, err := tasks.NewAdminTicketEmailTask(ticket.ID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Create", logging.AsynqTaskError, err,
 		)...)
 	} else {
 		info, err := s.AsynqClient.EnqueueContext(ctx, task,
 			asynq.Queue(tasks.QueueEmail))
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"TicketService", "Create", logging.RedisDispatchError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 				"TicketService", "Create", logging.TaskEnqueuedSuccess,
 				zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
@@ -134,19 +134,19 @@ func (s *ticketService) Assign(ctx context.Context, ticketID,
 	ticket, err := s.Repo.GetTicketByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"TicketService", "Assign", logging.DatabaseNotFoundError, err,
 			)...)
 			return nil, ErrNotFound
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Assign", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 
 	if ticket.Status != models.TicketStatusOpen {
-		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(
+		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(ctx,
 			"TicketService", "Assign", logging.TicketStatusError, err,
 		)...)
 		return nil, ErrTicketIsNotOpen
@@ -156,7 +156,7 @@ func (s *ticketService) Assign(ctx context.Context, ticketID,
 	ticket.Status = models.TicketStatusInProgress
 
 	if err := s.Repo.UpdateTicket(ctx, ticket); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Assign", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -164,7 +164,7 @@ func (s *ticketService) Assign(ctx context.Context, ticketID,
 
 	updatedTicket, err := s.Repo.GetTicketByID(ctx, ticket.ID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Assign", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -179,19 +179,19 @@ func (s *ticketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
 	ticket, err := s.Repo.GetTicketByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"TicketService", "Resolve", logging.DatabaseNotFoundError, err,
 			)...)
 			return nil, ErrNotFound
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Resolve", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 
 	if ticket.Status == models.TicketStatusResolved {
-		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(
+		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(ctx,
 			"TicketService", "Resolve", logging.TicketStatusError,
 			ErrTicketAlreadyResolvedStatus)...)
 		return nil, ErrTicketAlreadyResolvedStatus
@@ -200,7 +200,7 @@ func (s *ticketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
 	ticket.Status = models.TicketStatusResolved
 
 	if err := s.Repo.UpdateTicket(ctx, ticket); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Resolve", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -208,18 +208,18 @@ func (s *ticketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
 
 	task, err := tasks.NewFinishedTicketEmailTask(ticket.ID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Resolve", logging.AsynqTaskError, err,
 		)...)
 	} else {
 		info, err := s.AsynqClient.EnqueueContext(ctx, task,
 			asynq.Queue(tasks.QueueEmail))
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"TicketService", "Resolve", logging.RedisDispatchError, err,
 			)...)
 		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(
+			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 				"TicketService", "Resolve", logging.TaskEnqueuedSuccess,
 				zap.String("task_id", info.ID),
 				zap.String("queue", info.Queue),
@@ -235,12 +235,12 @@ func (s *ticketService) Delete(ctx context.Context, ticketID uuid.UUID) error {
 	ticket, err := s.Repo.GetTicketByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"TicketService", "Delete", logging.DatabaseNotFoundError, err,
 			)...)
 			return ErrNotFound
 		}
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -248,14 +248,14 @@ func (s *ticketService) Delete(ctx context.Context, ticketID uuid.UUID) error {
 
 	if ticket.Status == models.TicketStatusInProgress {
 		err := errors.New("cannot delete a ticket that is currently in progress")
-		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(
+		s.Logger.Warn("Business Rule Violation", logging.ServiceLogging(ctx,
 			"TicketService", "Delete", logging.DeleteActiveTicketError, err,
 		)...)
 		return ErrDeleteActiveTicket
 	}
 
 	if err := s.Repo.DeleteTicket(ctx, ticket); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal

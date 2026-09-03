@@ -28,6 +28,10 @@ func NewAnalysisTaskHandler(
 
 func (h *AnalysisTaskHandler) ProcessTask(ctx context.Context,
 	t *asynq.Task) error {
+	if taskID, ok := asynq.GetTaskID(ctx); ok {
+		ctx = logging.WithRequestID(ctx, taskID)
+	}
+
 	switch t.Type() {
 	case tasks.TaskTypeAnalysisProcess:
 		var p tasks.AnalysisProcessPayload
@@ -35,20 +39,20 @@ func (h *AnalysisTaskHandler) ProcessTask(ctx context.Context,
 			return fmt.Errorf("json unmarshal failed: %w", asynq.SkipRetry)
 		}
 
-		h.Logger.Info("Task started", logging.ServiceInfoLogging(
+		h.Logger.Info("Task started", logging.ServiceInfoLogging(ctx,
 			"AnalysisTaskHandler", "ProcessTask", "TASK_STARTED",
 			zap.String("task_type", t.Type()),
 			zap.String("analysis_id", p.AnalysisID.String()),
 		)...)
 
 		if err := h.AnalysisRunnerService.Run(ctx, p.AnalysisID); err != nil {
-			h.Logger.Error("Task failed", logging.ServiceLogging(
+			h.Logger.Error("Task failed", logging.ServiceLogging(ctx,
 				"AnalysisTaskHandler", "ProcessTask", logging.AnalysisRunError,
 				err)...)
 			return err
 		}
 
-		h.Logger.Info("Task completed", logging.ServiceInfoLogging(
+		h.Logger.Info("Task completed", logging.ServiceInfoLogging(ctx,
 			"AnalysisTaskHandler", "ProcessTask", "TASK_COMPLETED",
 			zap.String("task_type", t.Type()),
 			zap.String("analysis_id", p.AnalysisID.String()),

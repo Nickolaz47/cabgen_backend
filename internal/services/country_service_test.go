@@ -81,7 +81,7 @@ func TestCountryFindByCode(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.FindByCode(context.Background(), "BRA")
@@ -245,7 +245,7 @@ func TestCountryUpdate(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewCountryService(repo, mockLogger)
 		result, err := service.Update(context.Background(), "BRA", models.CountryUpdateInput{})
@@ -323,7 +323,7 @@ func TestCountryDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewCountryService(repo, mockLogger)
 		err := service.Delete(context.Background(), "BRA")

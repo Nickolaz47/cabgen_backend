@@ -29,7 +29,7 @@ func TestPrepareSampleFolder(t *testing.T) {
 	sampleRepo := &mocks.MockSampleRepository{}
 	svc := services.NewSampleService(sampleRepo, nil, nil, nil,
 		nil, nil, nil, nil, nil, rootDir, nil)
-	result, err := svc.PrepareSampleFolder(mock.UserID, mock.ID)
+	result, err := svc.PrepareSampleFolder(context.Background(), mock.UserID, mock.ID)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
@@ -106,7 +106,7 @@ func TestSampleFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
 			nil, nil, nil, nil, t.TempDir(), mockLogger)
@@ -127,7 +127,7 @@ func TestSampleFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -704,7 +704,7 @@ func TestSampleAttachFiles(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -724,7 +724,7 @@ func TestSampleAttachFiles(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -921,7 +921,7 @@ func TestGetSampleForUpload(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
 			nil, nil, nil, nil, t.TempDir(), mockLogger)
@@ -1048,7 +1048,7 @@ func TestSampleUpdate(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -1090,7 +1090,7 @@ func TestSampleUpdate(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -1639,7 +1639,7 @@ func TestSampleDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)
@@ -1658,7 +1658,7 @@ func TestSampleDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil, nil,
 			nil, nil, nil, t.TempDir(), mockLogger)

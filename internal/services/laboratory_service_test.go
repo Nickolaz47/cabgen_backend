@@ -80,7 +80,7 @@ func TestLaboratoryFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		service := services.NewLaboratoryService(labRepo, mockLogger)
 		lab, err := service.FindByID(context.Background(), uuid.New())

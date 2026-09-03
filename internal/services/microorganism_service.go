@@ -48,7 +48,7 @@ func (s *microorganismService) FindAll(
 	[]models.MicroorganismAdminTableResponse, error) {
 	micros, err := s.Repo.GetMicroorganisms(ctx)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
@@ -69,7 +69,7 @@ func (s *microorganismService) FindByID(
 	*models.MicroorganismAdminDetailResponse, error) {
 	micro, err := s.Repo.GetMicroorganismByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "FindByID",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -77,7 +77,7 @@ func (s *microorganismService) FindByID(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "FindByID",
 			logging.DatabaseError, err,
 		)...)
@@ -93,7 +93,7 @@ func (s *microorganismService) FindBySpecies(
 	[]models.MicroorganismAdminTableResponse, error) {
 	micros, err := s.Repo.GetMicroorganismsBySpecies(ctx, species, language)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "FindBySpecies",
 			logging.DatabaseError, err,
 		)...)
@@ -122,7 +122,7 @@ func (s *microorganismService) Create(
 	existingMicro, err := s.Repo.GetMicroorganismDuplicate(ctx, input.Species,
 		input.Variety, uuid.Nil)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -130,7 +130,7 @@ func (s *microorganismService) Create(
 	}
 
 	if existingMicro != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Create",
 			logging.DatabaseConflictError, err,
 		)...)
@@ -138,7 +138,7 @@ func (s *microorganismService) Create(
 	}
 
 	if err := s.Repo.CreateMicroorganism(ctx, &micro); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Create",
 			logging.DatabaseError, err,
 		)...)
@@ -154,7 +154,7 @@ func (s *microorganismService) Update(
 	*models.MicroorganismAdminDetailResponse, error) {
 	existingMicro, err := s.Repo.GetMicroorganismByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Update",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -162,7 +162,7 @@ func (s *microorganismService) Update(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -175,7 +175,7 @@ func (s *microorganismService) Update(
 		duplicate, err := s.Repo.GetMicroorganismDuplicate(ctx,
 			*input.Species, input.Variety, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"MicroorganismService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -183,7 +183,7 @@ func (s *microorganismService) Update(
 		}
 
 		if duplicate != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"MicroorganismService", "Update",
 				logging.DatabaseConflictError, err,
 			)...)
@@ -192,7 +192,7 @@ func (s *microorganismService) Update(
 	}
 
 	if err := s.Repo.UpdateMicroorganism(ctx, existingMicro); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -207,7 +207,7 @@ func (s *microorganismService) Delete(ctx context.Context,
 	ID uuid.UUID) error {
 	micro, err := s.Repo.GetMicroorganismByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Delete",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -215,7 +215,7 @@ func (s *microorganismService) Delete(ctx context.Context,
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Delete",
 			logging.DatabaseError, err,
 		)...)
@@ -223,7 +223,7 @@ func (s *microorganismService) Delete(ctx context.Context,
 	}
 
 	if err := s.Repo.DeleteMicroorganism(ctx, micro); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MicroorganismService", "Delete",
 			logging.DatabaseError, err,
 		)...)

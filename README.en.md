@@ -126,6 +126,9 @@ SMTP_PORT=
 # Redis URL
 REDIS_URL=
 
+# Logging
+LOG_LEVEL=              # debug | info | warn | error (default: info)
+
 # Analysis Worker — Resources and concurrency (required)
 ANALYSIS_CONCURRENCY=   # Number of concurrent analyses
 ANALYSIS_CPU=           # CPU limit per analysis (e.g., 6.0)

@@ -1,6 +1,10 @@
 package logging
 
-import "go.uber.org/zap"
+import (
+	"context"
+
+	"go.uber.org/zap"
+)
 
 const (
 	DatabaseError                   = "DATABASE_ERROR"
@@ -41,23 +45,58 @@ const (
 	EmailSentSuccess    = "EMAIL_SENT_SUCCESS"
 )
 
-const ()
+type requestIDKey struct{}
 
-func ServiceLogging(service, function, errorType string, err error) []zap.Field {
-	return []zap.Field{
+// WithRequestID stores the correlation ID (request ID or task ID) in the
+// context so all log lines from the same transaction carry it.
+func WithRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+// RequestIDFromContext returns the correlation ID stored by WithRequestID.
+func RequestIDFromContext(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	
+	id, _ := ctx.Value(requestIDKey{}).(string)
+	return id
+}
+
+func ctxFields(ctx context.Context) []zap.Field {
+	if ctx == nil {
+		return nil
+	}
+
+	if id, ok := ctx.Value(requestIDKey{}).(string); ok && id != "" {
+		return []zap.Field{zap.String("request_id", id)}
+	}
+
+	return nil
+}
+
+func ServiceLogging(ctx context.Context, service, function,
+	errorType string, err error) []zap.Field {
+	fields := append(ctxFields(ctx),
 		zap.String("service", service),
 		zap.String("func", function),
 		zap.String("error_type", errorType),
-		zap.Error(err),
+	)
+
+	if err != nil {
+		fields = append(fields, zap.Error(err))
 	}
+
+	return fields
 }
 
-func ServiceInfoLogging(service, function, eventType string, extraFields ...zap.Field) []zap.Field {
-	fields := []zap.Field{
+func ServiceInfoLogging(ctx context.Context, service, function,
+	eventType string, extraFields ...zap.Field) []zap.Field {
+	fields := append(ctxFields(ctx),
 		zap.String("service", service),
 		zap.String("func", function),
 		zap.String("event_type", eventType),
-	}
+	)
 
 	if len(extraFields) > 0 {
 		fields = append(fields, extraFields...)

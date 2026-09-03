@@ -42,7 +42,7 @@ func (s *healthServiceService) FindAll(ctx context.Context) (
 	[]models.HealthServiceAdminTableResponse, error) {
 	healthServices, err := s.Repo.GetHealthServices(ctx)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "FindAll", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -61,14 +61,14 @@ func (s *healthServiceService) FindByID(ctx context.Context, ID uuid.UUID) (
 	*models.HealthServiceAdminTableResponse, error) {
 	healthService, err := s.Repo.GetHealthServiceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"HealthServiceService", "FindByID", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "FindByID", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -82,7 +82,7 @@ func (s *healthServiceService) FindByName(ctx context.Context, name string) (
 	[]models.HealthServiceAdminTableResponse, error) {
 	healthServices, err := s.Repo.GetHealthServicesByName(ctx, name)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "FindByName", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -103,14 +103,14 @@ func (s *healthServiceService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"HealthServiceService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrInvalidCountryCode
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"HealthServiceService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -133,14 +133,14 @@ func (s *healthServiceService) Create(
 		ctx, healthService.Name, uuid.UUID{},
 	)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Create", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 
 	if existingHealthService != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Create",
 			logging.DatabaseConflictError, err,
 		)...)
@@ -148,7 +148,7 @@ func (s *healthServiceService) Create(
 	}
 
 	if err := s.Repo.CreateHealthService(ctx, &healthService); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Create", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -163,7 +163,7 @@ func (s *healthServiceService) Update(
 	*models.HealthServiceAdminTableResponse, error) {
 	existingHealthService, err := s.Repo.GetHealthServiceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Update",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -171,7 +171,7 @@ func (s *healthServiceService) Update(
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Update",
 			logging.DatabaseError, err,
 		)...)
@@ -181,14 +181,14 @@ func (s *healthServiceService) Update(
 	if input.Name != nil {
 		duplicate, err := s.Repo.GetHealthServiceDuplicate(ctx, *input.Name, ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"HealthServiceService", "Update", logging.DatabaseError, err,
 			)...)
 			return nil, ErrInternal
 		}
 
 		if duplicate != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"HealthServiceService", "Update",
 				logging.DatabaseConflictError, err,
 			)...)
@@ -201,14 +201,14 @@ func (s *healthServiceService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"HealthServiceService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrInvalidCountryCode
 			}
 
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"HealthServiceService", "Update",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -223,7 +223,7 @@ func (s *healthServiceService) Update(
 
 	if err := s.Repo.UpdateHealthService(ctx, existingHealthService); err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"HealthServiceService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -237,7 +237,7 @@ func (s *healthServiceService) Update(
 func (s *healthServiceService) Delete(ctx context.Context, ID uuid.UUID) error {
 	healthService, err := s.Repo.GetHealthServiceByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Delete",
 			logging.DatabaseNotFoundError, err,
 		)...)
@@ -245,14 +245,14 @@ func (s *healthServiceService) Delete(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if err := s.Repo.DeleteHealthService(ctx, healthService); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"HealthServiceService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal

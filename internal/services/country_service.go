@@ -34,7 +34,7 @@ func NewCountryService(repo repositories.CountryRepository,
 func (s *countryService) FindAll(ctx context.Context, language string) ([]models.CountryFormResponse, error) {
 	countries, err := s.Repo.GetCountries(ctx)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "FindAll", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -50,14 +50,14 @@ func (s *countryService) FindAll(ctx context.Context, language string) ([]models
 func (s *countryService) FindByCode(ctx context.Context, code string) (*models.CountryAdminDetailResponse, error) {
 	country, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"CountryService", "FindByCode", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "FindByCode", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -70,7 +70,7 @@ func (s *countryService) FindByCode(ctx context.Context, code string) (*models.C
 func (s *countryService) FindByName(ctx context.Context, name, language string) ([]models.CountryFormResponse, error) {
 	countries, err := s.Repo.GetCountriesByName(ctx, name, language)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "FindByName", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -91,21 +91,21 @@ func (s *countryService) Create(ctx context.Context, input models.CountryCreateI
 
 	existingCountry, err := s.Repo.GetCountryDuplicate(ctx, input.Names, "")
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Create", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
 	}
 
 	if existingCountry != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Create", logging.DatabaseConflictError, err,
 		)...)
 		return nil, ErrConflict
 	}
 
 	if err := s.Repo.CreateCountry(ctx, &country); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Create", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -118,14 +118,14 @@ func (s *countryService) Create(ctx context.Context, input models.CountryCreateI
 func (s *countryService) Update(ctx context.Context, code string, input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error) {
 	existingCountry, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"CountryService", "Update", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Update", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -136,14 +136,14 @@ func (s *countryService) Update(ctx context.Context, code string, input models.C
 	if input.Code != nil && *input.Code != existingCountry.Code {
 		_, err := s.Repo.GetCountryByCode(ctx, *input.Code)
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"CountryService", "Update", logging.DatabaseError, err,
 			)...)
 			return nil, ErrInternal
 		}
 
 		if err == nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"CountryService", "Update", logging.DatabaseConflictError, err,
 			)...)
 			return nil, ErrConflict
@@ -153,14 +153,14 @@ func (s *countryService) Update(ctx context.Context, code string, input models.C
 	if input.Names != nil {
 		duplicate, err := s.Repo.GetCountryDuplicate(ctx, input.Names, code)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"CountryService", "Update", logging.DatabaseError, err,
 			)...)
 			return nil, ErrInternal
 		}
 
 		if duplicate != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"CountryService", "Update", logging.DatabaseConflictError, err,
 			)...)
 			return nil, ErrConflict
@@ -168,7 +168,7 @@ func (s *countryService) Update(ctx context.Context, code string, input models.C
 	}
 
 	if err := s.Repo.UpdateCountry(ctx, existingCountry); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Update", logging.DatabaseError, err,
 		)...)
 		return nil, ErrInternal
@@ -181,21 +181,21 @@ func (s *countryService) Update(ctx context.Context, code string, input models.C
 func (s *countryService) Delete(ctx context.Context, code string) error {
 	country, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"CountryService", "Delete", logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if err := s.Repo.DeleteCountry(ctx, country); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"CountryService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal

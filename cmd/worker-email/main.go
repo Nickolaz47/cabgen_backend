@@ -33,7 +33,9 @@ func main() {
 	translation.LoadTranslation()
 
 	// Logs
-	logging.SetupLoggers("./logs/worker-email.log")
+	if err := logging.SetupLoggers("./logs/worker-email.log"); err != nil {
+		log.Fatal(err)
+	}
 	defer logging.FileLogger.Sync()
 
 	// Email Service

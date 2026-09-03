@@ -160,7 +160,7 @@ func TestAnalysisFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, mock.UserID, "en")
@@ -179,7 +179,7 @@ func TestAnalysisFindByID(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, mockLogger, t.TempDir())
 		result, err := svc.FindByID(ctx, mock.ID, uuid.New(), "en")
@@ -954,7 +954,7 @@ func TestAnalysisUpdate(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil,
 			mockLogger, t.TempDir())
@@ -1096,7 +1096,7 @@ func TestAnalysisDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, mock.UserID)
@@ -1114,7 +1114,7 @@ func TestAnalysisDelete(t *testing.T) {
 			},
 		}
 
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, mockLogger, t.TempDir())
 		err := svc.Delete(ctx, mock.ID, uuid.New())
@@ -1220,7 +1220,7 @@ func TestAnalysisDownloadZip(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
 			error) {
@@ -1250,7 +1250,7 @@ func TestAnalysisDownloadZip(t *testing.T) {
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.ResultsZipPath = nil
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisService(newRepo(func() (*models.Analysis,
 			error) {

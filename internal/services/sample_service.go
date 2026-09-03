@@ -16,7 +16,8 @@ import (
 )
 
 type SampleService interface {
-	PrepareSampleFolder(userID, sampleID uuid.UUID) (string, error)
+	PrepareSampleFolder(ctx context.Context, userID,
+		sampleID uuid.UUID) (string, error)
 	GetSampleForUpload(ctx context.Context,
 		sampleID uuid.UUID) (*models.Sample, error)
 	FindAll(ctx context.Context, input string, userID uuid.UUID,
@@ -83,12 +84,12 @@ func (s *sampleService) getSampleFolderPath(userID, sampleID uuid.UUID) string {
 	)
 }
 
-func (s *sampleService) PrepareSampleFolder(
+func (s *sampleService) PrepareSampleFolder(ctx context.Context,
 	userID, sampleID uuid.UUID) (string, error) {
 	basePath := s.getSampleFolderPath(userID, sampleID)
 
 	if err := os.MkdirAll(basePath, 0755); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "PrepareSampleFolder",
 			logging.CreateFolderError, err,
 		)...)
@@ -105,7 +106,7 @@ func (s *sampleService) GetSampleForUpload(ctx context.Context,
 		return nil, ErrNotFound
 	}
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "GetSampleForUpload",
 			logging.DatabaseError, err,
 		)...)
@@ -118,7 +119,7 @@ func (s *sampleService) FindAll(ctx context.Context, input string,
 	userID uuid.UUID, language string) ([]models.SampleResponse, error) {
 	samples, err := s.Repo.GetSamples(ctx, input, userID)
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
@@ -138,21 +139,21 @@ func (s *sampleService) FindByID(
 	language string) (*models.SampleResponse, error) {
 	sample, err := s.Repo.GetSampleByID(ctx, sampleID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID", logging.DatabaseNotFoundError, err,
 		)...)
 		return nil, ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID",
 			logging.DatabaseError, err)...)
 		return nil, ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != sample.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID", logging.Unauthorized, err,
 		)...)
 		return nil, ErrUnauthorized
@@ -170,14 +171,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrInvalidCountryCode
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -188,14 +189,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrUserNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -206,14 +207,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrOriginNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -225,14 +226,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrSampleSourceNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -244,14 +245,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrMicroorganismNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -263,14 +264,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrSequencerNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -282,14 +283,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrLaboratoryNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -301,14 +302,14 @@ func (s *sampleService) Create(
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
 			return nil, ErrHealthServiceNotFound
 		}
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
@@ -344,7 +345,7 @@ func (s *sampleService) Create(
 
 	if err := s.Repo.CreateSample(ctx, &sample); err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Create",
 				logging.DatabaseError, err,
 			)...)
@@ -360,21 +361,21 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 	input models.SampleAttachmentInput) error {
 	sample, err := s.Repo.GetSampleByID(ctx, sampleID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != sample.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.Unauthorized, err,
 		)...)
 		return ErrUnauthorized
@@ -395,7 +396,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 	validations.ApplySampleFilesUpdate(sample, &input)
 
 	if err := s.Repo.UpdateSample(ctx, sample); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles",
 			logging.DatabaseError, err,
 		)...)
@@ -406,21 +407,21 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 
 	if oldFastq1 != nil && input.Fastq1 != nil && *oldFastq1 != *input.Fastq1 {
 		if err := os.Remove(filepath.Join(sampleDir, *oldFastq1)); err != nil {
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)
 		}
 	}
 	if oldFastq2 != nil && input.Fastq2 != nil && *oldFastq2 != *input.Fastq2 {
 		if err := os.Remove(filepath.Join(sampleDir, *oldFastq2)); err != nil {
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)
 		}
 	}
 	if oldFasta != nil && input.Fasta != nil && *oldFasta != *input.Fasta {
 		if err := os.Remove(filepath.Join(sampleDir, *oldFasta)); err != nil {
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
 			)...)
 		}
@@ -436,7 +437,7 @@ func (s *sampleService) Update(
 	existingSample, err := s.Repo.GetSampleByID(ctx, sampleID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseNotFoundError, err,
 			)...)
@@ -444,7 +445,7 @@ func (s *sampleService) Update(
 	}
 	if err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -452,7 +453,7 @@ func (s *sampleService) Update(
 	}
 
 	if userID != uuid.Nil && userID != existingSample.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Update", logging.Unauthorized, err,
 		)...)
 		return nil, ErrUnauthorized
@@ -463,14 +464,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrInvalidCountryCode
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -485,14 +486,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrUserNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -507,14 +508,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrOriginNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -530,14 +531,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrSampleSourceNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -553,14 +554,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrMicroorganismNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -576,14 +577,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrSequencerNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -599,14 +600,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrLaboratoryNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -622,14 +623,14 @@ func (s *sampleService) Update(
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				s.Logger.Error("Service Error",
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
 					)...)
 				return nil, ErrHealthServiceNotFound
 			}
 			s.Logger.Error("Service Error",
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
 				)...)
@@ -643,7 +644,7 @@ func (s *sampleService) Update(
 
 	if err := s.Repo.UpdateSample(ctx, existingSample); err != nil {
 		s.Logger.Error("Service Error",
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseError, err,
 			)...)
@@ -658,28 +659,28 @@ func (s *sampleService) Delete(ctx context.Context,
 	sampleID, userID uuid.UUID) error {
 	sample, err := s.Repo.GetSampleByID(ctx, sampleID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != sample.UserID {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.Unauthorized, err,
 		)...)
 		return ErrUnauthorized
 	}
 
 	if err := s.Repo.DeleteSample(ctx, sample); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseError, err,
 		)...)
 		return ErrInternal
@@ -687,7 +688,7 @@ func (s *sampleService) Delete(ctx context.Context,
 
 	uploadDir := s.getSampleFolderPath(sample.UserID, sampleID)
 	if err := os.RemoveAll(uploadDir); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DeleteFolderError, err,
 		)...)
 	}

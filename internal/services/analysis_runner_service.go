@@ -70,7 +70,7 @@ func NewAnalysisRunnerService(
 	}
 }
 
-func (s *analysisRunnerService) prepareFolders(
+func (s *analysisRunnerService) prepareFolders(ctx context.Context,
 	userID, sampleID, analysisID string) (*AnalysisRunnerFolders, error) {
 	rootDir := filepath.Join(s.RootDir, "uploads", "users", userID,
 		"samples", sampleID, "analyses", analysisID)
@@ -82,7 +82,7 @@ func (s *analysisRunnerService) prepareFolders(
 
 	for _, dir := range []string{qcDir, assemblyDir, amrDir, reportDir} {
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "prepareFolders",
 				logging.CreateFolderError, err,
 			)...)
@@ -108,7 +108,7 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	s.updateStep(ctx, analysis, models.StepFastQC)
 	s.Logger.Info(
 		fmt.Sprintf("%s: Started FastQC step", analysis.ID.String()),
-		logging.ServiceInfoLogging("AnalysisRunnerService", "runFastQC",
+		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "runFastQC",
 			"CabgenPipeline")...,
 	)
 
@@ -138,7 +138,7 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	if err != nil {
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed FastQC step: %v", analysis.ID.String(), err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runFastQC",
 				logging.AnalysisRunError, err,
 			)...)
@@ -154,7 +154,7 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed to update analysis in FastQC step: %v",
 			analysis.ID.String(), err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runFastQC",
 				logging.DatabaseError, err,
 			)...)
@@ -169,7 +169,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	folders *AnalysisRunnerFolders) error {
 	s.Logger.Info(
 		fmt.Sprintf("%s: Started Genome step", analysis.ID.String()),
-		logging.ServiceInfoLogging("AnalysisRunnerService", "runGenome",
+		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "runGenome",
 			"CabgenPipeline")...,
 	)
 
@@ -191,7 +191,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Warn(fmt.Sprintf(
 				"%s: FASTA file not found at %s, falling back to reads",
 				analysis.ID.String(), *analysis.Sample.Fasta),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.MissingFileError, fmt.Errorf("file not found"),
 				)...)
@@ -243,7 +243,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - Unicycler: %v",
 				analysis.ID.String(), err),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -260,7 +260,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Warn(fmt.Sprintf(
 				"%s: Failed to persist assembly path to sample",
 				analysis.ID.String()),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -278,7 +278,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed Genome step - Prokka: %v", analysis.ID.String(),
 			err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
@@ -298,7 +298,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed Genome step - CheckM: %v", analysis.ID.String(),
 			err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
@@ -319,7 +319,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed Genome step - Kraken2: %v", analysis.ID.String(),
 			err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 			)...)
@@ -335,7 +335,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - Species: %v", analysis.ID.String(),
 				err),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -357,7 +357,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Warn(fmt.Sprintf(
 				"%s: Invalid CheckM contamination value: %q",
 				analysis.ID.String(), results.CheckMContamination),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -383,7 +383,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - Abricate (%s): %v",
 				analysis.ID.String(), db, err),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -395,7 +395,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - Abricate Result (%s): %v",
 				analysis.ID.String(), db, err),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -410,7 +410,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 				s.Logger.Error(fmt.Sprintf(
 					"%s: Failed Genome step - ProcessResfinder: %v",
 					analysis.ID.String(), err),
-					logging.ServiceLogging(
+					logging.ServiceLogging(ctx,
 						"AnalysisRunnerService", "runGenome",
 						logging.AnalysisRunError, err,
 					)...)
@@ -454,7 +454,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Logger.Error(fmt.Sprintf(
 				"%s: Failed Genome step - CalculateCoverage: %v",
 				analysis.ID.String(), err),
-				logging.ServiceLogging(
+				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 				)...)
@@ -485,7 +485,7 @@ func (s *analysisRunnerService) updateStep(ctx context.Context,
 	analysis *models.Analysis, step models.AnalysisStep) {
 	analysis.Step = step
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "updateStep",
 			logging.DatabaseError, err,
 		)...)
@@ -513,7 +513,7 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 		s.Logger.Warn(fmt.Sprintf(
 			"%s: Failed to marshal analysis results: %v",
 			analysis.ID.String(), err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "finalizeAnalysis",
 				logging.AnalysisRunError, err,
 			)...)
@@ -522,18 +522,18 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 	}
 
 	if analysis.Status == models.AnalysisStatusDone {
-		s.zipAnalysisResults(analysis)
+		s.zipAnalysisResults(ctx, analysis)
 	}
 
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "Run",
 			logging.DatabaseError, err,
 		)...)
 	}
 }
 
-func (s *analysisRunnerService) zipAnalysisResults(
+func (s *analysisRunnerService) zipAnalysisResults(ctx context.Context,
 	analysis *models.Analysis) {
 	analysisFolder := filepath.Join(s.RootDir, "uploads", "users",
 		analysis.UserID.String(), "samples", analysis.SampleID.String(),
@@ -541,7 +541,7 @@ func (s *analysisRunnerService) zipAnalysisResults(
 
 	reportDir := filepath.Join(analysisFolder, "report")
 	if err := os.MkdirAll(reportDir, 0755); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "zipAnalysisResults",
 			logging.CreateFolderError, err,
 		)...)
@@ -553,7 +553,7 @@ func (s *analysisRunnerService) zipAnalysisResults(
 	zipPath := filepath.Join(reportDir, zipName)
 	if err := utils.ZipSubdirectories(analysisFolder,
 		[]string{"qc", "assembly", "amr"}, zipPath); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "zipAnalysisResults",
 			logging.CreateFolderError, err,
 		)...)
@@ -567,14 +567,14 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	analysisID uuid.UUID) error {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "Run",
 			logging.DatabaseNotFoundError, err,
 		)...)
 		return ErrNotFound
 	}
 	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "Run",
 			logging.DatabaseError, err,
 		)...)
@@ -587,7 +587,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	analysis.Status = models.AnalysisStatusRunning
 	analysis.StartedAt = &start
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisRunnerService", "Run",
 			logging.DatabaseError, err,
 		)...)
@@ -596,12 +596,12 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 
 	var results models.AnalysisResults
 
-	folders, err := s.prepareFolders(analysis.UserID.String(),
+	folders, err := s.prepareFolders(ctx, analysis.UserID.String(),
 		analysis.SampleID.String(), analysis.ID.String())
 	if err != nil {
 		s.Logger.Error(fmt.Sprintf(
 			"%s: Failed to prepare folders: %v", analysisID.String(), err),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.CreateFolderError, err,
 			)...)
@@ -612,7 +612,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	s.Logger.Info(
 		fmt.Sprintf("Analysis %s started (type: %s)", analysisID.String(),
 			analysis.Type),
-		logging.ServiceInfoLogging("AnalysisRunnerService", "Run",
+		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
 			"CabgenPipeline")...,
 	)
 
@@ -628,7 +628,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"Analysis %s: unknown analysis type %s", analysisID.String(),
 			analysis.Type),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.AnalysisRunError,
 				fmt.Errorf("unknown type: %s", analysis.Type),
@@ -650,20 +650,20 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	if shouldEnqueueEmail {
 		task, err := tasks.NewAnalysisDoneEmailTask(analysisID)
 		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run", logging.AsynqTaskError, err,
 			)...)
 		} else {
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueEmail))
 			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(
+				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "Run",
 					logging.RedisDispatchError, err,
 				)...)
 			} else {
 				s.Logger.Info("Redis Task Info",
-					logging.ServiceInfoLogging(
+					logging.ServiceInfoLogging(ctx,
 						"AnalysisRunnerService", "Run",
 						logging.TaskEnqueuedSuccess,
 						zap.String("task_id", info.ID),
@@ -677,7 +677,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 		s.Logger.Error(fmt.Sprintf(
 			"Analysis %s failed after %v: %v", analysisID.String(),
 			time.Since(start), runErr),
-			logging.ServiceLogging(
+			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.AnalysisRunError, runErr,
 			)...)
@@ -687,7 +687,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	s.Logger.Info(
 		fmt.Sprintf("Analysis %s completed in %v", analysisID.String(),
 			time.Since(start)),
-		logging.ServiceInfoLogging("AnalysisRunnerService", "Run",
+		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
 			"CabgenPipeline")...,
 	)
 

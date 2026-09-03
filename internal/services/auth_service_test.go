@@ -147,7 +147,7 @@ func TestRegister(t *testing.T) {
 		badInput.ConfirmEmail = "wrong@mail.com"
 
 		userRepo := &mocks.MockUserRepository{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 		svc := services.NewAuthService(userRepo, nil, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, badInput, lang)
 
@@ -161,7 +161,7 @@ func TestRegister(t *testing.T) {
 		badInput.ConfirmPassword = "wrong"
 
 		userRepo := &mocks.MockUserRepository{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 		svc := services.NewAuthService(userRepo, nil, nil, nil, nil, nil, mockLogger)
 		result, err := svc.Register(ctx, badInput, lang)
 
@@ -372,7 +372,7 @@ func TestLogin(t *testing.T) {
 
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
 			nil, mockLogger)
@@ -418,7 +418,7 @@ func TestLogin(t *testing.T) {
 
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
 			nil, mockLogger)
@@ -444,7 +444,7 @@ func TestLogin(t *testing.T) {
 			},
 		}
 		provider := &mocks.MockTokenProvider{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
 			nil, mockLogger)
@@ -824,7 +824,7 @@ func TestResetPassword(t *testing.T) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(nil, nil, resetRepo, nil, nil, nil, mockLogger)
 		err := svc.ResetPassword(ctx, input)
@@ -883,7 +883,7 @@ func TestResetPassword(t *testing.T) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, resetRepo, nil, nil, nil, mockLogger)
 		err := svc.ResetPassword(ctx, input)
