@@ -80,7 +80,7 @@ func (s *analysisService) getAnalysisFolderPath(
 
 func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
 	filter models.AnalysisFilter, language string) (
-		[]models.AnalysisResponse, error) {
+	[]models.AnalysisResponse, error) {
 	analyses, err := s.Repo.GetAnalyses(ctx, userID, filter)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -136,6 +136,7 @@ func (s *analysisService) FindByID(ctx context.Context, analysisID,
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID", logging.DatabaseNotFoundError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return nil, ErrNotFound
 	}
@@ -143,13 +144,14 @@ func (s *analysisService) FindByID(ctx context.Context, analysisID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID",
-			logging.DatabaseError, err)...)
+			logging.DatabaseError, err, zap.String("analysis_id", analysisID.String()))...)
 		return nil, ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != analysis.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindByID", logging.Unauthorized, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return nil, ErrUnauthorized
 	}
@@ -299,6 +301,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Update", logging.DatabaseNotFoundError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return nil, ErrNotFound
 	}
@@ -306,6 +309,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Update", logging.DatabaseError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return nil, ErrInternal
 	}
@@ -322,6 +326,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			logging.ServiceLogging(ctx,
 				"AnalysisService", "Update",
 				logging.DatabaseError, err,
+				zap.String("analysis_id", analysisID.String()),
 			)...)
 		return nil, ErrInternal
 	}
@@ -332,6 +337,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update",
 				logging.RedisDispatchError, err,
+				zap.String("analysis_id", analysisID.String()),
 			)...)
 		}
 	}
@@ -343,6 +349,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update", logging.AsynqTaskError,
 				err,
+				zap.String("analysis_id", analysisID.String()),
 			)...)
 		} else {
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
@@ -351,12 +358,14 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AnalysisService", "Update",
 					logging.RedisDispatchError, err,
+					zap.String("analysis_id", analysisID.String()),
 				)...)
 			} else {
 				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 					"AnalysisService", "Update",
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
+					zap.String("analysis_id", analysisID.String()),
 				)...)
 			}
 		}
@@ -368,6 +377,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update", logging.AsynqTaskError,
 				err,
+				zap.String("analysis_id", analysisID.String()),
 			)...)
 		} else {
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
@@ -376,12 +386,14 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AnalysisService", "Update",
 					logging.RedisDispatchError, err,
+					zap.String("analysis_id", analysisID.String()),
 				)...)
 			} else {
 				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 					"AnalysisService", "Update",
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
+					zap.String("analysis_id", analysisID.String()),
 				)...)
 
 				taskID := info.ID
@@ -390,6 +402,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 					s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 						"AnalysisService", "Update",
 						logging.DatabaseError, err,
+						zap.String("analysis_id", analysisID.String()),
 					)...)
 				}
 			}
@@ -406,6 +419,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseNotFoundError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return ErrNotFound
 	}
@@ -413,6 +427,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -420,6 +435,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if userID != uuid.Nil && userID != analysis.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.Unauthorized, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return ErrUnauthorized
 	}
@@ -427,6 +443,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if analysis.Status == models.AnalysisStatusRunning {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return ErrDeleteRunningAnalysis
 	}
@@ -434,6 +451,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if err := s.Repo.DeleteAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DatabaseError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -443,6 +461,7 @@ func (s *analysisService) Delete(ctx context.Context,
 	if err := os.RemoveAll(uploadDir); err != nil {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "Delete", logging.DeleteFolderError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 	}
 
@@ -456,6 +475,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.DatabaseNotFoundError,
 			err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return "", ErrNotFound
 	}
@@ -463,6 +483,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.DatabaseError, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return "", ErrInternal
 	}
@@ -470,6 +491,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 	if userID != uuid.Nil && userID != analysis.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.Unauthorized, err,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return "", ErrUnauthorized
 	}
@@ -484,6 +506,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.MissingFileError,
 			ErrZipNotFound,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return "", ErrZipNotFound
 	}
@@ -492,6 +515,7 @@ func (s *analysisService) DownloadZip(ctx context.Context, analysisID,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "DownloadZip", logging.MissingFileError,
 			ErrZipNotFound,
+			zap.String("analysis_id", analysisID.String()),
 		)...)
 		return "", ErrZipNotFound
 	}

@@ -20,8 +20,9 @@ This project is a rewrite of the original backend for the [CABGen](https://cabge
 11. [Tests](#tests)
 12. [Code Standards](#code-standards)
 13. [Middlewares](#middlewares)
-14. [Database](#database)
-15. [Async Workers](#async-workers)
+14. [Logs](#logs)
+15. [Database](#database)
+16. [Async Workers](#async-workers)
 
 ## Technologies
 
@@ -645,10 +646,51 @@ Messages use i18n message IDs for translation.
 
 | Middleware | Description |
 | --- | --- |
-| `AuthMiddleware` | Validates JWT from cookies and injects user into context |
+| `RequestIDMiddleware` | Generates a correlation ID (UUID) per request, returns it in the `X-Request-ID` header and injects it into the context |
+| `AuthMiddleware` | Validates JWT from cookies and injects the user and `user_id` into the context (for log correlation) |
 | `AdminMiddleware` | Checks if the authenticated user has admin role |
-| `LoggerMiddleware` | Logs request details to console and file |
+| `LoggerMiddleware` | Logs request details (including `request_id`) to console and file |
 | `I18nMiddleware` | Detects language from `Accept-Language` header and injects localizer into context |
+
+## Logs
+
+- **Destination**: JSON files in `./logs/` (`api.log`, `worker-email.log`, `worker-analysis.log`), with automatic rotation (50 MB, 30 compressed backups)
+- **Level**: controlled by `LOG_LEVEL` (`debug | info | warn | error`, default `info`)
+- **Console**: in dev environment, requests are also logged to stdout
+
+### Transaction correlation
+
+Every request receives a `request_id` (UUID), returned in the `X-Request-ID` response header and included in **all** log lines of that transaction — in the API and in the services it calls. Async tasks use the asynq task ID in the same field.
+
+| Field | Description |
+| --- | --- |
+| `request_id` | Correlation: present in all lines of the same request/task |
+| `user_id` | Authenticated user (injected by `AuthMiddleware`) |
+| `auth_identity` | Identifier attempted in anonymous flows (login, register, password reset) |
+| `sample_id`, `analysis_id`, `ticket_id` | Target entity of the operation |
+| `service`, `func`, `error_type` | Where and what failed |
+
+### Log levels
+
+- `ERROR`: unexpected system failure (database unavailable, pipeline error, etc.)
+- `WARN`: expected business outcome (wrong password, record not found, unauthorized access)
+
+### Debugging in practice
+
+To investigate an error reported by a user, filter by their lines and group by transaction:
+
+```bash
+# All transactions from a user
+grep '"user_id":"<id>"' logs/api.log | jq -r '.request_id' | sort -u
+
+# All lines from a specific transaction
+grep '<request_id>' logs/api.log
+
+# Full history of a sample
+grep '"sample_id":"<id>"' logs/api.log
+```
+
+The `X-Request-ID` header is present in every response — the frontend can display it alongside errors so support can locate the exact transaction in the logs.
 
 ## Database
 

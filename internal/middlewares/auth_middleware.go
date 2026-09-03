@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		accessSecret, err := auth.GetSecretKey(auth.Access)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.GenericInternalServerError)})
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.GenericInternalServerError)})
 			c.Abort()
 			return
 		}
@@ -26,7 +28,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenStr, err := auth.ExtractToken(c, auth.Access)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.UnauthorizedError)})
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.UnauthorizedError)})
 			c.Abort()
 			return
 		}
@@ -34,19 +37,24 @@ func AuthMiddleware() gin.HandlerFunc {
 		userToken, err := tokenProvider.ValidateToken(tokenStr, accessSecret)
 		if err != nil && strings.Contains(err.Error(), "token expired:") {
 			c.JSON(http.StatusForbidden,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.TokenExpiredError)})
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.TokenExpiredError)})
 			c.Abort()
 			return
 		}
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized,
-				responses.APIResponse{Error: responses.GetResponse(localizer, responses.UnauthorizedError)})
+				responses.APIResponse{Error: responses.GetResponse(localizer,
+					responses.UnauthorizedError)})
 			c.Abort()
 			return
 		}
 
 		c.Set("user", userToken)
+		c.Request = c.Request.WithContext(
+			logging.WithUserID(c.Request.Context(),
+				userToken.ID.String()))
 		c.Next()
 	}
 }

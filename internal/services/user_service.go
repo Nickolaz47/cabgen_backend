@@ -165,6 +165,7 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "Delete",
 			logging.DatabaseNotFoundError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrNotFound
 	}
@@ -172,6 +173,7 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "Delete",
 			logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -183,6 +185,7 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "Delete",
 			logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -211,11 +214,13 @@ func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"UserService", "UpdatePassword",
 				logging.DatabaseNotFoundError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 			return ErrNotFound
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "UpdatePassword", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -224,6 +229,7 @@ func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
 		input.CurrentPassword); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "UpdatePassword", logging.HasherError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrCurrentPasswordMismatch
 	}
@@ -232,6 +238,7 @@ func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "UpdatePassword", logging.HasherError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -240,6 +247,7 @@ func (s *userService) UpdatePassword(ctx context.Context, ID uuid.UUID,
 	if err := s.Repo.UpdateUser(ctx, user); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "UpdatePassword", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -255,11 +263,13 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"UserService", "RequestEmailUpdate",
 				logging.DatabaseNotFoundError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 			return ErrNotFound
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -272,6 +282,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -284,6 +295,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate",
 			logging.DeleteEmailUpdateRequestError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 	}
 
@@ -291,6 +303,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.HasherError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -306,6 +319,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err := s.EmailUpdateRepo.CreateRequest(ctx, &req); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -315,6 +329,7 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -324,11 +339,13 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 		if errors.Is(err, asynq.ErrDuplicateTask) {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 			return ErrDuplicateTask
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -345,6 +362,7 @@ func (s *userService) ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID,
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -361,6 +379,7 @@ func (s *userService) ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -369,6 +388,7 @@ func (s *userService) ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID,
 	if err := s.Repo.UpdateUser(ctx, user); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "ConfirmEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -378,6 +398,7 @@ func (s *userService) ConfirmEmailUpdate(ctx context.Context, ID uuid.UUID,
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"UserService", "ConfirmEmailUpdate",
 			logging.DeleteEmailUpdateRequestError, err,
+			zap.String("user_id", ID.String()),
 		)...)
 	}
 

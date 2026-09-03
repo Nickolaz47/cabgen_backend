@@ -454,6 +454,16 @@ func TestLogin(t *testing.T) {
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
 		assert.Empty(t, result)
 		assert.Equal(t, 1, logs.Len())
+
+		var loggedIdentity string
+		for _, entry := range logs.All() {
+			for _, field := range entry.Context {
+				if field.Key == "auth_identity" {
+					loggedIdentity = field.String
+				}
+			}
+		}
+		assert.Equal(t, input.Username, loggedIdentity)
 	})
 
 	t.Run("Error - CheckPassword Internal", func(t *testing.T) {

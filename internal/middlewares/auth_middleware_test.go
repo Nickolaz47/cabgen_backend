@@ -9,6 +9,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
@@ -44,9 +45,9 @@ func TestAuthMiddleware(t *testing.T) {
 		r.GET("/", func(c *gin.Context) {
 			rawUserToken, exists := c.Get("user")
 			if !exists {
-				c.JSON(http.StatusInternalServerError, map[string]*models.UserToken{
-					"userToken": nil,
-				})
+				c.JSON(http.StatusInternalServerError,
+					map[string]*models.UserToken{
+						"userToken": nil})
 				return
 			}
 
@@ -76,7 +77,8 @@ func TestAuthMiddleware(t *testing.T) {
 		req.AddCookie(mockAccessCookie)
 		r.ServeHTTP(w, req)
 
-		expected := testutils.ToJSON(map[string]models.UserToken{"userToken": mockToken})
+		expected := testutils.ToJSON(map[string]models.UserToken{
+			"userToken": mockToken})
 
 		var got map[string]any
 		err := json.Unmarshal(w.Body.Bytes(), &got)
@@ -90,6 +92,30 @@ func TestAuthMiddleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, testutils.ToJSON(got))
+	})
+
+	t.Run("Injects user_id into context", func(t *testing.T) {
+		w, r := testutils.SetupMiddlewareContext()
+		testutils.AddMiddlewares(r, middlewares.AuthMiddleware())
+
+		var ctxUserID string
+		r.GET("/", func(c *gin.Context) {
+			ctxUserID = logging.UserIDFromContext(c.Request.Context())
+			c.Status(http.StatusOK)
+		})
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		mockAccessToken, _ := tokenProvider.GenerateToken(
+			mockToken, secret, auth.AccessTokenExpiration,
+		)
+		req.AddCookie(auth.CreateCookie(
+			auth.Access, mockAccessToken, "/", auth.AccessTokenExpiration,
+		))
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, mockToken.ID.String(), ctxUserID)
 	})
 
 	t.Run("Expired token", func(t *testing.T) {

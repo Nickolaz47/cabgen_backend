@@ -47,10 +47,18 @@ const (
 
 type requestIDKey struct{}
 
+type userIDKey struct{}
+
 // WithRequestID stores the correlation ID (request ID or task ID) in the
 // context so all log lines from the same transaction carry it.
 func WithRequestID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+// WithUserID stores the authenticated user's ID in the context so all log
+// lines from the same transaction carry it.
+func WithUserID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, userIDKey{}, id)
 }
 
 // RequestIDFromContext returns the correlation ID stored by WithRequestID.
@@ -58,8 +66,17 @@ func RequestIDFromContext(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	
+
 	id, _ := ctx.Value(requestIDKey{}).(string)
+	return id
+}
+
+// UserIDFromContext returns the user ID stored by WithUserID.
+func UserIDFromContext(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	id, _ := ctx.Value(userIDKey{}).(string)
 	return id
 }
 
@@ -68,15 +85,19 @@ func ctxFields(ctx context.Context) []zap.Field {
 		return nil
 	}
 
+	var fields []zap.Field
 	if id, ok := ctx.Value(requestIDKey{}).(string); ok && id != "" {
-		return []zap.Field{zap.String("request_id", id)}
+		fields = append(fields, zap.String("request_id", id))
+	}
+	if id, ok := ctx.Value(userIDKey{}).(string); ok && id != "" {
+		fields = append(fields, zap.String("user_id", id))
 	}
 
-	return nil
+	return fields
 }
 
 func ServiceLogging(ctx context.Context, service, function,
-	errorType string, err error) []zap.Field {
+	errorType string, err error, extraFields ...zap.Field) []zap.Field {
 	fields := append(ctxFields(ctx),
 		zap.String("service", service),
 		zap.String("func", function),
@@ -85,6 +106,10 @@ func ServiceLogging(ctx context.Context, service, function,
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
+	}
+
+	if len(extraFields) > 0 {
+		fields = append(fields, extraFields...)
 	}
 
 	return fields

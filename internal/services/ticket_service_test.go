@@ -113,6 +113,16 @@ func TestTicketFindByID(t *testing.T) {
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Empty(t, result)
 		assert.Equal(t, 1, logs.Len())
+
+		var loggedTicketID string
+		for _, entry := range logs.All() {
+			for _, field := range entry.Context {
+				if field.Key == "ticket_id" {
+					loggedTicketID = field.String
+				}
+			}
+		}
+		assert.Equal(t, ticket.ID.String(), loggedTicketID)
 	})
 
 	t.Run("Error - Internal", func(t *testing.T) {

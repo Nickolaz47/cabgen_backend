@@ -20,8 +20,9 @@ Este projeto é uma reescrita do backend original do site [CABGen](https://cabge
 11. [Testes](#testes)
 12. [Padrões de Código](#padrões-de-código)
 13. [Middlewares](#middlewares)
-14. [Banco de Dados](#banco-de-dados)
-15. [Workers Assíncronos](#workers-assíncronos)
+14. [Logs](#logs)
+15. [Banco de Dados](#banco-de-dados)
+16. [Workers Assíncronos](#workers-assíncronos)
 
 ## Tecnologias
 
@@ -646,10 +647,51 @@ O campo `Message` utiliza IDs de mensagens do sistema de i18n.
 
 | Middleware | Descrição |
 | --- | --- |
-| `AuthMiddleware` | Valida JWT de cookies e injeta o usuário no contexto |
+| `RequestIDMiddleware` | Gera um ID de correlação (UUID) por requisição, retorna no header `X-Request-ID` e injeta no contexto |
+| `AuthMiddleware` | Valida JWT de cookies e injeta o usuário e o `user_id` no contexto (para correlação de logs) |
 | `AdminMiddleware` | Verifica se o usuário autenticado tem papel de administrador |
-| `LoggerMiddleware` | Registra detalhes da requisição no console e em arquivo |
+| `LoggerMiddleware` | Registra detalhes da requisição (incluindo `request_id`) no console e em arquivo |
 | `I18nMiddleware` | Detecta o idioma pelo header `Accept-Language` e injeta o localizer no contexto |
+
+## Logs
+
+- **Destino**: arquivos JSON em `./logs/` (`api.log`, `worker-email.log`, `worker-analysis.log`), com rotação automática (50 MB, 30 backups comprimidos)
+- **Nível**: controlado por `LOG_LEVEL` (`debug | info | warn | error`, padrão `info`)
+- **Console**: em ambiente dev, as requisições também são logadas no stdout
+
+### Correlação de transações
+
+Cada requisição recebe um `request_id` (UUID), retornado no header de resposta `X-Request-ID` e incluído em **todas** as linhas de log daquela transação — na API e nos services chamados por ela. Tasks assíncronas usam o task ID do asynq no mesmo campo.
+
+| Campo | Descrição |
+| --- | --- |
+| `request_id` | Correlação: presente em todas as linhas da mesma requisição/task |
+| `user_id` | Usuário autenticado (injetado pelo `AuthMiddleware`) |
+| `auth_identity` | Identificador tentado em fluxos anônimos (login, registro, reset de senha) |
+| `sample_id`, `analysis_id`, `ticket_id` | Entidade alvo da operação |
+| `service`, `func`, `error_type` | Onde e o que falhou |
+
+### Níveis de log
+
+- `ERROR`: falha inesperada do sistema (banco indisponível, erro de pipeline, etc.)
+- `WARN`: resultado esperado de negócio (senha errada, registro não encontrado, acesso não autorizado)
+
+### Debug na prática
+
+Para investigar o erro reportado por um usuário, filtre pelas linhas dele e agrupe por transação:
+
+```bash
+# Todas as transações do usuário
+grep '"user_id":"<id>"' logs/api.log | jq -r '.request_id' | sort -u
+
+# Todas as linhas de uma transação específica
+grep '<request_id>' logs/api.log
+
+# Histórico completo de uma amostra
+grep '"sample_id":"<id>"' logs/api.log
+```
+
+O header `X-Request-ID` está presente em toda resposta — o frontend pode exibi-lo junto de erros para que o suporte localize a transação exata nos logs.
 
 ## Banco de Dados
 
@@ -697,6 +739,7 @@ Os workers rodam em containers separados junto com a API. Veja `docker-compose.y
 ## TODO
 
 - [x] Implementar logger nos services;
+- [x] Adicionar request IDs e correlação de logs;
 - [x] Modelar Microorganism (Model + Repository + Service + Handler + Tests);
 - [x] Modelar HealthService (Model + Repository + Service + Handler + Tests);
 - [x] Modelar Sample (Model + Repository + Service + Handler + Tests);

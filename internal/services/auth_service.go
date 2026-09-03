@@ -78,6 +78,7 @@ func (s *authService) Register(
 	if existingUser != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseConflictEmailError, err,
+			zap.String("auth_identity", input.Email),
 		)...)
 		return nil, ErrConflictEmail
 	}
@@ -92,6 +93,7 @@ func (s *authService) Register(
 	if existingUser != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.DatabaseConflictUsernameError, err,
+			zap.String("auth_identity", input.Username),
 		)...)
 		return nil, ErrConflictUsername
 	}
@@ -100,6 +102,7 @@ func (s *authService) Register(
 		input.Email, input.ConfirmEmail); !ok {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.EmailMismatchError, err,
+			zap.String("auth_identity", input.Email),
 		)...)
 		return nil, ErrEmailMismatch
 	}
@@ -109,6 +112,7 @@ func (s *authService) Register(
 	); !ok {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.PasswordMismatchError, err,
+			zap.String("auth_identity", input.Email),
 		)...)
 		return nil, ErrPasswordMismatch
 	}
@@ -189,6 +193,7 @@ func (s *authService) Login(
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "Login", logging.UsernameNotFoundError, err,
+				zap.String("auth_identity", input.Username),
 			)...)
 			return nil, ErrInvalidCredentials
 		}
@@ -201,6 +206,7 @@ func (s *authService) Login(
 	if !existingUser.IsActive {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.DisabledUserError, err,
+			zap.String("auth_identity", input.Username),
 		)...)
 		return nil, ErrDisabledUser
 	}
@@ -210,6 +216,7 @@ func (s *authService) Login(
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "Login", logging.WrongPasswordError, err,
+				zap.String("auth_identity", input.Username),
 			)...)
 			return nil, ErrInvalidCredentials
 		}
@@ -311,7 +318,9 @@ func (s *authService) ForgotPassword(ctx context.Context,
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Info("Forgot password requested for non-existent email",
-				zap.String("email", input.Email))
+				logging.ServiceInfoLogging(ctx,
+					"AuthService", "ForgotPassword", "EMAIL_UNKNOWN",
+					zap.String("auth_identity", input.Email))...)
 			return nil
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -410,7 +419,7 @@ func (s *authService) ResetPassword(ctx context.Context,
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AuthService", "ResetPassword", logging.DatabaseNotFoundError,
-				err)...)
+				err, zap.String("auth_identity", reset.Email))...)
 			return ErrNotFound
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,

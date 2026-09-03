@@ -99,6 +99,7 @@ func TestSampleFindByID(t *testing.T) {
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
+		unknownID := uuid.New()
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
 				ID uuid.UUID) (*models.Sample, error) {
@@ -110,13 +111,23 @@ func TestSampleFindByID(t *testing.T) {
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
 			nil, nil, nil, nil, t.TempDir(), mockLogger)
-		result, err := svc.FindByID(context.Background(), uuid.New(),
+		result, err := svc.FindByID(context.Background(), unknownID,
 			uuid.Nil, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+
+		var loggedSampleID string
+		for _, entry := range logs.All() {
+			for _, field := range entry.Context {
+				if field.Key == "sample_id" {
+					loggedSampleID = field.String
+				}
+			}
+		}
+		assert.Equal(t, unknownID.String(), loggedSampleID)
 	})
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {

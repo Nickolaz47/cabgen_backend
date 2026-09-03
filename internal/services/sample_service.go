@@ -92,6 +92,7 @@ func (s *sampleService) PrepareSampleFolder(ctx context.Context,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "PrepareSampleFolder",
 			logging.CreateFolderError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return "", ErrCreateFolder
 	}
@@ -109,6 +110,7 @@ func (s *sampleService) GetSampleForUpload(ctx context.Context,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "GetSampleForUpload",
 			logging.DatabaseError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return nil, ErrInternal
 	}
@@ -141,6 +143,7 @@ func (s *sampleService) FindByID(
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID", logging.DatabaseNotFoundError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return nil, ErrNotFound
 	}
@@ -148,13 +151,14 @@ func (s *sampleService) FindByID(
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID",
-			logging.DatabaseError, err)...)
+			logging.DatabaseError, err, zap.String("sample_id", sampleID.String()))...)
 		return nil, ErrInternal
 	}
 
 	if userID != uuid.Nil && userID != sample.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "FindByID", logging.Unauthorized, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return nil, ErrUnauthorized
 	}
@@ -363,6 +367,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.DatabaseNotFoundError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrNotFound
 	}
@@ -370,6 +375,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.DatabaseError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -377,6 +383,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 	if userID != uuid.Nil && userID != sample.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles", logging.Unauthorized, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrUnauthorized
 	}
@@ -399,6 +406,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "AttachFiles",
 			logging.DatabaseError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -409,6 +417,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		if err := os.Remove(filepath.Join(sampleDir, *oldFastq1)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		}
 	}
@@ -416,6 +425,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		if err := os.Remove(filepath.Join(sampleDir, *oldFastq2)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		}
 	}
@@ -423,6 +433,7 @@ func (s *sampleService) AttachFiles(ctx context.Context,
 		if err := os.Remove(filepath.Join(sampleDir, *oldFasta)); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"SampleService", "AttachFiles", logging.DeleteFileError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		}
 	}
@@ -440,6 +451,7 @@ func (s *sampleService) Update(
 			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseNotFoundError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		return nil, ErrNotFound
 	}
@@ -448,6 +460,7 @@ func (s *sampleService) Update(
 			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		return nil, ErrInternal
 	}
@@ -455,6 +468,7 @@ func (s *sampleService) Update(
 	if userID != uuid.Nil && userID != existingSample.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Update", logging.Unauthorized, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return nil, ErrUnauthorized
 	}
@@ -467,6 +481,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrInvalidCountryCode
 			}
@@ -474,6 +489,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -489,6 +505,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrUserNotFound
 			}
@@ -496,6 +513,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -511,6 +529,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrOriginNotFound
 			}
@@ -518,6 +537,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -534,6 +554,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrSampleSourceNotFound
 			}
@@ -541,6 +562,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -557,6 +579,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrMicroorganismNotFound
 			}
@@ -564,6 +587,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -580,6 +604,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrSequencerNotFound
 			}
@@ -587,6 +612,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -603,6 +629,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrLaboratoryNotFound
 			}
@@ -610,6 +637,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -626,6 +654,7 @@ func (s *sampleService) Update(
 					logging.ServiceLogging(ctx,
 						"SampleService", "Update",
 						logging.ExternalRepositoryNotFoundError, err,
+						zap.String("sample_id", sampleID.String()),
 					)...)
 				return nil, ErrHealthServiceNotFound
 			}
@@ -633,6 +662,7 @@ func (s *sampleService) Update(
 				logging.ServiceLogging(ctx,
 					"SampleService", "Update",
 					logging.ExternalRepositoryError, err,
+					zap.String("sample_id", sampleID.String()),
 				)...)
 			return nil, ErrInternal
 		}
@@ -647,6 +677,7 @@ func (s *sampleService) Update(
 			logging.ServiceLogging(ctx,
 				"SampleService", "Update",
 				logging.DatabaseError, err,
+				zap.String("sample_id", sampleID.String()),
 			)...)
 		return nil, ErrInternal
 	}
@@ -661,6 +692,7 @@ func (s *sampleService) Delete(ctx context.Context,
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseNotFoundError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrNotFound
 	}
@@ -668,6 +700,7 @@ func (s *sampleService) Delete(ctx context.Context,
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -675,6 +708,7 @@ func (s *sampleService) Delete(ctx context.Context,
 	if userID != uuid.Nil && userID != sample.UserID {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.Unauthorized, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrUnauthorized
 	}
@@ -682,6 +716,7 @@ func (s *sampleService) Delete(ctx context.Context,
 	if err := s.Repo.DeleteSample(ctx, sample); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DatabaseError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 		return ErrInternal
 	}
@@ -690,6 +725,7 @@ func (s *sampleService) Delete(ctx context.Context,
 	if err := os.RemoveAll(uploadDir); err != nil {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 			"SampleService", "Delete", logging.DeleteFolderError, err,
+			zap.String("sample_id", sampleID.String()),
 		)...)
 	}
 

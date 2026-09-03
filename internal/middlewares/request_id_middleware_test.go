@@ -36,7 +36,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 			"request context must carry the same ID as the header")
 	})
 
-	t.Run("Unique per request", func(t *testing.T) {
+	t.Run("Success - Unique per request", func(t *testing.T) {
 		w1, r1 := testutils.SetupMiddlewareContext()
 		w2, r2 := testutils.SetupMiddlewareContext()
 
@@ -54,5 +54,29 @@ func TestRequestIDMiddleware(t *testing.T) {
 		assert.NotEmpty(t, id1)
 		assert.NotEmpty(t, id2)
 		assert.NotEqual(t, id1, id2)
+	})
+
+	t.Run("Request logger line carries request_id", func(t *testing.T) {
+		consoleLogger, _ := setupObservedLogger()
+		fileLogger, fileLogs := setupObservedLogger()
+
+		w, r := testutils.SetupMiddlewareContext()
+		testutils.AddMiddlewares(r,
+			middlewares.RequestIDMiddleware(),
+			middlewares.LoggerMiddleware(consoleLogger, fileLogger))
+		testutils.AddTestGetRoute(r, http.StatusOK)
+		testutils.DoGetRequest(r, w)
+
+		headerID := w.Header().Get("X-Request-ID")
+		assert.NotEmpty(t, headerID)
+		assert.Equal(t, 1, fileLogs.Len())
+
+		var loggedRequestID string
+		for _, field := range fileLogs.All()[0].Context {
+			if field.Key == "request_id" {
+				loggedRequestID = field.String
+			}
+		}
+		assert.Equal(t, headerID, loggedRequestID)
 	})
 }

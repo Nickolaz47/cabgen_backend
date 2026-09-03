@@ -20,12 +20,19 @@ import (
 )
 
 type AdminUserService interface {
-	Find(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error)
-	FindByID(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error)
-	FindByUsername(ctx context.Context, username, language string) (*models.AdminUserResponse, error)
-	FindByEmail(ctx context.Context, email, language string) (*models.AdminUserResponse, error)
-	Create(ctx context.Context, input models.AdminUserCreateInput, adminName, language string) (*models.AdminUserResponse, error)
-	Update(ctx context.Context, ID uuid.UUID, input models.AdminUserUpdateInput, language string) (*models.AdminUserResponse, error)
+	Find(ctx context.Context, filter models.AdminUserFilter, language string) (
+		[]models.AdminUserResponse, error)
+	FindByID(ctx context.Context, ID uuid.UUID, language string) (
+		*models.AdminUserResponse, error)
+	FindByUsername(ctx context.Context, username, language string) (
+		*models.AdminUserResponse, error)
+	FindByEmail(ctx context.Context, email, language string) (
+		*models.AdminUserResponse, error)
+	Create(ctx context.Context, input models.AdminUserCreateInput,
+		adminName, language string) (*models.AdminUserResponse, error)
+	Update(ctx context.Context, ID uuid.UUID,
+		input models.AdminUserUpdateInput, language string) (
+		*models.AdminUserResponse, error)
 	ActivateUser(ctx context.Context, ID uuid.UUID, adminName string) error
 	DeactivateUser(ctx context.Context, ID uuid.UUID) error
 	Delete(ctx context.Context, ID uuid.UUID) error
@@ -371,6 +378,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 				logging.ServiceLogging(ctx,
 					"AdminUserService", "ActivateUser",
 					logging.DatabaseNotFoundError, err,
+					zap.String("user_id", ID.String()),
 				)...)
 			return ErrNotFound
 		}
@@ -378,6 +386,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "ActivateUser",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -398,6 +407,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "ActivateUser",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -408,6 +418,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AdminUserService", "ActivateUser", logging.AsynqTaskError,
 				err,
+				zap.String("user_id", ID.String()),
 			)...)
 		} else {
 			info, err := s.AsynqClient.EnqueueContext(ctx, task,
@@ -416,12 +427,14 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 					"AdminUserService", "ActivateUser",
 					logging.RedisDispatchError, err,
+					zap.String("user_id", ID.String()),
 				)...)
 			} else {
 				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
 					"AdminUserService", "ActivateUser",
 					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
 					zap.String("queue", info.Queue),
+					zap.String("user_id", ID.String()),
 				)...)
 			}
 		}
@@ -439,6 +452,7 @@ func (s *adminUserService) DeactivateUser(ctx context.Context,
 				logging.ServiceLogging(ctx,
 					"AdminUserService", "DeactivateUser",
 					logging.DatabaseNotFoundError, err,
+					zap.String("user_id", ID.String()),
 				)...)
 			return ErrNotFound
 		}
@@ -446,6 +460,7 @@ func (s *adminUserService) DeactivateUser(ctx context.Context,
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "DeactivateUser",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -461,6 +476,7 @@ func (s *adminUserService) DeactivateUser(ctx context.Context,
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "DeactivateUser",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -475,6 +491,7 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "Delete",
 				logging.DatabaseNotFoundError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrNotFound
 	}
@@ -484,6 +501,7 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "Delete",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -493,6 +511,7 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "Delete",
 				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
 			)...)
 		return ErrInternal
 	}

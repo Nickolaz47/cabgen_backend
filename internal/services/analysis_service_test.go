@@ -169,6 +169,16 @@ func TestAnalysisFindByID(t *testing.T) {
 		assert.ErrorIs(t, err, services.ErrNotFound)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+
+		var loggedAnalysisID string
+		for _, entry := range logs.All() {
+			for _, field := range entry.Context {
+				if field.Key == "analysis_id" {
+					loggedAnalysisID = field.String
+				}
+			}
+		}
+		assert.Equal(t, mock.ID.String(), loggedAnalysisID)
 	})
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {

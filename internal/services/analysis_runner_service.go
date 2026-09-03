@@ -106,10 +106,11 @@ func (s *analysisRunnerService) getVersions(ctx context.Context,
 func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	analysis *models.Analysis, outputDir string) error {
 	s.updateStep(ctx, analysis, models.StepFastQC)
-	s.Logger.Info(
-		fmt.Sprintf("%s: Started FastQC step", analysis.ID.String()),
+	s.Logger.Info("Started FastQC step",
 		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "runFastQC",
-			"CabgenPipeline")...,
+			"CabgenPipeline",
+			zap.String("analysis_id", analysis.ID.String()),
+			zap.String("step", string(models.StepFastQC)))...,
 	)
 
 	fastq1Path, ok := utils.ResolveSampleFilePath(
@@ -136,11 +137,11 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	fastqc1, fastqc2, err := s.Pipeline.RunFastQC(
 		ctx, fastq1Path, fastq2Path, outputDir)
 	if err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed FastQC step: %v", analysis.ID.String(), err),
+		s.Logger.Error("Failed FastQC step",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runFastQC",
 				logging.AnalysisRunError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 		if isInputError(err) {
 			return err
@@ -151,12 +152,11 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 	analysis.FastQC1 = &fastqc1
 	analysis.FastQC2 = &fastqc2
 	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed to update analysis in FastQC step: %v",
-			analysis.ID.String(), err),
+		s.Logger.Error("Failed to update analysis in FastQC step",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runFastQC",
 				logging.DatabaseError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 		return ErrInternal
 	}
@@ -167,10 +167,11 @@ func (s *analysisRunnerService) runFastQC(ctx context.Context,
 func (s *analysisRunnerService) runGenome(ctx context.Context,
 	analysis *models.Analysis, results *models.AnalysisResults,
 	folders *AnalysisRunnerFolders) error {
-	s.Logger.Info(
-		fmt.Sprintf("%s: Started Genome step", analysis.ID.String()),
+	s.Logger.Info("Started Genome step",
 		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "runGenome",
-			"CabgenPipeline")...,
+			"CabgenPipeline",
+			zap.String("analysis_id", analysis.ID.String()),
+			zap.String("step", string(models.StepUnicycler)))...,
 	)
 
 	// Using 80% of total cores
@@ -188,12 +189,12 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			"fasta", analysis.ID.String(),
 		)
 		if !ok {
-			s.Logger.Warn(fmt.Sprintf(
-				"%s: FASTA file not found at %s, falling back to reads",
-				analysis.ID.String(), *analysis.Sample.Fasta),
+			s.Logger.Warn("FASTA file not found, falling back to reads",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.MissingFileError, fmt.Errorf("file not found"),
+					zap.String("analysis_id", analysis.ID.String()),
+					zap.String("fasta", *analysis.Sample.Fasta),
 				)...)
 			analysis.Sample.Fasta = nil
 		} else {
@@ -240,12 +241,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			s.Pipeline.GetConfig().SpadesPath, folders.AssemblyDir,
 			assemblyOutPath)
 		if err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - Unicycler: %v",
-				analysis.ID.String(), err),
+			s.Logger.Error("Failed Genome step - Unicycler",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
 				)...)
 			if isInputError(err) {
 				return err
@@ -257,12 +257,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		analysis.Sample.Fasta = &assemblyFileName
 
 		if err := s.Repo.UpdateSample(ctx, &analysis.Sample); err != nil {
-			s.Logger.Warn(fmt.Sprintf(
-				"%s: Failed to persist assembly path to sample",
-				analysis.ID.String()),
+			s.Logger.Warn("Failed to persist assembly path to sample",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
 				)...)
 		}
 	}
@@ -275,12 +274,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	s.updateStep(ctx, analysis, models.StepProkka)
 	if err := s.Pipeline.RunProkka(ctx, threads, *assemblyPath,
 		prokkaOutDir); err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed Genome step - Prokka: %v", analysis.ID.String(),
-			err),
+		s.Logger.Error("Failed Genome step - Prokka",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 		if isInputError(err) {
 			return err
@@ -295,12 +293,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	checkmResult, err := s.Pipeline.RunCheckM(ctx, threads, checkmSample,
 		folders.AssemblyDir, checkMOutput)
 	if err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed Genome step - CheckM: %v", analysis.ID.String(),
-			err),
+		s.Logger.Error("Failed Genome step - CheckM",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 		return pipeline.ErrCheckM
 	}
@@ -316,12 +313,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	krakenResult1, krakenResult2, err := s.Pipeline.RunKraken2(ctx, threads,
 		*assemblyPath, folders.AssemblyDir)
 	if err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed Genome step - Kraken2: %v", analysis.ID.String(),
-			err),
+		s.Logger.Error("Failed Genome step - Kraken2",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 		return pipeline.ErrKraken2
 	}
@@ -332,12 +328,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			analysis.SampleID.String(), krakenResult1.Name, *assemblyPath,
 			folders.AssemblyDir)
 		if err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - Species: %v", analysis.ID.String(),
-				err),
+			s.Logger.Error("Failed Genome step - Species",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
 				)...)
 			return pipeline.ErrSpecies
 		}
@@ -354,12 +349,12 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		contamination, err := strconv.ParseFloat(
 			results.CheckMContamination, 32)
 		if err != nil {
-			s.Logger.Warn(fmt.Sprintf(
-				"%s: Invalid CheckM contamination value: %q",
-				analysis.ID.String(), results.CheckMContamination),
+			s.Logger.Warn("Invalid CheckM contamination value",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
+					zap.String("contamination", results.CheckMContamination),
 				)...)
 		}
 		if contamination > SecondarySpeciesContaminationThreshold {
@@ -380,24 +375,24 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 	for db, outputFile := range abricateDBs {
 		if err := s.Pipeline.RunAbricate(ctx, threads, db, abricateInput,
 			outputFile); err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - Abricate (%s): %v",
-				analysis.ID.String(), db, err),
+			s.Logger.Error("Failed Genome step - Abricate",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
+					zap.String("db", db),
 				)...)
 			return pipeline.ErrAbricate
 		}
 
 		rawResult, err := pipeline.GetAbricateResult(outputFile)
 		if err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - Abricate Result (%s): %v",
-				analysis.ID.String(), db, err),
+			s.Logger.Error("Failed Genome step - Abricate Result",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
+					zap.String("db", db),
 				)...)
 			return pipeline.ErrAbricate
 		}
@@ -407,12 +402,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			genes, err := pipeline.ProcessResfinder(rawResult,
 				s.Pipeline.GetConfig().ResfinderDBPath)
 			if err != nil {
-				s.Logger.Error(fmt.Sprintf(
-					"%s: Failed Genome step - ProcessResfinder: %v",
-					analysis.ID.String(), err),
+				s.Logger.Error("Failed Genome step - ProcessResfinder",
 					logging.ServiceLogging(ctx,
 						"AnalysisRunnerService", "runGenome",
 						logging.AnalysisRunError, err,
+						zap.String("analysis_id", analysis.ID.String()),
 					)...)
 				return pipeline.ErrAbricate
 			}
@@ -436,7 +430,8 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			"fastq", "",
 		)
 		if !ok {
-			return fmt.Errorf("fastq1 file not found: %s", *analysis.Sample.Fastq1)
+			return fmt.Errorf("fastq1 file not found: %s",
+				*analysis.Sample.Fastq1)
 		}
 		fastq2Path, ok := utils.ResolveSampleFilePath(
 			s.RootDir,
@@ -446,17 +441,17 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			"fastq", "",
 		)
 		if !ok {
-			return fmt.Errorf("fastq2 file not found: %s", *analysis.Sample.Fastq2)
+			return fmt.Errorf("fastq2 file not found: %s",
+				*analysis.Sample.Fastq2)
 		}
 		coverage, err := pipeline.CalculateCoverage(
 			fastq1Path, fastq2Path, int64(genomeSize))
 		if err != nil {
-			s.Logger.Error(fmt.Sprintf(
-				"%s: Failed Genome step - CalculateCoverage: %v",
-				analysis.ID.String(), err),
+			s.Logger.Error("Failed Genome step - CalculateCoverage",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
+					zap.String("analysis_id", analysis.ID.String()),
 				)...)
 		} else {
 			results.Coverage = coverage
@@ -510,12 +505,11 @@ func (s *analysisRunnerService) finalizeAnalysis(ctx context.Context,
 
 	jsonData, err := json.Marshal(results)
 	if err != nil {
-		s.Logger.Warn(fmt.Sprintf(
-			"%s: Failed to marshal analysis results: %v",
-			analysis.ID.String(), err),
+		s.Logger.Warn("Failed to marshal analysis results",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "finalizeAnalysis",
 				logging.AnalysisRunError, err,
+				zap.String("analysis_id", analysis.ID.String()),
 			)...)
 	} else {
 		analysis.Metrics = jsonData
@@ -599,21 +593,21 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	folders, err := s.prepareFolders(ctx, analysis.UserID.String(),
 		analysis.SampleID.String(), analysis.ID.String())
 	if err != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"%s: Failed to prepare folders: %v", analysisID.String(), err),
+		s.Logger.Error("Failed to prepare folders",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.CreateFolderError, err,
+				zap.String("analysis_id", analysisID.String()),
 			)...)
 		s.finalizeAnalysis(ctx, analysis, &results, pipeline.ErrPrepareFolders)
 		return pipeline.ErrAnalysisRun
 	}
 
-	s.Logger.Info(
-		fmt.Sprintf("Analysis %s started (type: %s)", analysisID.String(),
-			analysis.Type),
+	s.Logger.Info("Analysis started",
 		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
-			"CabgenPipeline")...,
+			"CabgenPipeline",
+			zap.String("analysis_id", analysisID.String()),
+			zap.String("type", string(analysis.Type)))...,
 	)
 
 	var runErr error
@@ -625,13 +619,13 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	case models.AnalysisTypeComplete:
 		runErr = s.runComplete(ctx, analysis, &results, folders)
 	default:
-		s.Logger.Error(fmt.Sprintf(
-			"Analysis %s: unknown analysis type %s", analysisID.String(),
-			analysis.Type),
+		s.Logger.Error("Unknown analysis type",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.AnalysisRunError,
 				fmt.Errorf("unknown type: %s", analysis.Type),
+				zap.String("analysis_id", analysisID.String()),
+				zap.String("type", string(analysis.Type)),
 			)...)
 		runErr = pipeline.ErrUnknownAnalysisType
 	}
@@ -674,21 +668,21 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	}
 
 	if runErr != nil {
-		s.Logger.Error(fmt.Sprintf(
-			"Analysis %s failed after %v: %v", analysisID.String(),
-			time.Since(start), runErr),
+		s.Logger.Error("Analysis failed",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "Run",
 				logging.AnalysisRunError, runErr,
+				zap.String("analysis_id", analysisID.String()),
+				zap.Duration("duration", time.Since(start)),
 			)...)
 		return pipeline.ErrAnalysisRun
 	}
 
-	s.Logger.Info(
-		fmt.Sprintf("Analysis %s completed in %v", analysisID.String(),
-			time.Since(start)),
+	s.Logger.Info("Analysis completed",
 		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
-			"CabgenPipeline")...,
+			"CabgenPipeline",
+			zap.String("analysis_id", analysisID.String()),
+			zap.Duration("duration", time.Since(start)))...,
 	)
 
 	return nil
