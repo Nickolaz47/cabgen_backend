@@ -69,6 +69,8 @@ services:
       - DB_HOST=database
       - TERM=xterm
     depends_on:
+      worker-email:
+        condition: service_started
       database:
         condition: service_healthy
       redis:
