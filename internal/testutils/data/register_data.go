@@ -35,7 +35,7 @@ var RegisterTests = []Body{
 		b := testutils.CopyMap(baseValidRegisterBody)
 		b["username"] = "ed"
 		return b
-	}()), `{"error":"Username must be at least 4 characters long."}`},
+	}()), `{"error":"Username must be at least 3 characters long."}`},
 	{"Username too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
 		b["username"] = strings.Repeat("eddy", 26)

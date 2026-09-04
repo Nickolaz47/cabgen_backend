@@ -131,7 +131,7 @@ func (u *User) ToToken() UserToken {
 
 type UserRegisterInput struct {
 	Name            string `json:"name" binding:"required,min=3,max=100"`
-	Username        string `json:"username" binding:"required,min=4,max=100"`
+	Username        string `json:"username" binding:"required,min=3,max=100"`
 	Email           string `json:"email" binding:"required,email"`
 	ConfirmEmail    string `json:"confirm_email" binding:"required,eqfield=Email"`
 	Password        string `json:"password" binding:"required,min=8,max=32"`
@@ -145,7 +145,7 @@ type UserRegisterInput struct {
 
 type UserUpdateInput struct {
 	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
-	Username    *string `json:"username,omitempty" binding:"omitempty,min=4,max=100"`
+	Username    *string `json:"username,omitempty" binding:"omitempty,min=3,max=100"`
 	CountryCode *string `json:"country_code,omitempty" binding:"omitempty,len=3"`
 
 	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
@@ -155,7 +155,7 @@ type UserUpdateInput struct {
 
 type AdminUserCreateInput struct {
 	Name        string `json:"name" binding:"required,min=3,max=100"`
-	Username    string `json:"username" binding:"required,min=4,max=100"`
+	Username    string `json:"username" binding:"required,min=3,max=100"`
 	Email       string `json:"email" binding:"required,email"`
 	Password    string `json:"password" binding:"required,min=8,max=32"`
 	CountryCode string `json:"country_code" binding:"required,len=3"`
@@ -170,7 +170,7 @@ type AdminUserCreateInput struct {
 
 type AdminUserUpdateInput struct {
 	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
-	Username    *string `json:"username,omitempty" binding:"omitempty,min=4,max=100"`
+	Username    *string `json:"username,omitempty" binding:"omitempty,min=3,max=100"`
 	Email       *string `json:"email,omitempty" binding:"omitempty,email"`
 	Password    *string `json:"password" binding:"omitempty,min=8,max=32"`
 	CountryCode *string `json:"country_code,omitempty" binding:"omitempty,len=3"`

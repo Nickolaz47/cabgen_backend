@@ -28,7 +28,7 @@ var AdminUpdateUserTests = []Body{
 		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["username"] = "ni"
 		return b
-	}()), `{"error":"Username must be at least 4 characters long."}`},
+	}()), `{"error":"Username must be at least 3 characters long."}`},
 	{"Username too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["username"] = strings.Repeat("nick", 26)
