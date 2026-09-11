@@ -113,6 +113,7 @@ FRONTEND_URL=          # Ex: http://localhost:3000
 PORT=                  # Ex: 8080
 ENVIRONMENT=           # dev | prod
 API_HOST=              # Ex: http://localhost:8080
+MAX_UPLOAD_SIZE_MB=    # Limite de upload em MB (ex: 10240; padrão 10240)
 APP_ROOT=              # Sobrescreve o diretório raiz do projeto (auto-detectado se vazio)
 
 # Usuário administrador padrão

@@ -45,6 +45,7 @@ var (
 	FastaniListEntero        = ""
 	FastaniListAcineto       = ""
 	AnalysisConcurrency      = 0
+	MaxUploadSize            = int64(0)
 )
 
 /*
@@ -89,6 +90,16 @@ func LoadEnvVariables(envFile string) error {
 		}
 	} else {
 		AnalysisConcurrency = 1
+	}
+
+	MaxUploadSize = 10240 << 20
+	if musStr := os.Getenv("MAX_UPLOAD_SIZE_MB"); musStr != "" {
+		mus, parseErr := strconv.Atoi(musStr)
+		if parseErr != nil {
+			return fmt.Errorf(
+				"MAX_UPLOAD_SIZE_MB must be a valid integer: %w", parseErr)
+		}
+		MaxUploadSize = int64(mus) << 20
 	}
 
 	DatabaseConnectionString = fmt.Sprintf(

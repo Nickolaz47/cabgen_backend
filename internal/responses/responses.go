@@ -81,6 +81,8 @@ const (
 	SampleMissingFastq2                       = "admin.sample.missingFastq2"
 	SampleMissingFiles                        = "admin.sample.missingFiles"
 	SampleContentTypeError                    = "admin.sample.contentType.error"
+	SampleUnsupportedFile                     = "admin.sample.unsupportedFile.error"
+	SampleFileTooLarge                        = "admin.sample.fileTooLarge.error"
 	SampleNotFoundError                       = "admin.sample.notFound.error"
 	SampleDeleted                             = "admin.sample.delete.success"
 	AnalysisCreationSuccess                   = "analysis.create.success"

@@ -463,6 +463,12 @@ other = "No se enviaron archivos para la carga."
 [admin.sample.contentType.error]
 other = "La solicitud debe ser multipart/form-data."
 
+[admin.sample.unsupportedFile.error]
+other = "Tipo de archivo no soportado."
+
+[admin.sample.fileTooLarge.error]
+other = "El archivo excede el límite máximo de subida."
+
 [admin.sample.notFound.error]
 other = "Muestra no encontrada."
 

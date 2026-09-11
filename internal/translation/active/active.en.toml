@@ -463,6 +463,12 @@ other = "No files were sent for upload."
 [admin.sample.contentType.error]
 other = "The request must be multipart/form-data."
 
+[admin.sample.unsupportedFile.error]
+other = "File type not supported."
+
+[admin.sample.fileTooLarge.error]
+other = "The file exceeds the maximum upload size."
+
 [admin.sample.notFound.error]
 other = "Sample not found."
 

@@ -158,6 +158,71 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("Success - Max upload size set", func(t *testing.T) {
+		os.Unsetenv("PORT")
+		defer os.Unsetenv("PORT")
+		os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+		defer os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+
+		envContent := `
+			PORT=8080
+			SMTP_PORT=587
+			MAX_UPLOAD_SIZE_MB=2048
+		`
+		tempDir := t.TempDir()
+		testEnvFile := filepath.Join(tempDir, "test.env")
+
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
+
+		err := config.LoadEnvVariables(testEnvFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(2048)<<20, config.MaxUploadSize)
+	})
+
+	t.Run("Success - Max upload size default", func(t *testing.T) {
+		os.Unsetenv("PORT")
+		defer os.Unsetenv("PORT")
+		os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+		defer os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+
+		envContent := `
+			PORT=8080
+			SMTP_PORT=587
+		`
+		tempDir := t.TempDir()
+		testEnvFile := filepath.Join(tempDir, "test.env")
+
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
+
+		err := config.LoadEnvVariables(testEnvFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(10240)<<20, config.MaxUploadSize)
+	})
+
+	t.Run("Error - Invalid max upload size", func(t *testing.T) {
+		os.Unsetenv("PORT")
+		defer os.Unsetenv("PORT")
+		os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+		defer os.Unsetenv("MAX_UPLOAD_SIZE_MB")
+
+		envContent := `
+			PORT=8080
+			SMTP_PORT=587
+			MAX_UPLOAD_SIZE_MB=abc
+		`
+		tempDir := t.TempDir()
+		testEnvFile := filepath.Join(tempDir, "test.env")
+
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
+
+		err := config.LoadEnvVariables(testEnvFile)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "MAX_UPLOAD_SIZE_MB")
+	})
+
 	t.Run("Error - No customized env file", func(t *testing.T) {
 		tempDir := t.TempDir()
 		testEnvFile := filepath.Join(tempDir, "test.env")
