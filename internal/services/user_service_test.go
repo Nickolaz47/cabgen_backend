@@ -33,7 +33,7 @@ func TestUserFindByID(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, nil, "")
 		result, err := service.FindByID(context.Background(), user.ID, lang)
 
 		assert.NoError(t, err)
@@ -50,8 +50,7 @@ func TestUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
@@ -70,8 +69,7 @@ func TestUserFindByID(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.FindByID(context.Background(), uuid.New(), lang)
 
 		assert.Error(t, err)
@@ -83,6 +81,33 @@ func TestUserFindByID(t *testing.T) {
 
 func TestUserDelete(t *testing.T) {
 	user := testmodels.NewLoginUser()
+
+	t.Run("Success - Unassigns Tickets", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			DeleteUserFunc: func(ctx context.Context,
+				user *models.User) error {
+				return nil
+			},
+		}
+
+		var unassignedID uuid.UUID
+		ticketRepo := &mocks.MockTicketRepository{
+			UnassignTicketsByAdminIDFunc: func(ctx context.Context, adminID uuid.UUID) error {
+				unassignedID = adminID
+				return nil
+			},
+		}
+
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, &mocks.MockTaskEnqueuer{}, nil, t.TempDir())
+		err := service.Delete(context.Background(), user.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, user.ID, unassignedID)
+	})
 
 	t.Run("Success", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
@@ -96,8 +121,7 @@ func TestUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, nil,
-			&mocks.MockTaskEnqueuer{}, nil, t.TempDir())
+		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, &mocks.MockTaskEnqueuer{}, nil, t.TempDir())
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
@@ -113,8 +137,7 @@ func TestUserDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -135,8 +158,31 @@ func TestUserDelete(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, nil, mockLogger, "")
+		err := service.Delete(context.Background(), uuid.New())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Ticket Unassign Fails", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+		}
+
+		ticketRepo := &mocks.MockTicketRepository{
+			UnassignTicketsByAdminIDFunc: func(ctx context.Context, adminID uuid.UUID) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, nil, mockLogger, "")
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
@@ -188,8 +234,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil,
-			nil, "")
+		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil, nil, nil, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.NoError(t, err)
@@ -206,8 +251,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -226,8 +270,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -254,8 +297,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -282,8 +324,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -317,8 +358,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -352,8 +392,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -390,8 +429,7 @@ func TestUserUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, countryRepo, nil, nil, nil, nil, mockLogger, "")
 		result, err := service.Update(context.Background(), userID, input, lang)
 
 		assert.Error(t, err)
@@ -430,8 +468,7 @@ func TestUpdatePassword(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, hasher, nil,
-			nil, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, hasher, nil, nil, "")
 		err := service.UpdatePassword(context.Background(), user.ID, input)
 
 		assert.NoError(t, err)
@@ -453,8 +490,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 		mockLogger, _ := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, hasher, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, hasher, nil, mockLogger, "")
 		err := service.UpdatePassword(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -470,8 +506,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 		mockLogger, _ := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		err := service.UpdatePassword(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -524,8 +559,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			taskEnqueuer, nil, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, taskEnqueuer, nil, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.NoError(t, err)
@@ -559,8 +593,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, nil, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -593,8 +626,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			taskEnqueuer, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, taskEnqueuer, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -627,8 +659,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			taskEnqueuer, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, taskEnqueuer, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -645,8 +676,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 		mockLogger, _ := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -666,7 +696,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			ConfirmNewEmail: user.Email,
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, nil, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID,
 			sameEmailInput)
 
@@ -686,7 +716,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, nil, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -706,8 +736,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, nil, nil, nil,
-			mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, nil, nil, nil, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -749,8 +778,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			nil, nil, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, nil, nil, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.NoError(t, err)
@@ -764,8 +792,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil,
-			nil, "")
+		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil, nil, nil, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -783,8 +810,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil,
-			nil, "")
+		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil, nil, nil, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -802,8 +828,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil,
-			nil, "")
+		service := services.NewUserService(nil, nil, emailUpdateRepo, nil, nil, nil, nil, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -825,8 +850,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, nil, mockLogger, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
@@ -852,8 +876,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil,
-			nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, nil, mockLogger, "")
 		err := service.ConfirmEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)

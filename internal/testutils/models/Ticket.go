@@ -19,7 +19,7 @@ type Ticket struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	AdminID     *string       `gorm:"index"`
-	Admin       *rModels.User `gorm:"foreignKey:AdminID;references:ID"`
+	Admin       *rModels.User `gorm:"foreignKey:AdminID;references:ID;constraint:OnDelete:SET NULL"`
 }
 
 func NewTicket(

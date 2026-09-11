@@ -196,9 +196,9 @@ type Analysis struct {
 
 	// Foreign Keys
 	SampleID uuid.UUID `gorm:"type:uuid;not null;index"`
-	Sample   Sample    `gorm:"foreignKey:SampleID;references:ID"`
+	Sample   Sample    `gorm:"foreignKey:SampleID;references:ID;constraint:OnDelete:CASCADE"`
 	UserID   uuid.UUID `gorm:"type:uuid;not null;index"`
-	User     User      `gorm:"foreignKey:UserID;references:ID"`
+	User     User      `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 type AnalysisResponse struct {

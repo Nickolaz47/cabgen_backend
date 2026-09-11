@@ -33,6 +33,7 @@ type userService struct {
 	Repo            repositories.UserRepository
 	CountryRepo     repositories.CountryRepository
 	EmailUpdateRepo repositories.EmailUpdateRepository
+	TicketRepo      repositories.TicketRepository
 	Hasher          security.PasswordHasher
 	AsynqClient     TaskEnqueuer
 	Logger          *zap.Logger
@@ -43,6 +44,7 @@ func NewUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
 	emailUpdateRepo repositories.EmailUpdateRepository,
+	ticketRepo repositories.TicketRepository,
 	hasher security.PasswordHasher,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
@@ -52,6 +54,7 @@ func NewUserService(
 		Repo:            repo,
 		CountryRepo:     countryRepo,
 		EmailUpdateRepo: emailUpdateRepo,
+		TicketRepo:      ticketRepo,
 		Hasher:          hasher,
 		AsynqClient:     asynqClient,
 		Logger:          logger,
@@ -180,6 +183,15 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 
 	userEmail := user.Email
 	userName := user.Name
+
+	if err := s.TicketRepo.UnassignTicketsByAdminID(ctx, ID); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"UserService", "Delete",
+			logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
+		)...)
+		return ErrInternal
+	}
 
 	if err := s.Repo.DeleteUser(ctx, user); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,

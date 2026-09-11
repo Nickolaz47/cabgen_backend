@@ -260,3 +260,67 @@ func TestDeleteTicket(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestUnassignTicketsByAdminID(t *testing.T) {
+	ctx := context.Background()
+	admin := testmodels.NewAdminLoginUser()
+
+	db := testutils.NewMockDB()
+	ticketRepo := repositories.NewTicketRepo(db)
+
+	assigned := testmodels.NewTicket(
+		uuid.NewString(), "Jão", "jão@mail.com", "Fiocruz",
+		"Wrong password", "Cannot access my account.", &admin,
+	)
+	assigned.Status = models.TicketStatusInProgress
+	unassigned := testmodels.NewTicket(
+		uuid.NewString(), "Maria", "maria@mail.com", "INCA",
+		"Wrong username", "Cannot access my account.", nil,
+	)
+	db.Create(&assigned)
+	db.Create(&unassigned)
+
+	t.Run("Success", func(t *testing.T) {
+		err := ticketRepo.UnassignTicketsByAdminID(ctx, admin.ID)
+
+		assert.NoError(t, err)
+
+		var result models.Ticket
+		db.Where("id = ?", assigned.ID).First(&result)
+
+		assert.Nil(t, result.AdminID)
+		assert.Equal(t, models.TicketStatusOpen, result.Status)
+
+		db.Where("id = ?", unassigned.ID).First(&result)
+
+		assert.Nil(t, result.AdminID)
+		assert.Equal(t, models.TicketStatusOpen, result.Status)
+	})
+}
+
+func TestDeleteUserTicketAdminSetNull(t *testing.T) {
+	db := testutils.NewMockDB()
+	ctx := context.Background()
+
+	admin := testmodels.NewAdminLoginUser()
+	db.Create(&admin)
+
+	ticket := testmodels.NewTicket(
+		uuid.NewString(), "Jão", "jão@mail.com", "Fiocruz",
+		"Wrong password", "Cannot access my account.", &admin,
+	)
+	ticket.Status = models.TicketStatusInProgress
+	db.Create(&ticket)
+
+	t.Run("Success", func(t *testing.T) {
+		err := db.WithContext(ctx).Delete(&admin).Error
+
+		assert.NoError(t, err)
+
+		var result models.Ticket
+		db.Where("id = ?", ticket.ID).First(&result)
+
+		assert.Nil(t, result.AdminID)
+		assert.Equal(t, models.TicketStatusInProgress, result.Status)
+	})
+}

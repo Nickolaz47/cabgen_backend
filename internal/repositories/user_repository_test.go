@@ -441,3 +441,31 @@ func TestDeleteUser(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestDeleteUserCascadeSamplesAndAnalyses(t *testing.T) {
+	ctx := context.Background()
+
+	db := testutils.NewMockDB()
+	userRepo := repositories.NewUserRepo(db)
+
+	analysis := testmodels.CreateMockAnalysis()
+	db.Create(&analysis)
+
+	t.Run("Success", func(t *testing.T) {
+		err := userRepo.DeleteUser(ctx, &analysis.User)
+
+		assert.NoError(t, err)
+
+		var sample models.Sample
+		err = db.Where("id = ?", analysis.SampleID).First(&sample).Error
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+
+		var result models.Analysis
+		err = db.Where("id = ?", analysis.ID).First(&result).Error
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+	})
+}

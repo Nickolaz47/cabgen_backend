@@ -41,6 +41,7 @@ type AdminUserService interface {
 type adminUserService struct {
 	Repo        repositories.UserRepository
 	CountryRepo repositories.CountryRepository
+	TicketRepo  repositories.TicketRepository
 	Hasher      security.PasswordHasher
 	AsynqClient TaskEnqueuer
 	Logger      *zap.Logger
@@ -50,6 +51,7 @@ type adminUserService struct {
 func NewAdminUserService(
 	repo repositories.UserRepository,
 	countryRepo repositories.CountryRepository,
+	ticketRepo repositories.TicketRepository,
 	hasher security.PasswordHasher,
 	asynqClient TaskEnqueuer,
 	logger *zap.Logger,
@@ -58,6 +60,7 @@ func NewAdminUserService(
 	return &adminUserService{
 		Repo:        repo,
 		CountryRepo: countryRepo,
+		TicketRepo:  ticketRepo,
 		Hasher:      hasher,
 		AsynqClient: asynqClient,
 		Logger:      logger,
@@ -497,6 +500,16 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AdminUserService", "Delete",
+				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
+			)...)
+		return ErrInternal
+	}
+
+	if err := s.TicketRepo.UnassignTicketsByAdminID(ctx, ID); err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "Delete",

@@ -25,7 +25,7 @@ type Ticket struct {
 	UpdatedAt   time.Time
 
 	AdminID *uuid.UUID `gorm:"type:uuid;index"`
-	Admin   *User      `gorm:"foreignKey:AdminID;references:ID"`
+	Admin   *User      `gorm:"foreignKey:AdminID;references:ID;constraint:OnDelete:SET NULL"`
 }
 
 type CreateTicketInput struct {

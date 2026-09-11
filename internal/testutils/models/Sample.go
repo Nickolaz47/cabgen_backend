@@ -25,7 +25,7 @@ type Sample struct {
 	CountryID       uint                  `gorm:"not null" json:"-"`
 	Country         rModels.Country       `gorm:"foreignKey:CountryID;references:ID"`
 	UserID          string                `gorm:"not null" json:"-"`
-	User            rModels.User          `gorm:"foreignKey:UserID;references:ID"`
+	User            rModels.User          `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 	OriginID        string                `gorm:"not null" json:"-"`
 	Origin          rModels.Origin        `gorm:"foreignKey:OriginID;references:ID"`
 	SampleSourceID  string                `gorm:"not null" json:"-"`

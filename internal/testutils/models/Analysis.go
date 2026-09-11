@@ -35,9 +35,9 @@ type Analysis struct {
 
 	// Foreign Keys
 	SampleID string         `gorm:"type:not null;index"`
-	Sample   rModels.Sample `gorm:"foreignKey:SampleID;references:ID"`
+	Sample   rModels.Sample `gorm:"foreignKey:SampleID;references:ID;constraint:OnDelete:CASCADE"`
 	UserID   string         `gorm:"type:not null;index"`
-	User     rModels.User   `gorm:"foreignKey:UserID;references:ID"`
+	User     rModels.User   `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 func NewAnalysis(

@@ -15,6 +15,7 @@ type TicketRepository interface {
 	CreateTicket(ctx context.Context, ticket *models.Ticket) error
 	UpdateTicket(ctx context.Context, ticket *models.Ticket) error
 	DeleteTicket(ctx context.Context, ticket *models.Ticket) error
+	UnassignTicketsByAdminID(ctx context.Context, adminID uuid.UUID) error
 }
 
 type ticketRepository struct {
@@ -65,4 +66,14 @@ func (r *ticketRepository) UpdateTicket(ctx context.Context,
 func (r *ticketRepository) DeleteTicket(ctx context.Context,
 	ticket *models.Ticket) error {
 	return r.db.WithContext(ctx).Delete(ticket).Error
+}
+
+func (r *ticketRepository) UnassignTicketsByAdminID(ctx context.Context,
+	adminID uuid.UUID) error {
+	return r.db.WithContext(ctx).Model(&models.Ticket{}).
+		Where("admin_id = ?", adminID).
+		Updates(map[string]any{
+			"admin_id": nil,
+			"status":   models.TicketStatusOpen,
+		}).Error
 }

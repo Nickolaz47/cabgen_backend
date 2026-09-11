@@ -15,6 +15,7 @@ type MockTicketRepository struct {
 	CreateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
 	UpdateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
 	DeleteTicketFunc func(ctx context.Context, ticket *models.Ticket) error
+	UnassignTicketsByAdminIDFunc func(ctx context.Context, adminID uuid.UUID) error
 }
 
 func (r *MockTicketRepository) GetTickets(ctx context.Context, filter models.TicketFilter) (
@@ -48,12 +49,21 @@ func (r *MockTicketRepository) UpdateTicket(ctx context.Context,
 	}
 	return nil
 }
-
 func (r *MockTicketRepository) DeleteTicket(ctx context.Context,
 	ticket *models.Ticket) error {
 	if r.DeleteTicketFunc != nil {
 		return r.DeleteTicketFunc(ctx, ticket)
 	}
+
+	return nil
+}
+
+func (r *MockTicketRepository) UnassignTicketsByAdminID(
+	ctx context.Context, adminID uuid.UUID) error {
+	if r.UnassignTicketsByAdminIDFunc != nil {
+		return r.UnassignTicketsByAdminIDFunc(ctx, adminID)
+	}
+
 	return nil
 }
 

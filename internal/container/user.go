@@ -16,9 +16,11 @@ func BuildUserService(db *gorm.DB, asynqClient *asynq.Client,
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
 	emailUpdateRepo := repositories.NewEmailUpdateRepo(db)
+	ticketRepo := repositories.NewTicketRepo(db)
 	hasher := security.NewPasswordHasher()
 	userService := services.NewUserService(
-		userRepo, countryRepo, emailUpdateRepo, hasher, asynqClient, logger, rootDir)
+		userRepo, countryRepo, emailUpdateRepo, ticketRepo, hasher,
+		asynqClient, logger, rootDir)
 
 	return userService
 }
@@ -27,9 +29,11 @@ func BuildAdminUserService(db *gorm.DB, asynqClient *asynq.Client,
 	logger *zap.Logger, rootDir string) services.AdminUserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
+	ticketRepo := repositories.NewTicketRepo(db)
 	hasher := security.NewPasswordHasher()
 	adminUserService := services.NewAdminUserService(
-		userRepo, countryRepo, hasher, asynqClient, logger, rootDir)
+		userRepo, countryRepo, ticketRepo, hasher, asynqClient, logger,
+		rootDir)
 
 	return adminUserService
 }

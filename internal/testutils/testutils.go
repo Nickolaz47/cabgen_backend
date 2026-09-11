@@ -22,7 +22,9 @@ import (
 )
 
 func NewMockDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?_loc=Local"), &gorm.Config{})
+	db, err := gorm.Open(
+		sqlite.Open("file::memory:?_loc=Local&_pragma=foreign_keys(1)"),
+		&gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

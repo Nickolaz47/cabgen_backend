@@ -201,3 +201,26 @@ func TestDeleteSample(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestDeleteSampleCascadeAnalyses(t *testing.T) {
+	ctx := context.Background()
+
+	db := testutils.NewMockDB()
+	sampleRepo := repositories.NewSampleRepo(db)
+
+	analysis := testmodels.CreateMockAnalysis()
+	db.Create(&analysis)
+
+	t.Run("Success", func(t *testing.T) {
+		err := sampleRepo.DeleteSample(ctx, &analysis.Sample)
+
+		assert.NoError(t, err)
+
+		var result models.Analysis
+		err = db.Where("id = ?", analysis.ID).First(&result).Error
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "record not found")
+		assert.Empty(t, result)
+	})
+}
