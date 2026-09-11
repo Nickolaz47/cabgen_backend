@@ -18,40 +18,57 @@ import (
 func TestI18nMiddleware(t *testing.T) {
 	testutils.SetupTestContext()
 
-	tests := map[string]string{
-		"pt": "Usuário não encontrado.",
-		"en": "User not found.",
-		"es": "Usuario no encontrado.",
+	tests := []struct {
+		name    string
+		header  string
+		lang    string
+		message string
+	}{
+		{"pt", "pt", "pt", "Usuário não encontrado."},
+		{"en", "en", "en", "User not found."},
+		{"es", "es", "es", "Usuario no encontrado."},
+		{"variant pt-BR", "pt-BR", "pt", "Usuário não encontrado."},
+		{"uppercase PT", "PT", "pt", "Usuário não encontrado."},
+		{"variant with q", "pt-BR;q=0.9", "pt", "Usuário não encontrado."},
+		{"list with q", "pt-BR,es;q=0.9,en;q=0.8", "pt", "Usuário não encontrado."},
+		{"en-US variant", "en-US", "en", "User not found."},
+		{"unsupported falls back to en", "fr", "en", "User not found."},
+		{"empty header falls back to en", "", "en", "User not found."},
 	}
 
-	for lang, message := range tests {
-		t.Run(fmt.Sprintf("Success %s", lang), func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("Success %s", tt.name), func(t *testing.T) {
 			w, r := testutils.SetupMiddlewareContext()
 
 			testutils.AddMiddlewares(r, middlewares.I18nMiddleware())
 
 			r.GET("/", func(c *gin.Context) {
 				v, exists := c.Get(translation.LocalizerKey)
-				localizer := v.(*i18n.Localizer)
-				message := responses.GetResponse(localizer, responses.UserNotFoundError)
+				localizer, ok := v.(*i18n.Localizer)
 
-				rawLanguage, ok := c.Get("lang")
-				language, ok := rawLanguage.(string)
+				rawLanguage, langExists := c.Get("lang")
+				language, langOK := rawLanguage.(string)
 
-				if exists && ok {
+				if exists && ok && langExists && langOK {
 					c.JSON(http.StatusOK, map[string]any{
-						"translatedMessage": message,
-						"language":          language,
+						"translatedMessage": responses.GetResponse(
+							localizer, responses.UserNotFoundError),
+						"language": language,
 					})
+					return
 				}
 				c.Status(http.StatusNotFound)
 			})
 
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			req.Header.Set("Accept-Language", lang)
+			if tt.header != "" {
+				req.Header.Set("Accept-Language", tt.header)
+			}
 			r.ServeHTTP(w, req)
 
-			expected := fmt.Sprintf(`{"translatedMessage": "%s", "language": "%s"}`, message, lang)
+			expected := fmt.Sprintf(
+				`{"translatedMessage": "%s", "language": "%s"}`,
+				tt.message, tt.lang)
 
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, expected, w.Body.String())

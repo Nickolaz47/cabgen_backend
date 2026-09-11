@@ -87,6 +87,26 @@ func TestParseLanguage(t *testing.T) {
 			expected: "es",
 		},
 		{
+			name:     "Language Variant",
+			input:    "pt-BR",
+			expected: "pt",
+		},
+		{
+			name:     "Language Variant Uppercase",
+			input:    "en-US",
+			expected: "en",
+		},
+		{
+			name:     "Language With Quality Parameter",
+			input:    "pt;q=0.9",
+			expected: "pt",
+		},
+		{
+			name:     "Unsupported Language Variant",
+			input:    "zh-CN",
+			expected: "en",
+		},
+		{
 			name:     "Invalid Language",
 			input:    "an",
 			expected: "en",

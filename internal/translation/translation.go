@@ -67,8 +67,11 @@ func GetLanguageFromContext(c *gin.Context) string {
 
 func ParseLanguage(language string) string {
 	language = strings.ToLower(language)
-	if slices.Contains(Languages, language) {
-		return language
+	language, _, _ = strings.Cut(language, ";")
+	tag, _, _ := strings.Cut(language, "-")
+
+	if slices.Contains(Languages, tag) {
+		return tag
 	}
 
 	return "en"
