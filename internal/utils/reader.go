@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -18,4 +20,13 @@ func LoadJSONFile[T any](filepath string) ([]T, error) {
 	}
 
 	return items, nil
+}
+
+func IsGzip(r io.Reader) (io.Reader, bool) {
+	magic := make([]byte, 2)
+	if _, err := io.ReadFull(r, magic); err != nil {
+		return io.MultiReader(bytes.NewReader(magic), r), false
+	}
+	isGz := magic[0] == 0x1f && magic[1] == 0x8b
+	return io.MultiReader(bytes.NewReader(magic), r), isGz
 }

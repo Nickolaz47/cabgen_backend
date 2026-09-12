@@ -30,7 +30,7 @@ func TestAdminUploadFiles(t *testing.T) {
 	mockOwnerID := uuid.New()
 
 	t.Run("Success", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		dir := t.TempDir()
 
 		svc := &mocks.MockSampleService{
@@ -64,7 +64,7 @@ func TestAdminUploadFiles(t *testing.T) {
 		c.Set("user", &mockAdminUserToken)
 		handler.UploadFiles(c)
 
-		expectedFilePath := filepath.Join(dir, "reads_R1.fastq.gz")
+		expectedFilePath := filepath.Join(dir, "reads_R1.fastq")
 		fileContent, err := os.ReadFile(expectedFilePath)
 
 		assert.NoError(t, err)
@@ -132,7 +132,7 @@ func TestAdminUploadFiles(t *testing.T) {
 	})
 
 	t.Run("Error - GetSampleForUpload Not Found", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -162,7 +162,7 @@ func TestAdminUploadFiles(t *testing.T) {
 	})
 
 	t.Run("Error - GetSampleForUpload Internal Error", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -192,7 +192,7 @@ func TestAdminUploadFiles(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		svc := &mocks.MockSampleService{}
 		handler := sample.NewAdminSampleHandler(svc)
 
@@ -216,7 +216,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -258,7 +258,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -320,7 +320,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Missing Fastq1", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq2", "reads_R2.fastq.gz")
+		buf, mw := createFormFile("fastq2", "reads_R2.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -363,7 +363,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Missing Fastq2", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -449,7 +449,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - PrepareSampleFolder Internal Error", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -489,7 +489,7 @@ func TestAdminUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Internal Error", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -27,10 +28,10 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
-func ResolveSampleFilePath(rootDir, userID, sampleID, fileName, 
+func ResolveSampleFilePath(rootDir, userID, sampleID, fileName,
 	fileType string, analysisID string) (string, bool) {
-	sampleDir := filepath.Join(rootDir, "uploads", "users", userID, 
-	"samples", sampleID)
+	sampleDir := filepath.Join(rootDir, "uploads", "users", userID,
+		"samples", sampleID)
 
 	if fileType != "fasta" {
 		return filepath.Join(sampleDir, fileName), true
@@ -44,8 +45,8 @@ func ResolveSampleFilePath(rootDir, userID, sampleID, fileName,
 
 	// Fallback: analysis assembly directory
 	if analysisID != "" {
-		assemblyPath := filepath.Join(sampleDir, "analyses", analysisID, 
-		"assembly", fileName)
+		assemblyPath := filepath.Join(sampleDir, "analyses", analysisID,
+			"assembly", fileName)
 		if _, err := os.Stat(assemblyPath); err == nil {
 			return assemblyPath, true
 		}
@@ -53,3 +54,15 @@ func ResolveSampleFilePath(rootDir, userID, sampleID, fileName,
 
 	return "", false
 }
+
+func CleanupFiles(paths []string) error {
+	var errs []error
+	for _, p := range paths {
+		if err := os.Remove(p); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
+

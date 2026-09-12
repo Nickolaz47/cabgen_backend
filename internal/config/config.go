@@ -45,7 +45,7 @@ var (
 	FastaniListEntero        = ""
 	FastaniListAcineto       = ""
 	AnalysisConcurrency      = 0
-	MaxUploadSize            = int64(0)
+	MaxUploadSize            = int64(10240) << 20
 )
 
 /*

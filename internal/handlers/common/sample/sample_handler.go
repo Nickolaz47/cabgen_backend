@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
+	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -217,6 +220,14 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		return
 	}
 
+	scopeID := h.getUserID(userToken)
+	if scopeID != uuid.Nil && scopeID != sample.UserID {
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer,
+				responses.UnauthorizedError)})
+		return
+	}
+
 	uploadDir, err := h.Service.PrepareSampleFolder(c.Request.Context(),
 		sample.UserID, id)
 	if err != nil {
@@ -227,14 +238,24 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 	}
 
 	var attachmentInput models.SampleAttachmentInput
+	var saved []string
+	budget := config.MaxUploadSize
+
+	cleanup := func() {
+		if err := utils.CleanupFiles(saved); err != nil &&
+			logging.ConsoleLogger != nil {
+			logging.ConsoleLogger.Sugar().
+				Warnf("upload cleanup failed: %v", err)
+		}
+	}
 
 	for {
 		part, err := reader.NextPart()
 		if err == io.EOF {
-			// Finish the request
 			break
 		}
 		if err != nil {
+			cleanup()
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.GenericInternalServerError),
@@ -245,16 +266,29 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		formName := part.FormName()
 		fileName := filepath.Base(part.FileName())
 
-		// Skip form parts that are not files
 		if fileName == "" || fileName == "." {
 			continue
 		}
 
-		// Save to the disk
+		if !validations.IsUploadField(formName) {
+			continue
+		}
+
+		if !validations.IsAllowedUploadFile(formName, fileName) {
+			cleanup()
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.SampleUnsupportedFile),
+			})
+			return
+		}
+
 		dstPath := filepath.Join(uploadDir, fileName)
+		saved = append(saved, dstPath)
 
 		out, err := os.Create(dstPath)
 		if err != nil {
+			cleanup()
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(
 					localizer, responses.GenericInternalServerError,
@@ -263,17 +297,42 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 			return
 		}
 
+		content := io.Reader(part)
+		if strings.HasSuffix(strings.ToLower(fileName), ".gz") {
+			gzipped, ok := utils.IsGzip(part)
+			if !ok {
+				out.Close()
+				cleanup()
+				c.JSON(http.StatusBadRequest, responses.APIResponse{
+					Error: responses.GetResponse(localizer,
+						responses.SampleUnsupportedFile),
+				})
+				return
+			}
+			content = gzipped
+		}
+
 		// Do the streaming from net to disk
-		_, err = io.Copy(out, part)
+		n, err := io.Copy(out, io.LimitReader(content, budget+1))
 		out.Close()
 
 		if err != nil {
+			cleanup()
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.GenericInternalServerError),
 			})
 			return
 		}
+		if n > budget {
+			cleanup()
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.SampleFileTooLarge),
+			})
+			return
+		}
+		budget -= n
 
 		switch formName {
 		case "fastq1":
@@ -287,6 +346,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 	if err := h.Service.AttachFiles(c.Request.Context(),
 		id, h.getUserID(userToken), attachmentInput); err != nil {
+		cleanup()
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),

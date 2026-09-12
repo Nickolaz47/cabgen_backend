@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/sample"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -22,36 +24,28 @@ import (
 )
 
 func createFormFile(field, file string) (*bytes.Buffer, *multipart.Writer) {
-	var buf bytes.Buffer
-	mw := multipart.NewWriter(&buf)
-
-	fw, _ := mw.CreateFormFile(field, file)
-	io.WriteString(fw, "dummy")
-
-	mw.Close()
-	return &buf, mw
+	return createFormFileContent(field, file, "dummy")
 }
 
 func TestUploadFiles(t *testing.T) {
 	testutils.SetupTestContext()
 	mockUserID := uuid.New()
-	mockOwnerID := uuid.New()
 
 	t.Run("Success", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		dir := t.TempDir()
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
 				sampleID uuid.UUID) (
 				string, error) {
-				assert.Equal(t, mockOwnerID, userID)
+				assert.Equal(t, mockUserID, userID)
 				return dir, nil
 			},
 			AttachFilesFunc: func(ctx context.Context, sampleID,
@@ -73,7 +67,7 @@ func TestUploadFiles(t *testing.T) {
 		c.Set("user", &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
-		expectedFilePath := filepath.Join(dir, "reads_R1.fastq.gz")
+		expectedFilePath := filepath.Join(dir, "reads_R1.fastq")
 		fileContent, err := os.ReadFile(expectedFilePath)
 
 		assert.NoError(t, err)
@@ -87,7 +81,7 @@ func TestUploadFiles(t *testing.T) {
 		assert.Equal(t, expected, w.Body.String())
 	})
 
-	t.Run("Success - Collaborator uploads to owner's sample",
+	t.Run("Error - Collaborator cannot upload to another user's sample",
 		func(t *testing.T) {
 			buf, mw := createFormFile("fasta", "contigs.fasta")
 			dir := t.TempDir()
@@ -96,22 +90,8 @@ func TestUploadFiles(t *testing.T) {
 				GetSampleForUploadFunc: func(_ context.Context,
 					_ uuid.UUID) (*models.Sample, error) {
 					sample := testmodels.CreateMockSample()
-					sample.UserID = mockOwnerID
+					sample.UserID = uuid.New()
 					return &sample, nil
-				},
-				PrepareSampleFolderFunc: func(_ context.Context, userID,
-					sampleID uuid.UUID) (string, error) {
-					assert.Equal(t, mockOwnerID, userID,
-						"should use owner's ID, not collaborator's")
-					return dir, nil
-				},
-				AttachFilesFunc: func(ctx context.Context, sampleID,
-					userID uuid.UUID,
-					input models.SampleAttachmentInput) error {
-					assert.Equal(t, mockUserID, userID,
-						"should pass collaborator's ID for auth")
-					assert.NotNil(t, input.Fasta)
-					return nil
 				},
 			}
 			handler := sample.NewSampleHandler(svc)
@@ -127,22 +107,21 @@ func TestUploadFiles(t *testing.T) {
 			c.Set("user", &models.UserToken{ID: mockUserID})
 			handler.UploadFiles(c)
 
-			expectedFilePath := filepath.Join(dir, "contigs.fasta")
-			fileContent, err := os.ReadFile(expectedFilePath)
-
-			assert.NoError(t, err)
-			assert.Equal(t, "dummy", string(fileContent))
-
 			expected := testutils.ToJSON(map[string]string{
-				"message": "Sample files submitted successfully.",
+				"error": "Unauthorized. Please log in to continue.",
 			})
 
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
 			assert.Equal(t, expected, w.Body.String())
+
+			entries, err := os.ReadDir(dir)
+
+			assert.NoError(t, err)
+			assert.Empty(t, entries, "no file should be written")
 		})
 
 	t.Run("Error - GetSampleForUpload Not Found", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -172,7 +151,7 @@ func TestUploadFiles(t *testing.T) {
 	})
 
 	t.Run("Error - GetSampleForUpload Internal Error", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
@@ -202,7 +181,7 @@ func TestUploadFiles(t *testing.T) {
 	})
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		svc := &mocks.MockSampleService{}
 		handler := sample.NewSampleHandler(svc)
 
@@ -226,13 +205,13 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - Not Found", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -268,7 +247,7 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -331,13 +310,13 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Missing Fastq1", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq2", "reads_R2.fastq.gz")
+		buf, mw := createFormFile("fastq2", "reads_R2.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -374,13 +353,13 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Missing Fastq2", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -423,7 +402,7 @@ func TestUploadFiles(t *testing.T) {
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -460,13 +439,13 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - PrepareSampleFolder Internal Error", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -500,13 +479,13 @@ func TestUploadFiles(t *testing.T) {
 
 	t.Run("Error - AttachFiles Internal Error", func(t *testing.T) {
 		dir := t.TempDir()
-		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 
 		svc := &mocks.MockSampleService{
 			GetSampleForUploadFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
 				sample := testmodels.CreateMockSample()
-				sample.UserID = mockOwnerID
+				sample.UserID = mockUserID
 				return &sample, nil
 			},
 			PrepareSampleFolderFunc: func(_ context.Context, userID,
@@ -541,4 +520,228 @@ func TestUploadFiles(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.Equal(t, expected, w.Body.String())
 	})
+}
+
+func createFormFileContent(field, file, content string) (*bytes.Buffer,
+	*multipart.Writer) {
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+
+	fw, _ := mw.CreateFormFile(field, file)
+	io.WriteString(fw, content)
+
+	mw.Close()
+	return &buf, mw
+}
+
+func TestUploadFilesValidations(t *testing.T) {
+	testutils.SetupTestContext()
+	mockUserID := uuid.New()
+
+	t.Run("Success - Unknown Form Field Ignored", func(t *testing.T) {
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+
+		fw, _ := mw.CreateFormFile("evil", "virus.exe")
+		io.WriteString(fw, "dummy")
+		fw, _ = mw.CreateFormFile("fasta", "contigs.fasta")
+		io.WriteString(fw, "dummy")
+		mw.Close()
+
+		dir := t.TempDir()
+		svc := &mocks.MockSampleService{
+			GetSampleForUploadFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				sample := testmodels.CreateMockSample()
+				sample.UserID = mockUserID
+				return &sample, nil
+			},
+			PrepareSampleFolderFunc: func(_ context.Context, userID,
+				sampleID uuid.UUID) (string, error) {
+				return dir, nil
+			},
+			AttachFilesFunc: func(ctx context.Context, sampleID,
+				userID uuid.UUID, input models.SampleAttachmentInput) error {
+				assert.NotNil(t, input.Fasta)
+				assert.Nil(t, input.Fastq1)
+				return nil
+			},
+		}
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", &buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.FileExists(t, filepath.Join(dir, "contigs.fasta"))
+		assert.NoFileExists(t, filepath.Join(dir, "virus.exe"))
+	})
+
+	t.Run("Error - Unsupported Extension", func(t *testing.T) {
+		buf, mw := createFormFile("fastq1", "virus.exe")
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "File type not supported.")
+		assert.NoFileExists(t, filepath.Join(dir, "virus.exe"))
+	})
+
+	t.Run("Error - Gzipped FASTA Rejected", func(t *testing.T) {
+		buf, mw := createFormFile("fasta", "contigs.fasta.gz")
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "File type not supported.")
+		assert.NoFileExists(t, filepath.Join(dir, "contigs.fasta.gz"))
+	})
+
+	t.Run("Error - File Name Too Long", func(t *testing.T) {
+		fileName := strings.Repeat("a", 260) + ".fastq"
+		buf, mw := createFormFile("fastq1", fileName)
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "File type not supported.")
+	})
+
+	t.Run("Error - Invalid Gzip Magic", func(t *testing.T) {
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq.gz")
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "File type not supported.")
+		assert.NoFileExists(t, filepath.Join(dir, "reads_R1.fastq.gz"))
+	})
+
+	t.Run("Success - Valid Gzip Magic", func(t *testing.T) {
+		content := "\x1f\x8b" + "junk"
+		buf, mw := createFormFileContent("fastq1", "reads_R1.fastq.gz",
+			content)
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		fileContent, err := os.ReadFile(filepath.Join(dir, "reads_R1.fastq.gz"))
+
+		assert.NoError(t, err)
+		assert.Equal(t, content, string(fileContent))
+	})
+
+	t.Run("Error - Upload Exceeds Budget", func(t *testing.T) {
+		original := config.MaxUploadSize
+		config.MaxUploadSize = 1
+		defer func() { config.MaxUploadSize = original }()
+
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, nil)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "The file exceeds the maximum upload size.")
+		assert.NoFileExists(t, filepath.Join(dir, "reads_R1.fastq"))
+	})
+
+	t.Run("Error - AttachFiles Failure Removes Files", func(t *testing.T) {
+		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
+		dir := t.TempDir()
+
+		svc := uploadMock(mockUserID, dir, services.ErrMissingFiles)
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinMultipartContext(
+			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
+			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
+		)
+		c.Set("user", &models.UserToken{ID: mockUserID})
+		handler.UploadFiles(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		entries, err := os.ReadDir(dir)
+
+		assert.NoError(t, err)
+		assert.Empty(t, entries, "saved files should be removed on failure")
+	})
+}
+
+func uploadMock(userID uuid.UUID, dir string,
+	attachErr error) *mocks.MockSampleService {
+	return &mocks.MockSampleService{
+		GetSampleForUploadFunc: func(_ context.Context,
+			_ uuid.UUID) (*models.Sample, error) {
+			sample := testmodels.CreateMockSample()
+			sample.UserID = userID
+			return &sample, nil
+		},
+		PrepareSampleFolderFunc: func(_ context.Context, _,
+			_ uuid.UUID) (string, error) {
+			return dir, nil
+		},
+		AttachFilesFunc: func(ctx context.Context, sampleID,
+			uid uuid.UUID, input models.SampleAttachmentInput) error {
+			return attachErr
+		},
+	}
 }
