@@ -16,6 +16,12 @@ other="O ID da URL é inválido."
 [generic.invalidQueryParam.error]
 other="Parâmetros de busca inválidos."
 
+[generic.tooManyRequests.error]
+other="Muitas requisições. Tente novamente mais tarde."
+
+[generic.forbiddenRequest.error]
+other="Origem da requisição não permitida."
+
 [public.auth.register.createUser.error]
 other="Erro ao criar usuário. Por favor, tente novamente."
 

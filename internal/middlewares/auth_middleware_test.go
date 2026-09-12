@@ -71,7 +71,7 @@ func TestAuthMiddleware(t *testing.T) {
 		)
 		mockAccessCookie := auth.CreateCookie(
 			auth.Access, mockAccessToken,
-			"/", auth.AccessTokenExpiration,
+			"/", auth.AccessTokenExpiration, http.SameSiteLaxMode,
 		)
 
 		req.AddCookie(mockAccessCookie)
@@ -110,7 +110,8 @@ func TestAuthMiddleware(t *testing.T) {
 			mockToken, secret, auth.AccessTokenExpiration,
 		)
 		req.AddCookie(auth.CreateCookie(
-			auth.Access, mockAccessToken, "/", auth.AccessTokenExpiration,
+			auth.Access, mockAccessToken, "/",
+			auth.AccessTokenExpiration, http.SameSiteLaxMode,
 		))
 		r.ServeHTTP(w, req)
 
@@ -133,7 +134,7 @@ func TestAuthMiddleware(t *testing.T) {
 		)
 		mockAccessCookie := auth.CreateCookie(
 			auth.Access, mockAccessToken,
-			"/", time.Microsecond,
+			"/", time.Microsecond, http.SameSiteLaxMode,
 		)
 
 		req.AddCookie(mockAccessCookie)
@@ -157,7 +158,7 @@ func TestAuthMiddleware(t *testing.T) {
 		)
 		mockAccessCookie := auth.CreateCookie(
 			auth.Access, mockAccessToken,
-			"/", auth.AccessTokenExpiration,
+			"/", auth.AccessTokenExpiration, http.SameSiteLaxMode,
 		)
 
 		req.AddCookie(mockAccessCookie)

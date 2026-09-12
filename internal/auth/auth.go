@@ -50,7 +50,8 @@ func GetSecretKey(cookieName Cookie) ([]byte, error) {
 	return secret, nil
 }
 
-func CreateCookie(cookieName Cookie, cookieContent, path string, expiration time.Duration) *http.Cookie {
+func CreateCookie(cookieName Cookie, cookieContent, path string,
+	expiration time.Duration, sameSite http.SameSite) *http.Cookie {
 	host, secure := resolveCookieSecurity()
 
 	return &http.Cookie{
@@ -61,7 +62,7 @@ func CreateCookie(cookieName Cookie, cookieContent, path string, expiration time
 		Expires:  time.Now().Add(expiration),
 		HttpOnly: true,
 		Secure:   secure,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: sameSite,
 	}
 }
 

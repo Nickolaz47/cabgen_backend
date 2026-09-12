@@ -79,6 +79,7 @@ func TestCreateCookie(t *testing.T) {
 		content,
 		path,
 		expiration,
+		http.SameSiteLaxMode,
 	)
 
 	assert.Equal(t, Access, cookie.Name)
@@ -89,6 +90,16 @@ func TestCreateCookie(t *testing.T) {
 	assert.True(t, cookie.HttpOnly)
 	assert.False(t, cookie.Secure)
 	assert.Equal(t, http.SameSiteLaxMode, cookie.SameSite)
+
+	strictCookie := CreateCookie(
+		Refresh,
+		content,
+		path,
+		expiration,
+		http.SameSiteStrictMode,
+	)
+
+	assert.Equal(t, http.SameSiteStrictMode, strictCookie.SameSite)
 }
 
 func TestDeleteCookie(t *testing.T) {

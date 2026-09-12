@@ -11,6 +11,8 @@ const (
 	GenericInternalServerError                = "generic.internalServer.error"
 	InvalidURLID                              = "generic.invalidId.error"
 	InvalidQueryParamError                    = "generic.invalidQueryParam.error"
+	TooManyRequestsError                      = "generic.tooManyRequests.error"
+	ForbiddenError                            = "generic.forbiddenRequest.error"
 	RegisterCreateUserError                   = "public.auth.register.createUser.error"
 	RegisterMessage                           = "public.auth.register.success.message"
 	ValidationGeneric                         = "validation.generic"

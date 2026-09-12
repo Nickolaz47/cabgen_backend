@@ -119,6 +119,7 @@ func main() {
 		middlewares.RequestIDMiddleware(),
 		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
 		middlewares.I18nMiddleware(),
+		middlewares.OriginCheckMiddleware(),
 		gin.Recovery(),
 	)
 

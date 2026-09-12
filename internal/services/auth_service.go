@@ -263,11 +263,12 @@ func (s *authService) Login(
 	return &models.Cookies{
 		AccessCookie: auth.CreateCookie(
 			auth.Access, accessToken, "/",
-			auth.AccessCookieExpiration,
+			auth.AccessCookieExpiration, http.SameSiteLaxMode,
 		),
 		RefreshCookie: auth.CreateCookie(
 			auth.Refresh, refreshToken,
 			"/api/auth/refresh", auth.RefreshCookieExpiration,
+			http.SameSiteStrictMode,
 		),
 	}, nil
 }
@@ -308,7 +309,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 
 	return auth.CreateCookie(
 		auth.Access, accessToken,
-		"/", auth.AccessCookieExpiration,
+		"/", auth.AccessCookieExpiration, http.SameSiteLaxMode,
 	), nil
 }
 

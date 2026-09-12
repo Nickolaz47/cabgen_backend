@@ -16,6 +16,12 @@ other = "The URL ID is invalid."
 [generic.invalidQueryParam.error]
 other = "Invalid query parameters."
 
+[generic.tooManyRequests.error]
+other = "Too many requests. Please try again later."
+
+[generic.forbiddenRequest.error]
+other = "Request origin not allowed."
+
 [public.auth.register.createUser.error]
 other="Error creating user. Please try again."
 

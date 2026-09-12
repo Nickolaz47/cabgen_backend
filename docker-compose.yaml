@@ -31,7 +31,11 @@ services:
       - "traefik.http.routers.api-backend.rule=Host(`${API_HOST}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-backend.entrypoints=websecure"
       - "traefik.http.routers.api-backend.tls=true"
-      - "traefik.http.routers.api-backend.middlewares=crowdsec-bouncer@docker"
+      - "traefik.http.routers.api-backend.middlewares=crowdsec-bouncer@docker,api-headers@docker"
+      - "traefik.http.middlewares.api-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.api-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.api-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.api-headers.headers.frameDeny=true"
       - "traefik.http.services.api-backend.loadbalancer.server.port=${PORT}"
 
   worker-email:
