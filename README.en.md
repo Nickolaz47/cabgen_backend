@@ -666,7 +666,7 @@ Every request receives a `request_id` (UUID), returned in the `X-Request-ID` res
 | Field | Description |
 | --- | --- |
 | `request_id` | Correlation: present in all lines of the same request/task |
-| `user_id` | Authenticated user (injected by `AuthMiddleware`) |
+| `user_id` | Authenticated user — present on the request line and in all service lines of the transaction |
 | `auth_identity` | Identifier attempted in anonymous flows (login, register, password reset) |
 | `sample_id`, `analysis_id`, `ticket_id` | Target entity of the operation |
 | `service`, `func`, `error_type` | Where and what failed |

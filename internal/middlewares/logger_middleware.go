@@ -3,6 +3,7 @@ package middlewares
 import (
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -33,6 +34,13 @@ func LoggerMiddleware(consoleLogger, fileLogger *zap.Logger) gin.HandlerFunc {
 			zap.String("path", c.Request.URL.Path),
 			zap.String("client_ip", c.ClientIP()),
 			zap.Duration("latency", latency),
+		}
+
+		if raw, ok := c.Get("user"); ok {
+			if userToken, ok := raw.(*models.UserToken); ok {
+				fields = append(fields,
+					zap.String("user_id", userToken.ID.String()))
+			}
 		}
 
 		if gin.Mode() == gin.DebugMode {

@@ -667,7 +667,7 @@ Cada requisição recebe um `request_id` (UUID), retornado no header de resposta
 | Campo | Descrição |
 | --- | --- |
 | `request_id` | Correlação: presente em todas as linhas da mesma requisição/task |
-| `user_id` | Usuário autenticado (injetado pelo `AuthMiddleware`) |
+| `user_id` | Usuário autenticado — presente na linha do request e em todas as linhas de service da transação |
 | `auth_identity` | Identificador tentado em fluxos anônimos (login, registro, reset de senha) |
 | `sample_id`, `analysis_id`, `ticket_id` | Entidade alvo da operação |
 | `service`, `func`, `error_type` | Onde e o que falhou |
