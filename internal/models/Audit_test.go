@@ -12,7 +12,7 @@ import (
 )
 
 func TestAuditToResponse(t *testing.T) {
-	audit := testmodels.NewAudit(models.AuditEventLogin, "api",
+	audit := testmodels.NewAudit(models.AuditEventLogin, "10.0.0.1",
 		`{"email":"user@example.com"}`, 200)
 
 	expected := models.AuditResponse{
@@ -30,7 +30,8 @@ func TestAuditToResponse(t *testing.T) {
 }
 
 func TestAuditToResponseWithoutUser(t *testing.T) {
-	audit := testmodels.NewAudit(models.AuditEventLoginFailed, "api", "{}", 401)
+	audit := testmodels.NewAudit(models.AuditEventLoginFailed, "10.0.0.1",
+		"{}", 401)
 	audit.User = nil
 
 	result := audit.ToResponse()
@@ -47,11 +48,11 @@ func TestAuditFilterBinding(t *testing.T) {
 	}{
 		{
 			name: "Success - Full filter",
-			query: "event=auth.login&source=api&status=404&date=2026-01-02&user=" +
+			query: "event=auth.login&source=10.0.0.1&status=404&date=2026-01-02&user=" +
 				"123e4567-e89b-12d3-a456-426614174000",
 			expected: models.AuditFilter{
 				Event:  "auth.login",
-				Source: "api",
+				Source: "10.0.0.1",
 				Status: 404,
 				Date: func() *time.Time {
 					d := time.Date(2026, 1, 2, 0, 0, 0, 0, time.UTC)

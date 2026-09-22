@@ -36,7 +36,8 @@ func NewMockDB() *gorm.DB {
 		&testmodels.Laboratory{}, &testmodels.Microorganism{},
 		&testmodels.HealthService{}, &testmodels.Sample{},
 		&testmodels.Analysis{}, &testmodels.Ticket{},
-		&testmodels.PasswordReset{}, &testmodels.EmailUpdateRequest{})
+		&testmodels.PasswordReset{}, &testmodels.EmailUpdateRequest{},
+		&testmodels.Audit{})
 
 	return db
 }

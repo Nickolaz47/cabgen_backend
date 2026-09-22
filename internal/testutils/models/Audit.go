@@ -23,7 +23,7 @@ func NewAudit(event, source, metadata string, status int) rModels.Audit {
 		event = rModels.AuditEventLogin
 	}
 	if source == "" {
-		source = "api"
+		source = "127.0.0.1"
 	}
 	if metadata == "" {
 		metadata = "{}"
