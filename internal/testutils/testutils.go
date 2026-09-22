@@ -133,6 +133,16 @@ func DoGetRequest(r *gin.Engine, w *httptest.ResponseRecorder) {
 	r.ServeHTTP(w, req)
 }
 
+func BindFilter[T any](query string) (*T, error) {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodGet, "/?"+query, nil)
+	filter := new(T)
+	err := c.ShouldBindQuery(filter)
+	return filter, err
+}
+
 func WriteMockEnvFile(t *testing.T, envFilePath, envContent string) {
 	if err := os.WriteFile(envFilePath, []byte(envContent), 0644); err != nil {
 		t.Errorf("failed to write mock env file: %v", err)

@@ -248,3 +248,11 @@ func (a *Audit) ToResponse() AuditResponse {
 		Username:  username,
 	}
 }
+
+type AuditFilter struct {
+	Event  string     `form:"event"`
+	Source string     `form:"source"`
+	Status int        `form:"status"`
+	Date   *time.Time `form:"date" time_format:"2006-01-02" time_utc:"true"`
+	UserID *uuid.UUID `form:"user,parser=encoding.TextUnmarshaler"`
+}

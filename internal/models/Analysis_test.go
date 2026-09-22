@@ -5,6 +5,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
+	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -134,4 +135,36 @@ func TestAnalysisTaskID(t *testing.T) {
 		assert.NotNil(t, analysis.TaskID)
 		assert.Equal(t, "asynq:task-123", *analysis.TaskID)
 	})
+}
+
+func TestAnalysisFilterBinding(t *testing.T) {
+	tests := []struct {
+		name     string
+		query    string
+		expected models.AnalysisFilter
+	}{
+		{
+			name:  "Success - Full filter",
+			query: "originCode=A01&type=GENOME&username=john",
+			expected: models.AnalysisFilter{
+				OriginCode: "A01",
+				Type:       models.AnalysisTypeGenome,
+				Username:   "john",
+			},
+		},
+		{
+			name:     "Success - Empty query",
+			query:    "",
+			expected: models.AnalysisFilter{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filter, err := testutils.BindFilter[models.AnalysisFilter](tt.query)
+
+			assert.NoError(t, err)
+			assert.Equal(t, &tt.expected, filter)
+		})
+	}
 }
