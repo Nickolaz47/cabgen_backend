@@ -351,6 +351,7 @@ Endpoints are organized into three access levels:
 | POST | `/api/auth/refresh` | Access token renewal |
 | POST | `/api/auth/forgot-password` | Password reset request |
 | POST | `/api/auth/reset-password` | Password reset |
+| POST | `/api/auth/logout` | User logout (works with or without an active session) |
 
 #### Countries
 
@@ -377,7 +378,6 @@ Endpoints are organized into three access levels:
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/auth/me` | Returns authenticated user data |
-| POST | `/api/auth/logout` | User logout |
 
 #### User
 

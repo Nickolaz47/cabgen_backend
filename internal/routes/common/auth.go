@@ -8,6 +8,5 @@ import (
 func SetupCommonAuthRoutes(r *gin.RouterGroup, handler *auth.AuthHandler) {
 	authRouter := r.Group("/auth")
 
-	authRouter.POST("/logout", handler.Logout)
 	authRouter.GET("/me", handler.Me)
 }

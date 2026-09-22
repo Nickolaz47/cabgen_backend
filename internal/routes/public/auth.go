@@ -16,4 +16,5 @@ func SetupPublicAuthRoutes(r *gin.RouterGroup, handler *auth.AuthHandler) {
 		middlewares.GlobalRateLimitPerMinute(3), handler.ForgotPassword)
 	authRouter.POST("/reset-password",
 		middlewares.GlobalRateLimitPerMinute(3), handler.ResetPassword)
+	authRouter.POST("/logout", handler.Logout)
 }

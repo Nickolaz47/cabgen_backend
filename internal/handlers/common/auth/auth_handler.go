@@ -3,7 +3,6 @@ package auth
 import (
 	"net/http"
 
-	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -18,21 +17,6 @@ type AuthHandler struct {
 
 func NewAuthHandler(svc services.AuthService) *AuthHandler {
 	return &AuthHandler{Service: svc}
-}
-
-func (h *AuthHandler) Logout(c *gin.Context) {
-	localizer := translation.GetLocalizerFromContext(c)
-
-	accessCookie := auth.DeleteCookie(auth.Access, "/")
-	refreshCookie := auth.DeleteCookie(auth.Refresh, "/api/auth/refresh")
-
-	http.SetCookie(c.Writer, accessCookie)
-	http.SetCookie(c.Writer, refreshCookie)
-
-	c.JSON(http.StatusOK,
-		responses.APIResponse{
-			Message: responses.GetResponse(localizer, responses.LogoutSuccess)},
-	)
 }
 
 func (h *AuthHandler) Me(c *gin.Context) {
