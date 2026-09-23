@@ -69,17 +69,17 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
-	nameOrAbbreaviation := utils.SanitizeQuery(c.Query("nameOrAbbreaviation"))
+	nameOrAbbreviation := utils.SanitizeQuery(c.Query("nameOrAbbreviation"))
 
 	var (
 		labs []models.LaboratoryAdminTableResponse
 		err  error
 	)
 
-	if nameOrAbbreaviation == "" {
+	if nameOrAbbreviation == "" {
 		labs, err = h.Service.FindAll(c.Request.Context())
 	} else {
-		labs, err = h.Service.FindByNameOrAbbreviation(c.Request.Context(), nameOrAbbreaviation)
+		labs, err = h.Service.FindByNameOrAbbreviation(c.Request.Context(), nameOrAbbreviation)
 	}
 
 	if err != nil {

@@ -394,7 +394,7 @@ Endpoints are organized into three access levels:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/samples` | Lists all user samples |
+| GET | `/api/samples` | Lists all user samples (input: origin code, partial search) |
 | GET | `/api/samples/:sampleId` | Returns a specific sample |
 | POST | `/api/samples` | Creates a new sample |
 | PUT | `/api/samples/:sampleId/upload` | Uploads files (FASTQ/FASTA) |
@@ -405,7 +405,7 @@ Endpoints are organized into three access levels:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/analyses` | Lists all user analyses |
+| GET | `/api/analyses` | Lists all user analyses (filters: originCode — origin code, partial; type — exact: GENOME, FASTQC, COMPLETE) |
 | GET | `/api/analyses/:analysisId` | Returns a specific analysis |
 | GET | `/api/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | POST | `/api/analyses` | Creates and starts a new analysis |
@@ -433,7 +433,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/admin/users` | Lists all users |
+| GET | `/api/admin/users` | Lists all users (filters: input — name, username or email, partial; userRole — exact: Admin, Collaborator; active — exact: true/false) |
 | GET | `/api/admin/users/:id` | Returns a specific user |
 | POST | `/api/admin/users` | Creates a pre-activated user |
 | PUT | `/api/admin/users/:id` | Updates a user |
@@ -441,13 +441,24 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | PATCH | `/api/admin/users/:id/deactivate` | Deactivates a user |
 | DELETE | `/api/admin/users/:id` | Deletes a user |
 
+#### Country
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/countries` | Lists all countries |
+| GET | `/api/admin/countries/:code` | Returns a specific country |
+| GET | `/api/admin/countries/search` | Searches countries by name (name: name in the request language, partial) |
+| POST | `/api/admin/countries` | Creates a new country |
+| PUT | `/api/admin/countries/:code` | Updates a country |
+| DELETE | `/api/admin/countries/:code` | Deletes a country |
+
 #### Origin
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/admin/origins` | Lists all origins |
 | GET | `/api/admin/origins/:id` | Returns a specific origin |
-| GET | `/api/admin/origins/search` | Searches origins by name |
+| GET | `/api/admin/origins/search` | Searches origins by name (name: name in the request language, partial) |
 | POST | `/api/admin/origins` | Creates a new origin |
 | PUT | `/api/admin/origins/:id` | Updates an origin |
 | DELETE | `/api/admin/origins/:id` | Deletes an origin |
@@ -458,7 +469,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/sequencers` | Lists all sequencers |
 | GET | `/api/admin/sequencers/:id` | Returns a specific sequencer |
-| GET | `/api/admin/sequencers/search` | Searches sequencers by brand or model |
+| GET | `/api/admin/sequencers/search` | Searches sequencers (brandOrModel: brand or model, partial) |
 | POST | `/api/admin/sequencers` | Creates a new sequencer |
 | PUT | `/api/admin/sequencers/:id` | Updates a sequencer |
 | DELETE | `/api/admin/sequencers/:id` | Deletes a sequencer |
@@ -469,7 +480,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/sample-sources` | Lists all sample sources |
 | GET | `/api/admin/sample-sources/:id` | Returns a specific sample source |
-| GET | `/api/admin/sample-sources/search` | Searches sample sources by name or group |
+| GET | `/api/admin/sample-sources/search` | Searches sample sources (nameOrGroup: name or group in the request language, partial) |
 | POST | `/api/admin/sample-sources` | Creates a new sample source |
 | PUT | `/api/admin/sample-sources/:id` | Updates a sample source |
 | DELETE | `/api/admin/sample-sources/:id` | Deletes a sample source |
@@ -480,7 +491,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/laboratories` | Lists all laboratories |
 | GET | `/api/admin/laboratories/:id` | Returns a specific laboratory |
-| GET | `/api/admin/laboratories/search` | Searches laboratories by name or abbreviation |
+| GET | `/api/admin/laboratories/search` | Searches laboratories (nameOrAbbreviation: name or abbreviation, partial) |
 | POST | `/api/admin/laboratories` | Creates a new laboratory |
 | PUT | `/api/admin/laboratories/:id` | Updates a laboratory |
 | DELETE | `/api/admin/laboratories/:id` | Deletes a laboratory |
@@ -491,7 +502,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/microorganisms` | Lists all microorganisms |
 | GET | `/api/admin/microorganisms/:id` | Returns a specific microorganism |
-| GET | `/api/admin/microorganisms/search` | Searches microorganisms by name or group |
+| GET | `/api/admin/microorganisms/search` | Searches microorganisms (species: species or variety in the request language, partial) |
 | POST | `/api/admin/microorganisms` | Creates a new microorganism |
 | PUT | `/api/admin/microorganisms/:id` | Updates a microorganism |
 | DELETE | `/api/admin/microorganisms/:id` | Deletes a microorganism |
@@ -502,7 +513,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/health-services` | Lists all health services |
 | GET | `/api/admin/health-services/:id` | Returns a specific health service |
-| GET | `/api/admin/health-services/search` | Searches health services by name or group |
+| GET | `/api/admin/health-services/search` | Searches health services by name (name, partial) |
 | POST | `/api/admin/health-services` | Creates a new health service |
 | PUT | `/api/admin/health-services/:id` | Updates a health service |
 | DELETE | `/api/admin/health-services/:id` | Deletes a health service |
@@ -511,7 +522,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/admin/samples` | Lists all samples |
+| GET | `/api/admin/samples` | Lists all samples (input: origin code, partial search) |
 | GET | `/api/admin/samples/:sampleId` | Returns a specific sample |
 | GET | `/api/admin/samples/genders` | Returns valid genders for samples |
 | POST | `/api/admin/samples` | Creates a new sample |
@@ -523,7 +534,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/admin/analyses` | Lists all analyses |
+| GET | `/api/admin/analyses` | Lists all analyses (filters: originCode — origin code, partial; type — exact: GENOME, FASTQC, COMPLETE; username — owner's username, exact) |
 | GET | `/api/admin/analyses/:analysisId` | Returns a specific analysis |
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | POST | `/api/admin/analyses` | Creates and starts a new analysis |
@@ -535,7 +546,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/admin/tickets` | Lists all tickets |
+| GET | `/api/admin/tickets` | Lists all tickets (filters: status — exact: OPEN, IN_PROGRESS, RESOLVED; admin — administrator ID, exact) |
 | GET | `/api/admin/tickets/:ticketId` | Returns a specific ticket |
 | PUT | `/api/admin/tickets/:ticketId/assign` | Assigns a ticket to an administrator |
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolves a ticket |
@@ -546,6 +557,12 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/admin/metrics` | Returns general platform metrics (samples, countries, species, resistance genes, users, analyses by status, top countries, and species breakdown) |
+
+#### Audit
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/audit` | Lists audit logs (filters: event — exact; source — IP, partial; status — exact; date — day in UTC; user — user ID, exact) |
 
 ## Uploads Directory Organization
 

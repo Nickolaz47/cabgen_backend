@@ -50,7 +50,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/laboratory/search?nameOrAbbreaviation=dom",
+			"/api/admin/laboratory/search?nameOrAbbreviation=dom",
 			"",
 			nil,
 			nil,
@@ -82,7 +82,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/laboratory/search?nameOrAbbreaviation=",
+			"/api/admin/laboratory/search?nameOrAbbreviation=",
 			"",
 			nil,
 			nil,
@@ -112,7 +112,7 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/admin/laboratory/search?nameOrAbbreaviation=dom",
+			"/api/admin/laboratory/search?nameOrAbbreviation=dom",
 			"",
 			nil,
 			nil,

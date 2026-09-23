@@ -395,7 +395,7 @@ Os endpoints estão organizados em três níveis de acesso:
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/samples` | Lista todas as amostras do usuário |
+| GET | `/api/samples` | Lista todas as amostras do usuário (input: código da origem, busca parcial) |
 | GET | `/api/samples/:sampleId` | Retorna uma amostra específica |
 | POST | `/api/samples` | Cria uma nova amostra |
 | PUT | `/api/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
@@ -406,7 +406,7 @@ Os endpoints estão organizados em três níveis de acesso:
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/analyses` | Lista todas as análises do usuário |
+| GET | `/api/analyses` | Lista todas as análises do usuário (filtros: originCode — código da origem, parcial; type — exato: GENOME, FASTQC, COMPLETE) |
 | GET | `/api/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
 | POST | `/api/analyses` | Cria e inicia uma nova análise |
@@ -434,7 +434,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/admin/users` | Lista todos os usuários |
+| GET | `/api/admin/users` | Lista todos os usuários (filtros: input — nome, username ou email, parcial; userRole — exato: Admin, Collaborator; active — exato: true/false) |
 | GET | `/api/admin/users/:id` | Retorna um usuário específico |
 | POST | `/api/admin/users` | Cria um usuário já ativado |
 | PUT | `/api/admin/users/:id` | Atualiza um usuário |
@@ -442,13 +442,24 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | PATCH | `/api/admin/users/:id/deactivate` | Desativa um usuário |
 | DELETE | `/api/admin/users/:id` | Deleta um usuário |
 
+#### País
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/countries` | Lista todos os países |
+| GET | `/api/admin/countries/:code` | Retorna um país específico |
+| GET | `/api/admin/countries/search` | Procura países pelo nome (name: nome no idioma da requisição, parcial) |
+| POST | `/api/admin/countries` | Cria um novo país |
+| PUT | `/api/admin/countries/:code` | Atualiza um país |
+| DELETE | `/api/admin/countries/:code` | Deleta um país |
+
 #### Origem
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
 | GET | `/api/admin/origins` | Lista todas as origens |
 | GET | `/api/admin/origins/:id` | Retorna uma origem específica |
-| GET | `/api/admin/origins/search` | Procura origens pelo nome |
+| GET | `/api/admin/origins/search` | Procura origens pelo nome (name: nome no idioma da requisição, parcial) |
 | POST | `/api/admin/origins` | Cria uma nova origem |
 | PUT | `/api/admin/origins/:id` | Atualiza uma origem |
 | DELETE | `/api/admin/origins/:id` | Deleta uma origem |
@@ -459,7 +470,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/sequencers` | Lista todos os sequenciadores |
 | GET | `/api/admin/sequencers/:id` | Retorna um sequenciador específico |
-| GET | `/api/admin/sequencers/search` | Procura sequenciadores pela marca ou modelo |
+| GET | `/api/admin/sequencers/search` | Procura sequenciadores (brandOrModel: marca ou modelo, parcial) |
 | POST | `/api/admin/sequencers` | Cria um novo sequenciador |
 | PUT | `/api/admin/sequencers/:id` | Atualiza um sequenciador |
 | DELETE | `/api/admin/sequencers/:id` | Deleta um sequenciador |
@@ -470,7 +481,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/sample-sources` | Lista todas as fontes da amostra |
 | GET | `/api/admin/sample-sources/:id` | Retorna uma fonte da amostra específica |
-| GET | `/api/admin/sample-sources/search` | Procura fontes da amostra pelo nome ou grupo |
+| GET | `/api/admin/sample-sources/search` | Procura fontes da amostra (nameOrGroup: nome ou grupo no idioma da requisição, parcial) |
 | POST | `/api/admin/sample-sources` | Cria uma nova fonte da amostra |
 | PUT | `/api/admin/sample-sources/:id` | Atualiza uma fonte da amostra |
 | DELETE | `/api/admin/sample-sources/:id` | Deleta uma fonte da amostra |
@@ -481,7 +492,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/laboratories` | Lista todos os laboratórios |
 | GET | `/api/admin/laboratories/:id` | Retorna um laboratório específico |
-| GET | `/api/admin/laboratories/search` | Procura laboratórios pelo nome ou abreviação |
+| GET | `/api/admin/laboratories/search` | Procura laboratórios (nameOrAbbreviation: nome ou abreviação, parcial) |
 | POST | `/api/admin/laboratories` | Cria um novo laboratório |
 | PUT | `/api/admin/laboratories/:id` | Atualiza um laboratório |
 | DELETE | `/api/admin/laboratories/:id` | Deleta um laboratório |
@@ -492,7 +503,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/microorganisms` | Lista todos os microrganismos |
 | GET | `/api/admin/microorganisms/:id` | Retorna um microrganismo específico |
-| GET | `/api/admin/microorganisms/search` | Procura microrganismos pelo nome ou grupo |
+| GET | `/api/admin/microorganisms/search` | Procura microrganismos (species: espécie ou variedade no idioma da requisição, parcial) |
 | POST | `/api/admin/microorganisms` | Cria um novo microrganismo |
 | PUT | `/api/admin/microorganisms/:id` | Atualiza um microrganismo |
 | DELETE | `/api/admin/microorganisms/:id` | Deleta um microrganismo |
@@ -503,7 +514,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/health-services` | Lista todos os serviços de saúde |
 | GET | `/api/admin/health-services/:id` | Retorna um serviços de saúde específico |
-| GET | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome ou grupo |
+| GET | `/api/admin/health-services/search` | Procura serviços de saúde pelo nome (name, parcial) |
 | POST | `/api/admin/health-services` | Cria um novo serviços de saúde |
 | PUT | `/api/admin/health-services/:id` | Atualiza um serviços de saúde |
 | DELETE | `/api/admin/health-services/:id` | Deleta um serviços de saúde |
@@ -512,7 +523,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/admin/samples` | Lista todas as amostras |
+| GET | `/api/admin/samples` | Lista todas as amostras (input: código da origem, busca parcial) |
 | GET | `/api/admin/samples/:sampleId` | Retorna uma amostra específica |
 | GET | `/api/admin/samples/genders` | Retorna os gêneros válidos para amostras |
 | POST | `/api/admin/samples` | Cria uma nova amostra |
@@ -524,7 +535,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/admin/analyses` | Lista todas as análises |
+| GET | `/api/admin/analyses` | Lista todas as análises (filtros: originCode — código da origem, parcial; type — exato: GENOME, FASTQC, COMPLETE; username — username do dono, exato) |
 | GET | `/api/admin/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
@@ -536,7 +547,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/admin/tickets` | Lista todos os tickets |
+| GET | `/api/admin/tickets` | Lista todos os tickets (filtros: status — exato: OPEN, IN_PROGRESS, RESOLVED; admin — ID do administrador, exato) |
 | GET | `/api/admin/tickets/:ticketId` | Retorna um ticket específico |
 | PUT | `/api/admin/tickets/:ticketId/assign` | Atribui um ticket a um administrador |
 | PUT | `/api/admin/tickets/:ticketId/resolve` | Resolve um ticket |
@@ -547,6 +558,12 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
 | GET | `/api/admin/metrics` | Retorna métricas gerais da plataforma (amostras, países, espécies, genes de resistência, usuários, análises por status, países mais frequentes e espécies) |
+
+#### Auditoria
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| GET | `/api/admin/audit` | Lista os logs de auditoria (filtros: event — exato; source — IP, parcial; status — exato; date — dia em UTC; user — ID do usuário, exato) |
 
 ## Organização do Diretório de Uploads
 

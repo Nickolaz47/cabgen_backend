@@ -153,6 +153,7 @@ func main() {
 		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),
 		logging.FileLogger)
+	auditSvc := container.BuildAuditService(mainDB.DB(), logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()
@@ -198,6 +199,7 @@ func main() {
 	adminAnalysisHandler := container.BuildAdminAnalysisHandler(analysisSvc)
 	adminTicketHandler := container.BuildAdminTicketHandler(ticketSvc)
 	adminMetricsHandler := container.BuildAdminMetricsHandler(metricsSvc)
+	adminAuditHandler := container.BuildAdminAuditHandler(auditSvc)
 
 	// Public routes
 	publicRouter := api.Group("")
@@ -231,6 +233,7 @@ func main() {
 	admin.SetupAdminAnalysisRoutes(adminRouter, adminAnalysisHandler)
 	admin.SetupAdminTicketRoutes(adminRouter, adminTicketHandler)
 	admin.SetupAdminMetricsRoutes(adminRouter, adminMetricsHandler)
+	admin.SetupAdminAuditRoutes(adminRouter, adminAuditHandler)
 
 	r.Run()
 }
