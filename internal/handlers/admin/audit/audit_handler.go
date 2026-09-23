@@ -21,6 +21,21 @@ func NewAdminAuditHandler(svc services.AuditService) *AdminAuditHandler {
 	}
 }
 
+func (h *AdminAuditHandler) GetAuditSelectOptions(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+
+	opts, err := h.Service.FindAuditSelectOptions(c.Request.Context())
+	if err != nil {
+		code, errMsg := handlererrors.HandleAuditError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{Data: opts})
+}
+
 func (h *AdminAuditHandler) GetAuditLogs(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	var filter models.AuditFilter

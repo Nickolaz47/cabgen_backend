@@ -22,3 +22,8 @@ type FormSelectsResponse struct {
 	Microorganisms []SelectOption `json:"microorganisms"`
 	SampleSources  []SelectOption `json:"sample_sources"`
 }
+
+type AuditSelectOptionsResponse struct {
+	Events []SelectOption `json:"events"`
+	Users  []SelectOption `json:"users"`
+}

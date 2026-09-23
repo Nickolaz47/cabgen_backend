@@ -1,6 +1,11 @@
 package models_test
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -93,4 +98,84 @@ func TestAuditFilterBinding(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAuditEventsInSync(t *testing.T) {
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, "Audit.go", nil,
+		parser.SkipObjectResolution)
+	assert.NoError(t, err)
+
+	constNames := make(map[string]bool)
+	for _, decl := range node.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok || genDecl.Tok != token.CONST {
+			continue
+		}
+
+		for _, spec := range genDecl.Specs {
+			valueSpec, ok := spec.(*ast.ValueSpec)
+			if !ok {
+				continue
+			}
+			for _, name := range valueSpec.Names {
+				if strings.HasPrefix(name.Name, "AuditEvent") {
+					constNames[name.Name] = true
+				}
+			}
+		}
+	}
+
+	sliceNames := make(map[string]bool)
+	for _, decl := range node.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok || genDecl.Tok != token.VAR {
+			continue
+		}
+
+		for _, spec := range genDecl.Specs {
+			valueSpec, ok := spec.(*ast.ValueSpec)
+			if !ok || len(valueSpec.Names) != 1 ||
+				valueSpec.Names[0].Name != "AuditEvents" {
+				continue
+			}
+
+			composite, ok := valueSpec.Values[0].(*ast.CompositeLit)
+			assert.True(t, ok, "AuditEvents should be a slice literal")
+
+			for _, element := range composite.Elts {
+				ident, ok := element.(*ast.Ident)
+				assert.True(t, ok,
+					"AuditEvents elements must be constant identifiers")
+				sliceNames[ident.Name] = true
+			}
+		}
+	}
+
+	assert.NotEmpty(t, constNames, "audit constants should not be empty")
+	assert.NotEmpty(t, sliceNames, "AuditEvents slice should not be empty")
+
+	var missingInSlice []string
+	for name := range constNames {
+		if !sliceNames[name] {
+			missingInSlice = append(missingInSlice, name)
+		}
+	}
+	sort.Strings(missingInSlice)
+
+	assert.Empty(t, missingInSlice,
+		"every AuditEvent constant must be present in AuditEvents: %s",
+		strings.Join(missingInSlice, ", "))
+
+	var unknownInSlice []string
+	for name := range sliceNames {
+		if !constNames[name] {
+			unknownInSlice = append(unknownInSlice, name)
+		}
+	}
+	sort.Strings(unknownInSlice)
+
+	assert.Empty(t, unknownInSlice,
+		"AuditEvents must not reference unknown constants: %s",
+		strings.Join(unknownInSlice, ", "))
 }

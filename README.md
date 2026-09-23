@@ -567,6 +567,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
 | GET | `/api/admin/audit` | Lista os logs de auditoria (filtros: event — exato; source — IP, parcial; status — exato; date — dia em UTC; user — ID do usuário, exato) |
+| GET | `/api/admin/audit/select-options` | Eventos de auditoria e usuários para os filtros da página |
 
 Como funciona: o handler marca o evento de auditoria (`SetAuditEvent`), o `AuditMiddleware` completa o registro com o **status HTTP real** da resposta e o usuário autenticado, e o `AuditService` persiste de forma assíncrona (`source` = IP do cliente). Endpoints não marcados não geram registro.
 

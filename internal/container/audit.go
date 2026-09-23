@@ -10,7 +10,8 @@ import (
 
 func BuildAuditService(db *gorm.DB, logger *zap.Logger) services.AuditService {
 	auditRepo := repositories.NewAuditRepository(db)
-	auditService := services.NewAuditService(auditRepo, logger)
+	userRepo := repositories.NewUserRepo(db)
+	auditService := services.NewAuditService(auditRepo, userRepo, logger)
 
 	return auditService
 }

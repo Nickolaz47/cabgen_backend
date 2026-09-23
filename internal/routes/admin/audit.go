@@ -10,4 +10,5 @@ func SetupAdminAuditRoutes(r *gin.RouterGroup,
 	auditRouter := r.Group("/audit")
 
 	auditRouter.GET("", handler.GetAuditLogs)
+	auditRouter.GET("/select-options", handler.GetAuditSelectOptions)
 }

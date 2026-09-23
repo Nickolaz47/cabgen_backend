@@ -566,6 +566,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/admin/audit` | Lists audit logs (filters: event — exact; source — IP, partial; status — exact; date — day in UTC; user — user ID, exact) |
+| GET | `/api/admin/audit/select-options` | Audit events and users for the page filters |
 
 How it works: the handler marks the audit event (`SetAuditEvent`), the `AuditMiddleware` completes the record with the **real HTTP status** and the authenticated user, and the `AuditService` persists it asynchronously (`source` = client IP). Endpoints that are not marked do not generate audit records.
 

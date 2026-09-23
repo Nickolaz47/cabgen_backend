@@ -16,7 +16,7 @@ import (
 
 func TestNewAuditService(t *testing.T) {
 	auditRepo := &mocks.MockAuditRepository{}
-	auditService := services.NewAuditService(auditRepo, nil)
+	auditService := services.NewAuditService(auditRepo, nil, nil)
 
 	assert.NotEmpty(t, auditService)
 }
@@ -37,7 +37,7 @@ func TestAuditFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewAuditService(auditRepo, nil)
+		service := services.NewAuditService(auditRepo, nil, nil)
 		auditLogs, err := service.FindAll(context.Background(),
 			models.AuditFilter{})
 
@@ -57,7 +57,7 @@ func TestAuditFindAll(t *testing.T) {
 			},
 		}
 
-		service := services.NewAuditService(auditRepo, nil)
+		service := services.NewAuditService(auditRepo, nil, nil)
 		filter := models.AuditFilter{Event: models.AuditEventLogin}
 		auditLogs, err := service.FindAll(context.Background(), filter)
 
@@ -76,7 +76,7 @@ func TestAuditFindAll(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAuditService(auditRepo, mockLogger)
+		service := services.NewAuditService(auditRepo, nil, mockLogger)
 		auditLogs, err := service.FindAll(context.Background(),
 			models.AuditFilter{})
 
@@ -102,7 +102,7 @@ func TestAuditCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewAuditService(auditRepo, nil)
+		service := services.NewAuditService(auditRepo, nil, nil)
 		err := service.Create(ctx, &models.AuditInput{
 			Event:    models.AuditEventLoginFailed,
 			Source:   "10.0.0.1",
@@ -128,7 +128,7 @@ func TestAuditCreate(t *testing.T) {
 			},
 		}
 
-		service := services.NewAuditService(auditRepo, nil)
+		service := services.NewAuditService(auditRepo, nil, nil)
 		err := service.Create(ctx, &models.AuditInput{
 			Event:  models.AuditEventLogin,
 			Source: "10.0.0.1",
@@ -149,7 +149,7 @@ func TestAuditCreate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewAuditService(auditRepo, mockLogger)
+		service := services.NewAuditService(auditRepo, nil, mockLogger)
 		err := service.Create(ctx, &models.AuditInput{
 			Event:  models.AuditEventLogin,
 			Source: "10.0.0.1",
@@ -158,6 +158,53 @@ func TestAuditCreate(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestFindAuditSelectOptions(t *testing.T) {
+	ctx := context.Background()
+
+	users := []models.User{
+		testmodels.NewAdminLoginUser(),
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return users, nil
+			},
+		}
+		auditRepo := &mocks.MockAuditRepository{}
+
+		service := services.NewAuditService(auditRepo, userRepo, nil)
+		opts, err := service.FindAuditSelectOptions(ctx)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, opts.Events)
+		assert.Len(t, opts.Users, 1)
+		assert.Equal(t, users[0].Username, opts.Users[0].Label)
+		assert.Equal(t, users[0].ID.String(), opts.Users[0].Value)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter) ([]models.User, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+		auditRepo := &mocks.MockAuditRepository{}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewAuditService(auditRepo, userRepo, mockLogger)
+		opts, err := service.FindAuditSelectOptions(ctx)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, opts)
 		assert.Equal(t, 1, logs.Len())
 	})
 }

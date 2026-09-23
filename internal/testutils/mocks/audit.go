@@ -33,7 +33,18 @@ func (r *MockAuditRepository) CreateAudit(ctx context.Context,
 type MockAuditService struct {
 	FindAllFunc func(ctx context.Context, auditFilter models.AuditFilter) (
 		[]models.AuditResponse, error)
+	FindAuditSelectOptionsFunc func(ctx context.Context) (
+		*models.AuditSelectOptionsResponse, error)
 	CreateFunc func(ctx context.Context, input *models.AuditInput) error
+}
+
+func (s *MockAuditService) FindAuditSelectOptions(ctx context.Context) (
+	*models.AuditSelectOptionsResponse, error) {
+	if s.FindAuditSelectOptionsFunc != nil {
+		return s.FindAuditSelectOptionsFunc(ctx)
+	}
+
+	return nil, nil
 }
 
 func (s *MockAuditService) FindAll(ctx context.Context,
