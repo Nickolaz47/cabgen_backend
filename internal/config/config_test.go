@@ -23,6 +23,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			DB_USER=user
 			DB_PASSWORD=password
 			DB_NAME=name
+			DB_SSLMODE=require
 			FRONTEND_URL=http://frontend.com
 			PORT=8080
 			ACCESS_SECRET_KEY=access_secret
@@ -106,6 +107,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		err := config.LoadEnvVariables(testEnvFile)
 		assert.NoError(t, err)
 
+		assert.Contains(t, config.DatabaseConnectionString, "sslmode=require")
 		assert.Equal(t, expectedAppRoot, os.Getenv("APP_ROOT"), "expected app roots to be equal")
 		assert.Equal(t, expectedDbHost, os.Getenv("DB_HOST"), "expected db hosts to be equal")
 		assert.Equal(t, expectedUser, os.Getenv("DB_USER"), "expected users to be equal")
@@ -156,6 +158,69 @@ func TestLoadEnvVariables(t *testing.T) {
 	t.Run("Error - No default env file", func(t *testing.T) {
 		err := config.LoadEnvVariables("")
 		assert.Error(t, err)
+	})
+
+	t.Run("Error - Missing secrets in production", func(t *testing.T) {
+		os.Unsetenv("PORT")
+		os.Unsetenv("SECRET_ACCESS_KEY")
+		os.Unsetenv("ENVIRONMENT")
+		defer func() {
+			os.Unsetenv("PORT")
+			os.Unsetenv("ENVIRONMENT")
+		}()
+
+		envContent := `
+			PORT=8080
+			SMTP_PORT=587
+			ENVIRONMENT=prod
+			DB_HOST=localhost
+			DB_USER=user
+			DB_PASSWORD=password
+			DB_NAME=name
+			SECRET_REFRESH_KEY=refresh_secret
+			ADMIN_PASSWORD=adminpass
+			SENDER_PASSWORD=sender_password
+		`
+		tempDir := t.TempDir()
+		testEnvFile := filepath.Join(tempDir, "test.env")
+
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
+
+		err := config.LoadEnvVariables(testEnvFile)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "SECRET_ACCESS_KEY")
+	})
+
+	t.Run("Success - Dev allows empty secrets", func(t *testing.T) {
+		os.Unsetenv("PORT")
+		os.Unsetenv("SECRET_ACCESS_KEY")
+		os.Unsetenv("DB_SSLMODE")
+		os.Unsetenv("ENVIRONMENT")
+		defer func() {
+			os.Unsetenv("PORT")
+			os.Unsetenv("DB_SSLMODE")
+			os.Unsetenv("ENVIRONMENT")
+		}()
+
+		envContent := `
+			PORT=8080
+			SMTP_PORT=587
+			ENVIRONMENT=dev
+			DB_HOST=localhost
+			DB_USER=user
+			DB_PASSWORD=password
+			DB_NAME=name
+		`
+		tempDir := t.TempDir()
+		testEnvFile := filepath.Join(tempDir, "test.env")
+
+		testutils.WriteMockEnvFile(t, testEnvFile, envContent)
+
+		err := config.LoadEnvVariables(testEnvFile)
+
+		assert.NoError(t, err)
+		assert.Contains(t, config.DatabaseConnectionString, "sslmode=disable")
 	})
 
 	t.Run("Success - Max upload size set", func(t *testing.T) {

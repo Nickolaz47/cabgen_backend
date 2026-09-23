@@ -102,22 +102,41 @@ func LoadEnvVariables(envFile string) error {
 		MaxUploadSize = int64(mus) << 20
 	}
 
-	DatabaseConnectionString = fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "disable"
+	}
 
+	DatabaseConnectionString = fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=5432 sslmode=%s",
+		os.Getenv("DB_HOST"), os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), sslMode)
+
+	Environment = os.Getenv("ENVIRONMENT")
 	AppRoot = os.Getenv("APP_ROOT")
 	AccessKey = []byte(os.Getenv("SECRET_ACCESS_KEY"))
 	RefreshKey = []byte(os.Getenv("SECRET_REFRESH_KEY"))
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")
-	Environment = os.Getenv("ENVIRONMENT")
 	APIHost = os.Getenv("API_HOST")
 	SenderEmail = os.Getenv("SENDER_EMAIL")
 	SenderPassword = os.Getenv("SENDER_PASSWORD")
 	SMTPHost = os.Getenv("SMTP_HOST")
 	RedisURL = os.Getenv("REDIS_URL")
 	FrontendURL = os.Getenv("FRONTEND_URL")
+
+	if Environment != "dev" && Environment != "" {
+		for name, secret := range map[string]string{
+			"SECRET_ACCESS_KEY":  string(AccessKey),
+			"SECRET_REFRESH_KEY": string(RefreshKey),
+			"ADMIN_PASSWORD":     AdminPassword,
+			"SENDER_PASSWORD":    SenderPassword,
+		} {
+			if secret == "" {
+				return fmt.Errorf(
+					"%s is required when ENVIRONMENT is not dev", name)
+			}
+		}
+	}
 	FastQCPath = os.Getenv("FASTQC_PATH")
 	AbricatePath = os.Getenv("ABRICATE_PATH")
 	MlstPath = os.Getenv("MLST_PATH")

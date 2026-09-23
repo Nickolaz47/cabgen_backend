@@ -101,6 +101,7 @@ DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
+DB_SSLMODE=disable   # PostgreSQL TLS mode (disable | require | verify-full ...)
 
 # JWT
 SECRET_ACCESS_KEY=
@@ -162,6 +163,8 @@ FASTANI_LIST_KLEB=
 FASTANI_LIST_ENTERO=
 FASTANI_LIST_ACINETO=
 ```
+
+> **Note:** with `ENVIRONMENT` set to anything other than `dev`, the API fails to boot when `SECRET_ACCESS_KEY`, `SECRET_REFRESH_KEY`, `ADMIN_PASSWORD` or `SENDER_PASSWORD` are empty. In dev, secrets may be left empty.
 
 ## Running the API
 
