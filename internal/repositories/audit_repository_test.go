@@ -147,6 +147,57 @@ func TestGetAuditLogs(t *testing.T) {
 	})
 }
 
+func TestCreateAudit(t *testing.T) {
+	ctx := context.Background()
+
+	db := testutils.NewMockDB()
+	auditRepo := repositories.NewAuditRepository(db)
+
+	audit := testmodels.NewAudit(models.AuditEventLogin, "10.0.0.1", "{}", 200)
+	auditWithoutUser := testmodels.NewAudit(
+		models.AuditEventLoginFailed, "10.0.0.1", "{}", 401)
+	auditWithoutUser.UserID = nil
+	auditWithoutUser.User = nil
+
+	t.Run("Success", func(t *testing.T) {
+		err := auditRepo.CreateAudit(ctx, &audit)
+		assert.NoError(t, err)
+
+		var result models.Audit
+		err = db.Where("id = ?", audit.ID).First(&result).Error
+
+		assert.NoError(t, err)
+		assert.Equal(t, audit.ID, result.ID)
+		assert.Equal(t, audit.Event, result.Event)
+		assert.Equal(t, audit.Source, result.Source)
+		assert.Equal(t, audit.Status, result.Status)
+		assert.Equal(t, audit.Metadata, result.Metadata)
+		assert.Equal(t, audit.UserID, result.UserID)
+		assert.NotZero(t, result.CreatedAt)
+	})
+
+	t.Run("Success - Without User", func(t *testing.T) {
+		err := auditRepo.CreateAudit(ctx, &auditWithoutUser)
+		assert.NoError(t, err)
+
+		var result models.Audit
+		err = db.Where("id = ?", auditWithoutUser.ID).First(&result).Error
+
+		assert.NoError(t, err)
+		assert.Nil(t, result.UserID)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockAuditRepo := repositories.NewAuditRepository(mockDB)
+		err = mockAuditRepo.CreateAudit(ctx, &models.Audit{})
+
+		assert.Error(t, err)
+	})
+}
+
 func TestAuditUserDeletionKeepsAuditLog(t *testing.T) {
 	ctx := context.Background()
 	db := testutils.NewMockDB()

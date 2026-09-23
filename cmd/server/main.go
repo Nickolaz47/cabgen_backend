@@ -50,6 +50,7 @@ func main() {
 		&models.Ticket{},
 		&models.PasswordReset{},
 		&models.EmailUpdateRequest{},
+		&models.Audit{},
 	}
 
 	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)

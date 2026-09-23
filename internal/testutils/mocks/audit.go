@@ -1,0 +1,31 @@
+package mocks
+
+import (
+	"context"
+
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
+)
+
+type MockAuditRepository struct {
+	GetAuditLogsFunc func(ctx context.Context, auditFilter models.AuditFilter) (
+		[]models.Audit, error)
+	CreateAuditFunc func(ctx context.Context, audit *models.Audit) error
+}
+
+func (r *MockAuditRepository) GetAuditLogs(ctx context.Context,
+	auditFilter models.AuditFilter) ([]models.Audit, error) {
+	if r.GetAuditLogsFunc != nil {
+		return r.GetAuditLogsFunc(ctx, auditFilter)
+	}
+
+	return nil, nil
+}
+
+func (r *MockAuditRepository) CreateAudit(ctx context.Context,
+	audit *models.Audit) error {
+	if r.CreateAuditFunc != nil {
+		return r.CreateAuditFunc(ctx, audit)
+	}
+
+	return nil
+}

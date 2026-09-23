@@ -256,3 +256,11 @@ type AuditFilter struct {
 	Date   *time.Time `form:"date" time_format:"2006-01-02" time_utc:"true"`
 	UserID *uuid.UUID `form:"user,parser=encoding.TextUnmarshaler"`
 }
+
+type AuditInput struct {
+	Event    string     `json:"event"`
+	Source   string     `json:"source"`
+	Status   int        `json:"status"`
+	Metadata *string    `json:"metadata"`
+	UserID   *uuid.UUID `json:"user_id"`
+}

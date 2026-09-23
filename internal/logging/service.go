@@ -38,6 +38,7 @@ const (
 	DeletePasswordResetTokenError   = "DELETE_PASSWORD_RESET_TOKEN_ERROR"
 	DeleteEmailUpdateRequestError   = "DELETE_EMAIL_UPDATE_REQUEST_ERROR"
 	AnalysisRunError                = "ANALYSIS_RUN_ERROR"
+	CreateAuditError                = "CREATE_AUDIT_ERROR"
 )
 
 const (

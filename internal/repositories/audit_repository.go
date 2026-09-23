@@ -11,6 +11,7 @@ import (
 type AuditRepository interface {
 	GetAuditLogs(ctx context.Context, auditFilter models.AuditFilter) (
 		[]models.Audit, error)
+	CreateAudit(ctx context.Context, audit *models.Audit) error
 }
 
 type auditRepo struct {
@@ -55,4 +56,8 @@ func (r *auditRepo) GetAuditLogs(ctx context.Context,
 	}
 
 	return auditLogs, nil
+}
+
+func (r *auditRepo) CreateAudit(ctx context.Context, audit *models.Audit) error {
+	return r.DB.WithContext(ctx).Create(audit).Error
 }
