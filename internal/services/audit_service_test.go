@@ -115,7 +115,8 @@ func TestAuditCreate(t *testing.T) {
 		assert.Equal(t, models.AuditEventLoginFailed, receivedAudit.Event)
 		assert.Equal(t, "10.0.0.1", receivedAudit.Source)
 		assert.Equal(t, 401, receivedAudit.Status)
-		assert.Equal(t, metadata, receivedAudit.Metadata)
+		assert.NotNil(t, receivedAudit.Metadata)
+		assert.Equal(t, metadata, *receivedAudit.Metadata)
 		assert.Equal(t, &userID, receivedAudit.UserID)
 	})
 

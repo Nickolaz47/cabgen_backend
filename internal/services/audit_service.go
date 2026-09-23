@@ -82,7 +82,7 @@ func (s *auditService) Create(ctx context.Context,
 		Event:    input.Event,
 		Source:   input.Source,
 		Status:   input.Status,
-		Metadata: metadataString(input.Metadata),
+		Metadata: input.Metadata,
 		UserID:   input.UserID,
 	}
 
@@ -94,11 +94,4 @@ func (s *auditService) Create(ctx context.Context,
 	}
 
 	return nil
-}
-
-func metadataString(metadata *string) string {
-	if metadata == nil {
-		return ""
-	}
-	return *metadata
 }

@@ -405,7 +405,7 @@ type Audit struct {
 	Event     string     `gorm:"not null;index:idx_audit_event_created,priority:1"`
 	Source    string     `gorm:"not null"`
 	Status    int        `gorm:"not null"`
-	Metadata  string     `gorm:"type:jsonb"`
+	Metadata  *string    `gorm:"type:jsonb"`
 	CreatedAt time.Time  `gorm:"index:idx_audit_event_created,priority:2"`
 	UserID    *uuid.UUID `gorm:"type:uuid;index"`
 	User      *User      `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:SET NULL"`
@@ -422,20 +422,23 @@ type AuditResponse struct {
 }
 
 func (a *Audit) ToResponse() AuditResponse {
-	var username string
-	if a.User != nil {
-		username = a.User.Username
-	}
-
-	return AuditResponse{
+	resp := AuditResponse{
 		ID:        a.ID,
 		Event:     a.Event,
 		Source:    a.Source,
 		Status:    a.Status,
-		Metadata:  a.Metadata,
 		CreatedAt: a.CreatedAt.Format(time.RFC3339),
-		Username:  username,
 	}
+
+	if a.User != nil {
+		resp.Username = a.User.Username
+	}
+
+	if a.Metadata != nil {
+		resp.Metadata = *a.Metadata
+	}
+
+	return resp
 }
 
 type AuditFilter struct {

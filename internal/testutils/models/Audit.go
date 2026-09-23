@@ -12,7 +12,7 @@ type Audit struct {
 	Event     string    `gorm:"not null"`
 	Source    string    `gorm:"not null"`
 	Status    int       `gorm:"not null"`
-	Metadata  string
+	Metadata  *string
 	CreatedAt time.Time
 	UserID    *uuid.UUID    `gorm:"index"`
 	User      *rModels.User `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:SET NULL"`
@@ -38,7 +38,7 @@ func NewAudit(event, source, metadata string, status int) rModels.Audit {
 		Event:     event,
 		Source:    source,
 		Status:    status,
-		Metadata:  metadata,
+		Metadata:  &metadata,
 		CreatedAt: time.Now(),
 		UserID:    &admin.ID,
 		User:      &admin,

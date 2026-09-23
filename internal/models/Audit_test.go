@@ -25,7 +25,7 @@ func TestAuditToResponse(t *testing.T) {
 		Event:     audit.Event,
 		Source:    audit.Source,
 		Status:    audit.Status,
-		Metadata:  audit.Metadata,
+		Metadata:  *audit.Metadata,
 		CreatedAt: audit.CreatedAt.Format(time.RFC3339),
 		Username:  audit.User.Username,
 	}
