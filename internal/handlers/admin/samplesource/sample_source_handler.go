@@ -24,10 +24,14 @@ func NewAdminSampleSourceHandler(svc services.SampleSourceService) *AdminSampleS
 
 func (h *AdminSampleSourceHandler) GetSampleSources(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	sampleSources, err := h.Service.FindAll(c.Request.Context(), language)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesGetFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -40,10 +44,14 @@ func (h *AdminSampleSourceHandler) GetSampleSources(c *gin.Context) {
 
 func (h *AdminSampleSourceHandler) GetSampleSourceByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesGetByID, nil)
 	rawID := c.Param("sampleSourceId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesGetByIDFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -52,6 +60,9 @@ func (h *AdminSampleSourceHandler) GetSampleSourceByID(c *gin.Context) {
 
 	sampleSource, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesGetByIDFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -64,6 +75,7 @@ func (h *AdminSampleSourceHandler) GetSampleSourceByID(c *gin.Context) {
 
 func (h *AdminSampleSourceHandler) GetSampleSourcesByNameOrGroup(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesSearch, nil)
 	language := translation.GetLanguageFromContext(c)
 	input := utils.SanitizeQuery(c.Query("nameOrGroup"))
 
@@ -83,6 +95,9 @@ func (h *AdminSampleSourceHandler) GetSampleSourcesByNameOrGroup(c *gin.Context)
 	}
 
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesSearchFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -95,25 +110,38 @@ func (h *AdminSampleSourceHandler) GetSampleSourcesByNameOrGroup(c *gin.Context)
 
 func (h *AdminSampleSourceHandler) CreateSampleSource(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesCreate, nil)
 
 	var input models.SampleSourceCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesCreateFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if errMsg, ok := validations.ValidateTranslationMap(c, "sampleSource", input.Names); !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesCreateFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if errMsg, ok := validations.ValidateTranslationMap(c, "sampleSource", input.Groups); !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesCreateFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	sampleSource, err := h.Service.Create(c.Request.Context(), input)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesCreateFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -129,10 +157,14 @@ func (h *AdminSampleSourceHandler) CreateSampleSource(c *gin.Context) {
 
 func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesUpdate, nil)
 	rawID := c.Param("sampleSourceId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesUpdateFailed,
+			map[string]string{"sample_source_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -142,12 +174,18 @@ func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 	var input models.SampleSourceUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &input)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesUpdateFailed,
+			map[string]string{"sample_source_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if input.Names != nil {
 		if errMsg, ok = validations.ValidateTranslationMap(c, "sampleSource", input.Names); !ok {
+			validations.SetAuditEvent(c,
+				models.AuditEventAdminSampleSourcesUpdateFailed,
+				map[string]string{"sample_source_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 			return
 		}
@@ -155,6 +193,9 @@ func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 
 	if input.Groups != nil {
 		if errMsg, ok = validations.ValidateTranslationMap(c, "sampleSource", input.Groups); !ok {
+			validations.SetAuditEvent(c,
+				models.AuditEventAdminSampleSourcesUpdateFailed,
+				map[string]string{"sample_source_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 			return
 		}
@@ -162,6 +203,9 @@ func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 
 	updated, err := h.Service.Update(c.Request.Context(), id, input)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesUpdateFailed,
+			map[string]string{"sample_source_id": rawID})
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -176,10 +220,14 @@ func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 
 func (h *AdminSampleSourceHandler) DeleteSampleSource(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesDelete, nil)
 	rawID := c.Param("sampleSourceId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesDeleteFailed,
+			map[string]string{"sample_source_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -187,6 +235,9 @@ func (h *AdminSampleSourceHandler) DeleteSampleSource(c *gin.Context) {
 	}
 
 	if err := h.Service.Delete(c.Request.Context(), id); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSampleSourcesDeleteFailed,
+			map[string]string{"sample_source_id": rawID})
 		code, errMsg := handlererrors.HandleSampleSourceError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),

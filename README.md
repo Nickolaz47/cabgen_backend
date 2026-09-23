@@ -565,6 +565,12 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/audit` | Lista os logs de auditoria (filtros: event — exato; source — IP, parcial; status — exato; date — dia em UTC; user — ID do usuário, exato) |
 
+Como funciona: o handler marca o evento de auditoria (`SetAuditEvent`), o `AuditMiddleware` completa o registro com o **status HTTP real** da resposta e o usuário autenticado, e o `AuditService` persiste de forma assíncrona (`source` = IP do cliente). Endpoints não marcados não geram registro.
+
+- **Auditado**: autenticação completa (`register`, `login`, `refresh`, `forgot-password`, `reset-password`, `logout`, `me`), operações de conta (`/api/users/me/*`), `contact` e todos os endpoints admin (exceto o próprio `GET /api/admin/audit`)
+- **Não auditado (ainda)**: amostras (handler compartilhado entre common/admin), select-options, cidades, país/métricas/saúde públicos
+- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identificador tentado em fluxos anônimos (login, registro, redefinição de senha, contato); `user_id`, `analysis_id`, `ticket_id`, `country_code`, etc. — alvo das mutações admin (em falhas)
+
 ## Organização do Diretório de Uploads
 
 O diretório de uploads é organizado da seguinte forma:
@@ -670,6 +676,9 @@ O campo `Message` utiliza IDs de mensagens do sistema de i18n.
 | `AdminMiddleware` | Verifica se o usuário autenticado tem papel de administrador |
 | `LoggerMiddleware` | Registra detalhes da requisição (incluindo `request_id`) no console e em arquivo |
 | `I18nMiddleware` | Detecta o idioma pelo header `Accept-Language` e injeta o localizer no contexto |
+| `OriginCheckMiddleware` | Bloqueia métodos mutantes com `Origin` diferente do frontend permitido (403) |
+| `GlobalRateLimitPerMinute` | Limite de taxa por rota (429): `forgot-password`/`reset-password` 3/min, `contact` 5/min |
+| `AuditMiddleware` | Monta o input de auditoria, captura o status HTTP real e o usuário após o handler e persiste assincronamente os eventos marcados |
 
 ## Logs
 
@@ -685,7 +694,6 @@ Cada requisição recebe um `request_id` (UUID), retornado no header de resposta
 | --- | --- |
 | `request_id` | Correlação: presente em todas as linhas da mesma requisição/task |
 | `user_id` | Usuário autenticado — presente na linha do request e em todas as linhas de service da transação |
-| `auth_identity` | Identificador tentado em fluxos anônimos (login, registro, reset de senha) |
 | `sample_id`, `analysis_id`, `ticket_id` | Entidade alvo da operação |
 | `service`, `func`, `error_type` | Onde e o que falhou |
 
@@ -720,7 +728,7 @@ O header `X-Request-ID` está presente em toda resposta — o frontend pode exib
 
 ### Models
 
-User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest
+User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest, Audit
 
 ## Workers Assíncronos
 

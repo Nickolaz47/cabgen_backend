@@ -25,9 +25,11 @@ func NewTicketHandler(svc services.TicketService) *TicketHandler {
 func (h *TicketHandler) CreateTicket(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventContact, nil)
 
 	var newTicket models.CreateTicketInput
 	if errMsg, valid := validations.Validate(c, localizer, &newTicket); !valid {
+		validations.SetAuditEvent(c, models.AuditEventContactFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -36,6 +38,8 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 
 	ticket, err := h.Service.Create(c.Request.Context(), newTicket, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventContactFailed,
+			map[string]string{"auth_identity": newTicket.Email})
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),

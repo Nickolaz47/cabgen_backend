@@ -21,9 +21,11 @@ func NewAuthHandler(svc services.AuthService) *AuthHandler {
 
 func (h *AuthHandler) Me(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventMe, nil)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventMeFailed, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})

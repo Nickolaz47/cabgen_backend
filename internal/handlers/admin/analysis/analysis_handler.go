@@ -28,10 +28,12 @@ func NewAdminAnalysisHandler(svc services.AnalysisService,
 
 func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var filter models.AnalysisFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.InvalidQueryParamError),
@@ -42,6 +44,7 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 	analyses, err := h.Service.FindAll(c.Request.Context(), uuid.Nil,
 		filter, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -54,11 +57,13 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetByID, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetByIDFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -67,6 +72,7 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetByIDFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -79,15 +85,18 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreate, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var newAnalysis models.AdminAnalysisCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newAnalysis); !valid {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if !newAnalysis.Type.IsValid() {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.AnalysisInvalidType),
@@ -98,6 +107,7 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	payload := models.AnalysisCreateDTO(newAnalysis)
 	analysis, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -114,11 +124,15 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesUpdate, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesUpdateFailed,
+			map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -127,11 +141,17 @@ func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 
 	var updateInput models.AdminAnalysisUpdateInput
 	if errMsg, valid := validations.Validate(c, localizer, &updateInput); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesUpdateFailed,
+			map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if updateInput.Status != nil && !updateInput.Status.IsValid() {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesUpdateFailed,
+			map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.AnalysisInvalidStatus),
@@ -142,6 +162,9 @@ func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 	analysisUpdated, err := h.Service.Update(c.Request.Context(),
 		id, updateInput, language)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesUpdateFailed,
+			map[string]string{"analysis_id": rawID})
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -154,10 +177,14 @@ func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) DeleteAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesDelete, nil)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDeleteFailed,
+			map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -165,6 +192,9 @@ func (h *AdminAnalysisHandler) DeleteAnalysis(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id, uuid.Nil); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDeleteFailed,
+			map[string]string{"analysis_id": rawID})
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -179,10 +209,14 @@ func (h *AdminAnalysisHandler) DeleteAnalysis(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesDownloadZip, nil)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadZipFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -191,6 +225,9 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 
 	zipPath, err := h.Service.DownloadZip(c.Request.Context(), id, uuid.Nil)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadZipFailed,
+			nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -205,11 +242,17 @@ func (h *AdminAnalysisHandler) DownloadZip(c *gin.Context) {
 
 func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c,
+		models.AuditEventAdminAnalysesDownloadBatchTSV,
+		nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var downloadInput models.AnalysisTSVDownloadInput
 	if errMsg, valid := validations.Validate(c, localizer,
 		&downloadInput); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadBatchTSVFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
@@ -217,6 +260,9 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	analyses, err := h.Service.DownloadBatchTSV(c.Request.Context(),
 		downloadInput.IDs, uuid.Nil, language)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadBatchTSVFailed,
+			nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -226,6 +272,9 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 
 	tsvBytes, err := utils.GenerateMetricsTSV(analyses)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadBatchTSVFailed,
+			nil)
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.GenericInternalServerError),

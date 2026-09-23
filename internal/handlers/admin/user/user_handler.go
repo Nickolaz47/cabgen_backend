@@ -23,10 +23,12 @@ func NewAdminUserHandler(svc services.AdminUserService) *AdminUserHandler {
 
 func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var filter models.AdminUserFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.InvalidQueryParamError),
@@ -50,11 +52,13 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 
 func (h *AdminUserHandler) GetUserByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersGetByID, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("userId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersGetByIDFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -77,10 +81,12 @@ func (h *AdminUserHandler) GetUserByID(c *gin.Context) {
 
 func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersCreate, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersCreateFailed, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -89,11 +95,13 @@ func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 
 	var newUser models.AdminUserCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newUser); !valid {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if !newUser.UserRole.IsValid() {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersCreateFailed, nil)
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: responses.GetResponse(localizer, responses.InvalidUserRoleError)},
@@ -122,11 +130,15 @@ func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 
 func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersUpdate, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("userId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersUpdateFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -135,12 +147,18 @@ func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 
 	var updateInput models.AdminUserUpdateInput
 	if errMsg, valid := validations.Validate(c, localizer, &updateInput); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersUpdateFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if updateInput.UserRole != nil {
 		if !updateInput.UserRole.IsValid() {
+			validations.SetAuditEvent(c,
+				models.AuditEventAdminUsersUpdateFailed,
+				map[string]string{"user_id": rawID})
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.InvalidUserRoleError)},
 			)
@@ -166,10 +184,14 @@ func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 
 func (h *AdminUserHandler) ActivateUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersActivate, nil)
 	rawID := c.Param("userId")
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersActivateFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -178,6 +200,9 @@ func (h *AdminUserHandler) ActivateUser(c *gin.Context) {
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersActivateFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -199,10 +224,14 @@ func (h *AdminUserHandler) ActivateUser(c *gin.Context) {
 
 func (h *AdminUserHandler) DeactivateUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersDeactivate, nil)
 	rawID := c.Param("userId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersDeactivateFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -224,10 +253,14 @@ func (h *AdminUserHandler) DeactivateUser(c *gin.Context) {
 
 func (h *AdminUserHandler) DeleteUser(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersDelete, nil)
 	rawID := c.Param("userId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersDeleteFailed,
+			map[string]string{"user_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})

@@ -25,10 +25,13 @@ func NewAdminCountryHandler(svc services.CountryService) *AdminCountryHandler {
 
 func (h *AdminCountryHandler) GetCountries(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	countries, err := h.Service.FindAll(c.Request.Context(), language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminCountriesGetFailed,
+			nil)
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,
@@ -43,6 +46,7 @@ func (h *AdminCountryHandler) GetCountries(c *gin.Context) {
 
 func (h *AdminCountryHandler) GetCountriesByName(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesSearch, nil)
 	language := translation.GetLanguageFromContext(c)
 	name := utils.SanitizeQuery(c.Query("name"))
 
@@ -54,10 +58,13 @@ func (h *AdminCountryHandler) GetCountriesByName(c *gin.Context) {
 	if name == "" {
 		countries, err = h.Service.FindAll(c.Request.Context(), language)
 	} else {
-		countries, err = h.Service.FindByName(c.Request.Context(), name, language)
+		countries, err = h.Service.FindByName(c.Request.Context(), name,
+			language)
 	}
 
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesSearchFailed, nil)
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,
@@ -72,10 +79,13 @@ func (h *AdminCountryHandler) GetCountriesByName(c *gin.Context) {
 
 func (h *AdminCountryHandler) GetCountryByCode(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesGetByID, nil)
 	code := c.Param("code")
 
 	country, err := h.Service.FindByCode(c.Request.Context(), code)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesGetByIDFailed, nil)
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,
@@ -90,15 +100,21 @@ func (h *AdminCountryHandler) GetCountryByCode(c *gin.Context) {
 
 func (h *AdminCountryHandler) CreateCountry(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesCreate, nil)
 	var newCountry models.CountryCreateInput
 
 	if errMsg, valid := validations.Validate(c, localizer, &newCountry); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
-	errMsg, ok := validations.ValidateTranslationMap(c, "country", newCountry.Names)
+	errMsg, ok := validations.ValidateTranslationMap(c, "country",
+		newCountry.Names)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -107,6 +123,8 @@ func (h *AdminCountryHandler) CreateCountry(c *gin.Context) {
 
 	country, err := h.Service.Create(c.Request.Context(), newCountry)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,
@@ -117,18 +135,23 @@ func (h *AdminCountryHandler) CreateCountry(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
-		Data:    country,
-		Message: responses.GetResponse(localizer, responses.CountryCreateSuccess),
+		Data: country,
+		Message: responses.GetResponse(localizer,
+			responses.CountryCreateSuccess),
 	})
 }
 
 func (h *AdminCountryHandler) UpdateCountry(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesUpdate, nil)
 	code := c.Param("code")
 
 	var countryUpdateInput models.CountryUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &countryUpdateInput)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesUpdateFailed,
+			map[string]string{"country_code": code})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: errMsg,
@@ -137,16 +160,24 @@ func (h *AdminCountryHandler) UpdateCountry(c *gin.Context) {
 		return
 	}
 
-	errMsg, ok = validations.ValidateTranslationMap(c, "country", countryUpdateInput.Names)
+	errMsg, ok = validations.ValidateTranslationMap(c, "country",
+		countryUpdateInput.Names)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesUpdateFailed,
+			map[string]string{"country_code": code})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
 		return
 	}
 
-	countryUpdated, err := h.Service.Update(c.Request.Context(), code, countryUpdateInput)
+	countryUpdated, err := h.Service.Update(c.Request.Context(), code,
+		countryUpdateInput)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesUpdateFailed,
+			map[string]string{"country_code": code})
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,
@@ -163,9 +194,13 @@ func (h *AdminCountryHandler) UpdateCountry(c *gin.Context) {
 
 func (h *AdminCountryHandler) DeleteCountry(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminCountriesDelete, nil)
 	code := c.Param("code")
 
 	if err := h.Service.Delete(c.Request.Context(), code); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminCountriesDeleteFailed,
+			map[string]string{"country_code": code})
 		code, errMsg := handlererrors.HandleCountryError(err)
 		c.JSON(
 			code,

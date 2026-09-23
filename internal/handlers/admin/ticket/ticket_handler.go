@@ -25,9 +25,11 @@ func NewAdminTicketHandler(svc services.TicketService) *AdminTicketHandler {
 
 func (h *AdminTicketHandler) GetTickets(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsGet, nil)
 	var filter models.TicketFilter
 
 	if err := c.ShouldBindQuery(&filter); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminTicketsGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.InvalidQueryParamError),
@@ -37,6 +39,7 @@ func (h *AdminTicketHandler) GetTickets(c *gin.Context) {
 
 	tickets, err := h.Service.FindAll(c.Request.Context(), filter)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminTicketsGetFailed, nil)
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -49,10 +52,12 @@ func (h *AdminTicketHandler) GetTickets(c *gin.Context) {
 
 func (h *AdminTicketHandler) GetTicketByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsGetByID, nil)
 	rawID := c.Param("ticketId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminTicketsGetByIDFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -61,6 +66,7 @@ func (h *AdminTicketHandler) GetTicketByID(c *gin.Context) {
 
 	ticket, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminTicketsGetByIDFailed, nil)
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -73,10 +79,14 @@ func (h *AdminTicketHandler) GetTicketByID(c *gin.Context) {
 
 func (h *AdminTicketHandler) Assign(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsAssign, nil)
 	rawID := c.Param("ticketId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsAssignFailed,
+			map[string]string{"ticket_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -85,6 +95,9 @@ func (h *AdminTicketHandler) Assign(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsAssignFailed,
+			map[string]string{"ticket_id": rawID})
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UnauthorizedError),
 		})
@@ -93,6 +106,9 @@ func (h *AdminTicketHandler) Assign(c *gin.Context) {
 
 	ticket, err := h.Service.Assign(c.Request.Context(), id, userToken.ID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsAssignFailed,
+			map[string]string{"ticket_id": rawID})
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -105,10 +121,14 @@ func (h *AdminTicketHandler) Assign(c *gin.Context) {
 
 func (h *AdminTicketHandler) Resolve(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsResolve, nil)
 	rawID := c.Param("ticketId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsResolveFailed,
+			map[string]string{"ticket_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -117,6 +137,9 @@ func (h *AdminTicketHandler) Resolve(c *gin.Context) {
 
 	ticket, err := h.Service.Resolve(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsResolveFailed,
+			map[string]string{"ticket_id": rawID})
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -129,10 +152,14 @@ func (h *AdminTicketHandler) Resolve(c *gin.Context) {
 
 func (h *AdminTicketHandler) DeleteTicket(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsDelete, nil)
 	rawID := c.Param("ticketId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsDeleteFailed,
+			map[string]string{"ticket_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -140,6 +167,9 @@ func (h *AdminTicketHandler) DeleteTicket(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminTicketsDeleteFailed,
+			map[string]string{"ticket_id": rawID})
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),

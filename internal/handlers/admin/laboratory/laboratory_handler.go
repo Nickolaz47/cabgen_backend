@@ -26,9 +26,11 @@ func NewAdminLaboratoryHandler(svc services.LaboratoryService) *AdminLaboratoryH
 
 func (h *AdminLaboratoryHandler) GetAllLaboratories(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesGet, nil)
 
 	labs, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesGetFailed, nil)
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -43,10 +45,14 @@ func (h *AdminLaboratoryHandler) GetAllLaboratories(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesGetByID, nil)
 	rawID := c.Param("laboratoryId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesGetByIDFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -55,6 +61,9 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 
 	lab, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesGetByIDFailed,
+			nil)
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -69,6 +78,7 @@ func (h *AdminLaboratoryHandler) GetLaboratoryByID(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesSearch, nil)
 	nameOrAbbreviation := utils.SanitizeQuery(c.Query("nameOrAbbreviation"))
 
 	var (
@@ -83,6 +93,9 @@ func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Cont
 	}
 
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesSearchFailed,
+			nil)
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -97,15 +110,22 @@ func (h *AdminLaboratoryHandler) GetLaboratoriesByNameOrAbbreviation(c *gin.Cont
 
 func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesCreate, nil)
 	var newLaboratory models.LaboratoryCreateInput
 
 	if errMsg, valid := validations.Validate(c, localizer, &newLaboratory); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesCreateFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	lab, err := h.Service.Create(c.Request.Context(), newLaboratory)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesCreateFailed,
+			nil)
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -123,10 +143,14 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesUpdate, nil)
 	rawID := c.Param("laboratoryId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesUpdateFailed,
+			map[string]string{"laboratory_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -136,6 +160,9 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 	var laboratoryUpdateInput models.LaboratoryUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &laboratoryUpdateInput)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesUpdateFailed,
+			map[string]string{"laboratory_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: errMsg,
@@ -145,6 +172,9 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 
 	labUpdated, err := h.Service.Update(c.Request.Context(), id, laboratoryUpdateInput)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesUpdateFailed,
+			map[string]string{"laboratory_id": rawID})
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -161,10 +191,14 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 
 func (h *AdminLaboratoryHandler) DeleteLaboratory(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesDelete, nil)
 	rawID := c.Param("laboratoryId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesDeleteFailed,
+			map[string]string{"laboratory_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -172,6 +206,9 @@ func (h *AdminLaboratoryHandler) DeleteLaboratory(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminLaboratoriesDeleteFailed,
+			map[string]string{"laboratory_id": rawID})
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,

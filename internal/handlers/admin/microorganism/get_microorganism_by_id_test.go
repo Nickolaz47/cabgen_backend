@@ -113,7 +113,7 @@ func TestGetMicroorganismByID(t *testing.T) {
 
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockMicroorganismService{
-			FindByIDFunc: func(ctx context.Context, 
+			FindByIDFunc: func(ctx context.Context,
 				ID uuid.UUID) (*models.MicroorganismAdminDetailResponse, error) {
 				return nil, services.ErrInternal
 			},

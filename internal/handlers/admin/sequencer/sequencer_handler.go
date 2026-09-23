@@ -24,9 +24,11 @@ func NewAdminSequencerHandler(svc services.SequencerService) *AdminSequencerHand
 
 func (h *AdminSequencerHandler) GetSequencers(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersGet, nil)
 
 	sequencers, err := h.Service.FindAll(c.Request.Context())
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminSequencersGetFailed, nil)
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
@@ -41,10 +43,14 @@ func (h *AdminSequencerHandler) GetSequencers(c *gin.Context) {
 
 func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersGetByID, nil)
 	rawID := c.Param("sequencerId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersGetByIDFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -53,6 +59,9 @@ func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 
 	sequencer, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersGetByIDFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
@@ -67,6 +76,7 @@ func (h *AdminSequencerHandler) GetSequencerByID(c *gin.Context) {
 
 func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersSearch, nil)
 	brandOrModel := utils.SanitizeQuery(c.Query("brandOrModel"))
 
 	var (
@@ -81,6 +91,9 @@ func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 	}
 
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersSearchFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
@@ -95,9 +108,13 @@ func (h *AdminSequencerHandler) GetSequencersByBrandOrModel(c *gin.Context) {
 
 func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersCreate, nil)
 
 	var newSequencer models.SequencerCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newSequencer); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersCreateFailed,
+			nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -106,6 +123,9 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 
 	sequencer, err := h.Service.Create(c.Request.Context(), newSequencer)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersCreateFailed,
+			nil)
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -121,10 +141,14 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 
 func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersUpdate, nil)
 	rawID := c.Param("sequencerId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersUpdateFailed,
+			map[string]string{"sequencer_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -134,6 +158,9 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 	var sequencerUpdateInput models.SequencerUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &sequencerUpdateInput)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersUpdateFailed,
+			map[string]string{"sequencer_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: errMsg,
@@ -143,6 +170,9 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 
 	sequencerUpdated, err := h.Service.Update(c.Request.Context(), id, sequencerUpdateInput)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersUpdateFailed,
+			map[string]string{"sequencer_id": rawID})
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
@@ -157,10 +187,14 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 
 func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersDelete, nil)
 	rawID := c.Param("sequencerId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersDeleteFailed,
+			map[string]string{"sequencer_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -168,6 +202,9 @@ func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {
 	}
 
 	if err := h.Service.Delete(c.Request.Context(), id); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminSequencersDeleteFailed,
+			map[string]string{"sequencer_id": rawID})
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,

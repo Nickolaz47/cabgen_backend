@@ -24,10 +24,12 @@ func NewAdminOriginHandler(svc services.OriginService) *AdminOriginHandler {
 
 func (h *AdminOriginHandler) GetAllOrigins(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	origins, err := h.Service.FindAll(c.Request.Context(), language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsGetFailed, nil)
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -42,10 +44,12 @@ func (h *AdminOriginHandler) GetAllOrigins(c *gin.Context) {
 
 func (h *AdminOriginHandler) GetOriginByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsGetByID, nil)
 	rawID := c.Param("originId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsGetByIDFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -54,6 +58,7 @@ func (h *AdminOriginHandler) GetOriginByID(c *gin.Context) {
 
 	origin, err := h.Service.FindByID(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsGetByIDFailed, nil)
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -68,6 +73,7 @@ func (h *AdminOriginHandler) GetOriginByID(c *gin.Context) {
 
 func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsSearch, nil)
 	language := translation.GetLanguageFromContext(c)
 	name := utils.SanitizeQuery(c.Query("name"))
 
@@ -83,6 +89,7 @@ func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 	}
 
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsSearchFailed, nil)
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -99,16 +106,19 @@ func (h *AdminOriginHandler) GetOriginsByName(c *gin.Context) {
 
 func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsCreate, nil)
 
 	var newOrigin models.OriginCreateInput
 
 	if errMsg, valid := validations.Validate(c, localizer, &newOrigin); !valid {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	errMsg, ok := validations.ValidateTranslationMap(c, "origin", newOrigin.Names)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -117,6 +127,7 @@ func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 
 	origin, err := h.Service.Create(c.Request.Context(), newOrigin)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminOriginsCreateFailed, nil)
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -134,10 +145,14 @@ func (h *AdminOriginHandler) CreateOrigin(c *gin.Context) {
 
 func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsUpdate, nil)
 	rawID := c.Param("originId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsUpdateFailed,
+			map[string]string{"origin_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -147,6 +162,9 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 	var originUpdateInput models.OriginUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &originUpdateInput)
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsUpdateFailed,
+			map[string]string{"origin_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: errMsg,
@@ -159,6 +177,9 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 	}
 
 	if !ok {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsUpdateFailed,
+			map[string]string{"origin_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -167,6 +188,9 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 
 	originUpdated, err := h.Service.Update(c.Request.Context(), id, originUpdateInput)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsUpdateFailed,
+			map[string]string{"origin_id": rawID})
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,
@@ -185,10 +209,14 @@ func (h *AdminOriginHandler) UpdateOrigin(c *gin.Context) {
 
 func (h *AdminOriginHandler) DeleteOrigin(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminOriginsDelete, nil)
 	rawID := c.Param("originId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsDeleteFailed,
+			map[string]string{"origin_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -196,6 +224,9 @@ func (h *AdminOriginHandler) DeleteOrigin(c *gin.Context) {
 	}
 
 	if err = h.Service.Delete(c.Request.Context(), id); err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminOriginsDeleteFailed,
+			map[string]string{"origin_id": rawID})
 		code, errMsg := handlererrors.HandleOriginError(err)
 		c.JSON(
 			code,

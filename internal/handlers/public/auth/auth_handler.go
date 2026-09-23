@@ -24,15 +24,19 @@ func NewAuthHandler(svc services.AuthService) *AuthHandler {
 func (h *AuthHandler) Register(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventRegister, nil)
 
 	var newUser models.UserRegisterInput
 	if errMsg, valid := validations.Validate(c, localizer, &newUser); !valid {
+		validations.SetAuditEvent(c, models.AuditEventRegisterFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	response, err := h.Service.Register(c.Request.Context(), newUser, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventRegisterFailed,
+			map[string]string{"auth_identity": newUser.Email})
 		code, errMsg := handlererrors.HandleAuthError(err)
 		c.JSON(
 			code,
@@ -52,15 +56,19 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventLogin, nil)
 
 	var login models.LoginInput
 	if errMsg, valid := validations.Validate(c, localizer, &login); !valid {
+		validations.SetAuditEvent(c, models.AuditEventLoginFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	cookies, err := h.Service.Login(c.Request.Context(), login)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventLoginFailed,
+			map[string]string{"auth_identity": login.Username})
 		code, errMsg := handlererrors.HandleAuthError(err)
 		c.JSON(
 			code,
@@ -80,9 +88,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventRefreshToken, nil)
 
 	tokenStr, err := auth.ExtractToken(c, auth.Refresh)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventRefreshTokenFailed, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{
 				Error: responses.GetResponse(
@@ -92,6 +102,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 	accessCookie, err := h.Service.Refresh(c.Request.Context(), tokenStr)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventRefreshTokenFailed, nil)
 		code, errMsg := handlererrors.HandleAuthError(err)
 		c.JSON(
 			code,
@@ -110,6 +121,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 func (h *AuthHandler) Logout(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventLogout, nil)
 
 	accessCookie := auth.DeleteCookie(auth.Access, "/")
 	refreshCookie := auth.DeleteCookie(auth.Refresh, "/api/auth/refresh")
@@ -125,14 +137,18 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventForgotPassword, nil)
 
 	var input models.ForgotPasswordInput
 	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		validations.SetAuditEvent(c, models.AuditEventForgotPasswordFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if err := h.Service.ForgotPassword(c.Request.Context(), input); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventForgotPasswordFailed,
+			map[string]string{"auth_identity": input.Email})
 		code, errMsg := handlererrors.HandleAuthError(err)
 		c.JSON(
 			code,
@@ -150,14 +166,17 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventResetPassword, nil)
 
 	var input models.ResetPasswordInput
 	if errMsg, valid := validations.Validate(c, localizer, &input); !valid {
+		validations.SetAuditEvent(c, models.AuditEventResetPasswordFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if err := h.Service.ResetPassword(c.Request.Context(), input); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventResetPasswordFailed, nil)
 		code, errMsg := handlererrors.HandleAuthError(err)
 		c.JSON(
 			code,

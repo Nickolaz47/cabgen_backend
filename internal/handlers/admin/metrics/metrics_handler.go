@@ -3,9 +3,11 @@ package metrics
 import (
 	"net/http"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +23,7 @@ func NewAdminMetricsHandler(svc services.MetricsService) *AdminMetricsHandler {
 
 func (h *AdminMetricsHandler) GetMetrics(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminMetrics, nil)
 
 	metrics, err := h.Service.GetMetrics(c.Request.Context())
 	if err != nil {

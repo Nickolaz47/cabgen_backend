@@ -564,6 +564,12 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/audit` | Lists audit logs (filters: event — exact; source — IP, partial; status — exact; date — day in UTC; user — user ID, exact) |
 
+How it works: the handler marks the audit event (`SetAuditEvent`), the `AuditMiddleware` completes the record with the **real HTTP status** and the authenticated user, and the `AuditService` persists it asynchronously (`source` = client IP). Endpoints that are not marked do not generate audit records.
+
+- **Audited**: full authentication (`register`, `login`, `refresh`, `forgot-password`, `reset-password`, `logout`, `me`), account operations (`/api/users/me/*`), contact, and all admin endpoints (except `GET /api/admin/audit` itself)
+- **Not audited (yet)**: samples (handler shared between common/admin), select-options, cities, public country/health/metrics
+- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identifier attempted in anonymous flows (login, register, password reset, contact); `user_id`, `analysis_id`, `ticket_id`, `country_code`, etc. — target of admin mutations (on failures)
+
 ## Uploads Directory Organization
 
 The uploads directory is organized as follows:
@@ -669,6 +675,9 @@ Messages use i18n message IDs for translation.
 | `AdminMiddleware` | Checks if the authenticated user has admin role |
 | `LoggerMiddleware` | Logs request details (including `request_id`) to console and file |
 | `I18nMiddleware` | Detects language from `Accept-Language` header and injects localizer into context |
+| `OriginCheckMiddleware` | Blocks mutating methods whose `Origin` differs from the allowed frontend (403) |
+| `GlobalRateLimitPerMinute` | Per-route rate limit (429): `forgot-password`/`reset-password` 3/min, `contact` 5/min |
+| `AuditMiddleware` | Builds the audit input, captures the real HTTP status and user after the handler, and asynchronously persists marked events |
 
 ## Logs
 
@@ -684,7 +693,7 @@ Every request receives a `request_id` (UUID), returned in the `X-Request-ID` res
 | --- | --- |
 | `request_id` | Correlation: present in all lines of the same request/task |
 | `user_id` | Authenticated user — present on the request line and in all service lines of the transaction |
-| `auth_identity` | Identifier attempted in anonymous flows (login, register, password reset) |
+| `user_id` | Authenticated user — present on the request line and all service lines of the transaction |
 | `sample_id`, `analysis_id`, `ticket_id` | Target entity of the operation |
 | `service`, `func`, `error_type` | Where and what failed |
 
@@ -719,7 +728,7 @@ The `X-Request-ID` header is present in every response — the frontend can disp
 
 ### Models
 
-User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest
+User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, HealthService, Sample, Analysis, Ticket, PasswordReset, EmailUpdateRequest, Audit
 
 ## Async Workers
 
