@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"html"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/email"
@@ -73,6 +74,27 @@ func (s *emailService) localize(localizer *i18n.Localizer, messageID string,
 	return msg
 }
 
+func (s *emailService) localizeBody(localizer *i18n.Localizer,
+	messageID string, data map[string]any) string {
+	return s.localize(localizer, messageID, escapeData(data))
+}
+
+func escapeData(data map[string]any) map[string]any {
+	if data == nil {
+		return nil
+	}
+
+	safe := make(map[string]any, len(data))
+	for key, value := range data {
+		if text, ok := value.(string); ok {
+			safe[key] = html.EscapeString(text)
+			continue
+		}
+		safe[key] = value
+	}
+	return safe
+}
+
 func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 	newUserID uuid.UUID) error {
 	newUser, err := s.UserRepo.GetUserByID(ctx, newUserID)
@@ -106,7 +128,7 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 		localizer := s.getLocalizer(a.Language)
 		subject := s.localize(localizer, "email.admin_alert.subject",
 			map[string]any{"Username": newUser.Username})
-		body := s.localize(localizer, "email.admin_alert.body",
+		body := s.localizeBody(localizer, "email.admin_alert.body",
 			map[string]any{"Username": newUser.Username})
 
 		cfg := email.EmailConfig{
@@ -143,7 +165,7 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 
 	localizer := s.getLocalizer(user.Language)
 	subject := s.localize(localizer, "email.welcome.subject", nil)
-	body := s.localize(localizer, "email.welcome.body", map[string]any{
+	body := s.localizeBody(localizer, "email.welcome.body", map[string]any{
 		"Name": user.Name,
 	})
 
@@ -189,7 +211,7 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 		statusText = s.localize(localizer, "email.analysis_done.status_failed", nil)
 	}
 
-	body := s.localize(localizer, "email.analysis_done.body", map[string]any{
+	body := s.localizeBody(localizer, "email.analysis_done.body", map[string]any{
 		"Name":             analysis.User.Name,
 		"SampleOriginCode": analysis.Sample.OriginCode,
 		"StatusText":       statusText,
@@ -254,7 +276,7 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 		localizer := s.getLocalizer(a.Language)
 		subject := s.localize(localizer, "email.admin_ticket.subject",
 			map[string]any{"Name": ticket.Name})
-		body := s.localize(localizer, "email.admin_ticket.body",
+		body := s.localizeBody(localizer, "email.admin_ticket.body",
 			map[string]any{
 				"Name":    ticket.Name,
 				"Email":   ticket.Email,
@@ -299,7 +321,7 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 	localizer := s.getLocalizer(ticket.Language)
 	subject := s.localize(localizer, "email.finished_ticket.subject",
 		map[string]any{"Subject": ticket.Subject})
-	body := s.localize(localizer, "email.finished_ticket.body",
+	body := s.localizeBody(localizer, "email.finished_ticket.body",
 		map[string]any{
 			"Name":    ticket.Name,
 			"Subject": ticket.Subject,
@@ -346,7 +368,7 @@ func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.password_reset.subject", nil)
-	body := s.localize(localizer, "email.password_reset.body", map[string]any{
+	body := s.localizeBody(localizer, "email.password_reset.body", map[string]any{
 		"Name":      userName,
 		"ResetLink": resetLink,
 	})
@@ -385,7 +407,7 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.user_deleted.subject", nil)
-	body := s.localize(localizer, "email.user_deleted.body", map[string]any{
+	body := s.localizeBody(localizer, "email.user_deleted.body", map[string]any{
 		"Name": userName,
 	})
 
@@ -427,7 +449,7 @@ func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 
 	localizer := s.getLocalizer(language)
 	subject := s.localize(localizer, "email.email_update_confirmation.subject", nil)
-	body := s.localize(localizer, "email.email_update_confirmation.body",
+	body := s.localizeBody(localizer, "email.email_update_confirmation.body",
 		map[string]any{
 			"Name":        userName,
 			"OldEmail":    oldEmail,
