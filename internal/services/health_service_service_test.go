@@ -293,7 +293,7 @@ func TestHealthServiceCreate(t *testing.T) {
 		repo := &mocks.MockHealthServiceRepository{
 			GetHealthServiceDuplicateFunc: func(
 				ctx context.Context, name string, ID uuid.UUID) (
-					*models.HealthService, error) {
+				*models.HealthService, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 			CreateHealthServiceFunc: func(

@@ -126,9 +126,7 @@ func (h *AdminHealthServiceHandler) CreateHealthService(c *gin.Context) {
 	}
 
 	if !newHealthService.Type.IsValid() {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminHealthServicesCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: responses.GetResponse(
@@ -139,10 +137,9 @@ func (h *AdminHealthServiceHandler) CreateHealthService(c *gin.Context) {
 
 	healthService, err := h.Service.Create(
 		c.Request.Context(), newHealthService)
+
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminHealthServicesCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleHealthServiceError(err)
 		c.JSON(
 			code,
@@ -153,6 +150,7 @@ func (h *AdminHealthServiceHandler) CreateHealthService(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesCreate, map[string]string{"health_service_id": healthService.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data: healthService,
 		Message: responses.GetResponse(
@@ -180,9 +178,7 @@ func (h *AdminHealthServiceHandler) UpdateHealthService(c *gin.Context) {
 	var healthServiceUpdateInput models.HealthServiceUpdateInput
 	errMsg, ok := validations.Validate(c, localizer, &healthServiceUpdateInput)
 	if !ok {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminHealthServicesUpdateFailed,
-			map[string]string{"health_service_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesUpdateFailed, map[string]string{"health_service_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: errMsg,
@@ -192,9 +188,7 @@ func (h *AdminHealthServiceHandler) UpdateHealthService(c *gin.Context) {
 
 	if healthServiceUpdateInput.Type != nil &&
 		!healthServiceUpdateInput.Type.IsValid() {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminHealthServicesUpdateFailed,
-			map[string]string{"health_service_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesUpdateFailed, map[string]string{"health_service_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: responses.GetResponse(
@@ -206,9 +200,7 @@ func (h *AdminHealthServiceHandler) UpdateHealthService(c *gin.Context) {
 	healthServiceUpdated, err := h.Service.Update(
 		c.Request.Context(), id, healthServiceUpdateInput)
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminHealthServicesUpdateFailed,
-			map[string]string{"health_service_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesUpdateFailed, map[string]string{"health_service_id": rawID})
 		code, errMsg := handlererrors.HandleHealthServiceError(err)
 		c.JSON(code,
 			responses.APIResponse{
@@ -216,6 +208,8 @@ func (h *AdminHealthServiceHandler) UpdateHealthService(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesUpdate, map[string]string{"health_service_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Data: healthServiceUpdated,
@@ -251,6 +245,8 @@ func (h *AdminHealthServiceHandler) DeleteHealthService(c *gin.Context) {
 		)
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminHealthServicesDelete, map[string]string{"health_service_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(

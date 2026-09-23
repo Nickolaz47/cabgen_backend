@@ -12,9 +12,9 @@ type MockTicketRepository struct {
 		[]models.Ticket, error)
 	GetTicketByIDFunc func(ctx context.Context, id uuid.UUID) (
 		*models.Ticket, error)
-	CreateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
-	UpdateTicketFunc func(ctx context.Context, ticket *models.Ticket) error
-	DeleteTicketFunc func(ctx context.Context, ticket *models.Ticket) error
+	CreateTicketFunc             func(ctx context.Context, ticket *models.Ticket) error
+	UpdateTicketFunc             func(ctx context.Context, ticket *models.Ticket) error
+	DeleteTicketFunc             func(ctx context.Context, ticket *models.Ticket) error
 	UnassignTicketsByAdminIDFunc func(ctx context.Context, adminID uuid.UUID) error
 }
 

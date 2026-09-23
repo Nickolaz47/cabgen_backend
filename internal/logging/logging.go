@@ -19,7 +19,7 @@ func SetupLoggers(logPath string) error {
 	LogFile = &lumberjack.Logger{
 		Filename:   logPath,
 		MaxSize:    50, // Megabytes
-		MaxBackups: 30,  // Max number of files
+		MaxBackups: 30, // Max number of files
 		Compress:   true,
 	}
 

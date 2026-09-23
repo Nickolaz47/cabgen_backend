@@ -74,6 +74,9 @@ func (h *AdminTicketHandler) GetTicketByID(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsAssign, map[string]string{"ticket_id": rawID})
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsResolve, map[string]string{"ticket_id": rawID})
+
 	c.JSON(http.StatusOK, responses.APIResponse{Data: ticket})
 }
 
@@ -176,6 +179,8 @@ func (h *AdminTicketHandler) DeleteTicket(c *gin.Context) {
 		})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminTicketsDelete, map[string]string{"ticket_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.TicketDelete),

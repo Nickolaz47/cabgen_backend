@@ -567,8 +567,8 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 How it works: the handler marks the audit event (`SetAuditEvent`), the `AuditMiddleware` completes the record with the **real HTTP status** and the authenticated user, and the `AuditService` persists it asynchronously (`source` = client IP). Endpoints that are not marked do not generate audit records.
 
 - **Audited**: full authentication (`register`, `login`, `refresh`, `forgot-password`, `reset-password`, `logout`, `me`), account operations (`/api/users/me/*`), contact, and all admin endpoints (except `GET /api/admin/audit` itself)
-- **Not audited (yet)**: samples (handler shared between common/admin), select-options, cities, public country/health/metrics
-- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identifier attempted in anonymous flows (login, register, password reset, contact); `user_id`, `analysis_id`, `ticket_id`, `country_code`, etc. — target of admin mutations (on failures)
+- **Not audited (by design)**: select-options, cities, and public read endpoints (countries, health, metrics)
+- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identifier attempted in anonymous flows (login, register, password reset, contact); `analysis_id`, `sample_id` and `analysis_type` — the analysis operation trio; `user_id`, `ticket_id`, `country_code`, etc. — target of mutations (created ID on successes, target on failures)
 
 ## Uploads Directory Organization
 

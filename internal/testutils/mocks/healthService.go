@@ -83,12 +83,12 @@ func (m *MockHealthServiceRepository) DeleteHealthService(ctx context.Context, h
 }
 
 type MockHealthServiceService struct {
-	FindAllFunc       func(ctx context.Context) ([]models.HealthServiceAdminTableResponse, error)
-	FindByIDFunc      func(ctx context.Context, ID uuid.UUID) (*models.HealthServiceAdminTableResponse, error)
-	FindByNameFunc    func(ctx context.Context, name string) ([]models.HealthServiceAdminTableResponse, error)
-	CreateFunc        func(ctx context.Context, input models.HealthServiceCreateInput) (*models.HealthServiceAdminTableResponse, error)
-	UpdateFunc        func(ctx context.Context, ID uuid.UUID, input models.HealthServiceUpdateInput) (*models.HealthServiceAdminTableResponse, error)
-	DeleteFunc        func(ctx context.Context, ID uuid.UUID) error
+	FindAllFunc    func(ctx context.Context) ([]models.HealthServiceAdminTableResponse, error)
+	FindByIDFunc   func(ctx context.Context, ID uuid.UUID) (*models.HealthServiceAdminTableResponse, error)
+	FindByNameFunc func(ctx context.Context, name string) ([]models.HealthServiceAdminTableResponse, error)
+	CreateFunc     func(ctx context.Context, input models.HealthServiceCreateInput) (*models.HealthServiceAdminTableResponse, error)
+	UpdateFunc     func(ctx context.Context, ID uuid.UUID, input models.HealthServiceUpdateInput) (*models.HealthServiceAdminTableResponse, error)
+	DeleteFunc     func(ctx context.Context, ID uuid.UUID) error
 }
 
 func (m *MockHealthServiceService) FindAll(ctx context.Context) ([]models.HealthServiceAdminTableResponse, error) {

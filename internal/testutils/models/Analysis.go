@@ -81,13 +81,13 @@ func CreateMockAnalysis() rModels.Analysis {
 	sample := CreateMockSample()
 	user := NewLoginUser()
 	metrics := map[string]any{
-		"coverage":         30.5,
-		"completeness":     "95.89",
-		"contamination":    "1.23",
-		"primary_species":  "Acinetobacter sp",
-		"mlst":             "ST502",
-		"poli_mutations":   []string{"blaOXA-23"},
-		"gene":             []string{"blaOXA-23", "armA"},
+		"coverage":        30.5,
+		"completeness":    "95.89",
+		"contamination":   "1.23",
+		"primary_species": "Acinetobacter sp",
+		"mlst":            "ST502",
+		"poli_mutations":  []string{"blaOXA-23"},
+		"gene":            []string{"blaOXA-23", "armA"},
 	}
 	resultZipPath := "result.zip"
 	var metricsBytes datatypes.JSON

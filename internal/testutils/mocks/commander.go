@@ -15,8 +15,8 @@ type MockCmd struct {
 	stderr        io.Writer
 }
 
-func (m *MockCmd) Start() error    { return nil }
-func (m *MockCmd) Wait() error     { return nil }
+func (m *MockCmd) Start() error         { return nil }
+func (m *MockCmd) Wait() error          { return nil }
 func (m *MockCmd) SetStdin(_ io.Reader) {}
 
 func (m *MockCmd) SetStdout(w io.Writer) { m.stdout = w }

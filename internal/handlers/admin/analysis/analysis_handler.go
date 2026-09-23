@@ -80,6 +80,12 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetByID, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
+
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 
@@ -107,13 +113,22 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	payload := models.AnalysisCreateDTO(newAnalysis)
 	analysis, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
-		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateFailed, nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateFailed, map[string]string{
+			"sample_id":     newAnalysis.SampleID.String(),
+			"analysis_type": string(newAnalysis.Type),
+		})
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
 		})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreate, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data: analysis,
@@ -172,6 +187,11 @@ func (h *AdminAnalysisHandler) UpdateAnalysis(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesUpdate, map[string]string{
+		"analysis_id":   analysisUpdated.ID.String(),
+		"sample_id":     analysisUpdated.SampleID.String(),
+		"analysis_type": string(analysisUpdated.Type),
+	})
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysisUpdated})
 }
 
@@ -201,6 +221,8 @@ func (h *AdminAnalysisHandler) DeleteAnalysis(c *gin.Context) {
 		})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesDelete, map[string]string{"analysis_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.AnalysisDeleted),

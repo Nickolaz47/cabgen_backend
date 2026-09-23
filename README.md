@@ -567,9 +567,9 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 Como funciona: o handler marca o evento de auditoria (`SetAuditEvent`), o `AuditMiddleware` completa o registro com o **status HTTP real** da resposta e o usuário autenticado, e o `AuditService` persiste de forma assíncrona (`source` = IP do cliente). Endpoints não marcados não geram registro.
 
-- **Auditado**: autenticação completa (`register`, `login`, `refresh`, `forgot-password`, `reset-password`, `logout`, `me`), operações de conta (`/api/users/me/*`), `contact` e todos os endpoints admin (exceto o próprio `GET /api/admin/audit`)
-- **Não auditado (ainda)**: amostras (handler compartilhado entre common/admin), select-options, cidades, país/métricas/saúde públicos
-- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identificador tentado em fluxos anônimos (login, registro, redefinição de senha, contato); `user_id`, `analysis_id`, `ticket_id`, `country_code`, etc. — alvo das mutações admin (em falhas)
+- **Auditado**: autenticação completa (`register`, `login`, `refresh`, `forgot-password`, `reset-password`, `logout`, `me`), operações de conta (`/api/users/me/*`), `contact`, amostras (`/api/samples` e `/api/admin/samples`, eventos por escopo) e todos os endpoints admin (exceto o próprio `GET /api/admin/audit`)
+- **Não auditado (por design)**: select-options, cidades e os endpoints públicos de leitura (países, health, metrics) — GETs anônimos ou de alto tráfego
+- **Metadata** (`Audit.Metadata`, JSON): `auth_identity` — identificador tentado em fluxos anônimos (login, registro, redefinição de senha, contato); `analysis_id`, `sample_id` e `analysis_type` — tripé das operações de análise; `user_id`, `ticket_id`, `country_code`, etc. — alvo das mutações (ID criado em sucessos de create, alvo em falhas)
 
 ## Organização do Diretório de Uploads
 

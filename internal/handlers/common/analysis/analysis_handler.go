@@ -27,10 +27,12 @@ func NewAnalysisHandler(svc services.AnalysisService) *AnalysisHandler {
 
 func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesGet, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var filter models.AnalysisFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.InvalidQueryParamError),
@@ -40,6 +42,7 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFailed, nil)
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UnauthorizedError),
 		})
@@ -49,6 +52,7 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID, filter,
 		language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -61,11 +65,13 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 
 func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesGetByID, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetByIDFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -74,6 +80,7 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetByIDFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UnauthorizedError),
 		})
@@ -82,6 +89,7 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 
 	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetByIDFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -89,16 +97,31 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAnalysesGetByID, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
+
+	validations.SetAuditEvent(c, models.AuditEventAnalysesGetByID, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
+
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 
 func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReport, nil)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
 		handlererrors.RespondHTMLError(c, http.StatusBadRequest,
 			responses.GetResponse(localizer, responses.InvalidURLID))
 		return
@@ -106,6 +129,8 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
 		handlererrors.RespondHTMLError(c, http.StatusUnauthorized,
 			responses.GetResponse(localizer, responses.UnauthorizedError))
 		return
@@ -113,6 +138,8 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 
 	analysis, err := h.Service.FindByID(c.Request.Context(), id, userToken.ID, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		handlererrors.RespondHTMLError(c, code,
 			responses.GetResponse(localizer, errMsg))
@@ -128,6 +155,8 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 	case "fastqc2":
 		htmlPath = analysis.FastQC2
 	default:
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
 		handlererrors.RespondHTMLError(c, http.StatusNotFound,
 			responses.GetResponse(localizer,
 				responses.AnalysisInvalidFastQCReport))
@@ -135,6 +164,8 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 	}
 
 	if htmlPath == nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
 		handlererrors.RespondHTMLError(c, http.StatusNotFound,
 			responses.GetResponse(localizer,
 				responses.AnalysisFastQCReportNotAvailable))
@@ -146,15 +177,18 @@ func (h *AnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
 
 func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesCreate, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var newAnalysis models.AnalysisCreateInput
 	if errMsg, valid := validations.Validate(c, localizer, &newAnalysis); !valid {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	if !newAnalysis.Type.IsValid() {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.AnalysisInvalidType),
@@ -164,6 +198,7 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError),
@@ -174,12 +209,26 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 	payload := models.AnalysisCreateInputToDTO(newAnalysis, userToken.ID)
 	analysis, err := h.Service.Create(c.Request.Context(), payload, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
+		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
 		})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAnalysesCreate, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
+
+	validations.SetAuditEvent(c, models.AuditEventAnalysesCreate, map[string]string{
+		"analysis_id":   analysis.ID.String(),
+		"sample_id":     analysis.SampleID.String(),
+		"analysis_type": string(analysis.Type),
+	})
 
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data: analysis,
@@ -190,10 +239,12 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 
 func (h *AnalysisHandler) DeleteAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesDelete, nil)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDeleteFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -202,6 +253,7 @@ func (h *AnalysisHandler) DeleteAnalysis(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDeleteFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.UnauthorizedError),
 		})
@@ -216,6 +268,8 @@ func (h *AnalysisHandler) DeleteAnalysis(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAnalysesDelete, map[string]string{"analysis_id": rawID})
+
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.AnalysisDeleted),
 	})
@@ -223,10 +277,12 @@ func (h *AnalysisHandler) DeleteAnalysis(c *gin.Context) {
 
 func (h *AnalysisHandler) DownloadZip(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadZip, nil)
 	rawID := c.Param("analysisId")
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadZipFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -235,6 +291,7 @@ func (h *AnalysisHandler) DownloadZip(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadZipFailed, map[string]string{"analysis_id": rawID})
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError),
@@ -245,6 +302,7 @@ func (h *AnalysisHandler) DownloadZip(c *gin.Context) {
 	zipPath, err := h.Service.DownloadZip(c.Request.Context(), id,
 		userToken.ID)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadZipFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -259,17 +317,20 @@ func (h *AnalysisHandler) DownloadZip(c *gin.Context) {
 
 func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadBatchTSV, nil)
 	language := translation.GetLanguageFromContext(c)
 
 	var downloadInput models.AnalysisTSVDownloadInput
 	if errMsg, valid := validations.Validate(c, localizer,
 		&downloadInput); !valid {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadBatchTSVFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 		return
 	}
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadBatchTSVFailed, nil)
 		c.JSON(http.StatusUnauthorized, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError),
@@ -280,6 +341,7 @@ func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	analyses, err := h.Service.DownloadBatchTSV(c.Request.Context(),
 		downloadInput.IDs, userToken.ID, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadBatchTSVFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -289,6 +351,7 @@ func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 
 	tsvBytes, err := utils.GenerateMetricsTSV(analyses)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesDownloadBatchTSVFailed, nil)
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.GenericInternalServerError),

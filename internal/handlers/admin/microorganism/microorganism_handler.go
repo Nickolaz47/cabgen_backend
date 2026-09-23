@@ -136,9 +136,7 @@ func (h *AdminMicroorganismHandler) CreateMicroorganism(c *gin.Context) {
 	}
 
 	if !newMicro.Taxon.IsValid() {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsCreateFailed, nil)
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: responses.GetResponse(localizer,
@@ -150,9 +148,7 @@ func (h *AdminMicroorganismHandler) CreateMicroorganism(c *gin.Context) {
 	errMsg, ok := validations.ValidateTranslationMap(
 		c, "microorganism", newMicro.Variety)
 	if !ok {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsCreateFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -160,10 +156,9 @@ func (h *AdminMicroorganismHandler) CreateMicroorganism(c *gin.Context) {
 	}
 
 	micro, err := h.Service.Create(c.Request.Context(), newMicro)
+
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsCreateFailed, nil)
 		code, errMsg := handlererrors.HandleMicroorganismError(err)
 		c.JSON(code,
 			responses.APIResponse{
@@ -172,6 +167,7 @@ func (h *AdminMicroorganismHandler) CreateMicroorganism(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsCreate, map[string]string{"microorganism_id": micro.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data: micro,
 		Message: responses.GetResponse(localizer,
@@ -212,9 +208,7 @@ func (h *AdminMicroorganismHandler) UpdateMicroorganism(c *gin.Context) {
 		ok = microUpdateInput.Taxon.IsValid()
 	}
 	if !ok {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsUpdateFailed,
-			map[string]string{"microorganism_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsUpdateFailed, map[string]string{"microorganism_id": rawID})
 		c.JSON(http.StatusBadRequest,
 			responses.APIResponse{
 				Error: responses.GetResponse(localizer,
@@ -228,9 +222,7 @@ func (h *AdminMicroorganismHandler) UpdateMicroorganism(c *gin.Context) {
 			c, "microorganism", microUpdateInput.Variety)
 	}
 	if !ok {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsUpdateFailed,
-			map[string]string{"microorganism_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsUpdateFailed, map[string]string{"microorganism_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: errMsg,
 		})
@@ -240,9 +232,7 @@ func (h *AdminMicroorganismHandler) UpdateMicroorganism(c *gin.Context) {
 	microUpdated, err := h.Service.Update(c.Request.Context(), id,
 		microUpdateInput)
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminMicroorganismsUpdateFailed,
-			map[string]string{"microorganism_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsUpdateFailed, map[string]string{"microorganism_id": rawID})
 		code, errMsg := handlererrors.HandleMicroorganismError(err)
 		c.JSON(
 			code,
@@ -251,6 +241,10 @@ func (h *AdminMicroorganismHandler) UpdateMicroorganism(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsDelete, map[string]string{"microorganism_id": rawID})
+
+	validations.SetAuditEvent(c, models.AuditEventAdminMicroorganismsUpdate, map[string]string{"microorganism_id": rawID})
 
 	c.JSON(http.StatusOK,
 		responses.APIResponse{

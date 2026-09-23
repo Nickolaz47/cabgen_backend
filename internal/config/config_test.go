@@ -140,7 +140,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedOtherDbEntero, os.Getenv("OTHER_DB_ENTERO"), "expected other db entero to be equal")
 		assert.Equal(t, expectedOtherDbAcineto, os.Getenv("OTHER_DB_ACINETO"), "expected other db acineto to be equal")
 		assert.Equal(t, expectedFastaniListKleb, os.Getenv("FASTANI_LIST_KLEB"), "expected fastani list kleb to be equal")
-	    assert.Equal(t, expectedFastaniListEntero, os.Getenv("FASTANI_LIST_ENTERO"), "expected fastani list entero to be equal")
+		assert.Equal(t, expectedFastaniListEntero, os.Getenv("FASTANI_LIST_ENTERO"), "expected fastani list entero to be equal")
 		assert.Equal(t, expectedFastaniListAcineto, os.Getenv("FASTANI_LIST_ACINETO"), "expected fastani list acineto to be equal")
 		assert.Equal(t, expectedAnalysisConcurrency, config.AnalysisConcurrency, "expected analysis concurrency to be equal")
 

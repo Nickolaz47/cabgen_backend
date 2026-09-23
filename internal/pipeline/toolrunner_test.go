@@ -14,16 +14,16 @@ type mockCmd struct {
 	stderr  string
 }
 
-func (m *mockCmd) Start() error { return nil }
-func (m *mockCmd) Run() error   { return m.runFunc() }
-func (m *mockCmd) Wait() error  { return nil }
+func (m *mockCmd) Start() error          { return nil }
+func (m *mockCmd) Run() error            { return m.runFunc() }
+func (m *mockCmd) Wait() error           { return nil }
 func (m *mockCmd) SetStdout(w io.Writer) {}
 func (m *mockCmd) SetStderr(w io.Writer) {
 	if m.stderr != "" {
 		_, _ = w.Write([]byte(m.stderr))
 	}
 }
-func (m *mockCmd) SetStdin(r io.Reader)  {}
+func (m *mockCmd) SetStdin(r io.Reader) {}
 
 type mockCommander struct {
 	cmdFunc func(ctx context.Context, name string, args ...string) Cmd

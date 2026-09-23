@@ -37,9 +37,9 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 	}
 
 	ticket, err := h.Service.Create(c.Request.Context(), newTicket, language)
+
 	if err != nil {
-		validations.SetAuditEvent(c, models.AuditEventContactFailed,
-			map[string]string{"auth_identity": newTicket.Email})
+		validations.SetAuditEvent(c, models.AuditEventContactFailed, map[string]string{"auth_identity": newTicket.Email})
 		code, errMsg := handlererrors.HandleTicketError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -47,6 +47,7 @@ func (h *TicketHandler) CreateTicket(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventContact, map[string]string{"ticket_id": ticket.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.TicketCreationSuccess),
 		Data:    ticket,

@@ -27,7 +27,7 @@ func TestLoadJSONFile(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		expected := []models.Country{
 			{
-				Code:  "ABW",
+				Code: "ABW",
 				Names: map[string]string{
 					"pt": "Aruba", "en": "Aruba", "es": "Aruba",
 				}},

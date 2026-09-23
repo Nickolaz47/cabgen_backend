@@ -8,8 +8,8 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	sanitize "github.com/mrz1836/go-sanitize"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type Model interface {

@@ -138,6 +138,7 @@ func (h *AdminSampleSourceHandler) CreateSampleSource(c *gin.Context) {
 	}
 
 	sampleSource, err := h.Service.Create(c.Request.Context(), input)
+
 	if err != nil {
 		validations.SetAuditEvent(c,
 			models.AuditEventAdminSampleSourcesCreateFailed,
@@ -149,6 +150,7 @@ func (h *AdminSampleSourceHandler) CreateSampleSource(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesCreate, map[string]string{"sample_source_id": sampleSource.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data:    sampleSource,
 		Message: responses.GetResponse(localizer, responses.SampleSourceCreationSuccess),
@@ -213,6 +215,8 @@ func (h *AdminSampleSourceHandler) UpdateSampleSource(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesUpdate, map[string]string{"sample_source_id": rawID})
+
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Data: updated,
 	})
@@ -244,6 +248,8 @@ func (h *AdminSampleSourceHandler) DeleteSampleSource(c *gin.Context) {
 		})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminSampleSourcesDelete, map[string]string{"sample_source_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.SampleSourceDeleted),

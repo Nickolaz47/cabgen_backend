@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -271,7 +271,7 @@ func TestRegister(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil,
-			 nil, mockLogger)
+			nil, mockLogger)
 		_, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
@@ -979,4 +979,3 @@ func TestResetPassword(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
-

@@ -110,7 +110,9 @@ func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 	}
 
 	createdUser, err := h.Service.Create(c.Request.Context(), newUser, userToken.Username, language)
+
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersCreateFailed, nil)
 		code, errMsg := handlererrors.HandleUserError(err)
 		c.JSON(
 			code,
@@ -120,6 +122,7 @@ func (h *AdminUserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersCreate, map[string]string{"user_id": createdUser.ID.String()})
 	c.JSON(http.StatusCreated,
 		responses.APIResponse{
 			Data:    createdUser,
@@ -156,9 +159,7 @@ func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 
 	if updateInput.UserRole != nil {
 		if !updateInput.UserRole.IsValid() {
-			validations.SetAuditEvent(c,
-				models.AuditEventAdminUsersUpdateFailed,
-				map[string]string{"user_id": rawID})
+			validations.SetAuditEvent(c, models.AuditEventAdminUsersUpdateFailed, map[string]string{"user_id": rawID})
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{Error: responses.GetResponse(localizer, responses.InvalidUserRoleError)},
 			)
@@ -168,6 +169,7 @@ func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 
 	updateUser, err := h.Service.Update(c.Request.Context(), id, updateInput, language)
 	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersUpdateFailed, map[string]string{"user_id": rawID})
 		code, errMsg := handlererrors.HandleUserError(err)
 		c.JSON(
 			code,
@@ -176,6 +178,8 @@ func (h *AdminUserHandler) UpdateUser(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersUpdate, map[string]string{"user_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Data: updateUser,
@@ -218,6 +222,8 @@ func (h *AdminUserHandler) ActivateUser(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersActivate, map[string]string{"user_id": rawID})
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -276,6 +282,8 @@ func (h *AdminUserHandler) DeleteUser(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersDelete, map[string]string{"user_id": rawID})
 
 	c.JSON(http.StatusOK,
 		responses.APIResponse{Message: responses.GetResponse(

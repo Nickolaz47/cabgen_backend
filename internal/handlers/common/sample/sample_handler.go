@@ -57,9 +57,17 @@ func (h *SampleHandler) GetSamples(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 	input := utils.SanitizeQuery(c.Query("input"))
+	event, failedEvent := models.AuditEventSamplesGet,
+		models.AuditEventSamplesGetFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesGet,
+			models.AuditEventAdminSamplesGetFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -69,6 +77,7 @@ func (h *SampleHandler) GetSamples(c *gin.Context) {
 	samples, err := h.Service.FindAll(c.Request.Context(), input,
 		h.getUserID(userToken), language)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -83,9 +92,17 @@ func (h *SampleHandler) GetSampleByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("sampleId")
+	event, failedEvent := models.AuditEventSamplesGetByID,
+		models.AuditEventSamplesGetByIDFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesGetByID,
+			models.AuditEventAdminSamplesGetByIDFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -94,6 +111,7 @@ func (h *SampleHandler) GetSampleByID(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -103,6 +121,7 @@ func (h *SampleHandler) GetSampleByID(c *gin.Context) {
 	sample, err := h.Service.FindByID(c.Request.Context(), id,
 		h.getUserID(userToken), language)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(
 			code,
@@ -119,9 +138,17 @@ func (h *SampleHandler) GetSampleByID(c *gin.Context) {
 func (h *SampleHandler) CreateSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
+	event, failedEvent := models.AuditEventSamplesCreate,
+		models.AuditEventSamplesCreateFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesCreate,
+			models.AuditEventAdminSamplesCreateFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -132,11 +159,13 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 	if h.Scope == ScopeAll {
 		var newSample models.AdminSampleCreateInput
 		if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
+			validations.SetAuditEvent(c, failedEvent, nil)
 			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 			return
 		}
 
 		if newSample.Gender != nil && !newSample.Gender.IsValid() {
+			validations.SetAuditEvent(c, failedEvent, nil)
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{
 					Error: responses.GetResponse(localizer,
@@ -149,11 +178,13 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 	} else {
 		var newSample models.SampleCreateInput
 		if errMsg, valid := validations.Validate(c, localizer, &newSample); !valid {
+			validations.SetAuditEvent(c, failedEvent, nil)
 			c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
 			return
 		}
 
 		if newSample.Gender != nil && !newSample.Gender.IsValid() {
+			validations.SetAuditEvent(c, failedEvent, nil)
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{
 					Error: responses.GetResponse(localizer,
@@ -166,7 +197,9 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 	}
 
 	sample, err := h.Service.Create(c.Request.Context(), payload, language)
+
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code,
 			responses.APIResponse{
@@ -175,6 +208,7 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, event, map[string]string{"sample_id": sample.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data: sample,
 		Message: responses.GetResponse(localizer,
@@ -185,9 +219,17 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 func (h *SampleHandler) UploadFiles(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sampleId")
+	event, failedEvent := models.AuditEventSamplesUpload,
+		models.AuditEventSamplesUploadFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesUpload,
+			models.AuditEventAdminSamplesUploadFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -196,6 +238,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -204,6 +247,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 	reader, err := c.Request.MultipartReader()
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.SampleContentTypeError),
@@ -213,6 +257,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 	sample, err := h.Service.GetSampleForUpload(c.Request.Context(), id)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -222,6 +267,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 	scopeID := h.getUserID(userToken)
 	if scopeID != uuid.Nil && scopeID != sample.UserID {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -231,6 +277,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 	uploadDir, err := h.Service.PrepareSampleFolder(c.Request.Context(),
 		sample.UserID, id)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusInternalServerError,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.GenericInternalServerError)})
@@ -256,6 +303,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		}
 		if err != nil {
 			cleanup()
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.GenericInternalServerError),
@@ -276,6 +324,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 		if !validations.IsAllowedUploadFile(formName, fileName) {
 			cleanup()
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.SampleUnsupportedFile),
@@ -289,6 +338,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		out, err := os.Create(dstPath)
 		if err != nil {
 			cleanup()
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(
 					localizer, responses.GenericInternalServerError,
@@ -303,6 +353,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 			if !ok {
 				out.Close()
 				cleanup()
+				validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 				c.JSON(http.StatusBadRequest, responses.APIResponse{
 					Error: responses.GetResponse(localizer,
 						responses.SampleUnsupportedFile),
@@ -318,6 +369,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 
 		if err != nil {
 			cleanup()
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusInternalServerError, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.GenericInternalServerError),
@@ -326,6 +378,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		}
 		if n > budget {
 			cleanup()
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.SampleFileTooLarge),
@@ -347,6 +400,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 	if err := h.Service.AttachFiles(c.Request.Context(),
 		id, h.getUserID(userToken), attachmentInput); err != nil {
 		cleanup()
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -354,6 +408,7 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, event, map[string]string{"sample_id": rawID})
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer,
 			responses.SampleUploadSuccess),
@@ -364,9 +419,17 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
 	rawID := c.Param("sampleId")
+	event, failedEvent := models.AuditEventSamplesUpdate,
+		models.AuditEventSamplesUpdateFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesUpdate,
+			models.AuditEventAdminSamplesUpdateFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -375,6 +438,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -386,6 +450,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 		var sampleUpdateInput models.AdminSampleUpdateInput
 		errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
 		if !ok {
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{
 					Error: errMsg,
@@ -395,6 +460,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 
 		if sampleUpdateInput.Gender != nil &&
 			!sampleUpdateInput.Gender.IsValid() {
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.SampleInvalidGender),
@@ -407,6 +473,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 		var sampleUpdateInput models.SampleUpdateInput
 		errMsg, ok := validations.Validate(c, localizer, &sampleUpdateInput)
 		if !ok {
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest,
 				responses.APIResponse{
 					Error: errMsg,
@@ -416,6 +483,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 
 		if sampleUpdateInput.Gender != nil &&
 			!sampleUpdateInput.Gender.IsValid() {
+			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{
 				Error: responses.GetResponse(localizer,
 					responses.SampleInvalidGender),
@@ -430,6 +498,7 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 	sampleUpdated, err := h.Service.Update(c.Request.Context(), id,
 		h.getUserID(userToken), payload, language)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -437,15 +506,25 @@ func (h *SampleHandler) UpdateSample(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, event, map[string]string{"sample_id": rawID})
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sampleUpdated})
 }
 
 func (h *SampleHandler) DeleteSample(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	rawID := c.Param("sampleId")
+	event, failedEvent := models.AuditEventSamplesDelete,
+		models.AuditEventSamplesDeleteFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesDelete,
+			models.AuditEventAdminSamplesDeleteFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	id, err := uuid.Parse(rawID)
 	if err != nil {
+		validations.SetAuditEvent(c, failedEvent,
+			map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
 			Error: responses.GetResponse(localizer, responses.InvalidURLID),
 		})
@@ -454,6 +533,8 @@ func (h *SampleHandler) DeleteSample(c *gin.Context) {
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
 	if !ok {
+		validations.SetAuditEvent(c, failedEvent,
+			map[string]string{"sample_id": rawID})
 		c.JSON(http.StatusUnauthorized,
 			responses.APIResponse{Error: responses.GetResponse(localizer,
 				responses.UnauthorizedError)})
@@ -462,6 +543,8 @@ func (h *SampleHandler) DeleteSample(c *gin.Context) {
 
 	if err = h.Service.Delete(c.Request.Context(), id,
 		h.getUserID(userToken)); err != nil {
+		validations.SetAuditEvent(c, failedEvent,
+			map[string]string{"sample_id": rawID})
 		code, errMsg := handlererrors.HandleSampleError(err)
 		c.JSON(
 			code,
@@ -470,6 +553,8 @@ func (h *SampleHandler) DeleteSample(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, event, map[string]string{"sample_id": rawID})
 
 	c.JSON(
 		http.StatusOK,

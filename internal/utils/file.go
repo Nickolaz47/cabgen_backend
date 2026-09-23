@@ -64,5 +64,3 @@ func CleanupFiles(paths []string) error {
 	}
 	return errors.Join(errs...)
 }
-
-

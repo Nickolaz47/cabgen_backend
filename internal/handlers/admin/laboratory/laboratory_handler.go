@@ -122,10 +122,9 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 	}
 
 	lab, err := h.Service.Create(c.Request.Context(), newLaboratory)
+
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminLaboratoriesCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -135,6 +134,7 @@ func (h *AdminLaboratoryHandler) CreateLaboratory(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesCreate, map[string]string{"laboratory_id": lab.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Data:    lab,
 		Message: responses.GetResponse(localizer, responses.LaboratoryCreationSuccess),
@@ -172,9 +172,7 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 
 	labUpdated, err := h.Service.Update(c.Request.Context(), id, laboratoryUpdateInput)
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminLaboratoriesUpdateFailed,
-			map[string]string{"laboratory_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesUpdateFailed, map[string]string{"laboratory_id": rawID})
 		code, errMsg := handlererrors.HandleLaboratoryError(err)
 		c.JSON(
 			code,
@@ -183,6 +181,8 @@ func (h *AdminLaboratoryHandler) UpdateLaboratory(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesUpdate, map[string]string{"laboratory_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Data: labUpdated,
@@ -217,6 +217,8 @@ func (h *AdminLaboratoryHandler) DeleteLaboratory(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminLaboratoriesDelete, map[string]string{"laboratory_id": rawID})
 
 	c.JSON(
 		http.StatusOK,

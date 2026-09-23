@@ -122,10 +122,9 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 	}
 
 	sequencer, err := h.Service.Create(c.Request.Context(), newSequencer)
+
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminSequencersCreateFailed,
-			nil)
+		validations.SetAuditEvent(c, models.AuditEventAdminSequencersCreateFailed, nil)
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(code, responses.APIResponse{
 			Error: responses.GetResponse(localizer, errMsg),
@@ -133,6 +132,7 @@ func (h *AdminSequencerHandler) CreateSequencer(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersCreate, map[string]string{"sequencer_id": sequencer.ID.String()})
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.SequencerCreationSuccess),
 		Data:    sequencer,
@@ -170,9 +170,7 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 
 	sequencerUpdated, err := h.Service.Update(c.Request.Context(), id, sequencerUpdateInput)
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventAdminSequencersUpdateFailed,
-			map[string]string{"sequencer_id": rawID})
+		validations.SetAuditEvent(c, models.AuditEventAdminSequencersUpdateFailed, map[string]string{"sequencer_id": rawID})
 		code, errMsg := handlererrors.HandleSequencerError(err)
 		c.JSON(
 			code,
@@ -182,6 +180,8 @@ func (h *AdminSequencerHandler) UpdateSequencer(c *gin.Context) {
 		return
 	}
 
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersUpdate, map[string]string{"sequencer_id": rawID})
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersUpdate, map[string]string{"sequencer_id": rawID})
 	c.JSON(http.StatusOK, responses.APIResponse{Data: sequencerUpdated})
 }
 
@@ -213,6 +213,8 @@ func (h *AdminSequencerHandler) DeleteSequencer(c *gin.Context) {
 			})
 		return
 	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminSequencersDelete, map[string]string{"sequencer_id": rawID})
 
 	c.JSON(http.StatusOK, responses.APIResponse{
 		Message: responses.GetResponse(localizer, responses.SequencerDeleted),

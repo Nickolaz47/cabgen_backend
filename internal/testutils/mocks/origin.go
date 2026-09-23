@@ -75,12 +75,12 @@ func (r *MockOriginRepository) DeleteOrigin(ctx context.Context, origin *models.
 }
 
 type MockOriginService struct {
-	FindAllFunc       func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error)
-	FindByIDFunc      func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error)
-	FindByNameFunc    func(ctx context.Context, name, lang string) ([]models.OriginAdminTableResponse, error)
-	CreateFunc        func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error)
-	UpdateFunc        func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error)
-	DeleteFunc        func(ctx context.Context, ID uuid.UUID) error
+	FindAllFunc    func(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error)
+	FindByIDFunc   func(ctx context.Context, ID uuid.UUID) (*models.OriginAdminDetailResponse, error)
+	FindByNameFunc func(ctx context.Context, name, lang string) ([]models.OriginAdminTableResponse, error)
+	CreateFunc     func(ctx context.Context, input models.OriginCreateInput) (*models.OriginAdminDetailResponse, error)
+	UpdateFunc     func(ctx context.Context, ID uuid.UUID, input models.OriginUpdateInput) (*models.OriginAdminDetailResponse, error)
+	DeleteFunc     func(ctx context.Context, ID uuid.UUID) error
 }
 
 func (m *MockOriginService) FindAll(ctx context.Context, lang string) ([]models.OriginAdminTableResponse, error) {
