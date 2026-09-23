@@ -7,6 +7,7 @@ import (
 	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/common/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +21,7 @@ func TestMe(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/auth/me", "", nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 
 		handler := authHandler.NewAuthHandler(nil)
 		handler.Me(c)

@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +50,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
-		c.Set("user", &models.UserToken{ID: uuid.New()})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
 		handler.UpdateSample(c)
 
 		expected := testutils.ToJSON(
@@ -74,7 +75,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			nil,
 		)
 
-		c.Set("user", &models.UserToken{ID: uuid.New()})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
 		handler.UpdateSample(c)
 
 		expected := testutils.ToJSON(
@@ -101,7 +102,7 @@ func TestAdminUpdateSample(t *testing.T) {
 					gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 				)
 
-				c.Set("user", &models.UserToken{ID: uuid.New()})
+				c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
 				handler.UpdateSample(c)
 
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -129,7 +130,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
 
-		c.Set("user", &models.UserToken{ID: uuid.New()})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
 		handler.UpdateSample(c)
 
 		expected := testutils.ToJSON(
@@ -161,7 +162,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
 
-		c.Set("user", &models.UserToken{ID: uuid.New()})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
 		handler.UpdateSample(c)
 
 		expected := testutils.ToJSON(

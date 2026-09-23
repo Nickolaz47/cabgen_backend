@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -41,7 +42,7 @@ func TestGetAnalysisByID(t *testing.T) {
 			http.MethodGet, "/api/analysis", "", nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisByID(c)
 
 		expected := testutils.ToJSON(
@@ -62,7 +63,7 @@ func TestGetAnalysisByID(t *testing.T) {
 			http.MethodGet, "/api/analysis", "", nil,
 			gin.Params{{Key: "analysisId", Value: "abc1"}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisByID(c)
 
 		expected := testutils.ToJSON(
@@ -108,7 +109,7 @@ func TestGetAnalysisByID(t *testing.T) {
 			http.MethodGet, "/api/analysis", "", nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.User.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisByID(c)
 
 		expected := testutils.ToJSON(
@@ -134,7 +135,7 @@ func TestGetAnalysisByID(t *testing.T) {
 			http.MethodGet, "/api/analysis", "", nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.User.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisByID(c)
 
 		expected := testutils.ToJSON(
@@ -185,7 +186,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc1"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -208,7 +209,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc2"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -226,7 +227,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc1"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -264,7 +265,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc1"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
@@ -286,7 +287,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "invalid"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
@@ -312,7 +313,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc1"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
@@ -334,7 +335,7 @@ func TestGetAnalysisFastQCByID(t *testing.T) {
 				{Key: "fastqcReport", Value: "fastqc1"},
 			},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalysisFastQCByID(c)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)

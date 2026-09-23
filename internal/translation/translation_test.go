@@ -53,7 +53,7 @@ func TestGetLanguageFromContext(t *testing.T) {
 			nil, nil,
 		)
 		expectedLocalizer := "pt"
-		c.Set("lang", expectedLocalizer)
+		c.Set(translation.LangKey, expectedLocalizer)
 
 		localizer := translation.GetLanguageFromContext(c)
 

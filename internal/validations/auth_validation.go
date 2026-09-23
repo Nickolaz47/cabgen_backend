@@ -5,8 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const UserTokenKey = "User"
+
 func GetUserTokenFromContext(c *gin.Context) (*models.UserToken, bool) {
-	rawUserToken, exists := c.Get("user")
+	rawUserToken, exists := c.Get(UserTokenKey)
 	if !exists {
 		return nil, false
 	}

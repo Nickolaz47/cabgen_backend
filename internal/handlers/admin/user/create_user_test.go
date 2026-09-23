@@ -14,6 +14,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,7 +64,7 @@ func TestCreateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.CreateUser(c)
 
 		expected := testutils.ToJSON(map[string]any{
@@ -130,7 +131,7 @@ func TestCreateUser(t *testing.T) {
 				nil,
 				nil,
 			)
-			c.Set("user", &mockAdminUserToken)
+			c.Set(validations.UserTokenKey, &mockAdminUserToken)
 			handler.CreateUser(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -161,7 +162,7 @@ func TestCreateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.CreateUser(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -195,7 +196,7 @@ func TestCreateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 
 		handler.CreateUser(c)
 
@@ -232,7 +233,7 @@ func TestCreateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.CreateUser(c)
 
 		expected := testutils.ToJSON(

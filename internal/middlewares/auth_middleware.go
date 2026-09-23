@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 )
 
@@ -51,7 +52,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", userToken)
+		c.Set(validations.UserTokenKey, userToken)
 		c.Request = c.Request.WithContext(
 			logging.WithUserID(c.Request.Context(),
 				userToken.ID.String()))

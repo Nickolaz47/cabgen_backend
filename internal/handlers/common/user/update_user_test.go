@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -60,7 +61,7 @@ func TestUpdateUser(t *testing.T) {
 			nil,
 			gin.Params{{Key: "userId", Value: mockUser.ID.String()}},
 		)
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
 		expected := testutils.ToJSON(map[string]any{
@@ -115,7 +116,7 @@ func TestUpdateUser(t *testing.T) {
 				nil,
 				nil,
 			)
-			c.Set("user", &mockUserToken)
+			c.Set(validations.UserTokenKey, &mockUserToken)
 			handler.UpdateUser(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -146,7 +147,7 @@ func TestUpdateUser(t *testing.T) {
 			nil,
 			gin.Params{{Key: "userId", Value: mockUser.ID.String()}},
 		)
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
 		expected := testutils.ToJSON(
@@ -182,7 +183,7 @@ func TestUpdateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
 		expected := testutils.ToJSON(
@@ -215,7 +216,7 @@ func TestUpdateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
 		expected := testutils.ToJSON(
@@ -246,7 +247,7 @@ func TestUpdateUser(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
 		expected := testutils.ToJSON(

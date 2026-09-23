@@ -46,7 +46,7 @@ func TestI18nMiddleware(t *testing.T) {
 				v, exists := c.Get(translation.LocalizerKey)
 				localizer, ok := v.(*i18n.Localizer)
 
-				rawLanguage, langExists := c.Get("lang")
+				rawLanguage, langExists := c.Get(translation.LangKey)
 				language, langOK := rawLanguage.(string)
 
 				if exists && ok && langExists && langOK {

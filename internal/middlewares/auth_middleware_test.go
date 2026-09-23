@@ -14,6 +14,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +44,7 @@ func TestAuthMiddleware(t *testing.T) {
 		testutils.AddMiddlewares(r, middlewares.AuthMiddleware())
 
 		r.GET("/", func(c *gin.Context) {
-			rawUserToken, exists := c.Get("user")
+			rawUserToken, exists := c.Get(validations.UserTokenKey)
 			if !exists {
 				c.JSON(http.StatusInternalServerError,
 					map[string]*models.UserToken{

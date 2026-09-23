@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +35,7 @@ func TestGetAnalyses(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/analysis", "", nil, nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalyses(c)
 
 		expected := testutils.ToJSON(
@@ -80,7 +81,7 @@ func TestGetAnalyses(t *testing.T) {
 		c, w := testutils.SetupGinContext(
 			http.MethodGet, "/api/analysis", "", nil, nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.UserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalyses(c)
 
 		expected := testutils.ToJSON(

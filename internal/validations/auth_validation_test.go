@@ -21,7 +21,7 @@ func TestGetUserTokenFromContext(t *testing.T) {
 		)
 
 		c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 
 		token, ok := validations.GetUserTokenFromContext(c)
 
@@ -33,7 +33,7 @@ func TestGetUserTokenFromContext(t *testing.T) {
 		invalidToken := models.Admin
 
 		c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
-		c.Set("user", &invalidToken)
+		c.Set(validations.UserTokenKey, &invalidToken)
 
 		token, ok := validations.GetUserTokenFromContext(c)
 

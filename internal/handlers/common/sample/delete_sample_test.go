@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestDeleteSample(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DeleteSample(c)
 
@@ -117,7 +118,7 @@ func TestDeleteSample(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DeleteSample(c)
 
@@ -148,7 +149,7 @@ func TestDeleteSample(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DeleteSample(c)
 

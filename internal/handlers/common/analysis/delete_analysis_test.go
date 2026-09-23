@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +33,7 @@ func TestDeleteAnalysis(t *testing.T) {
 			nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.User.ID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.User.ID})
 		handler.DeleteAnalysis(c)
 
 		expected := testutils.ToJSON(
@@ -56,7 +57,7 @@ func TestDeleteAnalysis(t *testing.T) {
 			nil,
 			gin.Params{{Key: "analysisId", Value: "123"}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.User.ID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.User.ID})
 		handler.DeleteAnalysis(c)
 
 		expected := testutils.ToJSON(
@@ -109,7 +110,7 @@ func TestDeleteAnalysis(t *testing.T) {
 			nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.User.ID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.User.ID})
 
 		handler.DeleteAnalysis(c)
 
@@ -139,7 +140,7 @@ func TestDeleteAnalysis(t *testing.T) {
 			nil,
 			gin.Params{{Key: "analysisId", Value: mockAnalysis.ID.String()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockAnalysis.User.ID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.User.ID})
 
 		handler.DeleteAnalysis(c)
 

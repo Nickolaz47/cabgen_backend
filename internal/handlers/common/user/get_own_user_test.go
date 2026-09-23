@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +37,7 @@ func TestGetOwnUser(t *testing.T) {
 			http.MethodGet, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.GetOwnUser(c)
 
 		expected := testutils.ToJSON(
@@ -80,7 +81,7 @@ func TestGetOwnUser(t *testing.T) {
 			http.MethodGet, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.GetOwnUser(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -103,7 +104,7 @@ func TestGetOwnUser(t *testing.T) {
 			http.MethodGet, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.GetOwnUser(c)
 
 		expected := testutils.ToJSON(map[string]string{

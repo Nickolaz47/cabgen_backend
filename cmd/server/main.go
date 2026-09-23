@@ -115,12 +115,16 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Audit Service (needed by the audit middleware below)
+	auditSvc := container.BuildAuditService(mainDB.DB(), logging.FileLogger)
+
 	r.Use(
 		cors.New(corsConfig),
 		middlewares.RequestIDMiddleware(),
 		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
 		middlewares.I18nMiddleware(),
 		middlewares.OriginCheckMiddleware(),
+		middlewares.AuditMiddleware(auditSvc),
 		gin.Recovery(),
 	)
 
@@ -153,7 +157,6 @@ func main() {
 		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),
 		logging.FileLogger)
-	auditSvc := container.BuildAuditService(mainDB.DB(), logging.FileLogger)
 
 	// Public handlers
 	healthHandler := container.BuildHealthHandler()

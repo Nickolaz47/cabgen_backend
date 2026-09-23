@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,7 +38,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/request-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.RequestEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -75,7 +76,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 				http.MethodPost, "/api/users/me/request-email-update", tt.Body,
 				nil, nil,
 			)
-			c.Set("user", &mockToken)
+			c.Set(validations.UserTokenKey, &mockToken)
 			handler.RequestEmailUpdate(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -92,7 +93,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/request-email-update", invalidBody,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.RequestEmailUpdate(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -111,7 +112,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/request-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.RequestEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -135,7 +136,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/request-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.RequestEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -159,7 +160,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/request-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.RequestEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -192,7 +193,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/confirm-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.ConfirmEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -230,7 +231,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 				http.MethodPost, "/api/users/me/confirm-email-update", tt.Body,
 				nil, nil,
 			)
-			c.Set("user", &mockToken)
+			c.Set(validations.UserTokenKey, &mockToken)
 			handler.ConfirmEmailUpdate(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -251,7 +252,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/confirm-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.ConfirmEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -275,7 +276,7 @@ func TestConfirmEmailUpdate(t *testing.T) {
 			http.MethodPost, "/api/users/me/confirm-email-update", body,
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.ConfirmEmailUpdate(c)
 
 		expected := testutils.ToJSON(map[string]string{

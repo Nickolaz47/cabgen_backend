@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const RequestIDKey = "RequestID"
+
 // RequestIDMiddleware assigns a correlation ID to every request, returns it
 // in the X-Request-ID response header and injects it into the request
 // context so all downstream log lines carry it.
@@ -14,7 +16,7 @@ func RequestIDMiddleware() gin.HandlerFunc {
 		requestID := uuid.NewString()
 
 		c.Writer.Header().Set("X-Request-ID", requestID)
-		c.Set("request_id", requestID)
+		c.Set(RequestIDKey, requestID)
 		c.Request = c.Request.WithContext(
 			logging.WithRequestID(c.Request.Context(), requestID))
 

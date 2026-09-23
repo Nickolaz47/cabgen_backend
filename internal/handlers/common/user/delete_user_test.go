@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,7 +33,7 @@ func TestDeleteUser(t *testing.T) {
 			http.MethodDelete, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.DeleteUser(c)
 
 		expected := testutils.ToJSON(
@@ -76,7 +77,7 @@ func TestDeleteUser(t *testing.T) {
 			http.MethodDelete, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.DeleteUser(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -99,7 +100,7 @@ func TestDeleteUser(t *testing.T) {
 			http.MethodDelete, "/api/users/me", "",
 			nil, nil,
 		)
-		c.Set("user", &mockToken)
+		c.Set(validations.UserTokenKey, &mockToken)
 		handler.DeleteUser(c)
 
 		expected := testutils.ToJSON(map[string]string{

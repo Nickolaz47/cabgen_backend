@@ -10,6 +10,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestDeactivateUser(t *testing.T) {
 			http.MethodGet, "/api/admin/users/deactivate", "",
 			nil, gin.Params{{Key: "userId", Value: mockLoginUser.ID.String()}},
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.DeactivateUser(c)
 
 		expected := ""
@@ -55,7 +56,7 @@ func TestDeactivateUser(t *testing.T) {
 			http.MethodGet, "/api/admin/users/deactivate", "",
 			nil, gin.Params{{Key: "userId", Value: "ifew90843"}},
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.DeactivateUser(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -78,7 +79,7 @@ func TestDeactivateUser(t *testing.T) {
 			http.MethodGet, "/api/admin/users/deactivate", "",
 			nil, gin.Params{{Key: "userId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.DeactivateUser(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -101,7 +102,7 @@ func TestDeactivateUser(t *testing.T) {
 			http.MethodGet, "/api/admin/users/deactivate", "",
 			nil, gin.Params{{Key: "userId", Value: mockLoginUser.ID.String()}},
 		)
-		c.Set("user", &mockAdminUserToken)
+		c.Set(validations.UserTokenKey, &mockAdminUserToken)
 		handler.DeactivateUser(c)
 
 		expected := testutils.ToJSON(

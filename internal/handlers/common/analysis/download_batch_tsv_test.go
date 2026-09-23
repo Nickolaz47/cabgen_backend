@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/data"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -48,7 +49,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DownloadBatchTSV(c)
 
@@ -81,7 +82,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 					nil,
 					nil,
 				)
-				c.Set("user", &models.UserToken{ID: mockUserID})
+				c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 				handler.DownloadBatchTSV(c)
 
@@ -130,7 +131,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DownloadBatchTSV(c)
 
@@ -159,7 +160,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DownloadBatchTSV(c)
 
@@ -188,7 +189,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 
 		handler.DownloadBatchTSV(c)
 

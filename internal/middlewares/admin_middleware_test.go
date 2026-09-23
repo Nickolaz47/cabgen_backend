@@ -7,6 +7,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
@@ -25,7 +26,7 @@ func TestAdminMiddleware(t *testing.T) {
 			mockUserToken := testmodels.NewUserToken(
 				uuid.UUID{}, "nick", models.Admin,
 			)
-			c.Set("user", &mockUserToken)
+			c.Set(validations.UserTokenKey, &mockUserToken)
 		}
 
 		testutils.AddMiddlewares(r, mockAuthMiddleware, middlewares.AdminMiddleware())
@@ -57,7 +58,7 @@ func TestAdminMiddleware(t *testing.T) {
 			mockUserToken := testmodels.NewUserToken(
 				uuid.UUID{}, "nick", models.Collaborator,
 			)
-			c.Set("user", &mockUserToken)
+			c.Set(validations.UserTokenKey, &mockUserToken)
 		}
 
 		testutils.AddMiddlewares(r, mockAuthMiddleware, middlewares.AdminMiddleware())

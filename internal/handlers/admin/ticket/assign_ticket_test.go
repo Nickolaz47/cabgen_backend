@@ -11,6 +11,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +50,7 @@ func TestAssignTicket(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost,
 			"/api/admin/ticket", "", nil,
 			gin.Params{{Key: "ticketId", Value: mockTicket.ID.String()}})
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 
 		handler.Assign(c)
 
@@ -68,7 +69,7 @@ func TestAssignTicket(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost,
 			"/api/admin/ticket", "", nil,
 			gin.Params{{Key: "ticketId", Value: "abc123"}})
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 
 		handler.Assign(c)
 
@@ -114,7 +115,7 @@ func TestAssignTicket(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost,
 			"/api/admin/ticket", "", nil,
 			gin.Params{{Key: "ticketId", Value: mockTicket.ID.String()}})
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 
 		handler.Assign(c)
 
@@ -140,7 +141,7 @@ func TestAssignTicket(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost,
 			"/api/admin/ticket", "", nil,
 			gin.Params{{Key: "ticketId", Value: mockTicket.ID.String()}})
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 
 		handler.Assign(c)
 
@@ -166,7 +167,7 @@ func TestAssignTicket(t *testing.T) {
 		c, w := testutils.SetupGinContext(http.MethodPost,
 			"/api/admin/ticket", "", nil,
 			gin.Params{{Key: "ticketId", Value: mockTicket.ID.String()}})
-		c.Set("user", &mockUserToken)
+		c.Set(validations.UserTokenKey, &mockUserToken)
 
 		handler.Assign(c)
 

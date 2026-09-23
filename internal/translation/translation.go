@@ -13,6 +13,7 @@ import (
 )
 
 const LocalizerKey = "localizer"
+const LangKey = "Lang"
 
 var Languages = []string{"pt", "en", "es"}
 
@@ -52,7 +53,7 @@ func GetLocalizerFromContext(c *gin.Context) *i18n.Localizer {
 }
 
 func GetLanguageFromContext(c *gin.Context) string {
-	value, exists := c.Get("lang")
+	value, exists := c.Get(LangKey)
 	if !exists {
 		return "en"
 	}

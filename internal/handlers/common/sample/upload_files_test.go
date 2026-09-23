@@ -18,6 +18,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -64,7 +65,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expectedFilePath := filepath.Join(dir, "reads_R1.fastq")
@@ -104,7 +105,7 @@ func TestUploadFiles(t *testing.T) {
 				nil,
 				gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 			)
-			c.Set("user", &models.UserToken{ID: mockUserID})
+			c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 			handler.UploadFiles(c)
 
 			expected := testutils.ToJSON(map[string]string{
@@ -139,7 +140,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -169,7 +170,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -193,7 +194,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			nil,
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -234,7 +235,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -297,7 +298,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(map[string]string{
@@ -338,7 +339,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -381,7 +382,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -424,7 +425,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -464,7 +465,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -508,7 +509,7 @@ func TestUploadFiles(t *testing.T) {
 			nil,
 			gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		expected := testutils.ToJSON(
@@ -573,7 +574,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", &buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -592,7 +593,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -611,7 +612,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -631,7 +632,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -649,7 +650,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -670,7 +671,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -695,7 +696,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -714,7 +715,7 @@ func TestUploadFilesValidations(t *testing.T) {
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
 			nil, gin.Params{{Key: "sampleId", Value: uuid.NewString()}},
 		)
-		c.Set("user", &models.UserToken{ID: mockUserID})
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)

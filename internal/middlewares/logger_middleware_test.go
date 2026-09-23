@@ -7,6 +7,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -98,7 +99,7 @@ func TestLoggerMiddleware(t *testing.T) {
 
 		testutils.AddMiddlewares(r,
 			func(c *gin.Context) {
-				c.Set("user", &mockToken)
+				c.Set(validations.UserTokenKey, &mockToken)
 				c.Next()
 			},
 			middlewares.LoggerMiddleware(consoleLogger, fileLogger))

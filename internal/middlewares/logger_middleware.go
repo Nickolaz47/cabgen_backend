@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -28,7 +29,7 @@ func LoggerMiddleware(consoleLogger, fileLogger *zap.Logger) gin.HandlerFunc {
 		}
 
 		fields := []zap.Field{
-			zap.String("request_id", c.GetString("request_id")),
+			zap.String("request_id", c.GetString(RequestIDKey)),
 			zap.Int("status", status),
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
@@ -36,7 +37,7 @@ func LoggerMiddleware(consoleLogger, fileLogger *zap.Logger) gin.HandlerFunc {
 			zap.Duration("latency", latency),
 		}
 
-		if raw, ok := c.Get("user"); ok {
+		if raw, ok := c.Get(validations.UserTokenKey); ok {
 			if userToken, ok := raw.(*models.UserToken); ok {
 				fields = append(fields,
 					zap.String("user_id", userToken.ID.String()))
