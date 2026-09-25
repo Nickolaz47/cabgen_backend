@@ -19,6 +19,7 @@ func TestApplyUpdateToUser(t *testing.T) {
 
 	name := "Nicolas Silva"
 	username := "nikol"
+	language := "pt"
 	institution := "Fiocruz"
 	interest := "Programming"
 	role := "Developer"
@@ -29,6 +30,7 @@ func TestApplyUpdateToUser(t *testing.T) {
 		Institution: &institution,
 		Interest:    &interest,
 		Role:        &role,
+		Language:    &language,
 	}
 
 	validations.ApplyUpdateToUser(&user, &updateInput)
@@ -38,4 +40,5 @@ func TestApplyUpdateToUser(t *testing.T) {
 	assert.Equal(t, &institution, user.Institution)
 	assert.Equal(t, &interest, user.Interest)
 	assert.Equal(t, &role, user.Role)
+	assert.Equal(t, language, user.Language)
 }

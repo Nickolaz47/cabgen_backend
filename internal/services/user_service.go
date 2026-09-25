@@ -13,6 +13,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -90,6 +91,11 @@ func (s *userService) Update(
 	ctx context.Context, ID uuid.UUID,
 	input models.UserUpdateInput,
 	language string) (*models.UserResponse, error) {
+	if input.Language != nil {
+		parsed := translation.ParseLanguage(*input.Language)
+		input.Language = &parsed
+	}
+
 	existingUser, err := s.Repo.GetUserByID(ctx, ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,

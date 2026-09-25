@@ -46,6 +46,10 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUserUpdateInpu
 	if input.Institution != nil {
 		user.Institution = input.Institution
 	}
+
+	if input.Language != nil {
+		user.Language = *input.Language
+	}
 }
 
 func ValidateTranslationMap(c *gin.Context, model string, translations map[string]string) (string, bool) {

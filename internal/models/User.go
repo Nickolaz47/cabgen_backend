@@ -147,6 +147,7 @@ type UserUpdateInput struct {
 	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
 	Username    *string `json:"username,omitempty" binding:"omitempty,min=3,max=100"`
 	CountryCode *string `json:"country_code,omitempty" binding:"omitempty,len=3"`
+	Language    *string `json:"language,omitempty"`
 
 	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
 	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`
@@ -174,6 +175,7 @@ type AdminUserUpdateInput struct {
 	Email       *string `json:"email,omitempty" binding:"omitempty,email"`
 	Password    *string `json:"password" binding:"omitempty,min=8,max=32"`
 	CountryCode *string `json:"country_code,omitempty" binding:"omitempty,len=3"`
+	Language    *string `json:"language,omitempty"`
 
 	UserRole *UserRole `json:"user_role,omitempty"`
 	IsActive *bool     `json:"is_active,omitempty"`

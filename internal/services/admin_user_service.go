@@ -12,6 +12,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -260,6 +261,11 @@ func (s *adminUserService) Update(
 	ctx context.Context, ID uuid.UUID,
 	input models.AdminUserUpdateInput,
 	language string) (*models.AdminUserResponse, error) {
+	if input.Language != nil {
+		parsed := translation.ParseLanguage(*input.Language)
+		input.Language = &parsed
+	}
+
 	existingUser, err := s.Repo.GetUserByID(
 		ctx, ID,
 	)

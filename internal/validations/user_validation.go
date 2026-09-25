@@ -11,6 +11,9 @@ func ApplyUpdateToUser(user *models.User, input *models.UserUpdateInput) {
 	if input.Username != nil {
 		user.Username = *input.Username
 	}
+	if input.Language != nil {
+		user.Language = *input.Language
+	}
 
 	if input.Interest != nil {
 		user.Interest = input.Interest

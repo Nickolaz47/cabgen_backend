@@ -760,6 +760,50 @@ func TestAdminUserUpdate(t *testing.T) {
 		assert.Empty(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})
+
+	t.Run("Success - Language Update", func(t *testing.T) {
+		language := "pt"
+
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &existingUser, nil
+			},
+			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
+		}
+
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil, nil, "")
+		input := models.AdminUserUpdateInput{Language: &language}
+
+		_, err := service.Update(context.Background(), userID, input, lang)
+
+		assert.NoError(t, err)
+		assert.Equal(t, language, existingUser.Language)
+	})
+
+	t.Run("Success - Unknown Language Falls Back To En", func(t *testing.T) {
+		unknownLanguage := "fr"
+
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &existingUser, nil
+			},
+			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				return nil
+			},
+		}
+
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil, nil, "")
+		input := models.AdminUserUpdateInput{Language: &unknownLanguage}
+
+		_, err := service.Update(context.Background(), userID, input, lang)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "en", existingUser.Language)
+	})
 }
 
 func TestAdminActivateUser(t *testing.T) {
