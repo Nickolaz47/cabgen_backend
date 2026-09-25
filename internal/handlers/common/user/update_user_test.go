@@ -259,4 +259,33 @@ func TestUpdateUser(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	t.Run("Success - Language Update", func(t *testing.T) {
+		language := "pt-BR"
+
+		svc := &mocks.MockUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				userID uuid.UUID,
+				input models.UserUpdateInput,
+				language string,
+			) (*models.UserResponse, error) {
+				assert.Equal(t, "pt-BR", *input.Language)
+				return &updateResponse, nil
+			},
+		}
+		handler := user.NewUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/users/me",
+			testutils.ToJSON(map[string]any{"language": language}),
+			nil,
+			nil,
+		)
+		c.Set(validations.UserTokenKey, &mockUserToken)
+		handler.UpdateUser(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
 }

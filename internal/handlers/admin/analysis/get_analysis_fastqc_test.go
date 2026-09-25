@@ -93,6 +93,21 @@ func TestAdminGetAnalysisFastQCByID(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Invalid FastQC report type.")
 	})
 
+	t.Run("Error - Invalid Analysis ID", func(t *testing.T) {
+		svc := &mocks.MockAnalysisService{}
+		handler := analysis.NewAdminAnalysisHandler(svc)
+
+		c, w := testutils.SetupGinContext(http.MethodGet, "/api/admin/analyses",
+			"", nil, gin.Params{
+				{Key: "analysisId", Value: "not-a-uuid"},
+				{Key: "fastqcReport", Value: "fastqc1"},
+			})
+		handler.GetAnalysisFastQCByID(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "The URL ID is invalid.")
+	})
+
 	t.Run("Error - Analysis Not Found", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindByIDFunc: func(ctx context.Context, analysisID, userID uuid.UUID,

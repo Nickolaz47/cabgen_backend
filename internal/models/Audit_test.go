@@ -179,3 +179,18 @@ func TestAuditEventsInSync(t *testing.T) {
 		"AuditEvents must not reference unknown constants: %s",
 		strings.Join(unknownInSlice, ", "))
 }
+
+func TestAuditEventSelectOptions(t *testing.T) {
+	opts := models.AuditEventSelectOptions()
+
+	assert.Len(t, opts, len(models.AuditEvents))
+
+	seen := make(map[string]bool)
+	for _, opt := range opts {
+		assert.Equal(t, opt.Value, opt.Label)
+
+		assert.False(t, seen[opt.Value],
+			"duplicated event in select options: %s", opt.Value)
+		seen[opt.Value] = true
+	}
+}
