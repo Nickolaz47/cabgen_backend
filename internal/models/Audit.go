@@ -65,6 +65,8 @@ const (
 	AuditEventAdminAnalysesGetFailed              = "admin.analyses.get_failed"
 	AuditEventAdminAnalysesGetByID                = "admin.analyses.getById"
 	AuditEventAdminAnalysesGetByIDFailed          = "admin.analyses.getById_failed"
+	AuditEventAdminAnalysesGetFastQCReport        = "admin.analyses.getFastqcReport"
+	AuditEventAdminAnalysesGetFastQCReportFailed  = "admin.analyses.getFastqcReport_failed"
 	AuditEventAdminAnalysesDownloadZip            = "admin.analyses.downloadZip"
 	AuditEventAdminAnalysesDownloadZipFailed      = "admin.analyses.downloadZip_failed"
 	AuditEventAdminAnalysesCreate                 = "admin.analyses.create"
@@ -258,6 +260,8 @@ var AuditEvents = []string{
 	AuditEventAdminAnalysesGetFailed,
 	AuditEventAdminAnalysesGetByID,
 	AuditEventAdminAnalysesGetByIDFailed,
+	AuditEventAdminAnalysesGetFastQCReport,
+	AuditEventAdminAnalysesGetFastQCReportFailed,
 	AuditEventAdminAnalysesDownloadZip,
 	AuditEventAdminAnalysesDownloadZipFailed,
 	AuditEventAdminAnalysesCreate,

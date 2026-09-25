@@ -541,6 +541,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/analyses` | Lista todas as análises (filtros: originCode — código da origem, parcial; type — exato: GENOME, FASTQC, COMPLETE; username — username do dono, exato) |
 | GET | `/api/admin/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
+| GET | `/api/admin/analyses/:analysisId/:fastqcReport` | Renderiza o relatório FastQC (HTML) de uma análise |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |

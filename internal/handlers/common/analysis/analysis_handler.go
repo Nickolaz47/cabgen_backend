@@ -103,12 +103,6 @@ func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {
 		"analysis_type": string(analysis.Type),
 	})
 
-	validations.SetAuditEvent(c, models.AuditEventAnalysesGetByID, map[string]string{
-		"analysis_id":   analysis.ID.String(),
-		"sample_id":     analysis.SampleID.String(),
-		"analysis_type": string(analysis.Type),
-	})
-
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 

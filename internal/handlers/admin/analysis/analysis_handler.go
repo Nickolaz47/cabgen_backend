@@ -89,6 +89,64 @@ func (h *AdminAnalysisHandler) GetAnalysisByID(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.APIResponse{Data: analysis})
 }
 
+func (h *AdminAnalysisHandler) GetAnalysisFastQCByID(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReport, nil)
+	language := translation.GetLanguageFromContext(c)
+	rawID := c.Param("analysisId")
+
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
+		handlererrors.RespondHTMLError(c, http.StatusBadRequest,
+			responses.GetResponse(localizer, responses.InvalidURLID))
+		return
+	}
+
+	analysis, err := h.Service.FindByID(c.Request.Context(), id, uuid.Nil, language)
+	if err != nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
+		code, errMsg := handlererrors.HandleAnalysisError(err)
+		handlererrors.RespondHTMLError(c, code,
+			responses.GetResponse(localizer, errMsg))
+		return
+	}
+
+	var htmlPath *string
+	switch c.Param("fastqcReport") {
+	case "fastqc1":
+		htmlPath = analysis.FastQC1
+	case "fastqc2":
+		htmlPath = analysis.FastQC2
+	default:
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
+		handlererrors.RespondHTMLError(c, http.StatusNotFound,
+			responses.GetResponse(localizer,
+				responses.AnalysisInvalidFastQCReport))
+		return
+	}
+
+	if htmlPath == nil {
+		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReportFailed,
+			map[string]string{"analysis_id": rawID})
+		handlererrors.RespondHTMLError(c, http.StatusNotFound,
+			responses.GetResponse(localizer,
+				responses.AnalysisFastQCReportNotAvailable))
+		return
+	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFastQCReport,
+		map[string]string{
+			"analysis_id": analysis.ID.String(),
+			"sample_id":   analysis.SampleID.String(),
+		})
+
+	c.File(*htmlPath)
+}
+
 func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreate, nil)
