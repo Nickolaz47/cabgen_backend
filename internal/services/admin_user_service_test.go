@@ -270,15 +270,16 @@ func TestAdminUserCreate(t *testing.T) {
 		result, err := service.Create(context.Background(), input, adminName, lang)
 		result.ActivatedOn = nil
 
-		expected := models.AdminUserResponse{
-			Name:        input.Name,
-			Username:    input.Username,
-			Email:       input.Email,
-			CountryCode: input.CountryCode,
-			Country:     country.Names[lang],
-			ActivatedBy: &adminName,
-			CreatedBy:   adminName,
-		}
+ 		expected := models.AdminUserResponse{
+ 			Name:        input.Name,
+ 			Username:    input.Username,
+ 			Email:       input.Email,
+ 			CountryCode: input.CountryCode,
+ 			Country:     country.Names[lang],
+ 			Language:    "en",
+ 			ActivatedBy: &adminName,
+ 			CreatedBy:   adminName,
+ 		}
 
 		assert.NoError(t, err)
 		assert.Equal(t, &expected, result)

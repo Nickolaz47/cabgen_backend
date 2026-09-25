@@ -232,6 +232,7 @@ func (s *adminUserService) Create(
 		Email:       input.Email,
 		Password:    hashedPassword,
 		CountryID:   country.ID,
+		Language:    translation.ParseLanguage(language),
 		UserRole:    input.UserRole,
 		IsActive:    input.IsActive,
 		Interest:    input.Interest,

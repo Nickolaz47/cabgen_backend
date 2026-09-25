@@ -51,6 +51,7 @@ type UserResponse struct {
 	Email       string   `json:"email"`
 	CountryCode string   `json:"country_code"`
 	Country     string   `json:"country"`
+	Language    string   `json:"language"`
 	UserRole    UserRole `json:"user_role"`
 	Interest    *string  `json:"interest,omitempty"`
 	Role        *string  `json:"role,omitempty"`
@@ -64,6 +65,7 @@ type AdminUserResponse struct {
 	Email       string     `json:"email"`
 	CountryCode string     `json:"country_code"`
 	Country     string     `json:"country"`
+	Language    string     `json:"language"`
 	UserRole    UserRole   `json:"user_role"`
 	IsActive    bool       `json:"is_active"`
 	CreatedBy   string     `json:"created_by"`
@@ -88,6 +90,7 @@ func (u *User) ToResponse(language string) UserResponse {
 		Email:       u.Email,
 		CountryCode: u.Country.Code,
 		Country:     countryName,
+		Language:    u.Language,
 		UserRole:    u.UserRole,
 		Interest:    u.Interest,
 		Role:        u.Role,
@@ -108,6 +111,7 @@ func (u *User) ToAdminResponse(language string) AdminUserResponse {
 		Email:       u.Email,
 		CountryCode: u.Country.Code,
 		Country:     countryName,
+		Language:    u.Language,
 		UserRole:    u.UserRole,
 		IsActive:    u.IsActive,
 		CreatedBy:   u.CreatedBy,

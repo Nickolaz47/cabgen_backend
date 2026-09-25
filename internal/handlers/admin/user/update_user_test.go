@@ -32,6 +32,7 @@ func TestUpdateUser(t *testing.T) {
 		Email:       *updateInput.Email,
 		CountryCode: *updateInput.CountryCode,
 		Country:     "Brazil",
+		Language:    "en",
 		UserRole:    *updateInput.UserRole,
 		Role:        updateInput.Role,
 		Interest:    updateInput.Interest,
@@ -74,24 +75,25 @@ func TestUpdateUser(t *testing.T) {
 			delete(data, "id")
 		}
 
-		expected := testutils.ToJSON(map[string]any{
-			"data": map[string]any{
-				"name":         *updateInput.Name,
-				"username":     *updateInput.Username,
-				"email":        *updateInput.Email,
-				"country_code": *updateInput.CountryCode,
-				"country":      "Brazil",
-				"user_role":    updateInput.UserRole,
-				"role":         *updateInput.Role,
-				"interest":     *updateInput.Interest,
-				"institution":  *updateInput.Institution,
-				"created_at":   time.Time{},
-				"activated_by": mockAdminUser.Username,
-				"created_by":   mockAdminUser.Username,
-				"activated_on": time.Time{},
-				"updated_at":   time.Time{},
-				"is_active":    true,
-			},
+ 		expected := testutils.ToJSON(map[string]any{
+ 			"data": map[string]any{
+ 				"name":         *updateInput.Name,
+ 				"username":     *updateInput.Username,
+ 				"email":        *updateInput.Email,
+ 				"country_code": *updateInput.CountryCode,
+ 				"country":      "Brazil",
+ 				"language":     "en",
+ 				"user_role":    updateInput.UserRole,
+ 				"role":         *updateInput.Role,
+ 				"interest":     *updateInput.Interest,
+ 				"institution":  *updateInput.Institution,
+ 				"created_at":   time.Time{},
+ 				"activated_by": mockAdminUser.Username,
+ 				"created_by":   mockAdminUser.Username,
+ 				"activated_on": time.Time{},
+ 				"updated_at":   time.Time{},
+ 				"is_active":    true,
+ 			},
 		})
 
 		assert.Equal(t, http.StatusOK, w.Code)

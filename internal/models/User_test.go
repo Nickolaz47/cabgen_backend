@@ -20,6 +20,7 @@ func TestUserToResponse(t *testing.T) {
 		Email:       mockUser.Email,
 		CountryCode: mockUser.Country.Code,
 		Country:     mockUser.Country.Names[lang],
+		Language:    mockUser.Language,
 		UserRole:    mockUser.UserRole,
 		Interest:    mockUser.Interest,
 		Role:        mockUser.Role,
@@ -41,6 +42,7 @@ func TestUserToAdminResponse(t *testing.T) {
 		Email:       mockUser.Email,
 		CountryCode: mockUser.Country.Code,
 		Country:     mockUser.Country.Names[lang],
+		Language:    mockUser.Language,
 		UserRole:    mockUser.UserRole,
 		IsActive:    mockUser.IsActive,
 	}

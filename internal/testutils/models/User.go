@@ -57,6 +57,7 @@ func NewLoginUser() models.User {
 				"es": "Brazil",
 			},
 		},
+		Language: "en",
 		IsActive: true,
 		UserRole: models.Collaborator,
 	}
@@ -79,6 +80,7 @@ func NewInactiveUser() models.User {
 				"es": "Brazil",
 			},
 		},
+		Language: "en",
 		IsActive: false,
 		UserRole: models.Collaborator,
 	}
@@ -102,6 +104,7 @@ func NewAdminLoginUser() models.User {
 				"es": "Brazil",
 			},
 		},
+		Language:  "en",
 		IsActive:  true,
 		CreatedBy: "system",
 		CreatedAt: time.Now(),
