@@ -363,28 +363,37 @@ func TestBuildUnicyclerCmd(t *testing.T) {
 	})
 }
 
-func TestBuildProkkaCmd(t *testing.T) {
+func TestBuildBaktaCmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Success", func(t *testing.T) {
-		result := runner.BuildProkkaCmd("prokka", "/out", "sample", "contigs.fa", "8")
+		result := runner.BuildBaktaCmd("bakta", "/out", "genome",
+			"/db/bakta", "contigs.fa", "8")
 
 		assert.Equal(t, []string{
-			"prokka", "--outdir", "/out", "--prefix", "sample",
-			"contigs.fa", "--force", "--cpus", "8",
+			"bakta", "--db", "/db/bakta", "--output", "/out", "--prefix",
+			"genome", "--threads", "8", "--force", "contigs.fa",
 		}, result)
 	})
 
-	t.Run("Empty prokkaCmd", func(t *testing.T) {
-		assert.Nil(t, runner.BuildProkkaCmd("", "/out", "sample", "contigs.fa", "8"))
+	t.Run("Empty baktaCmd", func(t *testing.T) {
+		assert.Nil(t, runner.BuildBaktaCmd("", "/out", "sample", "/db/bakta",
+			"contigs.fa", "8"))
 	})
 
 	t.Run("Empty outputDir", func(t *testing.T) {
-		assert.Nil(t, runner.BuildProkkaCmd("prokka", "", "sample", "contigs.fa", "8"))
+		assert.Nil(t, runner.BuildBaktaCmd("bakta", "", "sample", "/db/bakta",
+			"contigs.fa", "8"))
 	})
 
 	t.Run("Empty prefix", func(t *testing.T) {
-		assert.Nil(t, runner.BuildProkkaCmd("prokka", "/out", "", "contigs.fa", "8"))
+		assert.Nil(t, runner.BuildBaktaCmd("bakta", "/out", "", "/db/bakta",
+			"contigs.fa", "8"))
+	})
+
+	t.Run("Empty dbPath", func(t *testing.T) {
+		assert.Nil(t, runner.BuildBaktaCmd("bakta", "/out", "sample", "",
+			"contigs.fa", "8"))
 	})
 }
 

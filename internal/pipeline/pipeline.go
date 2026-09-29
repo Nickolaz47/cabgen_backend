@@ -18,6 +18,7 @@ type ToolsConfig struct {
 	CheckMPath         string
 	Kraken2Path        string
 	KrakenDBPath       string
+	BaktaDBPath        string
 	FastANIPath        string
 	AbricatePath       string
 	MLSTPath           string
@@ -41,7 +42,7 @@ type CabgenPipeline interface {
 		string, string, error)
 	RunUnicycler(ctx context.Context, threads int,
 		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
-	RunProkka(ctx context.Context, threads int,
+	RunBakta(ctx context.Context, threads int,
 		assembly, outputDir string) error
 	RunCheckM(ctx context.Context, threads int, sample, assemblyDir,
 		outputDir string) (*CheckMResult, error)
@@ -128,16 +129,16 @@ func (p *cabgenPipeline) RunUnicycler(ctx context.Context, threads int,
 	return assemblyPath, nil
 }
 
-func (p *cabgenPipeline) RunProkka(ctx context.Context, threads int,
+func (p *cabgenPipeline) RunBakta(ctx context.Context, threads int,
 	assembly, outputDir string) error {
 	threadsStr := strconv.Itoa(threads)
 
-	prokkaCmd := "prokka"
+	baktaCmd := "bakta"
 	prefix := "genome"
-	prokkaCmdArgs := p.Runner.BuildProkkaCmd(prokkaCmd, outputDir,
-		prefix, assembly, threadsStr)
+	baktaCmdArgs := p.Runner.BuildBaktaCmd(baktaCmd, outputDir,
+		prefix, p.Config.BaktaDBPath, assembly, threadsStr)
 
-	if _, err := p.Runner.Run(ctx, prokkaCmdArgs); err != nil {
+	if _, err := p.Runner.Run(ctx, baktaCmdArgs); err != nil {
 		return err
 	}
 

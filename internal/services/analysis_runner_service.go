@@ -270,11 +270,11 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		return fmt.Errorf("no input files: need FASTA or FASTQ pair")
 	}
 
-	prokkaOutDir := filepath.Join(folders.AssemblyDir, "prokka")
-	s.updateStep(ctx, analysis, models.StepProkka)
-	if err := s.Pipeline.RunProkka(ctx, threads, *assemblyPath,
-		prokkaOutDir); err != nil {
-		s.Logger.Error("Failed Genome step - Prokka",
+	baktaOutDir := filepath.Join(folders.AssemblyDir, "bakta")
+	s.updateStep(ctx, analysis, models.StepBakta)
+	if err := s.Pipeline.RunBakta(ctx, threads, *assemblyPath,
+		baktaOutDir); err != nil {
+		s.Logger.Error("Failed Genome step - Bakta",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
@@ -283,7 +283,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		if isInputError(err) {
 			return err
 		}
-		return pipeline.ErrProkka
+		return pipeline.ErrBakta
 	}
 
 	ext := filepath.Ext(*assemblyPath)
@@ -362,7 +362,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		}
 	}
 
-	abricateInput := filepath.Join(prokkaOutDir, "genome.ffn")
+	abricateInput := filepath.Join(baktaOutDir, "genome.ffn")
 	abricateDBs := map[string]string{
 		"resfinder": filepath.Join(folders.AMRDir, fmt.Sprintf(
 			"%s_outAbricateRes", analysis.SampleID.String())),

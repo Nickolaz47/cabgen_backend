@@ -287,7 +287,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			pipeline.ErrUnicycler.Error())
 	})
 
-	t.Run("Error - Prokka", func(t *testing.T) {
+	t.Run("Error - Bakta", func(t *testing.T) {
 		rootDir := t.TempDir()
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
@@ -312,9 +312,9 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{
-			RunProkkaFunc: func(_ context.Context, threads int,
+			RunBaktaFunc: func(_ context.Context, threads int,
 				assembly, outputDir string) error {
-				return errors.New("prokka crashed")
+				return errors.New("bakta crashed")
 			},
 		}
 
@@ -327,8 +327,8 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			pipeline.ErrProkka.Error())
-		assert.NotContains(t, *updated.ErrorMessage, "prokka crashed")
+			pipeline.ErrBakta.Error())
+		assert.NotContains(t, *updated.ErrorMessage, "bakta crashed")
 	})
 
 	t.Run("Error - Kraken2", func(t *testing.T) {

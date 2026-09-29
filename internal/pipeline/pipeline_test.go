@@ -160,18 +160,20 @@ func TestRunUnicycler(t *testing.T) {
 	})
 }
 
-func TestRunProkka(t *testing.T) {
+func TestRunBakta(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
+		cfg := defaultConfig()
+		cfg.BaktaDBPath = "/db/bakta"
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
-			defaultConfig(), nil)
-		err := p.RunProkka(context.Background(), 8, "contigs.fa", "/out")
+			cfg, nil)
+		err := p.RunBakta(context.Background(), 8, "contigs.fa", "/out")
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
 			defaultConfig(), nil)
-		err := p.RunProkka(context.Background(), 8, "contigs.fa", "/out")
+		err := p.RunBakta(context.Background(), 8, "contigs.fa", "/out")
 		assert.Error(t, err)
 	})
 }

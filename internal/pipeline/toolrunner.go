@@ -12,8 +12,8 @@ type ToolRunner interface {
 	BuildFastQCCmd(fastqcCmd, read1, read2, outputDir string) []string
 	BuildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir, threads,
 		spadesPath string) []string
-	BuildProkkaCmd(prokkaCmd, outputDir, prefix, assemblyPath,
-		threads string) []string
+	BuildBaktaCmd(baktaCmd, outputDir, prefix, dbPath,
+		assemblyPath, threads string) []string
 	BuildCheckMLineageCmd(checkmCmd, inputDir, outputDir,
 		threads string) []string
 	BuildCheckMQACmd(checkmCmd, checkmDir, sample, threads string) []string
@@ -80,16 +80,15 @@ func (r *toolRunner) BuildUnicyclerCmd(unicyclerCmd, read1, read2, outputDir,
 	}
 }
 
-func (r *toolRunner) BuildProkkaCmd(prokkaCmd, outputDir, prefix,
+func (r *toolRunner) BuildBaktaCmd(baktaCmd, outputDir, prefix, dbPath,
 	assemblyPath, threads string) []string {
-	if prokkaCmd == "" || outputDir == "" || prefix == "" ||
-		assemblyPath == "" || threads == "" {
+	if baktaCmd == "" || outputDir == "" || prefix == "" ||
+		dbPath == "" || assemblyPath == "" || threads == "" {
 		return nil
 	}
 
-	return []string{
-		prokkaCmd, "--outdir", outputDir, "--prefix", prefix,
-		assemblyPath, "--force", "--cpus", threads,
+	return []string{baktaCmd, "--db", dbPath, "--output", outputDir,
+		"--prefix", prefix, "--threads", threads, "--force", assemblyPath,
 	}
 }
 

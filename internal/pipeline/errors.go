@@ -14,7 +14,7 @@ var (
 var (
 	ErrFastQC              = errors.New("The FastQC step failed. Create a new analysis.")
 	ErrUnicycler           = errors.New("The Unicycler step failed. Create a new analysis.")
-	ErrProkka              = errors.New("The Prokka step failed. Create a new analysis.")
+	ErrBakta               = errors.New("The Bakta step failed. Create a new analysis.")
 	ErrCheckM              = errors.New("The CheckM step failed. Create a new analysis.")
 	ErrKraken2             = errors.New("The Kraken2 step failed. Create a new analysis.")
 	ErrSpecies             = errors.New("The Species identification (mlst, fastani) step failed. Create a new analysis.")

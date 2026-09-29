@@ -12,7 +12,7 @@ type MockToolRunner struct {
 	BuildBlastXCmdFunc        func(blastDB, inputFile, outputFile string) []string
 	BuildFastQCCmdFunc        func(fastqcCmd, read1, read2, outputDir string) []string
 	BuildUnicyclerCmdFunc     func(unicyclerCmd, read1, read2, outputDir, threads, spadesPath string) []string
-	BuildProkkaCmdFunc        func(prokkaCmd, outputDir, prefix, assemblyPath, threads string) []string
+	BuildBaktaCmdFunc         func(baktaCmd, outputDir, prefix, dbPath, assemblyPath, threads string) []string
 	BuildCheckMLineageCmdFunc func(checkmCmd, inputDir, outputDir, threads string) []string
 	BuildCheckMQACmdFunc      func(checkmCmd, checkmDir, sample, threads string) []string
 	BuildKraken2CmdFunc       func(krakenCmd, dbPath, outputDir, threads, assemblyPath string) []string
@@ -54,11 +54,11 @@ func (m *MockToolRunner) BuildUnicyclerCmd(unicyclerCmd, read1, read2,
 	return nil
 }
 
-func (m *MockToolRunner) BuildProkkaCmd(prokkaCmd, outputDir, prefix,
-	assemblyPath, threads string) []string {
-	if m.BuildProkkaCmdFunc != nil {
-		return m.BuildProkkaCmdFunc(prokkaCmd, outputDir, prefix, assemblyPath,
-			threads)
+func (m *MockToolRunner) BuildBaktaCmd(baktaCmd, outputDir, prefix,
+	dbPath, assemblyPath, threads string) []string {
+	if m.BuildBaktaCmdFunc != nil {
+		return m.BuildBaktaCmdFunc(baktaCmd, outputDir, prefix, dbPath,
+			assemblyPath, threads)
 	}
 	return nil
 }
@@ -129,7 +129,7 @@ type MockCabgenPipeline struct {
 		outputDir string) (string, string, error)
 	RunUnicyclerFunc func(ctx context.Context, threads int,
 		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
-	RunProkkaFunc func(ctx context.Context, threads int,
+	RunBaktaFunc func(ctx context.Context, threads int,
 		assembly, outputDir string) error
 	RunCheckMFunc func(ctx context.Context, threads int, sample,
 		assemblyDir, outputDir string) (*pipeline.CheckMResult, error)
@@ -166,10 +166,10 @@ func (m *MockCabgenPipeline) RunUnicycler(ctx context.Context, threads int,
 	return "assembly.fasta", nil
 }
 
-func (m *MockCabgenPipeline) RunProkka(ctx context.Context, threads int,
+func (m *MockCabgenPipeline) RunBakta(ctx context.Context, threads int,
 	assembly, outputDir string) error {
-	if m.RunProkkaFunc != nil {
-		return m.RunProkkaFunc(ctx, threads, assembly, outputDir)
+	if m.RunBaktaFunc != nil {
+		return m.RunBaktaFunc(ctx, threads, assembly, outputDir)
 	}
 	return nil
 }

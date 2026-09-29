@@ -14,7 +14,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 	toolOutputs := map[string]string{
 		"fastqc":    "FastQC v1.2.3",
 		"unicycler": "unicycler v1.2.3",
-		"prokka":    "prokka 1.2.3",
+		"bakta":     "bakta 1.2.3",
 		"checkm":    "checkm v1.2.3",
 		"kraken2":   "kraken2 version 1.2.3",
 		"fastANI":   "fastANI 1.2.3",
@@ -39,7 +39,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 
 		expected := map[string]string{
 			"FastQC": "1.2.3", "Unicycler": "1.2.3",
-			"Prokka": "1.2.3", "CheckM": "1.2.3",
+			"Bakta": "1.2.3", "CheckM": "1.2.3",
 			"Kraken2": "1.2.3", "FastANI": "1.2.3",
 			"Abricate": "1.2.3", "MLST": "1.2.3",
 			"Blast": "1.2.3",
@@ -80,10 +80,10 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 
 	t.Run("Partial Failure", func(t *testing.T) {
 		failingCmds := map[string]bool{
-			"fastqc": true, "unicycler": true, "prokka": true,
+			"fastqc": true, "unicycler": true, "bakta": true,
 		}
 		failingNames := map[string]bool{
-			"FastQC": true, "Unicycler": true, "Prokka": true,
+			"FastQC": true, "Unicycler": true, "Bakta": true,
 		}
 
 		cmd := &mocks.MockCommander{

@@ -33,7 +33,7 @@ RUN micromamba install -y -n base -c bioconda -c conda-forge \
     "fastqc=0.12.1" \
     unicycler \
     "spades=4.3.0" \
-    "prokka=1.14.6" \
+    "bakta=1.12.1" \
     "checkm-genome" \
     "kraken2=2.17.1" \
     "fastani=1.34" \

@@ -33,6 +33,7 @@ func main() {
 	dbPaths := []struct{ name, path string }{
 		{"RESFINDER_DB_PATH", config.ResfinderDBPath},
 		{"KRAKEN_DB_PATH", config.KrakenDBPath},
+		{"BAKTA_DB_PATH", config.BaktaDBPath},
 		{"CHECKM_DATA_PATH", os.Getenv("CHECKM_DATA_PATH")},
 		{"FASTANI_PATH", config.FastaniPath},
 		{"POLI_DB_PSEUDO", config.PoliDbPseudo},
@@ -85,6 +86,7 @@ func main() {
 		CheckMPath:         config.CheckMPath,
 		Kraken2Path:        config.Kraken2Path,
 		KrakenDBPath:       config.KrakenDBPath,
+		BaktaDBPath:        config.BaktaDBPath,
 		FastANIPath:        config.FastaniPath,
 		AbricatePath:       config.AbricatePath,
 		MLSTPath:           config.MlstPath,

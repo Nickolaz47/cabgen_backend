@@ -42,10 +42,10 @@ var errorMessageTranslations = map[error]map[string]string{
 		"pt": "A etapa do Unicycler falhou. Crie uma nova análise.",
 		"es": "El paso de Unicycler falló. Cree un nuevo análisis.",
 	},
-	pipeline.ErrProkka: {
-		"en": "The Prokka step failed. Create a new analysis.",
-		"pt": "A etapa do Prokka falhou. Crie uma nova análise.",
-		"es": "El paso de Prokka falló. Cree un nuevo análisis.",
+	pipeline.ErrBakta: {
+		"en": "The Bakta step failed. Create a new analysis.",
+		"pt": "A etapa do Bakta falhou. Crie uma nova análise.",
+		"es": "El paso de Bakta falló. Cree un nuevo análisis.",
 	},
 	pipeline.ErrCheckM: {
 		"en": "The CheckM step failed. Create a new analysis.",
@@ -112,7 +112,7 @@ type AnalysisStep string
 const (
 	StepFastQC    AnalysisStep = "FastQC"
 	StepUnicycler AnalysisStep = "Unicycler"
-	StepProkka    AnalysisStep = "Prokka"
+	StepBakta     AnalysisStep = "Bakta"
 	StepCheckM    AnalysisStep = "CheckM"
 	StepKraken2   AnalysisStep = "Kraken2"
 	StepSpecies   AnalysisStep = "Species"

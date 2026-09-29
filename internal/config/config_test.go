@@ -42,6 +42,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			CHECKM_PATH=/usr/bin/checkm
 			KRAKEN2_PATH=/usr/bin/kraken2
 			KRAKEN_DB_PATH=/data/kraken_db
+			BAKTA_DB_PATH=/data/bakta_db
 			UNICYCLER_PATH=/usr/bin/unicycler
 			FASTANI_PATH=/usr/bin/fastani
 			SPADES_PATH=/usr/bin/spades
@@ -82,6 +83,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedCheckMPath := "/usr/bin/checkm"
 		expectedKraken2Path := "/usr/bin/kraken2"
 		expectedKrakenDBPath := "/data/kraken_db"
+		expectedBaktaDBPath := "/data/bakta_db"
 		expectedUnicyclerPath := "/usr/bin/unicycler"
 		expectedFastaniPath := "/usr/bin/fastani"
 		expectedSpadesPath := "/usr/bin/spades"
@@ -129,6 +131,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedCheckMPath, os.Getenv("CHECKM_PATH"), "expected checkm paths to be equal")
 		assert.Equal(t, expectedKraken2Path, os.Getenv("KRAKEN2_PATH"), "expected kraken2 paths to be equal")
 		assert.Equal(t, expectedKrakenDBPath, os.Getenv("KRAKEN_DB_PATH"), "expected kraken db paths to be equal")
+		assert.Equal(t, expectedBaktaDBPath, os.Getenv("BAKTA_DB_PATH"), "expected bakta db paths to be equal")
 		assert.Equal(t, expectedUnicyclerPath, os.Getenv("UNICYCLER_PATH"), "expected unicycler paths to be equal")
 		assert.Equal(t, expectedFastaniPath, os.Getenv("FASTANI_PATH"), "expected fastani paths to be equal")
 		assert.Equal(t, expectedSpadesPath, os.Getenv("SPADES_PATH"), "expected spades paths to be equal")
