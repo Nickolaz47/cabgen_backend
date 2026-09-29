@@ -84,8 +84,18 @@ func (p *cabgenPipeline) RunFastQC(
 		return "", "", err
 	}
 
-	read1Name, _, _ := strings.Cut(filepath.Base(read1), ".")
-	read2Name, _, _ := strings.Cut(filepath.Base(read2), ".")
+	extensions := []string{".fastq", ".fq", ".fastq.gz", ".fq.gz"}
+	read1Name, read2Name := filepath.Base(read1), filepath.Base(read2)
+
+	for _, ext := range extensions {
+		if temp := strings.TrimSuffix(read1Name, ext); len(temp) < len(read1Name) {
+			read1Name = temp
+		}
+
+		if temp := strings.TrimSuffix(read2Name, ext); len(temp) < len(read2Name) {
+			read2Name = temp
+		}
+	}
 
 	outputHTMLfile1 := filepath.Join(outputDir,
 		fmt.Sprintf("%s_fastqc.html", read1Name))

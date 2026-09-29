@@ -98,6 +98,32 @@ func TestRunFastQC(t *testing.T) {
 		_, _, err := p.RunFastQC(context.Background(), "r1", "r2", "/out")
 		assert.Error(t, err)
 	})
+
+	t.Run("Output Names Strip Supported Extensions", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			read1    string
+			expected string
+		}{
+			{"fastq", "/data/reads.fastq", "/out/reads_fastqc.html"},
+			{"fq", "/data/reads.fq", "/out/reads_fastqc.html"},
+			{"fastq gz", "/data/reads.fastq.gz", "/out/reads_fastqc.html"},
+			{"fq gz", "/data/reads.fq.gz", "/out/reads_fastqc.html"},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				p := pipeline.NewCabgenPipeline(
+					&mocks.MockToolRunner{RunFunc: successRun},
+					defaultConfig(), nil)
+				html1, _, err := p.RunFastQC(context.Background(),
+					tt.read1, "/data/r2.fq", "/out")
+
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, html1)
+			})
+		}
+	})
 }
 
 func TestRunUnicycler(t *testing.T) {

@@ -88,6 +88,10 @@ func ParseFastANI(filePath string) (string, error) {
 		}
 	}
 
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("Error reading fastani result: %v", err)
+	}
+
 	if bestName == "" {
 		return "", errors.New("no valid data found in fastani result")
 	}
@@ -129,6 +133,10 @@ func ParseMLST(filePath string) (string, error) {
 		} else if scheme == "-" && st == "-" {
 			return "Not available for this species", nil
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("Error reading mlst result: %v", err)
 	}
 
 	return "", errors.New("No valid data found in mlst result")

@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -284,5 +285,33 @@ func TestParseMLST(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "", result)
 		assert.Contains(t, err.Error(), "Failed to open mlst result")
+	})
+}
+
+func TestParseFastANI_ScannerError(t *testing.T) {
+	t.Run("Error - Line Exceeds Scanner Buffer", func(t *testing.T) {
+		hugeLine := "path\t/data/ref/Ecoli.fasta\t99.9\t" + strings.Repeat("a", 128*1024)
+		path := createMockParserFile(t, hugeLine)
+
+		result, err := ParseFastANI(path)
+
+		assert.Empty(t, result)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Error reading fastani result")
+		assert.ErrorContains(t, err, "token too long")
+	})
+}
+
+func TestParseMLST_ScannerError(t *testing.T) {
+	t.Run("Error - Line Exceeds Scanner Buffer", func(t *testing.T) {
+		hugeLine := "contigs.fa,ecoli,131,adek0001\t" + strings.Repeat("a", 128*1024)
+		path := createMockParserFile(t, hugeLine)
+
+		result, err := ParseMLST(path)
+
+		assert.Empty(t, result)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "Error reading mlst result")
+		assert.ErrorContains(t, err, "token too long")
 	})
 }
