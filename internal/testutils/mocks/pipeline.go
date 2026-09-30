@@ -16,7 +16,6 @@ type MockToolRunner struct {
 	BuildCheckMLineageCmdFunc func(checkmCmd, inputDir, outputDir, threads string) []string
 	BuildCheckMQACmdFunc      func(checkmCmd, checkmDir, sample, threads string) []string
 	BuildKraken2CmdFunc       func(krakenCmd, dbPath, outputDir, threads, assemblyPath string) []string
-	BuildSplitterCmdFunc      func(threads, inputFile, outputFilePrefix string) []string
 	BuildFastANICmdFunc       func(fastaniCmd, query, refList, output, threads string) []string
 	BuildAbricateCmdFunc      func(abricateCmd, db, inputFile, outputFile, threads string) []string
 	BuildMLSTCmdFunc          func(mlstCmd, threads, assemblyPath, outputFile string) []string
@@ -85,14 +84,6 @@ func (m *MockToolRunner) BuildKraken2Cmd(krakenCmd, dbPath, outputDir,
 	if m.BuildKraken2CmdFunc != nil {
 		return m.BuildKraken2CmdFunc(krakenCmd, dbPath, outputDir, threads,
 			assemblyPath)
-	}
-	return nil
-}
-
-func (m *MockToolRunner) BuildSplitterCmd(threads, inputFile,
-	outputFilePrefix string) []string {
-	if m.BuildSplitterCmdFunc != nil {
-		return m.BuildSplitterCmdFunc(threads, inputFile, outputFilePrefix)
 	}
 	return nil
 }

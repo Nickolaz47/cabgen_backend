@@ -464,27 +464,6 @@ func TestBuildKraken2Cmd(t *testing.T) {
 	})
 }
 
-func TestBuildSplitterCmd(t *testing.T) {
-	runner := &toolRunner{}
-
-	t.Run("Success", func(t *testing.T) {
-		result := runner.BuildSplitterCmd("4", "input.fq", "prefix_")
-
-		assert.Equal(t, []string{
-			"split", "--numeric-suffixes=1", "-n", "l/4",
-			"input.fq", "prefix_",
-		}, result)
-	})
-
-	t.Run("Empty threads", func(t *testing.T) {
-		assert.Nil(t, runner.BuildSplitterCmd("", "input.fq", "prefix_"))
-	})
-
-	t.Run("Empty inputFile", func(t *testing.T) {
-		assert.Nil(t, runner.BuildSplitterCmd("4", "", "prefix_"))
-	})
-}
-
 func TestBuildFastANICmd(t *testing.T) {
 	runner := &toolRunner{}
 

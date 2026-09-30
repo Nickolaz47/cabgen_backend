@@ -19,7 +19,6 @@ type ToolRunner interface {
 	BuildCheckMQACmd(checkmCmd, checkmDir, sample, threads string) []string
 	BuildKraken2Cmd(krakenCmd, dbPath, outputDir, threads,
 		assemblyPath string) []string
-	BuildSplitterCmd(threads, inputFile, outputFilePrefix string) []string
 	BuildFastANICmd(fastaniCmd, query, refList, output, threads string) []string
 	BuildAbricateCmd(abricateCmd, db, inputFile, outputFile,
 		threads string) []string
@@ -130,18 +129,6 @@ func (r *toolRunner) BuildKraken2Cmd(krakenCmd, dbPath, outputDir,
 		"--output", outputDir + "/out_kraken",
 		"--report", outputDir + "/report_kraken",
 		"--threads", threads, assemblyPath,
-	}
-}
-
-func (r *toolRunner) BuildSplitterCmd(threads, inputFile,
-	outputFilePrefix string) []string {
-	if threads == "" || inputFile == "" || outputFilePrefix == "" {
-		return nil
-	}
-
-	return []string{
-		"split", "--numeric-suffixes=1", "-n", "l/" + threads,
-		inputFile, outputFilePrefix,
 	}
 }
 
