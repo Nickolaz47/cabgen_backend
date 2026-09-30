@@ -70,6 +70,7 @@ services:
     environment:
       - DB_HOST=database
       - TERM=xterm
+      - MPLCONFIGDIR=/tmp/matplotlib
     depends_on:
       worker-email:
         condition: service_started
