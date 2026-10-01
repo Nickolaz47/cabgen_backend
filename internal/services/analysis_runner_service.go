@@ -306,6 +306,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		results.CheckMCompleteness = checkmResult.Completeness
 		results.CheckMContamination = checkmResult.Contamination
 		results.CheckMGenomeSize = checkmResult.GenomeSize
+		results.CheckMContigs = checkmResult.Contigs
 		results.CheckMN50 = checkmResult.N50
 	}
 

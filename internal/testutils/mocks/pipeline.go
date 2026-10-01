@@ -172,7 +172,7 @@ func (m *MockCabgenPipeline) RunCheckM(ctx context.Context, threads int,
 	}
 	return &pipeline.CheckMResult{
 		Completeness: "99.5", Contamination: "0.5",
-		GenomeSize: "5000000", N50: "100000",
+		GenomeSize: "5000000", Contigs: "745", N50: "100000",
 	}, nil
 }
 

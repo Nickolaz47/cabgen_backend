@@ -148,6 +148,7 @@ type AnalysisResults struct {
 	CheckMCompleteness  string `json:"completeness,omitempty"`
 	CheckMContamination string `json:"contamination,omitempty"`
 	CheckMGenomeSize    string `json:"genome_size,omitempty"`
+	CheckMContigs       string `json:"contigs,omitempty"`
 	CheckMN50           string `json:"n50,omitempty"`
 
 	// --- Taxonomy and Typing ---

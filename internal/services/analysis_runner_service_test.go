@@ -1141,7 +1141,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 				*pipeline.CheckMResult, error) {
 				return &pipeline.CheckMResult{
 					Completeness: "99.5", Contamination: "0.5",
-					GenomeSize: "5000000", N50: "100000",
+					GenomeSize: "5000000", Contigs: "745", N50: "100000",
 				}, nil
 			},
 			RunAbricateFunc: func(_ context.Context, threads int,
@@ -1195,7 +1195,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 					*pipeline.CheckMResult, error) {
 					return &pipeline.CheckMResult{
 						Completeness: "99.5", Contamination: "8.0",
-						GenomeSize: "5000000", N50: "100000",
+						GenomeSize: "5000000", Contigs: "745", N50: "100000",
 					}, nil
 				},
 				RunAbricateFunc: func(_ context.Context, threads int,
@@ -1253,7 +1253,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 					*pipeline.CheckMResult, error) {
 					return &pipeline.CheckMResult{
 						Completeness: "99.5", Contamination: "0.5",
-						GenomeSize: "5000000", N50: "100000",
+						GenomeSize: "5000000", Contigs: "745", N50: "100000",
 					}, nil
 				},
 				RunAbricateFunc: func(_ context.Context, threads int,

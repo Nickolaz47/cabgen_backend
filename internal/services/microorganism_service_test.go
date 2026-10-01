@@ -202,8 +202,6 @@ func TestMicroorganismCreate(t *testing.T) {
 		expected.ID = uuid.Nil
 
 		assert.NoError(t, err)
-		// Ajuste para ignorar ID gerado aleatoriamente se necessário, ou assumir que o ToAdminDetailResponse lida com isso
-		// No exemplo original, ele compara os valores retornados.
 		assert.Equal(t, &expected, result)
 	})
 

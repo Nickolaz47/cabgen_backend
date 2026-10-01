@@ -24,25 +24,26 @@ func createMockParserFile(t *testing.T, content string) string {
 }
 
 func TestParseCheckM(t *testing.T) {
-	const header = "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\tStrain heterogeneity\tGenome size\tGC\t# contigs\t# scaffolds\t# N's\tN50\n"
+	const header = "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\tStrain heterogeneity\tGenome size (bp)\t# ambiguous bases\t# scaffolds\t# contigs\tN50 (scaffolds)\tN50 (contigs)\n"
 
 	t.Run("Success - Valid CheckM Output", func(t *testing.T) {
 		content := header +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\t25000\n"
+			"cabgen4_assembly\tf__Moraxellaceae (UID4680)\t86\t689\t365\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\t7060\t4901\t4901\t35268\t35268\t40.0\t2.14\t89.54\t11\t3725\t9\t676\t4\t0\t0\t0\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "98.54", result.Completeness)
-		assert.Equal(t, "0.52", result.Contamination)
-		assert.Equal(t, "3500000", result.GenomeSize)
-		assert.Equal(t, "25000", result.N50)
+		assert.Equal(t, "97.95", result.Completeness)
+		assert.Equal(t, "0.66", result.Contamination)
+		assert.Equal(t, "3651976", result.GenomeSize)
+		assert.Equal(t, "745", result.Contigs)
+		assert.Equal(t, "7060", result.N50)
 	})
 
 	t.Run("Success - Header Skipped", func(t *testing.T) {
 		content := header +
-			"sample1\tFirmicutes\t543\t124\t58\t99.20\t1.05\t0\t4200000\t36.1\t10\t8\t0\t30000\n"
+			"sample1\tFirmicutes\t543\t124\t58\t99.20\t1.05\t0\t4200000\t0\t520\t520\t31000\t31000\t6000\t6000\t45000\t45000\t40.0\t2.0\t90.0\t11\t4000\t5\t300\t2\t0\t0\t0\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -51,7 +52,8 @@ func TestParseCheckM(t *testing.T) {
 		assert.Equal(t, "99.20", result.Completeness)
 		assert.Equal(t, "1.05", result.Contamination)
 		assert.Equal(t, "4200000", result.GenomeSize)
-		assert.Equal(t, "30000", result.N50)
+		assert.Equal(t, "520", result.Contigs)
+		assert.Equal(t, "31000", result.N50)
 	})
 
 	t.Run("Error - Empty File", func(t *testing.T) {
@@ -74,7 +76,7 @@ func TestParseCheckM(t *testing.T) {
 
 	t.Run("Error - Data Line With Fewer Than 14 Fields", func(t *testing.T) {
 		content := header +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\n"
+			"sample1\tFirmicutes\t543\t124\t58\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
@@ -87,14 +89,15 @@ func TestParseCheckM(t *testing.T) {
 		content := header +
 			"\n" +
 			"\n" +
-			"sample1\tFirmicutes\t543\t124\t58\t98.54\t0.52\t0\t3500000\t37.5\t15\t10\t0\t25000\n"
+			"cabgen4_assembly\tf__Moraxellaceae (UID4680)\t86\t689\t365\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\t7060\t4901\t4901\t35268\t35268\t40.0\t2.14\t89.54\t11\t3725\t9\t676\t4\t0\t0\t0\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "98.54", result.Completeness)
-		assert.Equal(t, "25000", result.N50)
+		assert.Equal(t, "97.95", result.Completeness)
+		assert.Equal(t, "745", result.Contigs)
+		assert.Equal(t, "7060", result.N50)
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {

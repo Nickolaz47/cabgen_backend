@@ -407,9 +407,7 @@ func TestProcessSpecies(t *testing.T) {
 			},
 		}, defaultConfig(), nil)
 
-		// Enterobacter cloacae triggers the Enterobacter branch, which
-		// runs MLST, FastANI, then BlastX (poli first). The mock fails on
-		// call 3, which is the BlastX poli invocation.
+		// Mock fails on call 3 = BlastX (poli) — Enterobacter branch order: MLST, FastANI, BlastX
 		result, err := p.ProcessSpecies(context.Background(), 4, sampleID,
 			"Enterobacter cloacae", "contigs.fa", outDir)
 		assert.NoError(t, err)

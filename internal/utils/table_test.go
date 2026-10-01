@@ -24,6 +24,7 @@ func TestGenerateMetricsTSV(t *testing.T) {
 			"contamination": "1.23",
 			"genome_size": "4500000",
 			"n50": "12000",
+			"contigs": "745",
 			"primary_species": "Acinetobacter baumannii",
 			"secondary_species": "Klebsiella pneumoniae",
 			"mlst": "ST502",
@@ -39,8 +40,8 @@ func TestGenerateMetricsTSV(t *testing.T) {
 
 		assert.NoError(t, err)
 		body := string(result)
-		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tacquired_resistance\tvfdb\tplasmid")
-		assert.Contains(t, body, "\t30.5\t95.89\t1.23\t4500000\t12000\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tabaum_A\tIncHI2")
+		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tcontigs\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tacquired_resistance\tvfdb\tplasmid")
+		assert.Contains(t, body, "\t30.5\t95.89\t1.23\t4500000\t12000\t745\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tabaum_A\tIncHI2")
 	})
 
 	t.Run("Success - Single item with empty metrics", func(t *testing.T) {
@@ -51,8 +52,8 @@ func TestGenerateMetricsTSV(t *testing.T) {
 		assert.NoError(t, err)
 		body := string(result)
 		assert.Contains(t, body, "coverage\tcompleteness")
-		// Empty row with 14 tab-separated empty cells
-		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
+		// Empty row with 15 tab-separated empty cells
+		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
 	})
 
 	t.Run("Success - Multiple items", func(t *testing.T) {
@@ -101,7 +102,7 @@ func TestGenerateMetricsTSV(t *testing.T) {
 		assert.Len(t, lines, 2) // header + 1 data row
 		cells := splitTabs(lines[1])
 		assert.Equal(t, "", cells[1]) // coverage empty
-		assert.Equal(t, "Sp", cells[6])
+		assert.Equal(t, "Sp", cells[7])
 	})
 }
 

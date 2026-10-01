@@ -13,6 +13,7 @@ type CheckMResult struct {
 	Completeness  string
 	Contamination string
 	GenomeSize    string
+	Contigs       string
 	N50           string
 }
 
@@ -46,6 +47,7 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 			Completeness:  fields[5],
 			Contamination: fields[6],
 			GenomeSize:    fields[8],
+			Contigs:       fields[11],
 			N50:           fields[13],
 		}, nil
 	}

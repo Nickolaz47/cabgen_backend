@@ -128,19 +128,10 @@ func TestGetAbricateResult(t *testing.T) {
 }
 
 func TestProcessResfinder(t *testing.T) {
-	// refCatalog format: TSV with at least 17 columns, last column is antibiotic name
-	// refItem[0] = gene name in DB, refItem[len-17] = antibiotic
-	// NOTE: ProcessResfinder uses bufio.NewReader.Peek to check for empty file,
-	// which consumes data from the underlying refFile via its internal buffer.
-	// Then bufio.NewScanner reads from refFile's advanced position.
-	// To ensure the scanner reads the gene data, we pad a header line > 4096 bytes
-	// so br.Peek consumes the header, and the scanner reads the gene lines.
+	// refCatalog: TSV with 17+ columns; antibiotic = refItem[len-17]
+	// Header is padded >4096 bytes so bufio.Peek consumes it before the
+	// Scanner reads the gene lines.
 	buildRefLine := func(gene, antibiotic string) string {
-		// The code uses refItem[len(refItem)-17] as the antibiotic name.
-		// The reference file is read with strings.TrimSpace which strips trailing tabs,
-		// so we need a non-empty last field to preserve the column count.
-		// With 34 columns and a non-empty last field, after TrimSpace we still have 34 fields.
-		// refItem[34-17] = refItem[17] = antibiotic.
 		cols := make([]string, 34)
 		cols[0] = gene
 		cols[17] = antibiotic
@@ -156,7 +147,6 @@ func TestProcessResfinder(t *testing.T) {
 	}
 
 	buildRefContent := func(gene, antibiotic string) string {
-		// Pad header line to > 4096 bytes so br.Peek consumes it entirely
 		header := strings.Repeat("P", 10000) + "\n"
 		return header + buildRefLine(gene, antibiotic) + "\n"
 	}
@@ -271,8 +261,7 @@ func TestProcessResfinder(t *testing.T) {
 }
 
 func TestProcessVFDB(t *testing.T) {
-	// VFDB line needs at least 14 fields (0-13)
-	// ProcessVFDB uses fields[1], fields[5], fields[13], fields[10], fields[9], fields[11]
+	// VFDB line: 14 fields; ProcessVFDB uses [1],[5],[9],[10],[11],[13]
 	buildVFDBLine := func(locus, gene, extra, coverage, identity, database string) string {
 		fields := make([]string, 14)
 		fields[0] = "contig1"

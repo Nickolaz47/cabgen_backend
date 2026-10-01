@@ -12,7 +12,7 @@ import (
 
 var metricsHeaders = []string{
 	"origin_code", "coverage", "completeness", "contamination", "genome_size",
-	"n50", "primary_species", "secondary_species", "mlst", "poli_mutations",
+	"n50", "contigs", "primary_species", "secondary_species", "mlst", "poli_mutations",
 	"other_mutations", "acquired_resistance", "vfdb", "plasmid",
 }
 
@@ -41,6 +41,7 @@ func GenerateMetricsTSV(analyses []models.AnalysisResponse) ([]byte, error) {
 			r.CheckMContamination,
 			r.CheckMGenomeSize,
 			r.CheckMN50,
+			r.CheckMContigs,
 			r.PrimarySpeciesName,
 			r.SecondarySpeciesName,
 			r.MLST,
