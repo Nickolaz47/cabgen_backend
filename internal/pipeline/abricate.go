@@ -13,7 +13,11 @@ import (
 
 var vanPattern = regexp.MustCompile(`(?i)^Van`)
 
-func GetAbricateResult(filePath string) ([]string, error) {
+func baseGeneName(gene string) string {
+	return strings.Split(strings.ToLower(gene), "_")[0]
+}
+
+func GetAbricateResult(filePath, db string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to open Abricate result: %v", err)
@@ -24,6 +28,14 @@ func GetAbricateResult(filePath string) ([]string, error) {
 	_, err = br.Peek(1)
 	if err == io.EOF {
 		return nil, errors.New("Empty Abricate result")
+	}
+
+	minCoverage, minIdentity := 90.0, 90.0
+	switch db {
+	case "plasmidfinder":
+		minCoverage, minIdentity = 80.0, 90.0
+	case "vfdb":
+		minCoverage, minIdentity = 80.0, 80.0
 	}
 
 	var results []string
@@ -46,7 +58,7 @@ func GetAbricateResult(filePath string) ([]string, error) {
 
 		gene := fields[5]
 
-		if (coverage > 90.0 && identity > 90.0) ||
+		if (coverage >= minCoverage && identity >= minIdentity) ||
 			vanPattern.MatchString(gene) {
 			results = append(results, line)
 		}
@@ -95,17 +107,13 @@ func ProcessResfinder(abricateResult []string, refCatalogPath string) (
 		gene := fields[5]
 		identity := fields[10]
 
-		nameGeneParts := strings.Split(gene, "_")
-		baseNameGene := nameGeneParts[0]
-
 		foundAntibiotic := false
 		for _, refItem := range refList {
 			if len(refItem) < 17 {
 				continue
 			}
 
-			if strings.Contains(strings.ToLower(refItem[0]),
-				strings.ToLower(baseNameGene)) {
+			if baseGeneName(gene) == baseGeneName(refItem[0]) {
 				antibioticName := strings.ToLower(refItem[len(refItem)-17])
 				geneResults = append(geneResults, fmt.Sprintf(
 					"%s (resistance to %s) (allele confidence %s)", gene,

@@ -35,7 +35,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123456", "95.5", "98.0")
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Len(t, results, 1)
 		assert.Contains(t, results[0], "blaTEM")
@@ -45,7 +45,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123456", "80.0", "98.0")
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Empty(t, results)
 	})
@@ -54,7 +54,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := buildAbricateLine("seq1", "blaTEM", "resfinder", "AF123456", "95.0", "85.0")
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Empty(t, results)
 	})
@@ -63,7 +63,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := buildAbricateLine("seq1", "VanA", "resfinder", "AF123456", "50.0", "50.0")
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Len(t, results, 1)
 		assert.Contains(t, results[0], "VanA")
@@ -73,7 +73,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := buildAbricateLine("seq1", "vanB", "resfinder", "AF123456", "50.0", "50.0")
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Len(t, results, 1)
 		assert.Contains(t, results[0], "vanB")
@@ -85,7 +85,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line3 := buildAbricateLine("seq3", "VanC", "resfinder", "AF789", "60.0", "60.0")
 		path := createMockAbricateFile(t, line1+"\n"+line2+"\n"+line3+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Len(t, results, 2)
 	})
@@ -95,7 +95,7 @@ func TestGetAbricateResult(t *testing.T) {
 		highLine := buildAbricateLine("seq2", "blaCTX", "resfinder", "AF456", "95.0", "98.0")
 		path := createMockAbricateFile(t, shortLine+"\n"+highLine+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Len(t, results, 1)
 		assert.Contains(t, results[0], "blaCTX")
@@ -105,7 +105,7 @@ func TestGetAbricateResult(t *testing.T) {
 		line := "seq1\t100\t200\t+\t100/100\tblaTEM\tresfinder\tAF123\t0\tnotanumber\tnotanumber"
 		path := createMockAbricateFile(t, line+"\n")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.NoError(t, err)
 		assert.Empty(t, results)
 	})
@@ -113,17 +113,67 @@ func TestGetAbricateResult(t *testing.T) {
 	t.Run("Success - Empty File", func(t *testing.T) {
 		path := createMockAbricateFile(t, "")
 
-		results, err := GetAbricateResult(path)
+		results, err := GetAbricateResult(path, "resfinder")
 		assert.Error(t, err)
 		assert.Nil(t, results)
 		assert.Contains(t, err.Error(), "Empty Abricate result")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
-		results, err := GetAbricateResult("nonexistent.txt")
+		results, err := GetAbricateResult("nonexistent.txt", "resfinder")
 		assert.Error(t, err)
 		assert.Nil(t, results)
 		assert.Contains(t, err.Error(), "Failed to open Abricate result")
+	})
+
+	t.Run("Success - PlasmidFinder Partial Coverage Excluded", func(t *testing.T) {
+		line := buildAbricateLine("seq1", "IncFII(pKPC)", "plasmidfinder",
+			"NC_017655", "70.0", "96.0")
+		path := createMockAbricateFile(t, line+"\n")
+
+		results, err := GetAbricateResult(path, "plasmidfinder")
+		assert.NoError(t, err)
+		assert.Empty(t, results)
+	})
+
+	t.Run("Success - PlasmidFinder Boundary Coverage Included", func(t *testing.T) {
+		line := buildAbricateLine("seq1", "IncFIB", "plasmidfinder",
+			"NC_017096", "80.0", "96.0")
+		path := createMockAbricateFile(t, line+"\n")
+
+		results, err := GetAbricateResult(path, "plasmidfinder")
+		assert.NoError(t, err)
+		assert.Len(t, results, 1)
+	})
+
+	t.Run("Success - PlasmidFinder Low Identity Excluded", func(t *testing.T) {
+		line := buildAbricateLine("seq1", "IncFII", "plasmidfinder",
+			"NC_017655", "95.0", "85.0")
+		path := createMockAbricateFile(t, line+"\n")
+
+		results, err := GetAbricateResult(path, "plasmidfinder")
+		assert.NoError(t, err)
+		assert.Empty(t, results)
+	})
+
+	t.Run("Success - VFDB Moderate Identity Included", func(t *testing.T) {
+		line := buildAbricateLine("seq1", "hlyA", "vfdb", "NC_003997",
+			"85.0", "85.0")
+		path := createMockAbricateFile(t, line+"\n")
+
+		results, err := GetAbricateResult(path, "vfdb")
+		assert.NoError(t, err)
+		assert.Len(t, results, 1)
+	})
+
+	t.Run("Success - VFDB Low Coverage Excluded", func(t *testing.T) {
+		line := buildAbricateLine("seq1", "hlyA", "vfdb", "NC_003997",
+			"70.0", "90.0")
+		path := createMockAbricateFile(t, line+"\n")
+
+		results, err := GetAbricateResult(path, "vfdb")
+		assert.NoError(t, err)
+		assert.Empty(t, results)
 	})
 }
 
@@ -195,6 +245,24 @@ func TestProcessResfinder(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, geneResults, 1)
 		assert.Contains(t, geneResults[0], "resistance to ampicillin")
+	})
+
+	t.Run("Success - Similar Gene Names Not Cross-Matched", func(t *testing.T) {
+		// blaOXA-231 listed first: verifies matching is order-independent.
+		refContent := buildRefContent("blaOXA-231_1", "Carbapenem-b") +
+			"\n" + buildRefContent("blaOXA-23_1", "Carbapenem-a")
+		refPath := createMockAbricateFile(t, refContent)
+
+		abricateResult := []string{
+			buildAbricateLine("seq1", "blaOXA-23", "resfinder", "AF123", "95.0", "98.0"),
+			buildAbricateLine("seq1", "blaOXA-231", "resfinder", "AF123", "95.0", "98.0"),
+		}
+
+		geneResults, err := ProcessResfinder(abricateResult, refPath)
+		assert.NoError(t, err)
+		assert.Len(t, geneResults, 2)
+		assert.Contains(t, geneResults[0], "resistance to carbapenem-a")
+		assert.Contains(t, geneResults[1], "resistance to carbapenem-b")
 	})
 
 	t.Run("Success - Empty Abricate Result", func(t *testing.T) {

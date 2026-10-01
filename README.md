@@ -752,6 +752,28 @@ User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, Healt
 
 FastQC, Unicycler, SPAdes, Bakta, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
 
+### Filtros de resultado do ABRicate
+
+O ABRicate (v1.4.0) roda com os padrões dele (identidade ≥ 80%, cobertura ≥ 80%). Em seguida, o pipeline aplica em Go os limites da tabela abaixo.
+
+| Banco | Cobertura | Identidade | Base |
+| --- | --- | --- | --- |
+| ResFinder | ≥ 90% | ≥ 90% | Critério do CABGen, mais restritivo que o padrão do ResFinder CLI (cobertura 60%, identidade 80%), para reduzir fragmentos e falsos positivos |
+| VFDB | ≥ 80% | ≥ 80% | Padrões do Abricate (`--mincov 80 --minid 80`), apenas re-confirma em Go |
+| PlasmidFinder | ≥ 80% | ≥ 90% | Identidade 90% é o padrão do script `plasmidfinder.py` (confirmado no `add_argument`); cobertura segue o piso do ABRicate (80/80) — o script permitiria 60% |
+
+**Nota**: genes `Van*` são mantidos independente dos limites da tabela, desde que passem o piso de 80/80 do ABRicate.
+
+**Referências:**
+
+- [Seemann T. Abricate: mass screening of contigs for antimicrobial and virulence genes](https://github.com/tseemann/abricate) — limiares 80/80 (`abricate --help`, v1.4.0)
+- Bortolaia V, et al. ResFinder 4.0 for predictions of phenotypes from genotypes. J Antimicrob Chemother. 2020;75(12):3491-3500. [doi:10.1093/jac/dkaa345](https://doi.org/10.1093/jac/dkaa345) — banco/ferramenta ResFinder
+- Zankari E, et al. Identification of acquired antimicrobial resistance genes. J Antimicrob Chemother. 2012;67(11):2640-4. [doi:10.1093/jac/dks261](https://doi.org/10.1093/jac/dks261) — referência histórica
+- Liu B, et al. VFDB 2022: a general classification scheme for bacterial virulence factors. Nucleic Acids Res. 2022;50(D1):D912-D917. ([PMC8728188](https://pmc.ncbi.nlm.nih.gov/articles/PMC8728188/); [VFDB](http://www.mgc.ac.cn/VFs/)) — banco
+- Carattoli A, et al. In Silico Detection and Typing of Plasmids using PlasmidFinder and Plasmid Multilocus Sequence Typing. Antimicrob Agents Chemother. 2014;58(7):3895-903. [doi:10.1128/AAC.02412-14](https://doi.org/10.1128/AAC.02412-14) — método/banco PlasmidFinder
+- [CGE ResFinder (CLI)](https://github.com/genomicepidemiology/resfinder) — padrões 80/60
+- [CGE PlasmidFinder](https://github.com/genomicepidemiology/plasmidfinder) — parâmetros -l/-t (padrões do script `plasmidfinder.py`: cobertura 60%, identidade 90%)
+
 ### Tipos de Análise
 
 A plataforma suporta três tipos de análise, cada um com requisitos de entrada diferentes:

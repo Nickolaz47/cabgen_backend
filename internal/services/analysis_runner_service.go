@@ -386,7 +386,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 			return pipeline.ErrAbricate
 		}
 
-		rawResult, err := pipeline.GetAbricateResult(outputFile)
+		rawResult, err := pipeline.GetAbricateResult(outputFile, db)
 		if err != nil {
 			s.Logger.Error("Failed Genome step - Abricate Result",
 				logging.ServiceLogging(ctx,

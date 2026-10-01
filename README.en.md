@@ -752,6 +752,28 @@ User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, Healt
 
 FastQC, Unicycler, SPAdes, Bakta, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
 
+### ABRicate result filters
+
+ABRICate (v1.4.0) runs with its own defaults (identity ≥ 80%, coverage ≥ 80%). The pipeline then applies the table's limits in Go.
+
+| Database | Coverage | Identity | Basis |
+| --- | --- | --- | --- |
+| ResFinder | ≥ 90% | ≥ 90% | CABGen criterion, more restrictive than the ResFinder CLI defaults (coverage 60%, identity 80%), to reduce gene fragments and false positives |
+| VFDB | ≥ 80% | ≥ 80% | ABRicate standards (`--mincov 80 --minid 80`), only re-confirmed in Go |
+| PlasmidFinder | ≥ 80% | ≥ 90% | Identity 90% is the `plasmidfinder.py` script default (confirmed in its `add_argument`); coverage follows the ABRICate floor (80/80) — the script would allow 60% |
+
+**Note**: `Van*` genes are kept regardless of the table's limits, provided they pass the ABRICate 80/80 floor.
+
+**References:**
+
+- [Seemann T. Abricate: mass screening of contigs for antimicrobial and virulence genes](https://github.com/tseemann/abricate) — 80/80 thresholds (`abricate --help`, v1.4.0)
+- Bortolaia V, et al. ResFinder 4.0 for predictions of phenotypes from genotypes. J Antimicrob Chemother. 2020;75(12):3491-3500. [doi:10.1093/jac/dkaa345](https://doi.org/10.1093/jac/dkaa345) — ResFinder tool/database
+- Zankari E, et al. Identification of acquired antimicrobial resistance genes. J Antimicrob Chemother. 2012;67(11):2640-4. [doi:10.1093/jac/dks261](https://doi.org/10.1093/jac/dks261) — historical reference
+- Liu B, et al. VFDB 2022: a general classification scheme for bacterial virulence factors. Nucleic Acids Res. 2022;50(D1):D912-D917. ([PMC8728188](https://pmc.ncbi.nlm.nih.gov/articles/PMC8728188/); [VFDB](http://www.mgc.ac.cn/VFs/)) — database
+- Carattoli A, et al. In Silico Detection and Typing of Plasmids using PlasmidFinder and Plasmid Multilocus Sequence Typing. Antimicrob Agents Chemother. 2014;58(7):3895-903. [doi:10.1128/AAC.02412-14](https://doi.org/10.1128/AAC.02412-14) — PlasmidFinder method/database
+- [CGE ResFinder (CLI)](https://github.com/genomicepidemiology/resfinder) — 80/60 standards
+- [CGE PlasmidFinder](https://github.com/genomicepidemiology/plasmidfinder) — -l/-t parameters (`plasmidfinder.py` script defaults: coverage 60%, identity 90%)
+
 ### Analysis Types
 
 The platform supports three analysis types, each with different input requirements:
