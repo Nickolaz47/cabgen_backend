@@ -8,24 +8,25 @@ import (
 )
 
 type User struct {
-	ID          string          `gorm:"primaryKey;default:(hex(randomblob(16)))" json:"id"`
-	Name        string          `gorm:"not null" json:"name"`
-	Username    string          `gorm:"not null;uniqueIndex" json:"username"`
-	Email       string          `gorm:"not null;uniqueIndex" json:"email"`
-	Password    string          `gorm:"not null" json:"-" `
-	CountryID   uint            `gorm:"type:uint;not null" json:"country_id" `
-	Country     models.Country  `gorm:"foreignKey:CountryID;references:ID" `
-	IsActive    bool            `gorm:"not null" json:"is_active"`
-	UserRole    models.UserRole `gorm:"type:varchar(20);not null" json:"user_role"`
-	Language    string          `gorm:"type:varchar(2);not null;default:'en'" json:"language"`
-	Interest    *string         `gorm:"default:null" json:"interest,omitempty"`
-	Role        *string         `gorm:"default:null" json:"role,omitempty"`
-	Institution *string         `gorm:"default:null" json:"institution,omitempty"`
-	CreatedBy   string          `gorm:"not null" json:"created_by"`
-	ActivatedBy *string         `json:"activated_by"`
-	ActivatedOn *time.Time      `json:"activated_on"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
+	ID              string          `gorm:"primaryKey;default:(hex(randomblob(16)))" json:"id"`
+	Name            string          `gorm:"not null" json:"name"`
+	Username        string          `gorm:"not null;uniqueIndex" json:"username"`
+	Email           string          `gorm:"not null;uniqueIndex" json:"email"`
+	Password        string          `gorm:"not null" json:"-" `
+	CountryID       uint            `gorm:"type:uint;not null" json:"country_id" `
+	Country         models.Country  `gorm:"foreignKey:CountryID;references:ID" `
+	IsActive        bool            `gorm:"not null" json:"is_active"`
+	IsPartOfNetwork bool            `gorm:"not null;default:false" json:"is_part_of_network"`
+	UserRole        models.UserRole `gorm:"type:varchar(20);not null" json:"user_role"`
+	Language        string          `gorm:"type:varchar(2);not null;default:'en'" json:"language"`
+	Interest        *string         `gorm:"default:null" json:"interest,omitempty"`
+	Role            *string         `gorm:"default:null" json:"role,omitempty"`
+	Institution     *string         `gorm:"default:null" json:"institution,omitempty"`
+	CreatedBy       string          `gorm:"not null" json:"created_by"`
+	ActivatedBy     *string         `json:"activated_by"`
+	ActivatedOn     *time.Time      `json:"activated_on"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
 }
 
 var (
@@ -119,6 +120,8 @@ func NewRegisterUser(inputUsername, inputEmail string) models.UserRegisterInput 
 		inputEmail = email
 	}
 
+	isPartOfNetwork := false
+
 	return models.UserRegisterInput{
 		Name:            name,
 		Username:        inputUsername,
@@ -127,6 +130,7 @@ func NewRegisterUser(inputUsername, inputEmail string) models.UserRegisterInput 
 		Password:        password,
 		ConfirmPassword: password,
 		CountryCode:     countryCode,
+		IsPartOfNetwork: &isPartOfNetwork,
 		Interest:        &interest,
 		Role:            &role,
 		Institution:     &institution,
@@ -152,17 +156,20 @@ func NewAdminCreateUserInput(inputEmail, inputUsername string) models.AdminUserC
 		inputUsername = "eddy"
 	}
 
+	isPartOfNetwork := false
+
 	return models.AdminUserCreateInput{
-		Name:        "Eddie",
-		Username:    inputUsername,
-		Email:       inputEmail,
-		Password:    password,
-		CountryCode: countryCode,
-		UserRole:    models.Collaborator,
-		IsActive:    true,
-		Interest:    &interest,
-		Role:        &role,
-		Institution: &institution,
+		Name:            "Eddie",
+		Username:        inputUsername,
+		Email:           inputEmail,
+		Password:        password,
+		CountryCode:     countryCode,
+		UserRole:        models.Collaborator,
+		IsActive:        true,
+		IsPartOfNetwork: &isPartOfNetwork,
+		Interest:        &interest,
+		Role:            &role,
+		Institution:     &institution,
 	}
 }
 

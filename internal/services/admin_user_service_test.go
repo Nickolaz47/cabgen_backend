@@ -235,12 +235,15 @@ func TestAdminUserCreate(t *testing.T) {
 	lang := "en"
 	adminName := "Roberto"
 
+	isPartOfNetwork := false
+
 	input := models.AdminUserCreateInput{
-		Name:        "Admin",
-		Username:    "admin",
-		Email:       "admin@mail.com",
-		Password:    "123456",
-		CountryCode: "BRA",
+		Name:            "Admin",
+		Username:        "admin",
+		Email:           "admin@mail.com",
+		Password:        "123456",
+		CountryCode:     "BRA",
+		IsPartOfNetwork: &isPartOfNetwork,
 	}
 
 	country := testmodels.NewCountry("BRA", map[string]string{"en": "Brazil"})
@@ -270,16 +273,16 @@ func TestAdminUserCreate(t *testing.T) {
 		result, err := service.Create(context.Background(), input, adminName, lang)
 		result.ActivatedOn = nil
 
- 		expected := models.AdminUserResponse{
- 			Name:        input.Name,
- 			Username:    input.Username,
- 			Email:       input.Email,
- 			CountryCode: input.CountryCode,
- 			Country:     country.Names[lang],
- 			Language:    "en",
- 			ActivatedBy: &adminName,
- 			CreatedBy:   adminName,
- 		}
+		expected := models.AdminUserResponse{
+			Name:        input.Name,
+			Username:    input.Username,
+			Email:       input.Email,
+			CountryCode: input.CountryCode,
+			Country:     country.Names[lang],
+			Language:    "en",
+			ActivatedBy: &adminName,
+			CreatedBy:   adminName,
+		}
 
 		assert.NoError(t, err)
 		assert.Equal(t, &expected, result)

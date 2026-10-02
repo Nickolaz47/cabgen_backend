@@ -190,6 +190,9 @@ other = "User not found."
 [user.delete.success]
 other = "User deleted successfully."
 
+[user.delete.partOfNetwork.error]
+other = "Users that are part of the network need to contact the administrator before deleting their account."
+
 [user.update.error]
 other = "Could not update user."
 
@@ -363,6 +366,9 @@ other = "City must be at least {{.Param}} characters long."
 
 [validation.City.required]
 other = "City is required."
+
+[validation.IsPartOfNetwork.required]
+other = "Informing whether you are part of the network is required."
 
 [validation.City.max]
 other = "City must be at most {{.Param}} characters long."

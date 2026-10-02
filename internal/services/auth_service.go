@@ -140,17 +140,18 @@ func (s *authService) Register(
 	}
 
 	user := models.User{
-		Name:        input.Name,
-		Username:    input.Username,
-		Email:       input.Email,
-		Password:    hashedPassword,
-		CountryID:   country.ID,
-		UserRole:    models.Collaborator,
-		Language:    translation.ParseLanguage(language),
-		Interest:    input.Interest,
-		Role:        input.Role,
-		Institution: input.Institution,
-		CreatedBy:   input.Username,
+		Name:            input.Name,
+		Username:        input.Username,
+		Email:           input.Email,
+		Password:        hashedPassword,
+		CountryID:       country.ID,
+		UserRole:        models.Collaborator,
+		Language:        translation.ParseLanguage(language),
+		IsPartOfNetwork: *input.IsPartOfNetwork,
+		Interest:        input.Interest,
+		Role:            input.Role,
+		Institution:     input.Institution,
+		CreatedBy:       input.Username,
 	}
 
 	if err := s.UserRepo.CreateUser(ctx, &user); err != nil {

@@ -187,6 +187,15 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 		return ErrInternal
 	}
 
+	if user.IsPartOfNetwork {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"UserService", "Delete",
+			logging.UserPartOfNetworkError, nil,
+			zap.String("user_id", user.ID.String()),
+		)...)
+		return ErrUserPartOfNetwork
+	}
+
 	userEmail := user.Email
 	userName := user.Name
 

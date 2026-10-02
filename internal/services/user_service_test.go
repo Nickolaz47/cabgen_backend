@@ -166,6 +166,35 @@ func TestUserDelete(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
+	t.Run("Error - Part of Network", func(t *testing.T) {
+		networkUser := testmodels.NewLoginUser()
+		networkUser.IsPartOfNetwork = true
+
+		deleted := false
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &networkUser, nil
+			},
+			DeleteUserFunc: func(ctx context.Context,
+				user *models.User) error {
+				deleted = true
+				return nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
+
+		service := services.NewUserService(userRepo, nil, nil,
+			&mocks.MockTicketRepository{}, nil, nil, mockLogger, "")
+		err := service.Delete(context.Background(), networkUser.ID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrUserPartOfNetwork)
+		assert.False(t, deleted)
+		assert.Equal(t, 1, logs.Len())
+	})
+
 	t.Run("Error - Ticket Unassign Fails", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context,

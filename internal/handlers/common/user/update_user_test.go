@@ -65,20 +65,21 @@ func TestUpdateUser(t *testing.T) {
 		c.Set(validations.UserTokenKey, &mockUserToken)
 		handler.UpdateUser(c)
 
- 		expected := testutils.ToJSON(map[string]any{
- 			"data": map[string]any{
- 				"name":         *updateInput.Name,
- 				"username":     *updateInput.Username,
- 				"email":        mockUser.Email,
- 				"country_code": *updateInput.CountryCode,
- 				"country":      "Brazil",
- 				"language":     "en",
- 				"user_role":    mockUser.UserRole,
- 				"role":         *updateInput.Role,
- 				"interest":     *updateInput.Interest,
- 				"institution":  *updateInput.Institution,
- 			},
- 		})
+		expected := testutils.ToJSON(map[string]any{
+			"data": map[string]any{
+				"name":               *updateInput.Name,
+				"username":           *updateInput.Username,
+				"email":              mockUser.Email,
+				"country_code":       *updateInput.CountryCode,
+				"country":            "Brazil",
+				"language":           "en",
+				"user_role":          mockUser.UserRole,
+				"role":               *updateInput.Role,
+				"interest":           *updateInput.Interest,
+				"institution":        *updateInput.Institution,
+				"is_part_of_network": false,
+			},
+		})
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())

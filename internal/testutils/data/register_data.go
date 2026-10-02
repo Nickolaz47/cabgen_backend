@@ -7,19 +7,27 @@ import (
 )
 
 var baseValidRegisterBody = map[string]any{
-	"name":             "Eddie",
-	"username":         "eddy",
-	"email":            "eddy@mail.com",
-	"confirm_email":    "eddy@mail.com",
-	"password":         "12345678",
-	"confirm_password": "12345678",
-	"country_code":     "BRA",
-	"interest":         "Bacterial resistance",
-	"role":             "Researcher",
-	"institution":      "NCBI",
+	"name":               "Eddie",
+	"username":           "eddy",
+	"email":              "eddy@mail.com",
+	"confirm_email":      "eddy@mail.com",
+	"password":           "12345678",
+	"confirm_password":   "12345678",
+	"country_code":       "BRA",
+	"is_part_of_network": false,
+	"interest":           "Bacterial resistance",
+	"role":               "Researcher",
+	"institution":        "NCBI",
 }
 
 var RegisterTests = []Body{
+	// IsPartOfNetwork
+	{"Is part of network required", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseValidRegisterBody)
+		delete(b, "is_part_of_network")
+		return b
+	}()), `{"error":"Informing whether you are part of the network is required."}`},
+
 	// Name
 	{"Name required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["name"] = ""; return b }()), `{"error":"Name is required."}`},
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["name"] = "Ed"; return b }()), `{"error":"Name must be at least 3 characters long."}`},

@@ -35,6 +35,10 @@ func ApplyAdminUpdateToUser(user *models.User, input *models.AdminUserUpdateInpu
 		user.IsActive = *input.IsActive
 	}
 
+	if input.IsPartOfNetwork != nil {
+		user.IsPartOfNetwork = *input.IsPartOfNetwork
+	}
+
 	if input.Interest != nil {
 		user.Interest = input.Interest
 	}

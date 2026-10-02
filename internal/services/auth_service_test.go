@@ -73,6 +73,45 @@ func TestRegister(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
+	t.Run("Success - Part of Network", func(t *testing.T) {
+		isPartOfNetwork := true
+		input := testmodels.NewRegisterUser("", "")
+		input.IsPartOfNetwork = &isPartOfNetwork
+
+		var createdUser *models.User
+		userRepo := &mocks.MockUserRepository{
+			ExistsByEmailFunc: func(ctx context.Context, email *string, ID uuid.UUID) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+			ExistsByUsernameFunc: func(ctx context.Context, username *string, ID uuid.UUID) (*models.User, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+			CreateUserFunc: func(ctx context.Context, user *models.User) error {
+				createdUser = user
+				return nil
+			},
+		}
+
+		countryRepo := &mocks.MockCountryRepository{
+			GetCountryByCodeFunc: func(ctx context.Context, code string) (*models.Country, error) {
+				return &validCountry, nil
+			},
+		}
+
+		hasher := &mocks.MockHasher{}
+		enqueuer := &mocks.MockTaskEnqueuer{}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAuthService(
+			userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
+
+		_, err := svc.Register(ctx, input, lang)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, createdUser)
+		assert.True(t, createdUser.IsPartOfNetwork)
+	})
+
 	t.Run("Error - Email already exists", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			ExistsByEmailFunc: func(ctx context.Context, email *string, _ uuid.UUID) (*models.User, error) {

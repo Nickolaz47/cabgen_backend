@@ -25,57 +25,60 @@ func (r UserRole) IsValid() bool {
 var UserRoles = []UserRole{Admin, Collaborator}
 
 type User struct {
-	ID          uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
-	Name        string    `gorm:"type:varchar(255);not null"`
-	Username    string    `gorm:"type:varchar(255);not null;uniqueIndex"`
-	Email       string    `gorm:"type:varchar(255);not null;uniqueIndex"`
-	Password    string    `gorm:"type:varchar(255);not null"`
-	CountryID   uint      `gorm:"not null"`
-	Country     Country   `gorm:"foreignKey:CountryID;references:ID"`
-	IsActive    bool      `gorm:"not null"`
-	UserRole    UserRole  `gorm:"type:varchar(20);not null"`
-	Language    string    `gorm:"type:varchar(2);not null;default:'en'"`
-	Interest    *string   `gorm:"type:varchar(255);default:null"`
-	Role        *string   `gorm:"type:varchar(255);default:null"`
-	Institution *string   `gorm:"type:varchar(255);default:null"`
-	CreatedBy   string    `gorm:"type:varchar(255);not null"`
-	ActivatedBy *string   `gorm:"type:varchar(255);default:null"`
-	ActivatedOn *time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID              uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`
+	Name            string    `gorm:"type:varchar(255);not null"`
+	Username        string    `gorm:"type:varchar(255);not null;uniqueIndex"`
+	Email           string    `gorm:"type:varchar(255);not null;uniqueIndex"`
+	Password        string    `gorm:"type:varchar(255);not null"`
+	CountryID       uint      `gorm:"not null"`
+	Country         Country   `gorm:"foreignKey:CountryID;references:ID"`
+	IsActive        bool      `gorm:"not null"`
+	IsPartOfNetwork bool      `gorm:"not null;default:false"`
+	UserRole        UserRole  `gorm:"type:varchar(20);not null"`
+	Language        string    `gorm:"type:varchar(2);not null;default:'en'"`
+	Interest        *string   `gorm:"type:varchar(255);default:null"`
+	Role            *string   `gorm:"type:varchar(255);default:null"`
+	Institution     *string   `gorm:"type:varchar(255);default:null"`
+	CreatedBy       string    `gorm:"type:varchar(255);not null"`
+	ActivatedBy     *string   `gorm:"type:varchar(255);default:null"`
+	ActivatedOn     *time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type UserResponse struct {
-	Name        string   `json:"name"`
-	Username    string   `json:"username"`
-	Email       string   `json:"email"`
-	CountryCode string   `json:"country_code"`
-	Country     string   `json:"country"`
-	Language    string   `json:"language"`
-	UserRole    UserRole `json:"user_role"`
-	Interest    *string  `json:"interest,omitempty"`
-	Role        *string  `json:"role,omitempty"`
-	Institution *string  `json:"institution,omitempty"`
+	Name            string   `json:"name"`
+	Username        string   `json:"username"`
+	Email           string   `json:"email"`
+	CountryCode     string   `json:"country_code"`
+	Country         string   `json:"country"`
+	Language        string   `json:"language"`
+	UserRole        UserRole `json:"user_role"`
+	IsPartOfNetwork bool     `json:"is_part_of_network"`
+	Interest        *string  `json:"interest,omitempty"`
+	Role            *string  `json:"role,omitempty"`
+	Institution     *string  `json:"institution,omitempty"`
 }
 
 type AdminUserResponse struct {
-	ID          uuid.UUID  `json:"id"`
-	Name        string     `json:"name"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email"`
-	CountryCode string     `json:"country_code"`
-	Country     string     `json:"country"`
-	Language    string     `json:"language"`
-	UserRole    UserRole   `json:"user_role"`
-	IsActive    bool       `json:"is_active"`
-	CreatedBy   string     `json:"created_by"`
-	ActivatedBy *string    `json:"activated_by"`
-	ActivatedOn *time.Time `json:"activated_on"`
-	Interest    *string    `json:"interest,omitempty"`
-	Role        *string    `json:"role,omitempty"`
-	Institution *string    `json:"institution,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID              uuid.UUID  `json:"id"`
+	Name            string     `json:"name"`
+	Username        string     `json:"username"`
+	Email           string     `json:"email"`
+	CountryCode     string     `json:"country_code"`
+	Country         string     `json:"country"`
+	Language        string     `json:"language"`
+	UserRole        UserRole   `json:"user_role"`
+	IsActive        bool       `json:"is_active"`
+	IsPartOfNetwork bool       `json:"is_part_of_network"`
+	CreatedBy       string     `json:"created_by"`
+	ActivatedBy     *string    `json:"activated_by"`
+	ActivatedOn     *time.Time `json:"activated_on"`
+	Interest        *string    `json:"interest,omitempty"`
+	Role            *string    `json:"role,omitempty"`
+	Institution     *string    `json:"institution,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 }
 
 func (u *User) ToResponse(language string) UserResponse {
@@ -85,16 +88,17 @@ func (u *User) ToResponse(language string) UserResponse {
 
 	countryName := u.Country.Names[language]
 	return UserResponse{
-		Name:        u.Name,
-		Username:    u.Username,
-		Email:       u.Email,
-		CountryCode: u.Country.Code,
-		Country:     countryName,
-		Language:    u.Language,
-		UserRole:    u.UserRole,
-		Interest:    u.Interest,
-		Role:        u.Role,
-		Institution: u.Institution,
+		Name:            u.Name,
+		Username:        u.Username,
+		Email:           u.Email,
+		CountryCode:     u.Country.Code,
+		Country:         countryName,
+		Language:        u.Language,
+		UserRole:        u.UserRole,
+		IsPartOfNetwork: u.IsPartOfNetwork,
+		Interest:        u.Interest,
+		Role:            u.Role,
+		Institution:     u.Institution,
 	}
 }
 
@@ -105,23 +109,24 @@ func (u *User) ToAdminResponse(language string) AdminUserResponse {
 
 	countryName := u.Country.Names[language]
 	return AdminUserResponse{
-		ID:          u.ID,
-		Name:        u.Name,
-		Username:    u.Username,
-		Email:       u.Email,
-		CountryCode: u.Country.Code,
-		Country:     countryName,
-		Language:    u.Language,
-		UserRole:    u.UserRole,
-		IsActive:    u.IsActive,
-		CreatedBy:   u.CreatedBy,
-		ActivatedBy: u.ActivatedBy,
-		ActivatedOn: u.ActivatedOn,
-		Interest:    u.Interest,
-		Role:        u.Role,
-		Institution: u.Institution,
-		CreatedAt:   u.CreatedAt,
-		UpdatedAt:   u.UpdatedAt,
+		ID:              u.ID,
+		Name:            u.Name,
+		Username:        u.Username,
+		Email:           u.Email,
+		CountryCode:     u.Country.Code,
+		Country:         countryName,
+		Language:        u.Language,
+		UserRole:        u.UserRole,
+		IsActive:        u.IsActive,
+		IsPartOfNetwork: u.IsPartOfNetwork,
+		CreatedBy:       u.CreatedBy,
+		ActivatedBy:     u.ActivatedBy,
+		ActivatedOn:     u.ActivatedOn,
+		Interest:        u.Interest,
+		Role:            u.Role,
+		Institution:     u.Institution,
+		CreatedAt:       u.CreatedAt,
+		UpdatedAt:       u.UpdatedAt,
 	}
 }
 
@@ -134,17 +139,17 @@ func (u *User) ToToken() UserToken {
 }
 
 type UserRegisterInput struct {
-	Name            string `json:"name" binding:"required,min=3,max=100"`
-	Username        string `json:"username" binding:"required,min=3,max=100"`
-	Email           string `json:"email" binding:"required,email"`
-	ConfirmEmail    string `json:"confirm_email" binding:"required,eqfield=Email"`
-	Password        string `json:"password" binding:"required,min=8,max=32"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
-	CountryCode     string `json:"country_code" binding:"required,len=3"`
-
-	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
-	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`
-	Institution *string `json:"institution,omitempty" binding:"omitempty,max=255"`
+	Name            string  `json:"name" binding:"required,min=3,max=100"`
+	Username        string  `json:"username" binding:"required,min=3,max=100"`
+	Email           string  `json:"email" binding:"required,email"`
+	ConfirmEmail    string  `json:"confirm_email" binding:"required,eqfield=Email"`
+	Password        string  `json:"password" binding:"required,min=8,max=32"`
+	ConfirmPassword string  `json:"confirm_password" binding:"required,eqfield=Password"`
+	CountryCode     string  `json:"country_code" binding:"required,len=3"`
+	IsPartOfNetwork *bool   `json:"is_part_of_network" binding:"required"`
+	Interest        *string `json:"interest,omitempty" binding:"omitempty,max=255"`
+	Role            *string `json:"role,omitempty" binding:"omitempty,max=255"`
+	Institution     *string `json:"institution,omitempty" binding:"omitempty,max=255"`
 }
 
 type UserUpdateInput struct {
@@ -159,34 +164,32 @@ type UserUpdateInput struct {
 }
 
 type AdminUserCreateInput struct {
-	Name        string `json:"name" binding:"required,min=3,max=100"`
-	Username    string `json:"username" binding:"required,min=3,max=100"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8,max=32"`
-	CountryCode string `json:"country_code" binding:"required,len=3"`
-
-	UserRole UserRole `json:"user_role" binding:"required"`
-	IsActive bool     `json:"is_active"`
-
-	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
-	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`
-	Institution *string `json:"institution,omitempty" binding:"omitempty,max=255"`
+	Name            string   `json:"name" binding:"required,min=3,max=100"`
+	Username        string   `json:"username" binding:"required,min=3,max=100"`
+	Email           string   `json:"email" binding:"required,email"`
+	Password        string   `json:"password" binding:"required,min=8,max=32"`
+	CountryCode     string   `json:"country_code" binding:"required,len=3"`
+	UserRole        UserRole `json:"user_role" binding:"required"`
+	IsActive        bool     `json:"is_active"`
+	IsPartOfNetwork *bool    `json:"is_part_of_network" binding:"required"`
+	Interest        *string  `json:"interest,omitempty" binding:"omitempty,max=255"`
+	Role            *string  `json:"role,omitempty" binding:"omitempty,max=255"`
+	Institution     *string  `json:"institution,omitempty" binding:"omitempty,max=255"`
 }
 
 type AdminUserUpdateInput struct {
-	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
-	Username    *string `json:"username,omitempty" binding:"omitempty,min=3,max=100"`
-	Email       *string `json:"email,omitempty" binding:"omitempty,email"`
-	Password    *string `json:"password" binding:"omitempty,min=8,max=32"`
-	CountryCode *string `json:"country_code,omitempty" binding:"omitempty,len=3"`
-	Language    *string `json:"language,omitempty"`
-
-	UserRole *UserRole `json:"user_role,omitempty"`
-	IsActive *bool     `json:"is_active,omitempty"`
-
-	Interest    *string `json:"interest,omitempty" binding:"omitempty,max=255"`
-	Role        *string `json:"role,omitempty" binding:"omitempty,max=255"`
-	Institution *string `json:"institution,omitempty" binding:"omitempty,max=255"`
+	Name            *string   `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
+	Username        *string   `json:"username,omitempty" binding:"omitempty,min=3,max=100"`
+	Email           *string   `json:"email,omitempty" binding:"omitempty,email"`
+	Password        *string   `json:"password" binding:"omitempty,min=8,max=32"`
+	CountryCode     *string   `json:"country_code,omitempty" binding:"omitempty,len=3"`
+	Language        *string   `json:"language,omitempty"`
+	UserRole        *UserRole `json:"user_role,omitempty"`
+	IsActive        *bool     `json:"is_active,omitempty"`
+	IsPartOfNetwork *bool     `json:"is_part_of_network,omitempty"`
+	Interest        *string   `json:"interest,omitempty" binding:"omitempty,max=255"`
+	Role            *string   `json:"role,omitempty" binding:"omitempty,max=255"`
+	Institution     *string   `json:"institution,omitempty" binding:"omitempty,max=255"`
 }
 
 type AdminUserFilter struct {

@@ -75,29 +75,90 @@ func TestUpdateUser(t *testing.T) {
 			delete(data, "id")
 		}
 
- 		expected := testutils.ToJSON(map[string]any{
- 			"data": map[string]any{
- 				"name":         *updateInput.Name,
- 				"username":     *updateInput.Username,
- 				"email":        *updateInput.Email,
- 				"country_code": *updateInput.CountryCode,
- 				"country":      "Brazil",
- 				"language":     "en",
- 				"user_role":    updateInput.UserRole,
- 				"role":         *updateInput.Role,
- 				"interest":     *updateInput.Interest,
- 				"institution":  *updateInput.Institution,
- 				"created_at":   time.Time{},
- 				"activated_by": mockAdminUser.Username,
- 				"created_by":   mockAdminUser.Username,
- 				"activated_on": time.Time{},
- 				"updated_at":   time.Time{},
- 				"is_active":    true,
- 			},
+		expected := testutils.ToJSON(map[string]any{
+			"data": map[string]any{
+				"name":               *updateInput.Name,
+				"username":           *updateInput.Username,
+				"email":              *updateInput.Email,
+				"country_code":       *updateInput.CountryCode,
+				"country":            "Brazil",
+				"language":           "en",
+				"user_role":          updateInput.UserRole,
+				"role":               *updateInput.Role,
+				"interest":           *updateInput.Interest,
+				"institution":        *updateInput.Institution,
+				"created_at":         time.Time{},
+				"activated_by":       mockAdminUser.Username,
+				"created_by":         mockAdminUser.Username,
+				"activated_on":       time.Time{},
+				"updated_at":         time.Time{},
+				"is_active":          true,
+				"is_part_of_network": false,
+			},
 		})
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, testutils.ToJSON(got))
+	})
+
+	t.Run("Success - Add To Network", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.AdminUserUpdateInput,
+				language string,
+			) (*models.AdminUserResponse, error) {
+				assert.True(t, *input.IsPartOfNetwork)
+				return &updateResponse, nil
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		body := testmodels.NewAdminUpdateUserInput()
+		isPartOfNetwork := true
+		body.IsPartOfNetwork = &isPartOfNetwork
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/users",
+			testutils.ToJSON(body),
+			nil,
+			gin.Params{{Key: "userId", Value: validUserID.String()}},
+		)
+		handler.UpdateUser(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Success - Remove From Network", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			UpdateFunc: func(
+				ctx context.Context,
+				ID uuid.UUID,
+				input models.AdminUserUpdateInput,
+				language string,
+			) (*models.AdminUserResponse, error) {
+				assert.False(t, *input.IsPartOfNetwork)
+				return &updateResponse, nil
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		body := testmodels.NewAdminUpdateUserInput()
+		isPartOfNetwork := false
+		body.IsPartOfNetwork = &isPartOfNetwork
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/users",
+			testutils.ToJSON(body),
+			nil,
+			gin.Params{{Key: "userId", Value: validUserID.String()}},
+		)
+		handler.UpdateUser(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
 	t.Run("Error - Invalid user ID", func(t *testing.T) {

@@ -227,20 +227,21 @@ func (s *adminUserService) Create(
 
 	activatedOn := time.Now()
 	user := models.User{
-		Name:        input.Name,
-		Username:    input.Username,
-		Email:       input.Email,
-		Password:    hashedPassword,
-		CountryID:   country.ID,
-		Language:    translation.ParseLanguage(language),
-		UserRole:    input.UserRole,
-		IsActive:    input.IsActive,
-		Interest:    input.Interest,
-		Role:        input.Role,
-		Institution: input.Institution,
-		CreatedBy:   adminName,
-		ActivatedBy: &adminName,
-		ActivatedOn: &activatedOn,
+		Name:            input.Name,
+		Username:        input.Username,
+		Email:           input.Email,
+		Password:        hashedPassword,
+		CountryID:       country.ID,
+		Language:        translation.ParseLanguage(language),
+		UserRole:        input.UserRole,
+		IsActive:        input.IsActive,
+		IsPartOfNetwork: *input.IsPartOfNetwork,
+		Interest:        input.Interest,
+		Role:            input.Role,
+		Institution:     input.Institution,
+		CreatedBy:       adminName,
+		ActivatedBy:     &adminName,
+		ActivatedOn:     &activatedOn,
 	}
 
 	if err := s.Repo.CreateUser(ctx, &user); err != nil {

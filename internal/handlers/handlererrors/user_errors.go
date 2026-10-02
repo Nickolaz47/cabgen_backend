@@ -14,6 +14,8 @@ func HandleUserError(err error) (int, string) {
 		return http.StatusConflict, responses.RegisterUsernameAlreadyExistsError
 	case errors.Is(err, services.ErrConflictEmail):
 		return http.StatusConflict, responses.RegisterEmailAlreadyExistsError
+	case errors.Is(err, services.ErrUserPartOfNetwork):
+		return http.StatusForbidden, responses.UserPartOfNetworkDeleteError
 	case errors.Is(err, services.ErrNotFound):
 		return http.StatusNotFound, responses.UserNotFoundError
 	case errors.Is(err, services.ErrInvalidCountryCode):

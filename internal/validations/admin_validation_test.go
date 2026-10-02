@@ -23,14 +23,17 @@ func TestApplyAdminUpdateToUser(t *testing.T) {
 	role := "Developer"
 	language := "pt"
 
+	isPartOfNetwork := false
+
 	updateInput := models.AdminUserUpdateInput{
-		Name:        &name,
-		Username:    &username,
-		Institution: &institution,
-		Interest:    &interest,
-		Role:        &role,
-		Email:       &email,
-		Language:    &language,
+		Name:            &name,
+		Username:        &username,
+		Institution:     &institution,
+		Interest:        &interest,
+		Role:            &role,
+		Email:           &email,
+		Language:        &language,
+		IsPartOfNetwork: &isPartOfNetwork,
 	}
 
 	validations.ApplyAdminUpdateToUser(&user, &updateInput)
@@ -42,6 +45,7 @@ func TestApplyAdminUpdateToUser(t *testing.T) {
 	assert.Equal(t, &interest, user.Interest)
 	assert.Equal(t, &role, user.Role)
 	assert.Equal(t, language, user.Language)
+	assert.Equal(t, isPartOfNetwork, user.IsPartOfNetwork)
 }
 
 func TestValidateTranslationMap(t *testing.T) {

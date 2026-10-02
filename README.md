@@ -358,6 +358,8 @@ Os endpoints estão organizados em três níveis de acesso:
 | POST | `/api/auth/reset-password` | Redefinição de senha |
 | POST | `/api/auth/logout` | Logout do usuário (funciona com ou sem sessão ativa) |
 
+> **Nota:** o body do cadastro inclui `is_part_of_network` (booleano obrigatório), auto-declarado no registro. Somente administradores podem alterá-lo depois; o usuário o vê em `/api/users/me`.
+
 #### Países
 
 | Método | Endpoint | Descrição |

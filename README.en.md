@@ -357,6 +357,8 @@ Endpoints are organized into three access levels:
 | POST | `/api/auth/reset-password` | Password reset |
 | POST | `/api/auth/logout` | User logout (works with or without an active session) |
 
+> **Note:** the registration body includes `is_part_of_network` (required boolean), self-declared at signup. Only administrators can change it later; the user sees it in `/api/users/me`.
+
 #### Countries
 
 | Method | Endpoint | Description |

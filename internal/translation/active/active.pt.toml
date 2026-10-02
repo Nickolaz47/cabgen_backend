@@ -190,6 +190,9 @@ other = "Usuário não encontrado."
 [user.delete.success]
 other = "Usuário excluído com sucesso."
 
+[user.delete.partOfNetwork.error]
+other = "Usuários que fazem parte da rede precisam contatar o administrador antes de excluir a conta."
+
 [user.update.error]
 other = "Não foi possível atualizar o usuário."
 
@@ -363,6 +366,9 @@ other = "A cidade deve ter no mínimo {{.Param}} caracteres."
 
 [validation.City.required]
 other = "A cidade é obrigatória."
+
+[validation.IsPartOfNetwork.required]
+other = "É obrigatório informar se faz parte da rede."
 
 [validation.City.max]
 other = "A cidade deve ter no máximo {{.Param}} caracteres."

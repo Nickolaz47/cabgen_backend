@@ -60,6 +60,27 @@ func TestRegister(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Success - Part of Network", func(t *testing.T) {
+		isPartOfNetwork := true
+		mockRegisterUser.IsPartOfNetwork = &isPartOfNetwork
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/register", testutils.ToJSON(mockRegisterUser),
+			nil, nil,
+		)
+
+		svc := &mocks.MockAuthService{
+			RegisterFunc: func(ctx context.Context, input models.UserRegisterInput, language string) (*models.UserResponse, error) {
+				assert.True(t, *input.IsPartOfNetwork)
+				return &mockResponse, nil
+			},
+		}
+		handler := handlerAuth.NewAuthHandler(svc)
+		handler.Register(c)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+	})
+
 	for _, tt := range data.RegisterTests {
 		t.Run(tt.Name, func(t *testing.T) {
 			c, w := testutils.SetupGinContext(

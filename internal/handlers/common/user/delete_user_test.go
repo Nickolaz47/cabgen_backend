@@ -65,6 +65,31 @@ func TestDeleteUser(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Error - Part of Network", func(t *testing.T) {
+		svc := &mocks.MockUserService{
+			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
+				return services.ErrUserPartOfNetwork
+			},
+		}
+		handler := user.NewUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodDelete, "/api/users/me", "",
+			nil, nil,
+		)
+		c.Set(validations.UserTokenKey, &mockToken)
+		handler.DeleteUser(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Users that are part of the network need to contact the administrator before deleting their account.",
+			},
+		)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 	t.Run("Error - Not Found", func(t *testing.T) {
 		svc := &mocks.MockUserService{
 			DeleteFunc: func(ctx context.Context, ID uuid.UUID) error {
