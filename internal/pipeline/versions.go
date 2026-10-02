@@ -21,11 +21,11 @@ var tools = []toolSpec{
 	{"FastQC", []string{"fastqc", "--version"}, `v([\d.]+)`},
 	{"Unicycler", []string{"unicycler", "--version"}, `v([\d.]+)`},
 	{"Bakta", []string{"bakta", "--version"}, `bakta ([\d.]+)`},
-	{"CheckM", []string{"checkm", "-h"}, `v([\d.]+)`},
+	{"CheckM", []string{"/usr/local/bin/checkm2", "--version"}, `([\d.]+)`},
 	{"Kraken2", []string{"kraken2", "--version"}, `version ([\d.]+)`},
 	{"FastANI", []string{"fastANI", "--version"}, `([\d.]+)`},
-	{"Abricate", []string{"abricate", "--version"}, `([\d.]+)`},
-	{"MLST", []string{"mlst", "--version"}, `([\d.]+)`},
+	{"Abricate", []string{"/usr/local/bin/abricate", "--version"}, `([\d.]+)`},
+	{"MLST", []string{"/usr/local/bin/mlst", "--version"}, `([\d.]+)`},
 	{"Blast", []string{"blastx", "-version"}, `blastx: ([\d.]+)`},
 }
 

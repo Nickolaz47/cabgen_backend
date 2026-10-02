@@ -24,36 +24,34 @@ func createMockParserFile(t *testing.T, content string) string {
 }
 
 func TestParseCheckM(t *testing.T) {
-	const header = "Bin Id\tMarker lineage\t# genomes\t# markers\t# marker sets\tCompleteness\tContamination\tStrain heterogeneity\tGenome size (bp)\t# ambiguous bases\t# scaffolds\t# contigs\tN50 (scaffolds)\tN50 (contigs)\n"
+	const header = "Name\tCompleteness\tContamination\tCompleteness_Model_Used\tTranslation_Table_Used\tCoding_Density\tContig_N50\tAverage_Gene_Length\tGenome_Size\tGC_Content\tTotal_Coding_Sequences\tTotal_Contigs\tMax_Contig_Length\tAdditional_Notes\n"
 
-	t.Run("Success - Valid CheckM Output", func(t *testing.T) {
+	t.Run("Success - Valid Quality Report", func(t *testing.T) {
 		content := header +
-			"cabgen4_assembly\tf__Moraxellaceae (UID4680)\t86\t689\t365\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\t7060\t4901\t4901\t35268\t35268\t40.0\t2.14\t89.54\t11\t3725\t9\t676\t4\t0\t0\t0\n"
+			"cabgen17_assembly\t99.99\t0.25\tNeural Network (Specific Model)\t11\t0.859\t17364\t307.0454662877809\t4144828\t0.41\t3871\t384\t121235\tNone\n"
+		path := createMockParserFile(t, content)
+
+		result, err := ParseCheckM(path)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "99.99", result.Completeness)
+		assert.Equal(t, "0.25", result.Contamination)
+		assert.Equal(t, "4144828", result.GenomeSize)
+		assert.Equal(t, "384", result.Contigs)
+		assert.Equal(t, "17364", result.N50)
+	})
+
+	t.Run("Success - Multiple Rows Uses First Bin", func(t *testing.T) {
+		content := header +
+			"bin1\t97.95\t0.66\tSpecific Model\t11\t0.895\t7060\t4901\t3651976\t40.0\t3725\t745\t35268\tNone\n" +
+			"bin2\t88.10\t2.50\tGeneral Model\t11\t0.880\t5200\t3100\t2100000\t41.5\t1900\t300\t18000\tNone\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, "97.95", result.Completeness)
-		assert.Equal(t, "0.66", result.Contamination)
-		assert.Equal(t, "3651976", result.GenomeSize)
 		assert.Equal(t, "745", result.Contigs)
-		assert.Equal(t, "7060", result.N50)
-	})
-
-	t.Run("Success - Header Skipped", func(t *testing.T) {
-		content := header +
-			"sample1\tFirmicutes\t543\t124\t58\t99.20\t1.05\t0\t4200000\t0\t520\t520\t31000\t31000\t6000\t6000\t45000\t45000\t40.0\t2.0\t90.0\t11\t4000\t5\t300\t2\t0\t0\t0\n"
-		path := createMockParserFile(t, content)
-
-		result, err := ParseCheckM(path)
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "99.20", result.Completeness)
-		assert.Equal(t, "1.05", result.Contamination)
-		assert.Equal(t, "4200000", result.GenomeSize)
-		assert.Equal(t, "520", result.Contigs)
-		assert.Equal(t, "31000", result.N50)
 	})
 
 	t.Run("Error - Empty File", func(t *testing.T) {
@@ -74,34 +72,18 @@ func TestParseCheckM(t *testing.T) {
 		assert.Contains(t, err.Error(), "No valid data found in checkm result")
 	})
 
-	t.Run("Error - Data Line With Fewer Than 14 Fields", func(t *testing.T) {
-		content := header +
-			"sample1\tFirmicutes\t543\t124\t58\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\n"
+	t.Run("Error - Missing Required Column", func(t *testing.T) {
+		content := "Name\tCompleteness\tContamination\nbin1\t97.95\t0.66\n"
 		path := createMockParserFile(t, content)
 
 		result, err := ParseCheckM(path)
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "No valid data found in checkm result")
-	})
-
-	t.Run("Success - Blank Lines Skipped", func(t *testing.T) {
-		content := header +
-			"\n" +
-			"\n" +
-			"cabgen4_assembly\tf__Moraxellaceae (UID4680)\t86\t689\t365\t97.95\t0.66\t50.00\t3651976\t0\t745\t745\t7060\t7060\t4901\t4901\t35268\t35268\t40.0\t2.14\t89.54\t11\t3725\t9\t676\t4\t0\t0\t0\n"
-		path := createMockParserFile(t, content)
-
-		result, err := ParseCheckM(path)
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, "97.95", result.Completeness)
-		assert.Equal(t, "745", result.Contigs)
-		assert.Equal(t, "7060", result.N50)
+		assert.Contains(t, err.Error(), "Missing column Genome_Size in checkm result")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
-		result, err := ParseCheckM("nonexistent.txt")
+		result, err := ParseCheckM("/nonexistent/quality_report.tsv")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Contains(t, err.Error(), "Failed to open checkm result")

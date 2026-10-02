@@ -27,6 +27,7 @@ var (
 	AbricatePath             = ""
 	MlstPath                 = ""
 	CheckMPath               = ""
+	CheckMDataPath           = ""
 	Kraken2Path              = ""
 	KrakenDBPath             = ""
 	BaktaDBPath              = ""
@@ -142,6 +143,7 @@ func LoadEnvVariables(envFile string) error {
 	AbricatePath = os.Getenv("ABRICATE_PATH")
 	MlstPath = os.Getenv("MLST_PATH")
 	CheckMPath = os.Getenv("CHECKM_PATH")
+	CheckMDataPath = os.Getenv("CHECKM_DATA_PATH")
 	Kraken2Path = os.Getenv("KRAKEN2_PATH")
 	KrakenDBPath = os.Getenv("KRAKEN_DB_PATH")
 	BaktaDBPath = os.Getenv("BAKTA_DB_PATH")

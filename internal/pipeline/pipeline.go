@@ -16,6 +16,7 @@ type ToolsConfig struct {
 	UnicyclerPath      string
 	SpadesPath         string
 	CheckMPath         string
+	CheckMDataPath     string
 	Kraken2Path        string
 	KrakenDBPath       string
 	BaktaDBPath        string
@@ -149,19 +150,13 @@ func (p *cabgenPipeline) RunCheckM(ctx context.Context, threads int,
 	sample, assemblyDir, outputDir string) (*CheckMResult, error) {
 	threadsStr := strconv.Itoa(threads)
 
-	lineageArgs := p.Runner.BuildCheckMLineageCmd(p.Config.CheckMPath,
-		assemblyDir, outputDir, threadsStr)
-	if _, err := p.Runner.Run(ctx, lineageArgs); err != nil {
+	predictArgs := p.Runner.BuildCheckM2Cmd(p.Config.CheckMPath,
+		assemblyDir, outputDir, p.Config.CheckMDataPath, threadsStr)
+	if _, err := p.Runner.Run(ctx, predictArgs); err != nil {
 		return nil, err
 	}
 
-	qaArgs := p.Runner.BuildCheckMQACmd(p.Config.CheckMPath, outputDir,
-		sample, threadsStr)
-	if _, err := p.Runner.Run(ctx, qaArgs); err != nil {
-		return nil, err
-	}
-
-	resultPath := filepath.Join(outputDir, fmt.Sprintf("%s_results", sample))
+	resultPath := filepath.Join(outputDir, "quality_report.tsv")
 	result, err := ParseCheckM(resultPath)
 	if err != nil {
 		return nil, err

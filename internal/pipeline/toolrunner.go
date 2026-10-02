@@ -14,9 +14,8 @@ type ToolRunner interface {
 		spadesPath string) []string
 	BuildBaktaCmd(baktaCmd, outputDir, prefix, dbPath,
 		assemblyPath, threads string) []string
-	BuildCheckMLineageCmd(checkmCmd, inputDir, outputDir,
+	BuildCheckM2Cmd(checkm2Cmd, inputDir, outputDir, dbPath,
 		threads string) []string
-	BuildCheckMQACmd(checkmCmd, checkmDir, sample, threads string) []string
 	BuildKraken2Cmd(krakenCmd, dbPath, outputDir, threads,
 		assemblyPath string) []string
 	BuildFastANICmd(fastaniCmd, query, refList, output, threads string) []string
@@ -91,29 +90,17 @@ func (r *toolRunner) BuildBaktaCmd(baktaCmd, outputDir, prefix, dbPath,
 	}
 }
 
-func (r *toolRunner) BuildCheckMLineageCmd(checkmCmd, inputDir,
-	outputDir, threads string) []string {
-	if checkmCmd == "" || inputDir == "" || outputDir == "" || threads == "" {
+func (r *toolRunner) BuildCheckM2Cmd(checkm2Cmd, inputDir, outputDir,
+	dbPath, threads string) []string {
+	if checkm2Cmd == "" || inputDir == "" || outputDir == "" ||
+		dbPath == "" || threads == "" {
 		return nil
 	}
 
 	return []string{
-		checkmCmd, "lineage_wf", "-x", "fasta", inputDir, outputDir,
-		"--threads", threads, "--pplacer_threads", "1",
-	}
-}
-
-func (r *toolRunner) BuildCheckMQACmd(checkmCmd, checkmDir,
-	sample, threads string) []string {
-	if checkmCmd == "" || checkmDir == "" || sample == "" || threads == "" {
-		return nil
-	}
-
-	return []string{
-		checkmCmd, "qa", "-o", "2", "-f",
-		checkmDir + "/" + sample + "_results",
-		"--tab_table", checkmDir + "/lineage.ms",
-		checkmDir, "--threads", threads,
+		checkm2Cmd, "predict", "-i", inputDir, "-x", "fasta",
+		"-o", outputDir, "--database_path", dbPath,
+		"--threads", threads, "--force",
 	}
 }
 

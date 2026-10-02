@@ -9,16 +9,15 @@ import (
 type MockToolRunner struct {
 	RunFunc func(ctx context.Context, args []string) (string, error)
 
-	BuildBlastXCmdFunc        func(blastDB, inputFile, outputFile string) []string
-	BuildFastQCCmdFunc        func(fastqcCmd, read1, read2, outputDir string) []string
-	BuildUnicyclerCmdFunc     func(unicyclerCmd, read1, read2, outputDir, threads, spadesPath string) []string
-	BuildBaktaCmdFunc         func(baktaCmd, outputDir, prefix, dbPath, assemblyPath, threads string) []string
-	BuildCheckMLineageCmdFunc func(checkmCmd, inputDir, outputDir, threads string) []string
-	BuildCheckMQACmdFunc      func(checkmCmd, checkmDir, sample, threads string) []string
-	BuildKraken2CmdFunc       func(krakenCmd, dbPath, outputDir, threads, assemblyPath string) []string
-	BuildFastANICmdFunc       func(fastaniCmd, query, refList, output, threads string) []string
-	BuildAbricateCmdFunc      func(abricateCmd, db, inputFile, outputFile, threads string) []string
-	BuildMLSTCmdFunc          func(mlstCmd, threads, assemblyPath, outputFile string) []string
+	BuildBlastXCmdFunc    func(blastDB, inputFile, outputFile string) []string
+	BuildFastQCCmdFunc    func(fastqcCmd, read1, read2, outputDir string) []string
+	BuildUnicyclerCmdFunc func(unicyclerCmd, read1, read2, outputDir, threads, spadesPath string) []string
+	BuildBaktaCmdFunc     func(baktaCmd, outputDir, prefix, dbPath, assemblyPath, threads string) []string
+	BuildCheckM2CmdFunc   func(checkm2Cmd, inputDir, outputDir, dbPath, threads string) []string
+	BuildKraken2CmdFunc   func(krakenCmd, dbPath, outputDir, threads, assemblyPath string) []string
+	BuildFastANICmdFunc   func(fastaniCmd, query, refList, output, threads string) []string
+	BuildAbricateCmdFunc  func(abricateCmd, db, inputFile, outputFile, threads string) []string
+	BuildMLSTCmdFunc      func(mlstCmd, threads, assemblyPath, outputFile string) []string
 }
 
 func (m *MockToolRunner) Run(ctx context.Context, args []string) (string, error) {
@@ -62,19 +61,11 @@ func (m *MockToolRunner) BuildBaktaCmd(baktaCmd, outputDir, prefix,
 	return nil
 }
 
-func (m *MockToolRunner) BuildCheckMLineageCmd(checkmCmd, inputDir,
-	outputDir, threads string) []string {
-	if m.BuildCheckMLineageCmdFunc != nil {
-		return m.BuildCheckMLineageCmdFunc(checkmCmd, inputDir, outputDir,
+func (m *MockToolRunner) BuildCheckM2Cmd(checkm2Cmd, inputDir, outputDir,
+	dbPath, threads string) []string {
+	if m.BuildCheckM2CmdFunc != nil {
+		return m.BuildCheckM2CmdFunc(checkm2Cmd, inputDir, outputDir, dbPath,
 			threads)
-	}
-	return nil
-}
-
-func (m *MockToolRunner) BuildCheckMQACmd(checkmCmd, checkmDir,
-	sample, threads string) []string {
-	if m.BuildCheckMQACmdFunc != nil {
-		return m.BuildCheckMQACmdFunc(checkmCmd, checkmDir, sample, threads)
 	}
 	return nil
 }

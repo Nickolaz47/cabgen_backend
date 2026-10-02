@@ -12,15 +12,15 @@ import (
 
 func TestGetBioinfoProgramVersions(t *testing.T) {
 	toolOutputs := map[string]string{
-		"fastqc":    "FastQC v1.2.3",
-		"unicycler": "unicycler v1.2.3",
-		"bakta":     "bakta 1.2.3",
-		"checkm":    "checkm v1.2.3",
-		"kraken2":   "kraken2 version 1.2.3",
-		"fastANI":   "fastANI 1.2.3",
-		"abricate":  "abricate 1.2.3",
-		"mlst":      "mlst 1.2.3",
-		"blastx":    "blastx: 1.2.3",
+		"fastqc":                  "FastQC v1.2.3",
+		"unicycler":               "unicycler v1.2.3",
+		"bakta":                   "bakta 1.2.3",
+		"/usr/local/bin/checkm2":  "1.2.3",
+		"kraken2":                 "kraken2 version 1.2.3",
+		"fastANI":                 "fastANI 1.2.3",
+		"/usr/local/bin/abricate": "abricate 1.2.3",
+		"/usr/local/bin/mlst":     "mlst 1.2.3",
+		"blastx":                  "blastx: 1.2.3",
 	}
 
 	t.Run("Success", func(t *testing.T) {
@@ -52,7 +52,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 
 	t.Run("Success - Version From Stderr", func(t *testing.T) {
 		stderrOutputs := map[string]string{
-			"checkm": "checkm v2.1.0",
+			"/usr/local/bin/checkm2": "2.1.0",
 		}
 
 		cmd := &mocks.MockCommander{

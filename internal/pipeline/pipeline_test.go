@@ -197,11 +197,13 @@ func TestRunBlastX(t *testing.T) {
 }
 
 func TestRunCheckM(t *testing.T) {
+	const qualityReport = "Name\tCompleteness\tContamination\tCompleteness_Model_Used\tTranslation_Table_Used\tCoding_Density\tContig_N50\tAverage_Gene_Length\tGenome_Size\tGC_Content\tTotal_Coding_Sequences\tTotal_Contigs\tMax_Contig_Length\tAdditional_Notes\n"
+
 	t.Run("Success", func(t *testing.T) {
 		outDir := t.TempDir()
-		writeFile(t, filepath.Join(outDir, "s1_results"),
-			"Bin Id\tML\tG\tM\tMS\tComp\tCont\tSH\tGS\tGC\tC\tS\tN\tN50\n"+
-				"s1\tF\t5\t10\t5\t98.5\t0.5\t0\t3500000\t37.5\t3\t2\t0\t25000\n")
+		writeFile(t, filepath.Join(outDir, "quality_report.tsv"),
+			qualityReport+
+				"s1\t98.5\t0.5\tSpecific Model\t11\t0.895\t25000\t4901\t3500000\t37.5\t3500\t3\t18000\tNone\n")
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig(), nil)
@@ -212,10 +214,11 @@ func TestRunCheckM(t *testing.T) {
 		assert.Equal(t, "98.5", result.Completeness)
 		assert.Equal(t, "0.5", result.Contamination)
 		assert.Equal(t, "3500000", result.GenomeSize)
+		assert.Equal(t, "3", result.Contigs)
 		assert.Equal(t, "25000", result.N50)
 	})
 
-	t.Run("Error - Lineage Fails", func(t *testing.T) {
+	t.Run("Error - Predict Fails", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
 			defaultConfig(), nil)
 		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
@@ -224,23 +227,14 @@ func TestRunCheckM(t *testing.T) {
 		assert.Nil(t, result)
 	})
 
-	t.Run("Error - QA Fails", func(t *testing.T) {
-		calls := 0
-		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{
-			RunFunc: func(ctx context.Context, args []string) (string, error) {
-				calls++
-				if calls == 2 {
-					return "", fmt.Errorf("qa failed")
-				}
-				return "", nil
-			},
-		}, defaultConfig(), nil)
-
+	t.Run("Error - Missing Quality Report", func(t *testing.T) {
+		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
+			defaultConfig(), nil)
 		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
 			"/out")
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "qa failed")
+		assert.Contains(t, err.Error(), "Failed to open checkm result")
 	})
 }
 

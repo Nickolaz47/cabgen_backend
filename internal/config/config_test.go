@@ -40,6 +40,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			ABRICATE_PATH=/usr/bin/abricate
 			MLST_PATH=/usr/bin/mlst
 			CHECKM_PATH=/usr/bin/checkm
+			CHECKM_DATA_PATH=/usr/lib/checkm2/database.dmnd
 			KRAKEN2_PATH=/usr/bin/kraken2
 			KRAKEN_DB_PATH=/data/kraken_db
 			BAKTA_DB_PATH=/data/bakta_db
@@ -81,6 +82,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedAbricatePath := "/usr/bin/abricate"
 		expectedMlstPath := "/usr/bin/mlst"
 		expectedCheckMPath := "/usr/bin/checkm"
+		expectedCheckMDataPath := "/usr/lib/checkm2/database.dmnd"
 		expectedKraken2Path := "/usr/bin/kraken2"
 		expectedKrakenDBPath := "/data/kraken_db"
 		expectedBaktaDBPath := "/data/bakta_db"
@@ -129,6 +131,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		assert.Equal(t, expectedAbricatePath, os.Getenv("ABRICATE_PATH"), "expected abricate paths to be equal")
 		assert.Equal(t, expectedMlstPath, os.Getenv("MLST_PATH"), "expected mlst paths to be equal")
 		assert.Equal(t, expectedCheckMPath, os.Getenv("CHECKM_PATH"), "expected checkm paths to be equal")
+		assert.Equal(t, expectedCheckMDataPath, os.Getenv("CHECKM_DATA_PATH"), "expected checkm data paths to be equal")
 		assert.Equal(t, expectedKraken2Path, os.Getenv("KRAKEN2_PATH"), "expected kraken2 paths to be equal")
 		assert.Equal(t, expectedKrakenDBPath, os.Getenv("KRAKEN_DB_PATH"), "expected kraken db paths to be equal")
 		assert.Equal(t, expectedBaktaDBPath, os.Getenv("BAKTA_DB_PATH"), "expected bakta db paths to be equal")

@@ -397,47 +397,33 @@ func TestBuildBaktaCmd(t *testing.T) {
 	})
 }
 
-func TestBuildCheckMLineageCmd(t *testing.T) {
+func TestBuildCheckM2Cmd(t *testing.T) {
 	runner := &toolRunner{}
 
 	t.Run("Success", func(t *testing.T) {
-		result := runner.BuildCheckMLineageCmd("checkm", "/in", "/out", "4")
+		result := runner.BuildCheckM2Cmd("checkm2", "/in", "/out",
+			"/db/checkm2/database.dmnd", "4")
 
 		assert.Equal(t, []string{
-			"checkm", "lineage_wf", "-x", "fasta", "/in", "/out",
-			"--threads", "4", "--pplacer_threads", "1",
+			"checkm2", "predict", "-i", "/in", "-x", "fasta",
+			"-o", "/out", "--database_path", "/db/checkm2/database.dmnd",
+			"--threads", "4", "--force",
 		}, result)
 	})
 
-	t.Run("Empty checkmCmd", func(t *testing.T) {
-		assert.Nil(t, runner.BuildCheckMLineageCmd("", "/in", "/out", "4"))
+	t.Run("Empty checkm2Cmd", func(t *testing.T) {
+		assert.Nil(t, runner.BuildCheckM2Cmd("", "/in", "/out",
+			"/db/database.dmnd", "4"))
 	})
 
 	t.Run("Empty inputDir", func(t *testing.T) {
-		assert.Nil(t, runner.BuildCheckMLineageCmd("checkm", "", "/out", "4"))
-	})
-}
-
-func TestBuildCheckMQACmd(t *testing.T) {
-	runner := &toolRunner{}
-
-	t.Run("Success", func(t *testing.T) {
-		result := runner.BuildCheckMQACmd("checkm", "/dir", "sample1", "4")
-
-		assert.Equal(t, []string{
-			"checkm", "qa", "-o", "2", "-f",
-			"/dir/sample1_results",
-			"--tab_table", "/dir/lineage.ms",
-			"/dir", "--threads", "4",
-		}, result)
+		assert.Nil(t, runner.BuildCheckM2Cmd("checkm2", "", "/out",
+			"/db/database.dmnd", "4"))
 	})
 
-	t.Run("Empty checkmCmd", func(t *testing.T) {
-		assert.Nil(t, runner.BuildCheckMQACmd("", "/dir", "sample1", "4"))
-	})
-
-	t.Run("Empty sample", func(t *testing.T) {
-		assert.Nil(t, runner.BuildCheckMQACmd("checkm", "/dir", "", "4"))
+	t.Run("Empty dbPath", func(t *testing.T) {
+		assert.Nil(t, runner.BuildCheckM2Cmd("checkm2", "/in", "/out",
+			"", "4"))
 	})
 }
 

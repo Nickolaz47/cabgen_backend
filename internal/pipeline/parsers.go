@@ -32,6 +32,21 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 		return nil, errors.New("Empty checkm result")
 	}
 
+	columns := make(map[string]int)
+	for i, col := range strings.Split(strings.TrimSpace(scanner.Text()), "\t") {
+		columns[col] = i
+	}
+
+	for _, key := range []string{"Name", "Completeness", "Contamination",
+		"Genome_Size", "Total_Contigs", "Contig_N50"} {
+		if _, ok := columns[key]; !ok {
+			return nil, fmt.Errorf("Missing column %s in checkm result", key)
+		}
+	}
+	name, completeness := columns["Name"], columns["Completeness"]
+	contamination, genomeSize := columns["Contamination"], columns["Genome_Size"]
+	contigs, n50 := columns["Total_Contigs"], columns["Contig_N50"]
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" {
@@ -39,16 +54,16 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 		}
 
 		fields := strings.Split(line, "\t")
-		if len(fields) < 14 {
+		if len(fields) <= n50 || fields[name] == "" {
 			continue
 		}
 
 		return &CheckMResult{
-			Completeness:  fields[5],
-			Contamination: fields[6],
-			GenomeSize:    fields[8],
-			Contigs:       fields[11],
-			N50:           fields[13],
+			Completeness:  fields[completeness],
+			Contamination: fields[contamination],
+			GenomeSize:    fields[genomeSize],
+			Contigs:       fields[contigs],
+			N50:           fields[n50],
 		}, nil
 	}
 
