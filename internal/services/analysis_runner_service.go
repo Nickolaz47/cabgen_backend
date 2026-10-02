@@ -363,7 +363,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		}
 	}
 
-	abricateInput := filepath.Join(baktaOutDir, "genome.ffn")
+	abricateInput := filepath.Join(baktaOutDir, "genome.fna")
 	abricateDBs := map[string]string{
 		"resfinder": filepath.Join(folders.AMRDir, fmt.Sprintf(
 			"%s_outAbricateRes", analysis.SampleID.String())),
