@@ -361,6 +361,9 @@ other = "The health service type must be at least {{.Param}} characters long."
 [validation.City.min]
 other = "City must be at least {{.Param}} characters long."
 
+[validation.City.required]
+other = "City is required."
+
 [validation.City.max]
 other = "City must be at most {{.Param}} characters long."
 

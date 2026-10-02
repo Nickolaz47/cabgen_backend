@@ -79,7 +79,7 @@ type Sample struct {
 	CollectionDate time.Time  `gorm:"type:date;not null"`
 	RunNumber      string     `gorm:"type:varchar(255);not null"`
 	RunDate        time.Time  `gorm:"type:date;not null"`
-	City           *string    `gorm:"type:varchar(255);default:null"`
+	City           string     `gorm:"type:varchar(255);not null"`
 	Gender         *Gender    `gorm:"type:varchar(15);default:null"`
 	DateOfBirth    *time.Time `gorm:"type:date;default:null"`
 	CreatedAt      time.Time
@@ -111,7 +111,7 @@ type SampleResponse struct {
 	CollectionDate time.Time  `json:"collection_date"`
 	RunNumber      string     `json:"run_number"`
 	RunDate        time.Time  `json:"run_date"`
-	City           *string    `json:"city"`
+	City           string     `json:"city"`
 	OriginCode     string     `json:"origin_code"`
 	Gender         *string    `json:"gender"`
 	DateOfBirth    *time.Time `json:"date_of_birth"`
@@ -180,7 +180,7 @@ type AdminSampleCreateInput struct {
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
-	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
+	City           string  `json:"city" binding:"required,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -199,7 +199,7 @@ type SampleCreateInput struct {
 	CollectionDate Date    `json:"collection_date" binding:"required"`
 	RunNumber      string  `json:"run_number" binding:"required,max=50"`
 	RunDate        Date    `json:"run_date" binding:"required"`
-	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
+	City           string  `json:"city" binding:"required,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
 	// Foreign Keys
@@ -217,7 +217,7 @@ type SampleCreateDTO struct {
 	CollectionDate  Date
 	RunNumber       string
 	RunDate         Date
-	City            *string
+	City            string
 	Gender          *Gender
 	DateOfBirth     *Date
 	CountryCode     string

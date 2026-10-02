@@ -62,6 +62,11 @@ var CreateSampleTests = []Body{
 		b["origin_code"] = strings.Repeat("A", 256)
 		return b
 	}()), `{"error":"The origin code must have a maximum of 255 characters."}`},
+	{"Missing city", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleCreateBody)
+		delete(b, "city")
+		return b
+	}()), `{"error":"City is required."}`},
 	{"Missing country_code", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
 		delete(b, "country_code")

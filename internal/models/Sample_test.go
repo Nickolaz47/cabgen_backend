@@ -177,3 +177,64 @@ func TestSampleToResponse(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestSampleCreateInputToDTO(t *testing.T) {
+	mockSample := testmodels.CreateMockSample()
+
+	input := testmodels.NewSampleCreateInput(mockSample)
+	id := uuid.New()
+
+	result := models.SampleCreateInputToDTO(input, id)
+
+	assert.Equal(t, input.OriginCode, result.OriginCode)
+	assert.Equal(t, input.CollectionDate, result.CollectionDate)
+	assert.Equal(t, input.RunNumber, result.RunNumber)
+	assert.Equal(t, input.RunDate, result.RunDate)
+	assert.Equal(t, input.City, result.City)
+	assert.Equal(t, input.Gender, result.Gender)
+	assert.Equal(t, input.DateOfBirth, result.DateOfBirth)
+	assert.Equal(t, input.CountryCode, result.CountryCode)
+	assert.Equal(t, id, result.UserID)
+	assert.Equal(t, input.OriginID, result.OriginID)
+	assert.Equal(t, input.SampleSourceID, result.SampleSourceID)
+	assert.Equal(t, input.MicroorganismID, result.MicroorganismID)
+	assert.Equal(t, input.SequencerID, result.SequencerID)
+	assert.Equal(t, input.LaboratoryID, result.LaboratoryID)
+	assert.Equal(t, input.HealthServiceID, result.HealthServiceID)
+}
+
+func TestAdminSampleCreateInputRawConversion(t *testing.T) {
+	input := models.AdminSampleCreateInput{
+		OriginCode:      "A01",
+		CollectionDate:  models.Date{Time: time.Date(2026, time.May, 20, 0, 0, 0, 0, time.UTC)},
+		RunNumber:       "RUN-01",
+		RunDate:         models.Date{Time: time.Date(2026, time.May, 25, 0, 0, 0, 0, time.UTC)},
+		City:            "Maricá",
+		CountryCode:     "BRA",
+		UserID:          uuid.New(),
+		OriginID:        uuid.New(),
+		SampleSourceID:  uuid.New(),
+		MicroorganismID: uuid.New(),
+		SequencerID:     uuid.New(),
+		LaboratoryID:    uuid.New(),
+		HealthServiceID: uuid.New(),
+	}
+
+	result := models.SampleCreateDTO(input)
+
+	assert.Equal(t, input.OriginCode, result.OriginCode)
+	assert.Equal(t, input.CollectionDate, result.CollectionDate)
+	assert.Equal(t, input.RunNumber, result.RunNumber)
+	assert.Equal(t, input.RunDate, result.RunDate)
+	assert.Equal(t, input.City, result.City)
+	assert.Equal(t, input.Gender, result.Gender)
+	assert.Equal(t, input.DateOfBirth, result.DateOfBirth)
+	assert.Equal(t, input.CountryCode, result.CountryCode)
+	assert.Equal(t, input.UserID, result.UserID)
+	assert.Equal(t, input.OriginID, result.OriginID)
+	assert.Equal(t, input.SampleSourceID, result.SampleSourceID)
+	assert.Equal(t, input.MicroorganismID, result.MicroorganismID)
+	assert.Equal(t, input.SequencerID, result.SequencerID)
+	assert.Equal(t, input.LaboratoryID, result.LaboratoryID)
+	assert.Equal(t, input.HealthServiceID, result.HealthServiceID)
+}

@@ -147,12 +147,12 @@ func SanitizeInput(model any) {
 		m.OriginCode = strings.TrimSpace(m.OriginCode)
 		m.RunNumber = strings.TrimSpace(m.RunNumber)
 		m.CountryCode = strings.TrimSpace(m.CountryCode)
-		sanitizePtr(m.City)
+		m.City = strings.TrimSpace(m.City)
 	case *models.SampleCreateInput:
 		m.OriginCode = strings.TrimSpace(m.OriginCode)
 		m.RunNumber = strings.TrimSpace(m.RunNumber)
 		m.CountryCode = strings.TrimSpace(m.CountryCode)
-		sanitizePtr(m.City)
+		m.City = strings.TrimSpace(m.City)
 	case *models.AdminSampleUpdateInput:
 		sanitizePtr(m.OriginCode)
 		sanitizePtr(m.RunNumber)

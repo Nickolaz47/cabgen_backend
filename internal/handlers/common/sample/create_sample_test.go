@@ -93,6 +93,7 @@ func TestCreateSample(t *testing.T) {
 			"collection_date":   "2026-05-20",
 			"run_number":        "RUN-01",
 			"run_date":          "2026-05-25",
+			"city":              "Maricá",
 			"country_code":      "BRA",
 			"origin_id":         validUUID,
 			"sample_source_id":  validUUID,

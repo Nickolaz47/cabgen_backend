@@ -361,6 +361,9 @@ other = "O tipo do serviço de saúde deve ter no mínimo {{.Param}} caracteres.
 [validation.City.min]
 other = "A cidade deve ter no mínimo {{.Param}} caracteres."
 
+[validation.City.required]
+other = "A cidade é obrigatória."
+
 [validation.City.max]
 other = "A cidade deve ter no máximo {{.Param}} caracteres."
 

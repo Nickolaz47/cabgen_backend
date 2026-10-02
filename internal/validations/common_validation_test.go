@@ -40,7 +40,7 @@ func TestApplySampleUpdate(t *testing.T) {
 		CollectionDate:  *models.ToTimePtr(&collectionDate),
 		RunNumber:       runNumber,
 		RunDate:         *models.ToTimePtr(&runDate),
-		City:            &city,
+		City:            city,
 		Gender:          &gender,
 		DateOfBirth:     models.ToTimePtr(&dateOfBirth),
 		CountryID:       mock.CountryID,

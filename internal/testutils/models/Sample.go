@@ -12,7 +12,7 @@ type Sample struct {
 	CollectionDate time.Time       `gorm:"type:date;not null" json:"collection_date"`
 	RunNumber      string          `gorm:"type:varchar(255);not null" json:"run_number"`
 	RunDate        time.Time       `gorm:"type:date;not null" json:"run_date"`
-	City           *string         `gorm:"type:varchar(255);default:null" json:"city,omitempty"`
+	City           string          `gorm:"type:varchar(255);not null" json:"city"`
 	OriginCode     string          `gorm:"type:varchar(255);not null" json:"origin_code"`
 	Gender         *rModels.Gender `gorm:"type:varchar(15);default:null" json:"gender,omitempty"`
 	DateOfBirth    *time.Time      `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
@@ -53,7 +53,7 @@ func NewSample(
 		CollectionDate:  collectionDate,
 		RunNumber:       runNumber,
 		RunDate:         runDate,
-		City:            &city,
+		City:            city,
 		OriginCode:      originCode,
 		Gender:          &gender,
 		DateOfBirth:     &dateOfBirth,

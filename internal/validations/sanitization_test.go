@@ -98,13 +98,13 @@ func TestSanitizeInput_AdminSampleCreateInput(t *testing.T) {
 		OriginCode:  "  ABC  ",
 		RunNumber:   "  123  ",
 		CountryCode: "  BR  ",
-		City:        strPtr("  Sao Paulo  "),
+		City:        "  Sao Paulo  ",
 	}
 	SanitizeInput(&input)
 	assert.Equal(t, "ABC", input.OriginCode)
 	assert.Equal(t, "123", input.RunNumber)
 	assert.Equal(t, "BR", input.CountryCode)
-	assert.Equal(t, "Sao Paulo", *input.City)
+	assert.Equal(t, "Sao Paulo", input.City)
 }
 
 func TestSanitizeInput_SampleUpdateInput_NilCity(t *testing.T) {

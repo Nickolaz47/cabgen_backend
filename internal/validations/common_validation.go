@@ -20,7 +20,7 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 	}
 
 	if input.City != nil {
-		sample.City = input.City
+		sample.City = *input.City
 	}
 
 	if input.Gender != nil {
