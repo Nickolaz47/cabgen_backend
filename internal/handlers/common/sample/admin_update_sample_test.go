@@ -63,6 +63,60 @@ func TestAdminUpdateSample(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
+	t.Run("Success - Add To Network", func(t *testing.T) {
+		svc := &mocks.MockSampleService{
+			UpdateFunc: func(ctx context.Context, sampleID, userID uuid.UUID,
+				input models.SampleUpdateDTO, language string) (
+				*models.SampleResponse, error) {
+				assert.True(t, *input.InNetwork)
+				return &mockResponse, nil
+			},
+		}
+		handler := sample.NewSampleHandler(svc)
+
+		body := testutils.CopyMap(validUpdateInput)
+		body["in_network"] = true
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/sample",
+			testutils.ToJSON(body),
+			nil,
+			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
+		handler.UpdateSample(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Success - Remove From Network", func(t *testing.T) {
+		svc := &mocks.MockSampleService{
+			UpdateFunc: func(ctx context.Context, sampleID, userID uuid.UUID,
+				input models.SampleUpdateDTO, language string) (
+				*models.SampleResponse, error) {
+				assert.False(t, *input.InNetwork)
+				return &mockResponse, nil
+			},
+		}
+		handler := sample.NewSampleHandler(svc)
+
+		body := testutils.CopyMap(validUpdateInput)
+		body["in_network"] = false
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPut,
+			"/api/admin/sample",
+			testutils.ToJSON(body),
+			nil,
+			gin.Params{{Key: "sampleId", Value: mockSample.ID.String()}},
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: uuid.New()})
+		handler.UpdateSample(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
 		handler := sample.NewAdminSampleHandler(svc)

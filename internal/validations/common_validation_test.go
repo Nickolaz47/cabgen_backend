@@ -23,6 +23,7 @@ func TestApplySampleUpdate(t *testing.T) {
 	gender := models.Female
 	dateOfBirth := models.Date{
 		Time: time.Date(1990, time.March, 15, 0, 0, 0, 0, time.UTC)}
+	inNetwork := true
 
 	input := models.SampleUpdateDTO{
 		OriginCode:     &originCode,
@@ -32,6 +33,7 @@ func TestApplySampleUpdate(t *testing.T) {
 		City:           &city,
 		Gender:         &gender,
 		DateOfBirth:    &dateOfBirth,
+		InNetwork:      &inNetwork,
 	}
 
 	expected := models.Sample{
@@ -43,6 +45,7 @@ func TestApplySampleUpdate(t *testing.T) {
 		City:            city,
 		Gender:          &gender,
 		DateOfBirth:     models.ToTimePtr(&dateOfBirth),
+		InNetwork:       true,
 		CountryID:       mock.CountryID,
 		Country:         mock.Country,
 		UserID:          mock.UserID,

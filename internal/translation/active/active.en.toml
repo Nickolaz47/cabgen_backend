@@ -367,6 +367,9 @@ other = "City must be at least {{.Param}} characters long."
 [validation.City.required]
 other = "City is required."
 
+[validation.InNetwork.required]
+other = "Informing whether the sample may be used in the monthly reports of the genomic surveillance network is required."
+
 [validation.IsPartOfNetwork.required]
 other = "Informing whether you are part of the network is required."
 

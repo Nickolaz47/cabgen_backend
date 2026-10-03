@@ -23,6 +23,10 @@ func ApplySampleUpdate(sample *models.Sample, input *models.SampleUpdateDTO) {
 		sample.City = *input.City
 	}
 
+	if input.InNetwork != nil {
+		sample.InNetwork = *input.InNetwork
+	}
+
 	if input.Gender != nil {
 		sample.Gender = input.Gender
 	}

@@ -367,6 +367,9 @@ other = "A cidade deve ter no mínimo {{.Param}} caracteres."
 [validation.City.required]
 other = "A cidade é obrigatória."
 
+[validation.InNetwork.required]
+other = "É obrigatório informar se permite que a amostra seja usada nos reports mensais da rede de vigilância genômica."
+
 [validation.IsPartOfNetwork.required]
 other = "É obrigatório informar se faz parte da rede."
 

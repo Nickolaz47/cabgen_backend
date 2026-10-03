@@ -328,6 +328,7 @@ func (s *sampleService) Create(
 		City:            input.City,
 		Gender:          input.Gender,
 		DateOfBirth:     models.ToTimePtr(input.DateOfBirth),
+		InNetwork:       *input.InNetwork,
 		CountryID:       country.ID,
 		UserID:          user.ID,
 		OriginID:        origin.ID,

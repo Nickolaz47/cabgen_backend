@@ -14,6 +14,7 @@ var baseSampleCreateBody = map[string]any{
 	"run_number":        "RUN-2026-XYZ",
 	"run_date":          "2026-05-25",
 	"city":              "Maricá",
+	"in_network":        false,
 	"gender":            "Male",
 	"date_of_birth":     "1990-01-01",
 	"country_code":      "BRA",
@@ -67,6 +68,11 @@ var CreateSampleTests = []Body{
 		delete(b, "city")
 		return b
 	}()), `{"error":"City is required."}`},
+	{"Missing in_network", testutils.ToJSON(func() map[string]any {
+		b := testutils.CopyMap(baseSampleCreateBody)
+		delete(b, "in_network")
+		return b
+	}()), `{"error":"Informing whether the sample may be used in the monthly reports of the genomic surveillance network is required."}`},
 	{"Missing country_code", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseSampleCreateBody)
 		delete(b, "country_code")

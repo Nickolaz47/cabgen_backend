@@ -82,6 +82,7 @@ type Sample struct {
 	City           string     `gorm:"type:varchar(255);not null"`
 	Gender         *Gender    `gorm:"type:varchar(15);default:null"`
 	DateOfBirth    *time.Time `gorm:"type:date;default:null"`
+	InNetwork      bool       `gorm:"not null;default:false"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	Fastq1         *string `gorm:"type:varchar(255);default:null"`
@@ -115,6 +116,7 @@ type SampleResponse struct {
 	OriginCode     string     `json:"origin_code"`
 	Gender         *string    `json:"gender"`
 	DateOfBirth    *time.Time `json:"date_of_birth"`
+	InNetwork      bool       `json:"in_network"`
 	Fastq1         *string    `json:"fastq1"`
 	Fastq2         *string    `json:"fastq2"`
 	Fasta          *string    `json:"fasta"`
@@ -161,6 +163,7 @@ func (s *Sample) ToResponse(language string) SampleResponse {
 		OriginCode:     s.OriginCode,
 		Gender:         gender,
 		DateOfBirth:    s.DateOfBirth,
+		InNetwork:      s.InNetwork,
 		Fastq1:         fastq1Path,
 		Fastq2:         fastq2Path,
 		Fasta:          fastaPath,
@@ -183,6 +186,7 @@ type AdminSampleCreateInput struct {
 	City           string  `json:"city" binding:"required,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
+	InNetwork      *bool   `json:"in_network" binding:"required"`
 	// Foreign Keys
 	CountryCode     string    `json:"country_code" binding:"required,len=3"`
 	UserID          uuid.UUID `json:"user_id" binding:"required"`
@@ -202,6 +206,7 @@ type SampleCreateInput struct {
 	City           string  `json:"city" binding:"required,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
+	InNetwork      *bool   `json:"in_network" binding:"required"`
 	// Foreign Keys
 	CountryCode     string    `json:"country_code" binding:"required,len=3"`
 	OriginID        uuid.UUID `json:"origin_id" binding:"required"`
@@ -220,6 +225,7 @@ type SampleCreateDTO struct {
 	City            string
 	Gender          *Gender
 	DateOfBirth     *Date
+	InNetwork       *bool
 	CountryCode     string
 	UserID          uuid.UUID
 	OriginID        uuid.UUID
@@ -238,6 +244,7 @@ type AdminSampleUpdateInput struct {
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
+	InNetwork      *bool   `json:"in_network,omitempty"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	UserID          *uuid.UUID `json:"user_id,omitempty" binding:"omitempty"`
@@ -257,6 +264,7 @@ type SampleUpdateInput struct {
 	City           *string `json:"city,omitempty" binding:"omitempty,min=3,max=255"`
 	Gender         *Gender `json:"gender,omitempty" binding:"omitempty"`
 	DateOfBirth    *Date   `json:"date_of_birth,omitempty" binding:"omitempty"`
+	InNetwork      *bool   `json:"in_network,omitempty"`
 	// Foreign Keys
 	CountryCode     *string    `json:"country_code,omitempty" binding:"omitempty,len=3"`
 	OriginID        *uuid.UUID `json:"origin_id,omitempty" binding:"omitempty"`
@@ -275,6 +283,7 @@ type SampleUpdateDTO struct {
 	City            *string
 	Gender          *Gender
 	DateOfBirth     *Date
+	InNetwork       *bool
 	CountryCode     *string
 	UserID          *uuid.UUID
 	OriginID        *uuid.UUID
@@ -294,6 +303,7 @@ func SampleCreateInputToDTO(input SampleCreateInput, id uuid.UUID) SampleCreateD
 		City:            input.City,
 		Gender:          input.Gender,
 		DateOfBirth:     input.DateOfBirth,
+		InNetwork:       input.InNetwork,
 		CountryCode:     input.CountryCode,
 		UserID:          id,
 		OriginID:        input.OriginID,
@@ -314,6 +324,7 @@ func SampleUpdateInputToDTO(input SampleUpdateInput, id uuid.UUID) SampleUpdateD
 		City:            input.City,
 		Gender:          input.Gender,
 		DateOfBirth:     input.DateOfBirth,
+		InNetwork:       input.InNetwork,
 		CountryCode:     input.CountryCode,
 		UserID:          &id,
 		OriginID:        input.OriginID,

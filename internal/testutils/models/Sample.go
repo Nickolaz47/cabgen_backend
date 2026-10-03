@@ -16,6 +16,7 @@ type Sample struct {
 	OriginCode     string          `gorm:"type:varchar(255);not null" json:"origin_code"`
 	Gender         *rModels.Gender `gorm:"type:varchar(15);default:null" json:"gender,omitempty"`
 	DateOfBirth    *time.Time      `gorm:"type:date;default:null" json:"date_of_birth,omitempty"`
+	InNetwork      bool            `gorm:"not null;default:false" json:"in_network"`
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 	Fastq1         *string         `gorm:"type:varchar(255);default:null" json:"fastq1,omitempty"`
@@ -145,6 +146,7 @@ func NewSampleCreateInput(sample rModels.Sample) rModels.SampleCreateInput {
 		City:            sample.City,
 		Gender:          sample.Gender,
 		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
+		InNetwork:       &sample.InNetwork,
 		CountryCode:     sample.Country.Code,
 		OriginID:        sample.OriginID,
 		SampleSourceID:  sample.SampleSourceID,
@@ -164,6 +166,7 @@ func NewSampleCreateDTO(sample rModels.Sample) rModels.SampleCreateDTO {
 		City:            sample.City,
 		Gender:          sample.Gender,
 		DateOfBirth:     &rModels.Date{Time: *sample.DateOfBirth},
+		InNetwork:       &sample.InNetwork,
 		CountryCode:     sample.Country.Code,
 		UserID:          sample.UserID,
 		OriginID:        sample.OriginID,

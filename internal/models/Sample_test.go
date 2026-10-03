@@ -193,6 +193,7 @@ func TestSampleCreateInputToDTO(t *testing.T) {
 	assert.Equal(t, input.City, result.City)
 	assert.Equal(t, input.Gender, result.Gender)
 	assert.Equal(t, input.DateOfBirth, result.DateOfBirth)
+	assert.Equal(t, *input.InNetwork, *result.InNetwork)
 	assert.Equal(t, input.CountryCode, result.CountryCode)
 	assert.Equal(t, id, result.UserID)
 	assert.Equal(t, input.OriginID, result.OriginID)
@@ -204,12 +205,15 @@ func TestSampleCreateInputToDTO(t *testing.T) {
 }
 
 func TestAdminSampleCreateInputRawConversion(t *testing.T) {
+	inNetwork := true
+
 	input := models.AdminSampleCreateInput{
 		OriginCode:      "A01",
 		CollectionDate:  models.Date{Time: time.Date(2026, time.May, 20, 0, 0, 0, 0, time.UTC)},
 		RunNumber:       "RUN-01",
 		RunDate:         models.Date{Time: time.Date(2026, time.May, 25, 0, 0, 0, 0, time.UTC)},
 		City:            "Maricá",
+		InNetwork:       &inNetwork,
 		CountryCode:     "BRA",
 		UserID:          uuid.New(),
 		OriginID:        uuid.New(),
@@ -229,6 +233,7 @@ func TestAdminSampleCreateInputRawConversion(t *testing.T) {
 	assert.Equal(t, input.City, result.City)
 	assert.Equal(t, input.Gender, result.Gender)
 	assert.Equal(t, input.DateOfBirth, result.DateOfBirth)
+	assert.Equal(t, input.InNetwork, result.InNetwork)
 	assert.Equal(t, input.CountryCode, result.CountryCode)
 	assert.Equal(t, input.UserID, result.UserID)
 	assert.Equal(t, input.OriginID, result.OriginID)
