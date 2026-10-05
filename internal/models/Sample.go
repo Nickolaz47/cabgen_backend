@@ -73,6 +73,33 @@ func (g *Gender) ToTranslatedString(language string) *string {
 
 var Genders = []Gender{Female, Male, Unspecified}
 
+var inNetworkTranslations = map[bool]map[string]string{
+	true:  {"en": "Yes", "es": "Sí", "pt": "Sim"},
+	false: {"en": "No", "es": "No", "pt": "Não"},
+}
+
+func ToTranslatedInNetwork(value bool, language string) string {
+	language = translation.ParseLanguage(language)
+	return inNetworkTranslations[value][language]
+}
+
+var optionKeyTranslations = map[string]map[string]string{
+	"option.city.other":          {"en": "Other", "es": "Otro", "pt": "Outro"},
+	"option.sequencer.other":     {"en": "Other", "es": "Otro", "pt": "Outro"},
+	"option.laboratory.other":    {"en": "Other", "es": "Otro", "pt": "Outro"},
+	"option.healthService.other": {"en": "Other", "es": "Otro", "pt": "Outro"},
+}
+
+func ToTranslatedOptionKey(key, language string) (string, bool) {
+	language = translation.ParseLanguage(language)
+	translations, ok := optionKeyTranslations[key]
+	if !ok {
+		return "", false
+	}
+
+	return translations[language], true
+}
+
 type Sample struct {
 	ID             uuid.UUID  `gorm:"type:uuid;default:uuidv7();primaryKey"`
 	OriginCode     string     `gorm:"type:varchar(255);not null"`

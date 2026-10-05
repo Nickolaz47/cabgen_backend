@@ -91,6 +91,110 @@ func TestToTranslatedString(t *testing.T) {
 	})
 }
 
+func TestToTranslatedInNetwork(t *testing.T) {
+	tests := []struct {
+		name     string
+		language string
+		value    bool
+		expected string
+	}{
+		{
+			name:     "True to portuguese",
+			language: "pt",
+			value:    true,
+			expected: "Sim",
+		},
+		{
+			name:     "False to portuguese",
+			language: "pt",
+			value:    false,
+			expected: "Não",
+		},
+		{
+			name:     "True to english",
+			language: "en",
+			value:    true,
+			expected: "Yes",
+		},
+		{
+			name:     "False to spanish",
+			language: "es",
+			value:    false,
+			expected: "No",
+		},
+		{
+			name:     "Invalid language",
+			language: "an",
+			value:    true,
+			expected: "Yes",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := models.ToTranslatedInNetwork(tt.value, tt.language)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestToTranslatedOptionKey(t *testing.T) {
+	tests := []struct {
+		name     string
+		language string
+		key      string
+		expected string
+	}{
+		{
+			name:     "City other to portuguese",
+			language: "pt",
+			key:      "option.city.other",
+			expected: "Outro",
+		},
+		{
+			name:     "Sequencer other to english",
+			language: "en",
+			key:      "option.sequencer.other",
+			expected: "Other",
+		},
+		{
+			name:     "Laboratory other to spanish",
+			language: "es",
+			key:      "option.laboratory.other",
+			expected: "Otro",
+		},
+		{
+			name:     "Health service other to portuguese",
+			language: "pt",
+			key:      "option.healthService.other",
+			expected: "Outro",
+		},
+		{
+			name:     "Invalid language",
+			language: "an",
+			key:      "option.city.other",
+			expected: "Other",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, ok := models.ToTranslatedOptionKey(tt.key, tt.language)
+
+			assert.True(t, ok)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+
+	t.Run("Unknown key", func(t *testing.T) {
+		result, ok := models.ToTranslatedOptionKey("option.unknown.other", "pt")
+
+		assert.False(t, ok)
+		assert.Empty(t, result)
+	})
+}
+
 func TestSampleToResponse(t *testing.T) {
 	mockUser := testmodels.NewLoginUser()
 	mockCountry := mockUser.Country
