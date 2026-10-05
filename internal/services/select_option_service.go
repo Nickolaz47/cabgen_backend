@@ -176,5 +176,12 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 		}
 	}
 
+	for _, gender := range models.Genders {
+		resp.Genders = append(resp.Genders, models.SelectOption{
+			Label: "option.gender." + strings.ToLower(string(gender)),
+			Value: string(gender),
+		})
+	}
+
 	return resp, nil
 }

@@ -97,6 +97,11 @@ func TestGetFormSelects(t *testing.T) {
 		Laboratories: []models.SelectOption{
 			{Label: "LACEN/RJ", Value: "lab-id"},
 		},
+		Genders: []models.SelectOption{
+			{Label: "option.gender.female", Value: "Female"},
+			{Label: "option.gender.male", Value: "Male"},
+			{Label: "option.gender.unspecified", Value: "Unspecified"},
+		},
 	}
 
 	t.Run("Success", func(t *testing.T) {

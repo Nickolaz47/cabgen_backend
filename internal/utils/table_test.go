@@ -52,7 +52,6 @@ func TestGenerateMetricsTSV(t *testing.T) {
 		assert.NoError(t, err)
 		body := string(result)
 		assert.Contains(t, body, "coverage\tcompleteness")
-		// Empty row with 15 tab-separated empty cells
 		assert.Contains(t, body, "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n")
 	})
 
@@ -97,12 +96,151 @@ func TestGenerateMetricsTSV(t *testing.T) {
 
 		assert.NoError(t, err)
 		body := string(result)
-		// First data cell should be empty (coverage=0)
 		lines := splitLines(body)
-		assert.Len(t, lines, 2) // header + 1 data row
+		assert.Len(t, lines, 2)
 		cells := splitTabs(lines[1])
-		assert.Equal(t, "", cells[1]) // coverage empty
+		assert.Equal(t, "", cells[1])
 		assert.Equal(t, "Sp", cells[7])
+	})
+}
+
+func TestNewColumn(t *testing.T) {
+	t.Run("Success - Labels sorted without empty values", func(t *testing.T) {
+		col := utils.NewColumn("B", "gender", map[string]string{
+			"Female":      "F",
+			"Male":        "M",
+			"Unspecified": "U",
+		})
+
+		assert.Equal(t, "B", col.Letter)
+		assert.Equal(t, "gender", col.Header)
+		assert.Equal(t,
+			[]string{"Female", "Male", "Unspecified"}, col.LabelValues)
+	})
+
+	t.Run("Success - Empty values", func(t *testing.T) {
+		col := utils.NewColumn("A", "city", nil)
+
+		assert.Equal(t, "A", col.Letter)
+		assert.Equal(t, "city", col.Header)
+		assert.Empty(t, col.LabelValues)
+	})
+}
+
+func TestColumnFindRealValue(t *testing.T) {
+	col := utils.NewColumn("B", "gender", map[string]string{
+		"Female":      "F",
+		"Male":        "M",
+		"Unspecified": "U",
+	})
+
+	t.Run("Success - Exact match", func(t *testing.T) {
+		real, ok := col.FindRealValue("Male")
+
+		assert.True(t, ok)
+		assert.Equal(t, "M", real)
+	})
+
+	t.Run("Success - Normalized match", func(t *testing.T) {
+		real, ok := col.FindRealValue("  FeMaLE ")
+
+		assert.True(t, ok)
+		assert.Equal(t, "F", real)
+	})
+
+	t.Run("Success - Not found", func(t *testing.T) {
+		real, ok := col.FindRealValue("Other")
+
+		assert.False(t, ok)
+		assert.Empty(t, real)
+	})
+}
+
+func TestGenerateMetadataTemplate(t *testing.T) {
+	buildColumns := func() []utils.Column {
+		return []utils.Column{
+			utils.NewColumn("A", "origin_code", nil),
+			utils.NewColumn("B", "gender", map[string]string{
+				"Female":      "F",
+				"Male":        "M",
+				"Unspecified": "U",
+			}),
+			utils.NewColumn("C", "city", map[string]string{}),
+		}
+	}
+
+	t.Run("Success - Headers and sheet name", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate(buildColumns())
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Samples", f.GetSheetName(0))
+
+		for cell, header := range map[string]string{
+			"A1": "origin_code",
+			"B1": "gender",
+			"C1": "city",
+		} {
+			value, cellErr := f.GetCellValue("Samples", cell)
+			assert.NoError(t, cellErr)
+			assert.Equal(t, header, value)
+		}
+	})
+
+	t.Run("Success - Hidden sheet", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate(buildColumns())
+
+		assert.NoError(t, err)
+
+		visible, visErr := f.GetSheetVisible("AcceptedValues")
+		assert.NoError(t, visErr)
+		assert.False(t, visible)
+
+		for cell, expected := range map[string]string{
+			"B1": "Female",
+			"B2": "Male",
+			"B3": "Unspecified",
+		} {
+			value, cellErr := f.GetCellValue("AcceptedValues", cell)
+			assert.NoError(t, cellErr)
+			assert.Equal(t, expected, value)
+		}
+	})
+
+	t.Run("Success - Data validation", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate(buildColumns())
+
+		assert.NoError(t, err)
+
+		validations, dvErr := f.GetDataValidations("Samples")
+		assert.NoError(t, dvErr)
+		if assert.Len(t, validations, 1) {
+			assert.Equal(t, "B2:B100", validations[0].Sqref)
+			assert.Contains(t, validations[0].Formula1,
+				"'AcceptedValues'!$B$1:$B$3")
+			if assert.NotNil(t, validations[0].Error) {
+				assert.Equal(t, "Please select an option from the list.",
+					*validations[0].Error)
+			}
+		}
+	})
+
+	t.Run("Success - Empty columns", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate(nil)
+
+		assert.NoError(t, err)
+
+		validations, dvErr := f.GetDataValidations("Samples")
+		assert.NoError(t, dvErr)
+		assert.Empty(t, validations)
+	})
+
+	t.Run("Error - Invalid letter", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate([]utils.Column{
+			utils.NewColumn("!!", "bad", nil),
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, f)
 	})
 }
 
