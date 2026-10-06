@@ -12,6 +12,8 @@ type MockAnalysisRepository struct {
 		filter models.AnalysisFilter) ([]models.Analysis, error)
 	GetAnalysesByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
+	GetDashboardAnalysesFunc func(ctx context.Context) (
+		[]models.Analysis, error)
 	GetAnalysisByIDFunc func(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysisFunc func(ctx context.Context,
@@ -37,6 +39,15 @@ func (r *MockAnalysisRepository) GetAnalysesByIDs(ctx context.Context,
 	analysisIDs []uuid.UUID, userID uuid.UUID) ([]models.Analysis, error) {
 	if r.GetAnalysesByIDsFunc != nil {
 		return r.GetAnalysesByIDsFunc(ctx, analysisIDs, userID)
+	}
+
+	return nil, nil
+}
+
+func (r *MockAnalysisRepository) GetDashboardAnalyses(ctx context.Context) (
+	[]models.Analysis, error) {
+	if r.GetDashboardAnalysesFunc != nil {
+		return r.GetDashboardAnalysesFunc(ctx)
 	}
 
 	return nil, nil
@@ -105,6 +116,8 @@ type MockAnalysisService struct {
 		userID uuid.UUID) (string, error)
 	DownloadBatchTSVFunc func(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
+	DownloadDashboardTSVFunc func(ctx context.Context) (
+		[]models.Analysis, error)
 }
 
 func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID,
@@ -180,6 +193,15 @@ func (s *MockAnalysisService) DownloadBatchTSV(ctx context.Context,
 	[]models.AnalysisResponse, error) {
 	if s.DownloadBatchTSVFunc != nil {
 		return s.DownloadBatchTSVFunc(ctx, analysisIDs, userID, language)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAnalysisService) DownloadDashboardTSV(ctx context.Context) (
+	[]models.Analysis, error) {
+	if s.DownloadDashboardTSVFunc != nil {
+		return s.DownloadDashboardTSVFunc(ctx)
 	}
 
 	return nil, nil

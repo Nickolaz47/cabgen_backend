@@ -1413,3 +1413,61 @@ func TestAnalysisDownloadBatchTSV(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 }
+
+func TestAnalysisDownloadDashboardTSV(t *testing.T) {
+	ctx := context.Background()
+	mock := testmodels.CreateMockAnalysis()
+
+	t.Run("Success", func(t *testing.T) {
+		successRepo := &mocks.MockAnalysisRepository{
+			GetDashboardAnalysesFunc: func(ctx context.Context) (
+				[]models.Analysis, error) {
+				return []models.Analysis{mock}, nil
+			},
+		}
+
+		svc := services.NewAnalysisService(successRepo, nil, nil, nil, nil,
+			zap.NewNop(), t.TempDir())
+		analyses, err := svc.DownloadDashboardTSV(ctx)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+		assert.Equal(t, mock.ID, analyses[0].ID)
+	})
+
+	t.Run("Error - DB Internal", func(t *testing.T) {
+		failRepo := &mocks.MockAnalysisRepository{
+			GetDashboardAnalysesFunc: func(ctx context.Context) (
+				[]models.Analysis, error) {
+				return nil, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		svc := services.NewAnalysisService(failRepo, nil, nil, nil, nil,
+			mockLogger, t.TempDir())
+		analyses, err := svc.DownloadDashboardTSV(ctx)
+
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, analyses)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - No Dashboard Data", func(t *testing.T) {
+		emptyRepo := &mocks.MockAnalysisRepository{
+			GetDashboardAnalysesFunc: func(ctx context.Context) (
+				[]models.Analysis, error) {
+				return []models.Analysis{}, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		svc := services.NewAnalysisService(emptyRepo, nil, nil, nil, nil,
+			mockLogger, t.TempDir())
+		analyses, err := svc.DownloadDashboardTSV(ctx)
+
+		assert.ErrorIs(t, err, services.ErrNoDashboardData)
+		assert.Nil(t, analyses)
+		assert.Equal(t, 1, logs.Len())
+	})
+}

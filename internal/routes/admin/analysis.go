@@ -15,6 +15,7 @@ func SetupAdminAnalysisRoutes(r *gin.RouterGroup,
 	analysisRouter.GET("/:analysisId/download/zip", handler.DownloadZip)
 	analysisRouter.POST("", handler.CreateAnalysis)
 	analysisRouter.POST("/download/tsv", handler.DownloadBatchTSV)
+	analysisRouter.POST("/download/dashboard", handler.DownloadDashboardTSV)
 	analysisRouter.PUT("/:analysisId", handler.UpdateAnalysis)
 	analysisRouter.DELETE("/:analysisId", handler.DeleteAnalysis)
 }

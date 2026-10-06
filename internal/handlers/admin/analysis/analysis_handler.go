@@ -365,3 +365,39 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename=cabgen_results.tsv")
 	c.Data(http.StatusOK, "text/tab-separated-values", tsvBytes)
 }
+
+func (h *AdminAnalysisHandler) DownloadDashboardTSV(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c,
+		models.AuditEventAdminAnalysesDownloadDashboard,
+		nil)
+	language := translation.GetLanguageFromContext(c)
+
+	analyses, err := h.Service.DownloadDashboardTSV(c.Request.Context())
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadDashboardFailed,
+			nil)
+		code, errMsg := handlererrors.HandleAnalysisError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+
+	tsvBytes, err := utils.GenerateDashboardTSV(analyses, language)
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesDownloadDashboardFailed,
+			nil)
+		c.JSON(http.StatusInternalServerError, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.GenericInternalServerError),
+		})
+		return
+	}
+
+	c.Header("Content-Disposition",
+		"attachment; filename=cabgen_dashboard.tsv")
+	c.Data(http.StatusOK, "text/tab-separated-values", tsvBytes)
+}

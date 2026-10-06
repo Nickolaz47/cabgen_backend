@@ -13,6 +13,7 @@ type AnalysisRepository interface {
 		filter models.AnalysisFilter) ([]models.Analysis, error)
 	GetAnalysesByIDs(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
+	GetDashboardAnalyses(ctx context.Context) ([]models.Analysis, error)
 	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -95,6 +96,40 @@ func (r *analysisRepo) GetAnalysesByIDs(ctx context.Context,
 	}
 
 	if err := query.Find(&analyses).Error; err != nil {
+		return nil, err
+	}
+
+	return analyses, nil
+}
+
+func (r *analysisRepo) GetDashboardAnalyses(ctx context.Context) (
+	[]models.Analysis, error) {
+	var analyses []models.Analysis
+
+	query := `analyses.id IN (
+		SELECT a2.id FROM analyses a2
+		JOIN samples s2 ON s2.id = a2.sample_id
+		WHERE s2.in_network = true
+			AND a2.status = 'DONE'
+			AND a2.type IN ('GENOME', 'COMPLETE')
+			AND NOT EXISTS (
+				SELECT 1 FROM analyses a3
+				JOIN samples s3 ON s3.id = a3.sample_id
+				WHERE s3.in_network = true
+					AND a3.status = 'DONE'
+					AND a3.type IN ('GENOME', 'COMPLETE')
+					AND a3.sample_id = a2.sample_id
+					AND (a3.created_at > a2.created_at
+						OR (a3.created_at = a2.created_at
+							AND a3.id > a2.id))
+			)
+	)`
+
+	if err := r.DB.WithContext(ctx).
+		Preload("Sample.SampleSource").
+		Where(query).
+		Order("analyses.created_at DESC").
+		Find(&analyses).Error; err != nil {
 		return nil, err
 	}
 

@@ -520,6 +520,9 @@ other = "Não é possível baixar mais do que 50 resultados por vez."
 [analysis.fastqcDownload.error]
 other = "Análises FASTQC não podem ser incluídas no download em lote."
 
+[analysis.dashboardNoData.error]
+other = "Nenhuma análise de amostras da rede disponível para download."
+
 [analysis.zipNotFound.error]
 other = "O arquivo zip não está disponível para essa análise."
 

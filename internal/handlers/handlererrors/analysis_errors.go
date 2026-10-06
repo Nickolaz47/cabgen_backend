@@ -18,6 +18,8 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusBadRequest, responses.AnalysisExceededLimitError
 	case errors.Is(err, services.ErrFastQCDownload):
 		return http.StatusBadRequest, responses.AnalysisFastQCDownloadError
+	case errors.Is(err, services.ErrNoDashboardData):
+		return http.StatusNotFound, responses.AnalysisDashboardNoData
 	case errors.Is(err, services.ErrZipNotFound):
 		return http.StatusNotFound, responses.AnalysisZipNotFound
 	case errors.Is(err, services.ErrUnauthorized):

@@ -547,6 +547,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/analyses/:analysisId/:fastqcReport` | Renderiza o relatório FastQC (HTML) de uma análise |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
+| POST | `/api/admin/analyses/download/dashboard` | Faz o download do dashboard das amostras da rede (TSV); 404 quando não há análises |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
 | DELETE | `/api/admin/analyses/:analysisId` | Deleta uma análise |
 

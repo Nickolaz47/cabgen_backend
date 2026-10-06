@@ -3,6 +3,7 @@ package repositories_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
@@ -341,5 +342,190 @@ func TestDeleteAnalysis(t *testing.T) {
 		err = mockAnalysisRepo.DeleteAnalysis(ctx, &models.Analysis{})
 
 		assert.Error(t, err)
+	})
+}
+
+func TestGetDashboardAnalyses(t *testing.T) {
+	ctx := context.Background()
+
+	newDashboardAnalysis := func(sampleID uuid.UUID,
+		status models.AnalysisStatus, analysisType models.AnalysisType,
+		createdAt time.Time) models.Analysis {
+		analysis := testmodels.CreateMockAnalysis()
+		analysis.Sample = models.Sample{}
+		analysis.SampleID = sampleID
+		analysis.Status = status
+		analysis.Type = analysisType
+		analysis.CreatedAt = createdAt
+		return analysis
+	}
+
+	t.Run("Success - Latest DONE analysis per sample", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		older := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&older)
+
+		newer := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeComplete,
+			time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC))
+		db.Create(&newer)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+		assert.Equal(t, newer.ID, analyses[0].ID)
+		assert.Equal(t, sample.ID, analyses[0].Sample.ID)
+		assert.Equal(t, "Aspirated",
+			analyses[0].Sample.SampleSource.Names["en"])
+	})
+
+	t.Run("Success - Returns all in-network samples", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		firstSample := testmodels.CreateMockSample()
+		firstSample.InNetwork = true
+		db.Create(&firstSample)
+
+		secondSample := testmodels.CreateMockSample()
+		secondSample.InNetwork = true
+		secondSample.HealthService.Name = "Outro Laboratorio Central"
+		db.Create(&secondSample)
+
+		first := newDashboardAnalysis(firstSample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 3, 0, 0, 0, 0, time.UTC))
+		db.Create(&first)
+
+		second := newDashboardAnalysis(secondSample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeComplete,
+			time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC))
+		db.Create(&second)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 2)
+		assert.Equal(t, first.ID, analyses[0].ID)
+		assert.Equal(t, second.ID, analyses[1].ID)
+	})
+
+	t.Run("Success - Empty database", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Excludes sample outside network", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = false
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Excludes statuses other than DONE", func(t *testing.T) {
+		statuses := []models.AnalysisStatus{models.AnalysisStatusPending,
+			models.AnalysisStatusRunning, models.AnalysisStatusFailed}
+
+		for _, status := range statuses {
+			t.Run(string(status), func(t *testing.T) {
+				db := testutils.NewMockDB()
+				repo := repositories.NewAnalysisRepository(db)
+
+				sample := testmodels.CreateMockSample()
+				sample.InNetwork = true
+				db.Create(&sample)
+
+				analysis := newDashboardAnalysis(sample.ID, status,
+					models.AnalysisTypeGenome,
+					time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+				db.Create(&analysis)
+
+				analyses, err := repo.GetDashboardAnalyses(ctx)
+
+				assert.NoError(t, err)
+				assert.Empty(t, analyses)
+			})
+		}
+	})
+
+	t.Run("Success - Excludes FASTQC analyses", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeFastQC,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Prefers DONE over newer non-DONE", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		done := newDashboardAnalysis(sample.ID, models.AnalysisStatusDone,
+			models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&done)
+
+		failed := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusFailed, models.AnalysisTypeComplete,
+			time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC))
+		db.Create(&failed)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+		assert.Equal(t, done.ID, analyses[0].ID)
+	})
+
+	t.Run("Error - No tables", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewAnalysisRepository(mockDB)
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.Error(t, err)
+		assert.Empty(t, analyses)
 	})
 }

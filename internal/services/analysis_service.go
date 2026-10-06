@@ -35,6 +35,7 @@ type AnalysisService interface {
 		error)
 	DownloadBatchTSV(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
+	DownloadDashboardTSV(ctx context.Context) ([]models.Analysis, error)
 }
 
 type analysisService struct {
@@ -562,4 +563,26 @@ func (s *analysisService) DownloadBatchTSV(ctx context.Context,
 		responses = append(responses, a.ToResponse(language))
 	}
 	return responses, nil
+}
+
+func (s *analysisService) DownloadDashboardTSV(ctx context.Context) (
+	[]models.Analysis, error) {
+	analyses, err := s.Repo.GetDashboardAnalyses(ctx)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "DownloadDashboardTSV",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	if len(analyses) == 0 {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "DownloadDashboardTSV",
+			logging.DatabaseNotFoundError, ErrNoDashboardData,
+		)...)
+		return nil, ErrNoDashboardData
+	}
+
+	return analyses, nil
 }
