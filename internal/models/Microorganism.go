@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 )
 
@@ -23,6 +24,32 @@ func (t Taxon) IsValid() bool {
 }
 
 var Taxons = []Taxon{Bacteria, Fungi, Protozoa, Virus}
+
+var taxonTranslations = map[Taxon]map[string]string{
+	Bacteria: {
+		"en": "Bacteria", "es": "Bacteria", "pt": "Bactéria",
+	},
+	Fungi: {
+		"en": "Fungi", "es": "Hongos", "pt": "Fungos",
+	},
+	Protozoa: {
+		"en": "Protozoa", "es": "Protozoa", "pt": "Protozoa",
+	},
+	Virus: {
+		"en": "Virus", "es": "Virus", "pt": "Vírus",
+	},
+}
+
+func (t Taxon) ToTranslatedString(language string) string {
+	language = translation.ParseLanguage(language)
+
+	translations, ok := taxonTranslations[t]
+	if !ok {
+		return string(t)
+	}
+
+	return translations[language]
+}
 
 type Microorganism struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`

@@ -140,6 +140,29 @@ func (a AnalysisType) IsValid() bool {
 var AnalysisTypes = []AnalysisType{AnalysisTypeFastQC, AnalysisTypeGenome,
 	AnalysisTypeComplete}
 
+var analysisTypeTranslations = map[AnalysisType]map[string]string{
+	AnalysisTypeFastQC: {
+		"en": "Quality", "es": "Calidad", "pt": "Qualidade",
+	},
+	AnalysisTypeGenome: {
+		"en": "Genomic", "es": "Genómica", "pt": "Genômica",
+	},
+	AnalysisTypeComplete: {
+		"en": "Complete", "es": "Completo", "pt": "Completa",
+	},
+}
+
+func (a AnalysisType) ToTranslatedString(language string) string {
+	language = translation.ParseLanguage(language)
+
+	translations, ok := analysisTypeTranslations[a]
+	if !ok {
+		return string(a)
+	}
+
+	return translations[language]
+}
+
 type AnalysisResults struct {
 	// --- Genomic Coverage ---
 	Coverage float64 `json:"coverage,omitempty"`

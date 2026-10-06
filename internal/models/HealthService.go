@@ -1,6 +1,9 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/google/uuid"
+)
 
 type HealthServiceType string
 
@@ -19,6 +22,26 @@ func (h HealthServiceType) IsValid() bool {
 }
 
 var HealthServiceTypes = []HealthServiceType{Public, Private}
+
+var healthServiceTypeTranslations = map[HealthServiceType]map[string]string{
+	Public: {
+		"en": "Public", "es": "Público", "pt": "Público",
+	},
+	Private: {
+		"en": "Private", "es": "Privado", "pt": "Privado",
+	},
+}
+
+func (h HealthServiceType) ToTranslatedString(language string) string {
+	language = translation.ParseLanguage(language)
+
+	translations, ok := healthServiceTypeTranslations[h]
+	if !ok {
+		return string(h)
+	}
+
+	return translations[language]
+}
 
 type HealthService struct {
 	ID           uuid.UUID         `gorm:"type:uuid;default:uuidv7();primaryKey"`

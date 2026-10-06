@@ -25,7 +25,7 @@ func TestGetCities(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockCityService{
-			FindAllFunc: func(ctx context.Context) (
+			FindAllFunc: func(ctx context.Context, language string) (
 				[]models.SelectOption, error) {
 				return mockResponse, nil
 			},
@@ -48,7 +48,8 @@ func TestGetCities(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockCityService{
-			FindAllFunc: func(ctx context.Context) ([]models.SelectOption, error) {
+			FindAllFunc: func(ctx context.Context, language string) (
+				[]models.SelectOption, error) {
 				return nil, services.ErrInternal
 			},
 		}

@@ -90,3 +90,57 @@ func TestMicroorganismToFormResponse(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestTaxonToTranslatedString(t *testing.T) {
+	tests := []struct {
+		name     string
+		language string
+		taxon    models.Taxon
+		expected string
+	}{
+		{
+			name:     "Bacteria to portuguese",
+			language: "pt",
+			taxon:    models.Bacteria,
+			expected: "Bactéria",
+		},
+		{
+			name:     "Fungi to spanish",
+			language: "es",
+			taxon:    models.Fungi,
+			expected: "Hongos",
+		},
+		{
+			name:     "Virus to portuguese",
+			language: "pt",
+			taxon:    models.Virus,
+			expected: "Vírus",
+		},
+		{
+			name:     "Fungi to english",
+			language: "en",
+			taxon:    models.Fungi,
+			expected: "Fungi",
+		},
+		{
+			name:     "Invalid language",
+			language: "an",
+			taxon:    models.Bacteria,
+			expected: "Bacteria",
+		},
+		{
+			name:     "Unknown taxon",
+			language: "pt",
+			taxon:    models.Taxon("Ghost"),
+			expected: "Ghost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.taxon.ToTranslatedString(tt.language)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

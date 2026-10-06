@@ -150,7 +150,13 @@ func TestToTranslatedOptionKey(t *testing.T) {
 			name:     "City other to portuguese",
 			language: "pt",
 			key:      "option.city.other",
-			expected: "Outro",
+			expected: "Outra",
+		},
+		{
+			name:     "City other to spanish",
+			language: "es",
+			key:      "option.city.other",
+			expected: "Otra",
 		},
 		{
 			name:     "Sequencer other to english",

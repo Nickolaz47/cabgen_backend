@@ -12,50 +12,131 @@ import (
 )
 
 func TestSelectOptionFindAllEnumSelects(t *testing.T) {
-	expected := models.EnumSelectsResponse{
-		Roles: []models.SelectOption{
-			{Label: "option.role.admin", Value: "Admin"},
-			{Label: "option.role.collaborator", Value: "Collaborator"},
+	tests := []struct {
+		language string
+		expected models.EnumSelectsResponse
+	}{
+		{
+			language: "pt",
+			expected: models.EnumSelectsResponse{
+				Roles: []models.SelectOption{
+					{Label: "Administrador", Value: "Admin"},
+					{Label: "Colaborador", Value: "Collaborator"},
+				},
+				Taxons: []models.SelectOption{
+					{Label: "Bactéria", Value: "Bacteria"},
+					{Label: "Fungos", Value: "Fungi"},
+					{Label: "Protozoa", Value: "Protozoa"},
+					{Label: "Vírus", Value: "Virus"},
+				},
+				Genders: []models.SelectOption{
+					{Label: "Feminino", Value: "Female"},
+					{Label: "Masculino", Value: "Male"},
+					{Label: "Não especificado", Value: "Unspecified"},
+				},
+				HealthServiceTypes: []models.SelectOption{
+					{Label: "Público", Value: "Public"},
+					{Label: "Privado", Value: "Private"},
+				},
+				AnalysisTypes: []models.SelectOption{
+					{Label: "Qualidade", Value: "FASTQC"},
+					{Label: "Genômica", Value: "GENOME"},
+					{Label: "Completa", Value: "COMPLETE"},
+				},
+				Languages: []models.SelectOption{
+					{Label: "Português", Value: "pt"},
+					{Label: "Inglês", Value: "en"},
+					{Label: "Espanhol", Value: "es"},
+				},
+			},
 		},
-		Taxons: []models.SelectOption{
-			{Label: "option.taxon.bacteria", Value: "Bacteria"},
-			{Label: "option.taxon.fungi", Value: "Fungi"},
-			{Label: "option.taxon.protozoa", Value: "Protozoa"},
-			{Label: "option.taxon.virus", Value: "Virus"},
+		{
+			language: "en",
+			expected: models.EnumSelectsResponse{
+				Roles: []models.SelectOption{
+					{Label: "Admin", Value: "Admin"},
+					{Label: "Collaborator", Value: "Collaborator"},
+				},
+				Taxons: []models.SelectOption{
+					{Label: "Bacteria", Value: "Bacteria"},
+					{Label: "Fungi", Value: "Fungi"},
+					{Label: "Protozoa", Value: "Protozoa"},
+					{Label: "Virus", Value: "Virus"},
+				},
+				Genders: []models.SelectOption{
+					{Label: "Female", Value: "Female"},
+					{Label: "Male", Value: "Male"},
+					{Label: "Unspecified", Value: "Unspecified"},
+				},
+				HealthServiceTypes: []models.SelectOption{
+					{Label: "Public", Value: "Public"},
+					{Label: "Private", Value: "Private"},
+				},
+				AnalysisTypes: []models.SelectOption{
+					{Label: "Quality", Value: "FASTQC"},
+					{Label: "Genomic", Value: "GENOME"},
+					{Label: "Complete", Value: "COMPLETE"},
+				},
+				Languages: []models.SelectOption{
+					{Label: "Portuguese", Value: "pt"},
+					{Label: "English", Value: "en"},
+					{Label: "Spanish", Value: "es"},
+				},
+			},
 		},
-		Genders: []models.SelectOption{
-			{Label: "option.gender.female", Value: "Female"},
-			{Label: "option.gender.male", Value: "Male"},
-			{Label: "option.gender.unspecified", Value: "Unspecified"},
-		},
-		HealthServiceTypes: []models.SelectOption{
-			{Label: "option.health_service_type.public", Value: "Public"},
-			{Label: "option.health_service_type.private", Value: "Private"},
-		},
-		AnalysisTypes: []models.SelectOption{
-			{Label: "option.analysis_type.fastqc", Value: "FASTQC"},
-			{Label: "option.analysis_type.genome", Value: "GENOME"},
-			{Label: "option.analysis_type.complete", Value: "COMPLETE"},
-		},
-		Languages: []models.SelectOption{
-			{Label: "option.language.pt", Value: "pt"},
-			{Label: "option.language.en", Value: "en"},
-			{Label: "option.language.es", Value: "es"},
+		{
+			language: "es",
+			expected: models.EnumSelectsResponse{
+				Roles: []models.SelectOption{
+					{Label: "Administrador", Value: "Admin"},
+					{Label: "Colaborador", Value: "Collaborator"},
+				},
+				Taxons: []models.SelectOption{
+					{Label: "Bacteria", Value: "Bacteria"},
+					{Label: "Hongos", Value: "Fungi"},
+					{Label: "Protozoa", Value: "Protozoa"},
+					{Label: "Virus", Value: "Virus"},
+				},
+				Genders: []models.SelectOption{
+					{Label: "Femenino", Value: "Female"},
+					{Label: "Masculino", Value: "Male"},
+					{Label: "No especificado", Value: "Unspecified"},
+				},
+				HealthServiceTypes: []models.SelectOption{
+					{Label: "Público", Value: "Public"},
+					{Label: "Privado", Value: "Private"},
+				},
+				AnalysisTypes: []models.SelectOption{
+					{Label: "Calidad", Value: "FASTQC"},
+					{Label: "Genómica", Value: "GENOME"},
+					{Label: "Completo", Value: "COMPLETE"},
+				},
+				Languages: []models.SelectOption{
+					{Label: "Portugués", Value: "pt"},
+					{Label: "Inglés", Value: "en"},
+					{Label: "Español", Value: "es"},
+				},
+			},
 		},
 	}
 
-	t.Run("Success", func(t *testing.T) {
-		svc := services.NewSelectOptionsService(nil, nil, nil, nil, nil, nil)
+	for _, tt := range tests {
+		t.Run(tt.language, func(t *testing.T) {
+			svc := services.NewSelectOptionsService(nil, nil, nil, nil,
+				nil, nil)
 
-		result, err := svc.FindAllEnumSelects(context.Background())
+			result, err := svc.FindAllEnumSelects(context.Background(),
+				tt.language)
 
-		assert.NoError(t, err)
-		assert.Equal(t, &expected, result)
-	})
+			assert.NoError(t, err)
+			assert.Equal(t, &tt.expected, result)
+		})
+	}
 }
 
 func TestSelectOptionFindAllFormSelects(t *testing.T) {
 	labID := uuid.New()
+	otherLabID := uuid.New()
 	seqID := uuid.New()
 	hsID := uuid.New()
 	originID := uuid.New()
@@ -66,6 +147,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 		GetActiveLaboratoriesFunc: func(ctx context.Context) ([]models.Laboratory, error) {
 			return []models.Laboratory{
 				{ID: labID, Name: "LACEN/RJ"},
+				{ID: otherLabID, Name: "option.laboratory.other"},
 			}, nil
 		},
 	}
@@ -108,6 +190,7 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 	expected := &models.FormSelectsResponse{
 		Laboratories: []models.SelectOption{
 			{Label: "LACEN/RJ", Value: labID.String()},
+			{Label: "Outro", Value: otherLabID.String()},
 		},
 		Sequencers: []models.SelectOption{
 			{Label: "Illumina", Value: seqID.String()},
@@ -125,9 +208,9 @@ func TestSelectOptionFindAllFormSelects(t *testing.T) {
 			{Label: "Aspirado", Value: sourceID.String()},
 		},
 		Genders: []models.SelectOption{
-			{Label: "option.gender.female", Value: "Female"},
-			{Label: "option.gender.male", Value: "Male"},
-			{Label: "option.gender.unspecified", Value: "Unspecified"},
+			{Label: "Feminino", Value: "Female"},
+			{Label: "Masculino", Value: "Male"},
+			{Label: "Não especificado", Value: "Unspecified"},
 		},
 	}
 

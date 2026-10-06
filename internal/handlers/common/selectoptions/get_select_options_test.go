@@ -45,7 +45,7 @@ func TestGetEnumSelects(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSelectOptionsService{
-			FindAllEnumSelectsFunc: func(ctx context.Context) (
+			FindAllEnumSelectsFunc: func(ctx context.Context, language string) (
 				*models.EnumSelectsResponse, error) {
 				return &mockResponse, nil
 			},
@@ -68,7 +68,7 @@ func TestGetEnumSelects(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockSelectOptionsService{
-			FindAllEnumSelectsFunc: func(ctx context.Context) (
+			FindAllEnumSelectsFunc: func(ctx context.Context, language string) (
 				*models.EnumSelectsResponse, error) {
 				return nil, services.ErrInternal
 			},

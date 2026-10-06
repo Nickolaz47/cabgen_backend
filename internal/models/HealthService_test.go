@@ -107,3 +107,51 @@ func TestHealthServiceToFormResponse(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestHealthServiceTypeToTranslatedString(t *testing.T) {
+	tests := []struct {
+		name              string
+		language          string
+		healthServiceType models.HealthServiceType
+		expected          string
+	}{
+		{
+			name:              "Public to portuguese",
+			language:          "pt",
+			healthServiceType: models.Public,
+			expected:          "Público",
+		},
+		{
+			name:              "Private to english",
+			language:          "en",
+			healthServiceType: models.Private,
+			expected:          "Private",
+		},
+		{
+			name:              "Private to spanish",
+			language:          "es",
+			healthServiceType: models.Private,
+			expected:          "Privado",
+		},
+		{
+			name:              "Invalid language",
+			language:          "an",
+			healthServiceType: models.Public,
+			expected:          "Public",
+		},
+		{
+			name:              "Unknown health service type",
+			language:          "pt",
+			healthServiceType: models.HealthServiceType("Ghost"),
+			expected:          "Ghost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.healthServiceType.ToTranslatedString(tt.language)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

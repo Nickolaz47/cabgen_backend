@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/google/uuid"
 )
 
@@ -23,6 +24,26 @@ func (r UserRole) IsValid() bool {
 }
 
 var UserRoles = []UserRole{Admin, Collaborator}
+
+var roleTranslations = map[UserRole]map[string]string{
+	Admin: {
+		"en": "Admin", "es": "Administrador", "pt": "Administrador",
+	},
+	Collaborator: {
+		"en": "Collaborator", "es": "Colaborador", "pt": "Colaborador",
+	},
+}
+
+func (r UserRole) ToTranslatedString(language string) string {
+	language = translation.ParseLanguage(language)
+
+	translations, ok := roleTranslations[r]
+	if !ok {
+		return string(r)
+	}
+
+	return translations[language]
+}
 
 type User struct {
 	ID              uuid.UUID `gorm:"type:uuid;default:uuidv7();primaryKey"`

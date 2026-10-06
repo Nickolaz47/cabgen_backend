@@ -168,3 +168,57 @@ func TestAnalysisFilterBinding(t *testing.T) {
 		})
 	}
 }
+
+func TestAnalysisTypeToTranslatedString(t *testing.T) {
+	tests := []struct {
+		name         string
+		language     string
+		analysisType models.AnalysisType
+		expected     string
+	}{
+		{
+			name:         "FastQC to portuguese",
+			language:     "pt",
+			analysisType: models.AnalysisTypeFastQC,
+			expected:     "Qualidade",
+		},
+		{
+			name:         "Genome to english",
+			language:     "en",
+			analysisType: models.AnalysisTypeGenome,
+			expected:     "Genomic",
+		},
+		{
+			name:         "Complete to spanish",
+			language:     "es",
+			analysisType: models.AnalysisTypeComplete,
+			expected:     "Completo",
+		},
+		{
+			name:         "Complete to portuguese",
+			language:     "pt",
+			analysisType: models.AnalysisTypeComplete,
+			expected:     "Completa",
+		},
+		{
+			name:         "Invalid language",
+			language:     "an",
+			analysisType: models.AnalysisTypeFastQC,
+			expected:     "Quality",
+		},
+		{
+			name:         "Unknown analysis type",
+			language:     "pt",
+			analysisType: models.AnalysisType("Ghost"),
+			expected:     "Ghost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.analysisType.ToTranslatedString(tt.language)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

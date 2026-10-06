@@ -19,8 +19,9 @@ func NewCityHandler(svc services.CityService) *CityHandler {
 
 func (h *CityHandler) GetCities(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
-	cities, err := h.Service.FindAll(c.Request.Context())
+	cities, err := h.Service.FindAll(c.Request.Context(), language)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(

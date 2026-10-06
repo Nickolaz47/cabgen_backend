@@ -14,12 +14,13 @@ import (
 var brazilCitiesJSON []byte
 
 var (
-	brazilCitiesCache []models.SelectOption
-	once              sync.Once
+	brazilCities []string
+	once         sync.Once
 )
 
 type CityService interface {
-	FindAll(ctx context.Context) ([]models.SelectOption, error)
+	FindAll(ctx context.Context, language string) (
+		[]models.SelectOption, error)
 }
 
 type cityService struct{}
@@ -28,34 +29,32 @@ func NewCityService() CityService {
 	return &cityService{}
 }
 
-func (s *cityService) FindAll(ctx context.Context) (
+func (s *cityService) FindAll(ctx context.Context, language string) (
 	[]models.SelectOption, error) {
 	var err error
 
 	once.Do(func() {
-		var cities []string
 		if unmarshalErr := json.Unmarshal(brazilCitiesJSON,
-			&cities); unmarshalErr != nil {
+			&brazilCities); unmarshalErr != nil {
 			err = unmarshalErr
-			return
 		}
-
-		for _, city := range cities {
-			brazilCitiesCache = append(brazilCitiesCache, models.SelectOption{
-				Label: city,
-				Value: city,
-			})
-		}
-
-		brazilCitiesCache = append(brazilCitiesCache, models.SelectOption{
-			Label: "option.city.other",
-			Value: "Other",
-		})
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return brazilCitiesCache, nil
+	opts := make([]models.SelectOption, 0, len(brazilCities)+1)
+	for _, city := range brazilCities {
+		opts = append(opts, models.SelectOption{
+			Label: city,
+			Value: city,
+		})
+	}
+
+	other, _ := models.ToTranslatedOptionKey("option.city.other", language)
+	return append(opts, models.SelectOption{
+		Label: other,
+		Value: "Other",
+	}), nil
 }

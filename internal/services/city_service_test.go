@@ -12,10 +12,10 @@ import (
 func TestCityFindAll(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := NewCityService()
-		result, err := svc.FindAll(context.Background())
+		result, err := svc.FindAll(context.Background(), "pt")
 
 		otherOption := models.SelectOption{
-			Label: "option.city.other",
+			Label: "Outra",
 			Value: "Other",
 		}
 
@@ -26,20 +26,20 @@ func TestCityFindAll(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		origJSON := brazilCitiesJSON
-		origCache := brazilCitiesCache
+		origCache := brazilCities
 
 		defer func() {
 			brazilCitiesJSON = origJSON
 			once = sync.Once{}
-			brazilCitiesCache = origCache
+			brazilCities = origCache
 		}()
 
 		brazilCitiesJSON = []byte(`{invalid json`)
 		once = sync.Once{}
-		brazilCitiesCache = nil
+		brazilCities = nil
 
 		svc := NewCityService()
-		result, err := svc.FindAll(context.Background())
+		result, err := svc.FindAll(context.Background(), "pt")
 
 		assert.Error(t, err)
 		assert.Empty(t, result)

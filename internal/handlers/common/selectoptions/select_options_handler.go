@@ -20,8 +20,9 @@ func NewSelectOptionsHandler(
 
 func (h *SelectOptionsHandler) GetEnumSelects(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
 
-	opts, err := h.Service.FindAllEnumSelects(c.Request.Context())
+	opts, err := h.Service.FindAllEnumSelects(c.Request.Context(), language)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(

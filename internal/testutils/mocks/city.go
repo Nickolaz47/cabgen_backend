@@ -7,13 +7,14 @@ import (
 )
 
 type MockCityService struct {
-	FindAllFunc func(ctx context.Context) ([]models.SelectOption, error)
+	FindAllFunc func(ctx context.Context, language string) (
+		[]models.SelectOption, error)
 }
 
-func (s *MockCityService) FindAll(ctx context.Context) ([]models.SelectOption,
-	error) {
+func (s *MockCityService) FindAll(ctx context.Context, language string) (
+	[]models.SelectOption, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx)
+		return s.FindAllFunc(ctx, language)
 	}
 
 	return nil, nil

@@ -107,3 +107,51 @@ func TestAdminUserFilterBinding(t *testing.T) {
 		})
 	}
 }
+
+func TestUserRoleToTranslatedString(t *testing.T) {
+	tests := []struct {
+		name     string
+		language string
+		role     models.UserRole
+		expected string
+	}{
+		{
+			name:     "Admin to portuguese",
+			language: "pt",
+			role:     models.Admin,
+			expected: "Administrador",
+		},
+		{
+			name:     "Collaborator to english",
+			language: "en",
+			role:     models.Collaborator,
+			expected: "Collaborator",
+		},
+		{
+			name:     "Collaborator to spanish",
+			language: "es",
+			role:     models.Collaborator,
+			expected: "Colaborador",
+		},
+		{
+			name:     "Invalid language",
+			language: "an",
+			role:     models.Admin,
+			expected: "Admin",
+		},
+		{
+			name:     "Unknown role",
+			language: "pt",
+			role:     models.UserRole("Ghost"),
+			expected: "Ghost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.role.ToTranslatedString(tt.language)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

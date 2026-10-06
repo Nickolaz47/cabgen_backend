@@ -7,10 +7,12 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type SelectOptionsService interface {
-	FindAllEnumSelects(ctx context.Context) (*models.EnumSelectsResponse, error)
+	FindAllEnumSelects(ctx context.Context, language string) (
+		*models.EnumSelectsResponse, error)
 	FindAllFormSelects(ctx context.Context, language string) (
 		*models.FormSelectsResponse, error)
 }
@@ -42,14 +44,15 @@ func NewSelectOptionsService(
 	}
 }
 
-func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
-	*models.EnumSelectsResponse, error) {
+func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context,
+	language string) (*models.EnumSelectsResponse, error) {
 	resp := &models.EnumSelectsResponse{}
+	localizer := i18n.NewLocalizer(translation.Bundle, language)
 
 	// User Roles
 	for _, role := range models.UserRoles {
 		resp.Roles = append(resp.Roles, models.SelectOption{
-			Label: "option.role." + strings.ToLower(string(role)),
+			Label: role.ToTranslatedString(language),
 			Value: string(role),
 		})
 	}
@@ -57,7 +60,7 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	// Taxons
 	for _, taxon := range models.Taxons {
 		resp.Taxons = append(resp.Taxons, models.SelectOption{
-			Label: "option.taxon." + strings.ToLower(string(taxon)),
+			Label: taxon.ToTranslatedString(language),
 			Value: string(taxon),
 		})
 	}
@@ -65,7 +68,7 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	// Genders
 	for _, gender := range models.Genders {
 		resp.Genders = append(resp.Genders, models.SelectOption{
-			Label: "option.gender." + strings.ToLower(string(gender)),
+			Label: *gender.ToTranslatedString(language),
 			Value: string(gender),
 		})
 	}
@@ -74,8 +77,7 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	for _, hsType := range models.HealthServiceTypes {
 		resp.HealthServiceTypes = append(resp.HealthServiceTypes,
 			models.SelectOption{
-				Label: "option.health_service_type." + strings.ToLower(
-					string(hsType)),
+				Label: hsType.ToTranslatedString(language),
 				Value: string(hsType),
 			})
 	}
@@ -83,15 +85,22 @@ func (s *selectOptionsService) FindAllEnumSelects(ctx context.Context) (
 	// Analysis Types
 	for _, aType := range models.AnalysisTypes {
 		resp.AnalysisTypes = append(resp.AnalysisTypes, models.SelectOption{
-			Label: "option.analysis_type." + strings.ToLower(string(aType)),
+			Label: aType.ToTranslatedString(language),
 			Value: string(aType),
 		})
 	}
 
 	// Languages
 	for _, lang := range translation.Languages {
+		messageID := "option.language." + lang
+		label, err := localizer.Localize(&i18n.LocalizeConfig{
+			MessageID: messageID,
+		})
+		if err != nil {
+			label = messageID
+		}
 		resp.Languages = append(resp.Languages, models.SelectOption{
-			Label: "option.language." + lang,
+			Label: label,
 			Value: lang,
 		})
 	}
@@ -104,6 +113,16 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	language = translation.ParseLanguage(language)
 	resp := &models.FormSelectsResponse{}
 
+	translateLabel := func(label string) string {
+		if !strings.HasPrefix(label, "option.") {
+			return label
+		}
+		if translated, ok := models.ToTranslatedOptionKey(label, language); ok {
+			return translated
+		}
+		return label
+	}
+
 	labs, err := s.laboratoryRepo.GetActiveLaboratories(ctx)
 	if err != nil {
 		return nil, err
@@ -111,7 +130,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.Laboratories = make([]models.SelectOption, len(labs))
 	for i, lab := range labs {
 		resp.Laboratories[i] = models.SelectOption{
-			Label: lab.Name,
+			Label: translateLabel(lab.Name),
 			Value: lab.ID.String(),
 		}
 	}
@@ -123,7 +142,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.Sequencers = make([]models.SelectOption, len(sequencers))
 	for i, seq := range sequencers {
 		resp.Sequencers[i] = models.SelectOption{
-			Label: seq.Brand,
+			Label: translateLabel(seq.Brand),
 			Value: seq.ID.String(),
 		}
 	}
@@ -135,7 +154,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.HealthServices = make([]models.SelectOption, len(healthServices))
 	for i, hs := range healthServices {
 		resp.HealthServices[i] = models.SelectOption{
-			Label: hs.Name,
+			Label: translateLabel(hs.Name),
 			Value: hs.ID.String(),
 		}
 	}
@@ -147,7 +166,7 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.Origins = make([]models.SelectOption, len(origins))
 	for i, origin := range origins {
 		resp.Origins[i] = models.SelectOption{
-			Label: origin.Names[language],
+			Label: translateLabel(origin.Names[language]),
 			Value: origin.ID.String(),
 		}
 	}
@@ -159,7 +178,8 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.Microorganisms = make([]models.SelectOption, len(micros))
 	for i, micro := range micros {
 		resp.Microorganisms[i] = models.SelectOption{
-			Label: micro.Species + " " + micro.Variety[language],
+			Label: translateLabel(micro.Species + " " +
+				micro.Variety[language]),
 			Value: micro.ID.String(),
 		}
 	}
@@ -171,14 +191,14 @@ func (s *selectOptionsService) FindAllFormSelects(ctx context.Context,
 	resp.SampleSources = make([]models.SelectOption, len(sources))
 	for i, source := range sources {
 		resp.SampleSources[i] = models.SelectOption{
-			Label: source.Names[language],
+			Label: translateLabel(source.Names[language]),
 			Value: source.ID.String(),
 		}
 	}
 
 	for _, gender := range models.Genders {
 		resp.Genders = append(resp.Genders, models.SelectOption{
-			Label: "option.gender." + strings.ToLower(string(gender)),
+			Label: *gender.ToTranslatedString(language),
 			Value: string(gender),
 		})
 	}

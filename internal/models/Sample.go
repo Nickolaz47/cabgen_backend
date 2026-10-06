@@ -83,11 +83,19 @@ func ToTranslatedInNetwork(value bool, language string) string {
 	return inNetworkTranslations[value][language]
 }
 
+var otherMasculine = map[string]string{
+	"en": "Other", "es": "Otro", "pt": "Outro",
+}
+
+var otherFeminine = map[string]string{
+	"en": "Other", "es": "Otra", "pt": "Outra",
+}
+
 var optionKeyTranslations = map[string]map[string]string{
-	"option.city.other":          {"en": "Other", "es": "Otro", "pt": "Outro"},
-	"option.sequencer.other":     {"en": "Other", "es": "Otro", "pt": "Outro"},
-	"option.laboratory.other":    {"en": "Other", "es": "Otro", "pt": "Outro"},
-	"option.healthService.other": {"en": "Other", "es": "Otro", "pt": "Outro"},
+	"option.city.other":          otherFeminine,
+	"option.sequencer.other":     otherMasculine,
+	"option.laboratory.other":    otherMasculine,
+	"option.healthService.other": otherMasculine,
 }
 
 func ToTranslatedOptionKey(key, language string) (string, bool) {
