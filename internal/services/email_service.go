@@ -111,7 +111,7 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 		Active:   &isActive,
 	}
 
-	admins, err := s.UserRepo.GetUsers(ctx, filter)
+	admins, _, err := s.UserRepo.GetUsers(ctx, filter, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendActivationUserEmail",
@@ -259,7 +259,7 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 		Active:   &isActive,
 	}
 
-	admins, err := s.UserRepo.GetUsers(ctx, filter)
+	admins, _, err := s.UserRepo.GetUsers(ctx, filter, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminTicketEmail",

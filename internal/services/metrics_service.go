@@ -39,7 +39,7 @@ func NewMetricsService(
 
 func (s *metricsService) GetMetrics(ctx context.Context) (
 	*models.AdminMetricsResponse, error) {
-	samples, err := s.SampleRepo.GetSamples(ctx, "", uuid.Nil)
+	samples, _, err := s.SampleRepo.GetSamples(ctx, "", uuid.Nil, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,
@@ -47,8 +47,8 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 		return nil, ErrInternal
 	}
 
-	analyses, err := s.AnalysisRepo.GetAnalyses(ctx, uuid.Nil,
-		models.AnalysisFilter{})
+	analyses, _, err := s.AnalysisRepo.GetAnalyses(ctx, uuid.Nil,
+		models.AnalysisFilter{}, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,
@@ -56,7 +56,7 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 		return nil, ErrInternal
 	}
 
-	users, err := s.UserRepo.GetUsers(ctx, models.AdminUserFilter{})
+	users, _, err := s.UserRepo.GetUsers(ctx, models.AdminUserFilter{}, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"MetricsService", "GetMetrics", logging.DatabaseError, err,

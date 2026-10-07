@@ -10,7 +10,8 @@ import (
 
 type AnalysisRepository interface {
 	GetAnalyses(ctx context.Context, userID uuid.UUID,
-		filter models.AnalysisFilter) ([]models.Analysis, error)
+		filter models.AnalysisFilter, limit, offset int) (
+		[]models.Analysis, int64, error)
 	GetAnalysesByIDs(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetDashboardAnalyses(ctx context.Context) ([]models.Analysis, error)
@@ -34,12 +35,9 @@ func NewAnalysisRepository(db *gorm.DB) AnalysisRepository {
 	}
 }
 
-func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID,
-	filter models.AnalysisFilter) (
-	[]models.Analysis, error) {
-	var analyses []models.Analysis
-
-	query := r.DB.WithContext(ctx).Preload("Sample").Preload("User")
+func (r *analysisRepo) analysesFilterQuery(ctx context.Context,
+	userID uuid.UUID, filter models.AnalysisFilter) *gorm.DB {
+	query := r.DB.WithContext(ctx).Model(&models.Analysis{})
 	// Collaborator path
 	if userID != uuid.Nil {
 		query = query.Where("analyses.user_id = ?", userID)
@@ -78,11 +76,36 @@ func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID,
 		}
 	}
 
-	if err := query.Find(&analyses).Error; err != nil {
-		return nil, err
+	return query
+}
+
+func (r *analysisRepo) GetAnalyses(ctx context.Context, userID uuid.UUID,
+	filter models.AnalysisFilter, limit, offset int) (
+	[]models.Analysis, int64, error) {
+	var analyses []models.Analysis
+	var total int64
+
+	if limit > 0 {
+		if err := r.analysesFilterQuery(ctx, userID, filter).
+			Count(&total).Error; err != nil {
+			return nil, 0, err
+		}
 	}
 
-	return analyses, nil
+	query := r.analysesFilterQuery(ctx, userID, filter).
+		Preload("Sample").Preload("User")
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	if err := query.Find(&analyses).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return analyses, total, nil
 }
 
 func (r *analysisRepo) GetAnalysesByIDs(ctx context.Context,

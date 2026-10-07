@@ -8,7 +8,8 @@ import (
 )
 
 type MockUserRepository struct {
-	GetUsersFunc          func(ctx context.Context, filter models.AdminUserFilter) ([]models.User, error)
+	GetUsersFunc func(ctx context.Context, filter models.AdminUserFilter,
+		limit, offset int) ([]models.User, int64, error)
 	GetUserByIDFunc       func(ctx context.Context, ID uuid.UUID) (*models.User, error)
 	GetUserByUsernameFunc func(ctx context.Context, username string) (*models.User, error)
 	GetUserByEmailFunc    func(ctx context.Context, email string) (*models.User, error)
@@ -19,11 +20,13 @@ type MockUserRepository struct {
 	DeleteUserFunc        func(ctx context.Context, user *models.User) error
 }
 
-func (r *MockUserRepository) GetUsers(ctx context.Context, filter models.AdminUserFilter) ([]models.User, error) {
+func (r *MockUserRepository) GetUsers(ctx context.Context,
+	filter models.AdminUserFilter, limit, offset int) (
+	[]models.User, int64, error) {
 	if r.GetUsersFunc != nil {
-		return r.GetUsersFunc(ctx, filter)
+		return r.GetUsersFunc(ctx, filter, limit, offset)
 	}
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (r *MockUserRepository) GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error) {
@@ -83,7 +86,9 @@ func (r *MockUserRepository) DeleteUser(ctx context.Context, user *models.User) 
 }
 
 type MockAdminUserService struct {
-	FindFunc           func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error)
+	FindFunc func(ctx context.Context, filter models.AdminUserFilter,
+		offset int, language string) (
+		[]models.AdminUserResponse, int, error)
 	FindByIDFunc       func(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error)
 	FindByUsernameFunc func(ctx context.Context, username, language string) (*models.AdminUserResponse, error)
 	FindByEmailFunc    func(ctx context.Context, email, language string) (*models.AdminUserResponse, error)
@@ -97,12 +102,13 @@ type MockAdminUserService struct {
 func (m *MockAdminUserService) Find(
 	ctx context.Context,
 	filter models.AdminUserFilter,
+	offset int,
 	language string,
-) ([]models.AdminUserResponse, error) {
+) ([]models.AdminUserResponse, int, error) {
 	if m.FindFunc != nil {
-		return m.FindFunc(ctx, filter, language)
+		return m.FindFunc(ctx, filter, offset, language)
 	}
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (m *MockAdminUserService) FindByID(

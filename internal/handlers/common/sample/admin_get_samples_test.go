@@ -25,10 +25,10 @@ func TestAdminGetSamples(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			FindAllFunc: func(ctx context.Context, input string,
-				userID uuid.UUID, language string) (
-				[]models.SampleResponse, error) {
+				userID uuid.UUID, offset int, language string) (
+				[]models.SampleResponse, int, error) {
 				assert.Equal(t, uuid.Nil, userID)
-				return []models.SampleResponse{mockResponse}, nil
+				return []models.SampleResponse{mockResponse}, 1, nil
 			},
 		}
 
@@ -46,8 +46,9 @@ func TestAdminGetSamples(t *testing.T) {
 		handler.GetSamples(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.SampleResponse{
-				"data": {mockResponse},
+			map[string]any{
+				"data":        []models.SampleResponse{mockResponse},
+				"total_pages": 1,
 			},
 		)
 
@@ -58,9 +59,9 @@ func TestAdminGetSamples(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			FindAllFunc: func(ctx context.Context, input string,
-				userID uuid.UUID, language string) (
-				[]models.SampleResponse, error) {
-				return nil, services.ErrInternal
+				userID uuid.UUID, offset int, language string) (
+				[]models.SampleResponse, int, error) {
+				return nil, 0, services.ErrInternal
 			},
 		}
 

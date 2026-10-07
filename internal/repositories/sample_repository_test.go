@@ -31,7 +31,7 @@ func TestGetSamples(t *testing.T) {
 	db.Create(&mockSample)
 
 	t.Run("Success - All samples", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, "", uuid.Nil)
+		result, _, err := sampleRepo.GetSamples(ctx, "", uuid.Nil, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -39,7 +39,7 @@ func TestGetSamples(t *testing.T) {
 	})
 
 	t.Run("Success - Filtered samples", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, mockSample.OriginCode, uuid.Nil)
+		result, _, err := sampleRepo.GetSamples(ctx, mockSample.OriginCode, uuid.Nil, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -48,7 +48,7 @@ func TestGetSamples(t *testing.T) {
 	})
 
 	t.Run("Success - Filtered samples by user", func(t *testing.T) {
-		result, err := sampleRepo.GetSamples(ctx, "", mockSample.UserID)
+		result, _, err := sampleRepo.GetSamples(ctx, "", mockSample.UserID, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
@@ -60,11 +60,51 @@ func TestGetSamples(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockSampleRepo := repositories.NewSampleRepo(mockDB)
-		samples, err := mockSampleRepo.GetSamples(
-			context.Background(), "", uuid.Nil)
+		samples, _, err := mockSampleRepo.GetSamples(
+			context.Background(), "", uuid.Nil, 0, 0)
 
 		assert.Empty(t, samples)
 		assert.Error(t, err)
+	})
+
+	t.Run("Success - Pagination", func(t *testing.T) {
+		pagDB := testutils.NewMockDB()
+		pagRepo := repositories.NewSampleRepo(pagDB)
+
+		first := testmodels.CreateMockSample()
+		pagDB.Create(&first)
+
+		second := testmodels.CreateMockSample()
+		second.HealthService.Name = "Outro Laboratorio Central"
+		pagDB.Create(&second)
+
+		third := testmodels.CreateMockSample()
+		third.HealthService.Name = "Terceiro Laboratorio Central"
+		pagDB.Create(&third)
+
+		samples, total, err := pagRepo.GetSamples(ctx, "", uuid.Nil, 2, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, samples, 2)
+		assert.Equal(t, int64(3), total)
+
+		samples, total, err = pagRepo.GetSamples(ctx, "", uuid.Nil, 2, 2)
+
+		assert.NoError(t, err)
+		assert.Len(t, samples, 1)
+		assert.Equal(t, int64(3), total)
+
+		samples, total, err = pagRepo.GetSamples(ctx, "", uuid.Nil, 0, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, samples, 3)
+		assert.Equal(t, int64(0), total)
+
+		samples, total, err = pagRepo.GetSamples(ctx, "", uuid.Nil, 2, 10)
+
+		assert.NoError(t, err)
+		assert.Empty(t, samples)
+		assert.Equal(t, int64(3), total)
 	})
 }
 

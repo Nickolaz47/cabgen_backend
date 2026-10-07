@@ -26,8 +26,10 @@ func TestGetUsers(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			FindFunc: func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error) {
-				return []models.AdminUserResponse{userResponse, userResponse2}, nil
+			FindFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, offset int,
+				language string) ([]models.AdminUserResponse, int, error) {
+				return []models.AdminUserResponse{userResponse, userResponse2}, 1, nil
 			},
 		}
 		handler := user.NewAdminUserHandler(svc)
@@ -39,8 +41,9 @@ func TestGetUsers(t *testing.T) {
 		handler.GetUsers(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.AdminUserResponse{
-				"data": {userResponse, userResponse2},
+			map[string]any{
+				"data":        []models.AdminUserResponse{userResponse, userResponse2},
+				"total_pages": 1,
 			},
 		)
 
@@ -50,9 +53,11 @@ func TestGetUsers(t *testing.T) {
 
 	t.Run("Success - With filter", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			FindFunc: func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error) {
+			FindFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, offset int,
+				language string) ([]models.AdminUserResponse, int, error) {
 				assert.Equal(t, models.Admin, filter.UserRole)
-				return []models.AdminUserResponse{userResponse2}, nil
+				return []models.AdminUserResponse{userResponse2}, 1, nil
 			},
 		}
 		handler := user.NewAdminUserHandler(svc)
@@ -64,8 +69,9 @@ func TestGetUsers(t *testing.T) {
 		handler.GetUsers(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.AdminUserResponse{
-				"data": {userResponse2},
+			map[string]any{
+				"data":        []models.AdminUserResponse{userResponse2},
+				"total_pages": 1,
 			},
 		)
 
@@ -95,8 +101,10 @@ func TestGetUsers(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
-			FindFunc: func(ctx context.Context, filter models.AdminUserFilter, language string) ([]models.AdminUserResponse, error) {
-				return nil, services.ErrInternal
+			FindFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, offset int,
+				language string) ([]models.AdminUserResponse, int, error) {
+				return nil, 0, services.ErrInternal
 			},
 		}
 		handler := user.NewAdminUserHandler(svc)
@@ -116,4 +124,53 @@ func TestGetUsers(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	t.Run("Error - Invalid Offset", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/admin/users?offset=abc",
+			"", nil, nil,
+		)
+		handler.GetUsers(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Invalid query parameters.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Success - With offset", func(t *testing.T) {
+		svc := &mocks.MockAdminUserService{
+			FindFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, offset int,
+				language string) ([]models.AdminUserResponse, int, error) {
+				assert.Equal(t, 50, offset)
+				return []models.AdminUserResponse{userResponse2}, 5, nil
+			},
+		}
+		handler := user.NewAdminUserHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/admin/users?offset=50",
+			"", nil, nil,
+		)
+		handler.GetUsers(c)
+
+		expected := testutils.ToJSON(
+			map[string]any{
+				"data":        []models.AdminUserResponse{userResponse2},
+				"total_pages": 5,
+			},
+		)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 }

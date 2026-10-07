@@ -9,7 +9,8 @@ import (
 
 type MockSampleRepository struct {
 	GetSamplesFunc func(ctx context.Context, input string,
-		userID uuid.UUID) ([]models.Sample, error)
+		userID uuid.UUID, limit, offset int) ([]models.Sample, int64,
+		error)
 	GetSampleByIDFunc func(ctx context.Context,
 		ID uuid.UUID) (*models.Sample, error)
 	CreateSampleFunc func(ctx context.Context, sample *models.Sample) error
@@ -18,12 +19,13 @@ type MockSampleRepository struct {
 }
 
 func (r *MockSampleRepository) GetSamples(ctx context.Context,
-	input string, userID uuid.UUID) ([]models.Sample, error) {
+	input string, userID uuid.UUID, limit, offset int) (
+	[]models.Sample, int64, error) {
 	if r.GetSamplesFunc != nil {
-		return r.GetSamplesFunc(ctx, input, userID)
+		return r.GetSamplesFunc(ctx, input, userID, limit, offset)
 	}
 
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (r *MockSampleRepository) GetSampleByID(ctx context.Context,
@@ -68,7 +70,8 @@ type MockSampleService struct {
 	GetSampleForUploadFunc func(ctx context.Context,
 		sampleID uuid.UUID) (*models.Sample, error)
 	FindAllFunc func(ctx context.Context, input string,
-		userID uuid.UUID, language string) ([]models.SampleResponse, error)
+		userID uuid.UUID, offset int, language string) (
+		[]models.SampleResponse, int, error)
 	FindByIDFunc func(ctx context.Context, sampleID, userID uuid.UUID,
 		language string) (*models.SampleResponse, error)
 	CreateFunc func(ctx context.Context, input models.SampleCreateDTO,
@@ -99,12 +102,13 @@ func (r *MockSampleService) GetSampleForUpload(ctx context.Context,
 }
 
 func (r *MockSampleService) FindAll(ctx context.Context, input string,
-	userID uuid.UUID, language string) ([]models.SampleResponse, error) {
+	userID uuid.UUID, offset int, language string) (
+	[]models.SampleResponse, int, error) {
 	if r.FindAllFunc != nil {
-		return r.FindAllFunc(ctx, input, userID, language)
+		return r.FindAllFunc(ctx, input, userID, offset, language)
 	}
 
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (r *MockSampleService) FindByID(ctx context.Context, sampleID,

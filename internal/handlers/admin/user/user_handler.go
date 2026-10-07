@@ -36,7 +36,18 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	users, err := h.Service.Find(c.Request.Context(), filter, language)
+	offset, ok := validations.GetOffset(c)
+	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAdminUsersGetFailed, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
+	users, pages, err := h.Service.Find(c.Request.Context(), filter, offset,
+		language)
 	if err != nil {
 		code, errMsg := handlererrors.HandleUserError(err)
 		c.JSON(
@@ -47,7 +58,8 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.APIResponse{Data: users})
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: users, TotalPages: &pages})
 }
 
 func (h *AdminUserHandler) GetUserByID(c *gin.Context) {

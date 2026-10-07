@@ -21,8 +21,8 @@ const MaxAnalysesPerSample = 2
 
 type AnalysisService interface {
 	FindAll(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter,
-		language string) (
-		[]models.AnalysisResponse, error)
+		offset int, language string) (
+		[]models.AnalysisResponse, int, error)
 	FindByID(ctx context.Context, analysisID, userID uuid.UUID,
 		language string) (*models.AnalysisResponse, error)
 	FindManyByIDs(ctx context.Context, analysisIDs []uuid.UUID,
@@ -82,15 +82,16 @@ func (s *analysisService) getAnalysisFolderPath(
 }
 
 func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
-	filter models.AnalysisFilter, language string) (
-	[]models.AnalysisResponse, error) {
-	analyses, err := s.Repo.GetAnalyses(ctx, userID, filter)
+	filter models.AnalysisFilter, offset int, language string) (
+	[]models.AnalysisResponse, int, error) {
+	analyses, total, err := s.Repo.GetAnalyses(ctx, userID, filter,
+		ListPageLimit, offset)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, 0, ErrInternal
 	}
 
 	responses := make([]models.AnalysisResponse, len(analyses))
@@ -98,7 +99,7 @@ func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
 		responses[i] = analysis.ToResponse(language)
 	}
 
-	return responses, nil
+	return responses, TotalPages(total), nil
 }
 
 func (s *analysisService) FindManyByIDs(ctx context.Context,

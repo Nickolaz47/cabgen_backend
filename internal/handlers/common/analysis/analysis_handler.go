@@ -49,8 +49,18 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 		return
 	}
 
-	analyses, err := h.Service.FindAll(c.Request.Context(), userToken.ID, filter,
-		language)
+	offset, ok := validations.GetOffset(c)
+	if !ok {
+		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFailed, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
+	analyses, pages, err := h.Service.FindAll(c.Request.Context(),
+		userToken.ID, filter, offset, language)
 	if err != nil {
 		validations.SetAuditEvent(c, models.AuditEventAnalysesGetFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
@@ -60,7 +70,8 @@ func (h *AnalysisHandler) GetAnalyses(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.APIResponse{Data: analyses})
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: analyses, TotalPages: &pages})
 }
 
 func (h *AnalysisHandler) GetAnalysisByID(c *gin.Context) {

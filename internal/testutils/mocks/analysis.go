@@ -9,7 +9,8 @@ import (
 
 type MockAnalysisRepository struct {
 	GetAnalysesFunc func(ctx context.Context, userID uuid.UUID,
-		filter models.AnalysisFilter) ([]models.Analysis, error)
+		filter models.AnalysisFilter, limit, offset int) (
+		[]models.Analysis, int64, error)
 	GetAnalysesByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetDashboardAnalysesFunc func(ctx context.Context) (
@@ -29,12 +30,12 @@ type MockAnalysisRepository struct {
 }
 
 func (r *MockAnalysisRepository) GetAnalyses(ctx context.Context,
-	userID uuid.UUID, filter models.AnalysisFilter) (
-	[]models.Analysis, error) {
+	userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) (
+	[]models.Analysis, int64, error) {
 	if r.GetAnalysesFunc != nil {
-		return r.GetAnalysesFunc(ctx, userID, filter)
+		return r.GetAnalysesFunc(ctx, userID, filter, limit, offset)
 	}
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (r *MockAnalysisRepository) GetAnalysesByIDs(ctx context.Context,
@@ -111,8 +112,8 @@ func (r *MockAnalysisRepository) DeleteAnalysis(ctx context.Context,
 
 type MockAnalysisService struct {
 	FindAllFunc func(ctx context.Context, userID uuid.UUID,
-		filter models.AnalysisFilter, language string) (
-		[]models.AnalysisResponse, error)
+		filter models.AnalysisFilter, offset int, language string) (
+		[]models.AnalysisResponse, int, error)
 	FindByIDFunc func(ctx context.Context, analysisID, userID uuid.UUID,
 		language string) (*models.AnalysisResponse, error)
 	FindManyByIDsFunc func(ctx context.Context, analysisIDs []uuid.UUID,
@@ -132,13 +133,13 @@ type MockAnalysisService struct {
 }
 
 func (s *MockAnalysisService) FindAll(ctx context.Context, userID uuid.UUID,
-	filter models.AnalysisFilter, language string) (
-	[]models.AnalysisResponse, error) {
+	filter models.AnalysisFilter, offset int, language string) (
+	[]models.AnalysisResponse, int, error) {
 	if s.FindAllFunc != nil {
-		return s.FindAllFunc(ctx, userID, filter, language)
+		return s.FindAllFunc(ctx, userID, filter, offset, language)
 	}
 
-	return nil, nil
+	return nil, 0, nil
 }
 
 func (s *MockAnalysisService) FindManyByIDs(ctx context.Context,

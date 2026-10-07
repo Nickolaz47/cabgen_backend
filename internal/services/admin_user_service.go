@@ -21,8 +21,9 @@ import (
 )
 
 type AdminUserService interface {
-	Find(ctx context.Context, filter models.AdminUserFilter, language string) (
-		[]models.AdminUserResponse, error)
+	Find(ctx context.Context, filter models.AdminUserFilter, offset int,
+		language string) (
+		[]models.AdminUserResponse, int, error)
 	FindByID(ctx context.Context, ID uuid.UUID, language string) (
 		*models.AdminUserResponse, error)
 	FindByUsername(ctx context.Context, username, language string) (
@@ -72,14 +73,15 @@ func NewAdminUserService(
 func (s *adminUserService) Find(
 	ctx context.Context,
 	filter models.AdminUserFilter,
-	language string) ([]models.AdminUserResponse, error) {
-	users, err := s.Repo.GetUsers(ctx, filter)
+	offset int,
+	language string) ([]models.AdminUserResponse, int, error) {
+	users, total, err := s.Repo.GetUsers(ctx, filter, ListPageLimit, offset)
 	if err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(ctx,
 				"AdminUserService", "Find", logging.DatabaseError, err,
 			)...)
-		return nil, ErrInternal
+		return nil, 0, ErrInternal
 	}
 
 	responses := make([]models.AdminUserResponse, len(users))
@@ -87,7 +89,7 @@ func (s *adminUserService) Find(
 		responses[i] = user.ToAdminResponse(language)
 	}
 
-	return responses, nil
+	return responses, TotalPages(total), nil
 }
 
 func (s *adminUserService) FindByID(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error) {

@@ -33,7 +33,7 @@ func TestGetAnalyses(t *testing.T) {
 	db.Create(&analysis)
 
 	t.Run("Success - userID is nil", func(t *testing.T) {
-		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
+		analyses, _, err := repo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{}, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -41,7 +41,8 @@ func TestGetAnalyses(t *testing.T) {
 	})
 
 	t.Run("Success - userID filter", func(t *testing.T) {
-		analyses, err := repo.GetAnalyses(ctx, uuid.New(), models.AnalysisFilter{})
+		analyses, _, err := repo.GetAnalyses(ctx, uuid.New(),
+			models.AnalysisFilter{}, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 0)
@@ -52,10 +53,61 @@ func TestGetAnalyses(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockAnalysisRepo := repositories.NewAnalysisRepository(mockDB)
-		analyses, err := mockAnalysisRepo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
+		analyses, _, err := mockAnalysisRepo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{}, 0, 0)
 
 		assert.Error(t, err)
 		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Pagination", func(t *testing.T) {
+		pagDB := testutils.NewMockDB()
+		pagRepo := repositories.NewAnalysisRepository(pagDB)
+
+		sample := testmodels.CreateMockSample()
+		pagDB.Create(&sample)
+
+		first := testmodels.CreateMockAnalysis()
+		first.Sample = models.Sample{}
+		first.SampleID = sample.ID
+		pagDB.Create(&first)
+
+		second := testmodels.CreateMockAnalysis()
+		second.Sample = models.Sample{}
+		second.SampleID = sample.ID
+		pagDB.Create(&second)
+
+		third := testmodels.CreateMockAnalysis()
+		third.Sample = models.Sample{}
+		third.SampleID = sample.ID
+		pagDB.Create(&third)
+
+		analyses, total, err := pagRepo.GetAnalyses(
+			ctx, uuid.Nil, models.AnalysisFilter{}, 2, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 2)
+		assert.Equal(t, int64(3), total)
+
+		analyses, total, err = pagRepo.GetAnalyses(
+			ctx, uuid.Nil, models.AnalysisFilter{}, 2, 2)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 1)
+		assert.Equal(t, int64(3), total)
+
+		analyses, total, err = pagRepo.GetAnalyses(
+			ctx, uuid.Nil, models.AnalysisFilter{}, 0, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, analyses, 3)
+		assert.Equal(t, int64(0), total)
+
+		analyses, total, err = pagRepo.GetAnalyses(
+			ctx, uuid.Nil, models.AnalysisFilter{}, 2, 10)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+		assert.Equal(t, int64(3), total)
 	})
 }
 
@@ -72,7 +124,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filterDB.Create(&mockAnalysis)
 
 		filter := models.AnalysisFilter{Type: models.AnalysisTypeComplete}
-		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, mockUser.ID, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -85,7 +137,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filterDB.Create(&mockAnalysis)
 
 		filter := models.AnalysisFilter{Type: models.AnalysisTypeComplete}
-		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, uuid.Nil, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -98,7 +150,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filterDB.Create(&mockAnalysis)
 
 		filter := models.AnalysisFilter{Username: mockUser.Username}
-		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, uuid.Nil, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -119,7 +171,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filterDB.Create(&completeAnalysis)
 
 		filter := models.AnalysisFilter{Type: models.AnalysisTypeGenome}
-		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, mockUser.ID, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -135,7 +187,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filter := models.AnalysisFilter{
 			OriginCode: mockAnalysis.Sample.OriginCode,
 		}
-		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, mockUser.ID, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -150,7 +202,7 @@ func TestGetAnalysesFilters(t *testing.T) {
 		filter := models.AnalysisFilter{
 			OriginCode: mockAnalysis.Sample.OriginCode,
 		}
-		analyses, err := repo.GetAnalyses(ctx, uuid.Nil, filter)
+		analyses, _, err := repo.GetAnalyses(ctx, uuid.Nil, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
@@ -162,11 +214,12 @@ func TestGetAnalysesFilters(t *testing.T) {
 
 		filterDB.Create(&mockAnalysis)
 
-		analyses, err := repo.GetAnalyses(ctx, mockUser.ID, models.AnalysisFilter{})
+		analyses, _, err := repo.GetAnalyses(ctx, mockUser.ID, models.AnalysisFilter{}, 0, 0)
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
 
-		analyses, err = repo.GetAnalyses(ctx, uuid.Nil, models.AnalysisFilter{})
+		analyses, _, err = repo.GetAnalyses(ctx, uuid.Nil,
+			models.AnalysisFilter{}, 0, 0)
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
 	})

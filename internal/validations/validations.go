@@ -2,6 +2,7 @@ package validations
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -276,4 +277,18 @@ func sanitizeMapValues(m map[string]string) {
 	for k, v := range m {
 		m[k] = sanitize.HTML(sanitize.Scripts(strings.TrimSpace(v)))
 	}
+}
+
+func GetOffset(c *gin.Context) (int, bool) {
+	raw := c.Query("offset")
+	if raw == "" {
+		return 0, true
+	}
+
+	offset, err := strconv.Atoi(raw)
+	if err != nil || offset < 0 {
+		return 0, false
+	}
+
+	return offset, true
 }

@@ -28,21 +28,18 @@ func TestMetricsGetMetrics(t *testing.T) {
 		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter baumannii","acquired_resistance":["blaOXA-23"]}`)
 
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return []models.Sample{mockSample}, nil
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return []models.Sample{mockSample}, 0, nil
 			},
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return []models.Analysis{mockDone}, nil
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				return []models.Analysis{mockDone}, 0, nil
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{mockUser}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{mockUser}, 0, nil
 			},
 		}
 
@@ -69,21 +66,18 @@ func TestMetricsGetMetrics(t *testing.T) {
 		samples[1].Country.Code = "ARG"
 
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return samples, nil
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return samples, 0, nil
 			},
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return nil, nil
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				return nil, 0, nil
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, nil
 			},
 		}
 
@@ -109,21 +103,18 @@ func TestMetricsGetMetrics(t *testing.T) {
 		mockInvalid.Metrics = []byte(`{"primary_species":`)
 
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return []models.Sample{mockSample}, nil
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return []models.Sample{mockSample}, 0, nil
 			},
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return []models.Analysis{mockDone, mockDuplicate, mockInvalid}, nil
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				return []models.Analysis{mockDone, mockDuplicate, mockInvalid}, 0, nil
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{}, 0, nil
 			},
 		}
 
@@ -149,21 +140,18 @@ func TestMetricsGetMetrics(t *testing.T) {
 		mockEmptyResult.Metrics = []byte(`{}`)
 
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return nil, nil
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return nil, 0, nil
 			},
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return []models.Analysis{mockDone, mockPending, mockEmptyResult}, nil
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				return []models.Analysis{mockDone, mockPending, mockEmptyResult}, 0, nil
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, nil
 			},
 		}
 
@@ -179,9 +167,8 @@ func TestMetricsGetMetrics(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return nil, services.ErrInternal
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return nil, 0, services.ErrInternal
 			},
 		}
 		analysisRepo := &mocks.MockAnalysisRepository{}

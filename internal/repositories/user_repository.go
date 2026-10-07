@@ -9,7 +9,8 @@ import (
 )
 
 type UserRepository interface {
-	GetUsers(ctx context.Context, filter models.AdminUserFilter) ([]models.User, error)
+	GetUsers(ctx context.Context, filter models.AdminUserFilter,
+		limit, offset int) ([]models.User, int64, error)
 	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
@@ -28,32 +29,52 @@ func NewUserRepo(db *gorm.DB) UserRepository {
 	return &userRepository{DB: db}
 }
 
-func (r *userRepository) GetUsers(
-	ctx context.Context, filter models.AdminUserFilter) ([]models.User, error) {
+func (r *userRepository) GetUsers(ctx context.Context,
+	filter models.AdminUserFilter, limit, offset int) (
+	[]models.User, int64, error) {
 	var users []models.User
+	var total int64
 
-	query := r.DB.WithContext(ctx).Preload("Country")
-	if filter.Input != "" {
-		like := "%" + filter.Input + "%"
-		query = query.Where(
-			"LOWER(username) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)",
-			like, like, like,
-		)
+	build := func() *gorm.DB {
+		query := r.DB.WithContext(ctx).Model(&models.User{})
+		if filter.Input != "" {
+			like := "%" + filter.Input + "%"
+			query = query.Where(
+				"LOWER(username) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)",
+				like, like, like,
+			)
+		}
+
+		if filter.UserRole != "" {
+			query = query.Where("user_role = ?", filter.UserRole)
+		}
+
+		if filter.Active != nil {
+			query = query.Where("is_active = ?", *filter.Active)
+		}
+
+		return query
 	}
 
-	if filter.UserRole != "" {
-		query = query.Where("user_role = ?", filter.UserRole)
+	if limit > 0 {
+		if err := build().Count(&total).Error; err != nil {
+			return nil, 0, err
+		}
 	}
 
-	if filter.Active != nil {
-		query = query.Where("is_active = ?", *filter.Active)
+	query := build().Preload("Country")
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
 	}
 
 	if err := query.Find(&users).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return users, nil
+	return users, total, nil
 }
 
 func (r *userRepository) GetUsersByUsernameOrEmailOrName(ctx context.Context, input string) ([]models.User, error) {

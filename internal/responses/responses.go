@@ -118,9 +118,10 @@ const (
 )
 
 type APIResponse struct {
-	Error   string `json:"error,omitempty"`
-	Message string `json:"message,omitempty"`
-	Data    any    `json:"data,omitempty"`
+	Error      string `json:"error,omitempty"`
+	Message    string `json:"message,omitempty"`
+	Data       any    `json:"data,omitempty"`
+	TotalPages *int   `json:"total_pages,omitempty"`
 }
 
 func GetResponse(localizer *i18n.Localizer, messageID string) string {

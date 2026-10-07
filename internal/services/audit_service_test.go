@@ -172,9 +172,8 @@ func TestFindAuditSelectOptions(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return users, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return users, 0, nil
 			},
 		}
 		auditRepo := &mocks.MockAuditRepository{}
@@ -191,9 +190,8 @@ func TestFindAuditSelectOptions(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 		auditRepo := &mocks.MockAuditRepository{}

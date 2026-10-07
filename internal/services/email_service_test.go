@@ -34,9 +34,8 @@ func TestSendAdminAlertEmail(t *testing.T) {
 				*models.User, error) {
 				return &newUser, nil
 			},
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{adminUser}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{adminUser}, 0, nil
 			},
 		}
 		sender := &mocks.MockEmailSender{}
@@ -73,9 +72,8 @@ func TestSendAdminAlertEmail(t *testing.T) {
 				*models.User, error) {
 				return &newUser, nil
 			},
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 		sender := &mocks.MockEmailSender{}
@@ -95,9 +93,8 @@ func TestSendAdminAlertEmail(t *testing.T) {
 				*models.User, error) {
 				return &newUser, nil
 			},
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{adminUser}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{adminUser}, 0, nil
 			},
 		}
 		sender := &mocks.MockEmailSender{
@@ -280,9 +277,8 @@ func TestSendAdminTicketEmail(t *testing.T) {
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{adminUser}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{adminUser}, 0, nil
 			},
 		}
 		sender := &mocks.MockEmailSender{}
@@ -324,9 +320,8 @@ func TestSendAdminTicketEmail(t *testing.T) {
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 		sender := &mocks.MockEmailSender{}
@@ -349,9 +344,8 @@ func TestSendAdminTicketEmail(t *testing.T) {
 			},
 		}
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context,
-				filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{adminUser}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return []models.User{adminUser}, 0, nil
 			},
 		}
 		sender := &mocks.MockEmailSender{

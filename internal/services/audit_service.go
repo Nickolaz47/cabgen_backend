@@ -54,7 +54,7 @@ func (s *auditService) FindAll(ctx context.Context,
 
 func (s *auditService) FindAuditSelectOptions(ctx context.Context) (
 	*models.AuditSelectOptionsResponse, error) {
-	users, err := s.UserRepo.GetUsers(ctx, models.AdminUserFilter{})
+	users, _, err := s.UserRepo.GetUsers(ctx, models.AdminUserFilter{}, 0, 0)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuditService", "FindAuditSelectOptions", logging.DatabaseError, err,

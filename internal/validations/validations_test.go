@@ -47,3 +47,46 @@ func TestValidate(t *testing.T) {
 		assert.Equal(t, "A senha é obrigatória.", msg)
 	})
 }
+
+func TestGetOffset(t *testing.T) {
+	testutils.SetupTestContext()
+
+	t.Run("Success - Absent defaults to zero", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
+
+		offset, ok := validations.GetOffset(c)
+
+		assert.True(t, ok)
+		assert.Equal(t, 0, offset)
+	})
+
+	t.Run("Success - Valid offset", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=250",
+			"", nil, nil)
+
+		offset, ok := validations.GetOffset(c)
+
+		assert.True(t, ok)
+		assert.Equal(t, 250, offset)
+	})
+
+	t.Run("Error - Non numeric", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=abc",
+			"", nil, nil)
+
+		offset, ok := validations.GetOffset(c)
+
+		assert.False(t, ok)
+		assert.Equal(t, 0, offset)
+	})
+
+	t.Run("Error - Negative", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=-1",
+			"", nil, nil)
+
+		offset, ok := validations.GetOffset(c)
+
+		assert.False(t, ok)
+		assert.Equal(t, 0, offset)
+	})
+}

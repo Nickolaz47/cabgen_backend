@@ -21,7 +21,7 @@ type SampleService interface {
 	GetSampleForUpload(ctx context.Context,
 		sampleID uuid.UUID) (*models.Sample, error)
 	FindAll(ctx context.Context, input string, userID uuid.UUID,
-		language string) ([]models.SampleResponse, error)
+		offset int, language string) ([]models.SampleResponse, int, error)
 	FindByID(ctx context.Context, sampleID, userID uuid.UUID,
 		language string) (*models.SampleResponse, error)
 	Create(ctx context.Context, input models.SampleCreateDTO,
@@ -118,14 +118,16 @@ func (s *sampleService) GetSampleForUpload(ctx context.Context,
 }
 
 func (s *sampleService) FindAll(ctx context.Context, input string,
-	userID uuid.UUID, language string) ([]models.SampleResponse, error) {
-	samples, err := s.Repo.GetSamples(ctx, input, userID)
+	userID uuid.UUID, offset int, language string) (
+	[]models.SampleResponse, int, error) {
+	samples, total, err := s.Repo.GetSamples(ctx, input, userID,
+		ListPageLimit, offset)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"SampleService", "FindAll",
 			logging.DatabaseError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, 0, ErrInternal
 	}
 
 	responses := make([]models.SampleResponse, len(samples))
@@ -133,7 +135,7 @@ func (s *sampleService) FindAll(ctx context.Context, input string,
 		responses[i] = sample.ToResponse(language)
 	}
 
-	return responses, nil
+	return responses, TotalPages(total), nil
 }
 
 func (s *sampleService) FindByID(

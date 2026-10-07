@@ -74,8 +74,18 @@ func (h *SampleHandler) GetSamples(c *gin.Context) {
 		return
 	}
 
-	samples, err := h.Service.FindAll(c.Request.Context(), input,
-		h.getUserID(userToken), language)
+	offset, ok := validations.GetOffset(c)
+	if !ok {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.InvalidQueryParamError),
+		})
+		return
+	}
+
+	samples, pages, err := h.Service.FindAll(c.Request.Context(), input,
+		h.getUserID(userToken), offset, language)
 	if err != nil {
 		validations.SetAuditEvent(c, failedEvent, nil)
 		code, errMsg := handlererrors.HandleSampleError(err)
@@ -85,7 +95,8 @@ func (h *SampleHandler) GetSamples(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.APIResponse{Data: samples})
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: samples, TotalPages: &pages})
 }
 
 func (h *SampleHandler) GetSampleByID(c *gin.Context) {

@@ -26,32 +26,35 @@ func TestAdminUserFind(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter) ([]models.User, error) {
-				return []models.User{user}, nil
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				assert.Equal(t, services.ListPageLimit, limit)
+				assert.Equal(t, 50, offset)
+				return []models.User{user}, 250, nil
 			},
 		}
 
 		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil, nil, "")
-		result, err := service.Find(
-			context.Background(), models.AdminUserFilter{}, lang)
+		result, pages, err := service.Find(
+			context.Background(), models.AdminUserFilter{}, 50, lang)
 
 		expected := []models.AdminUserResponse{userResponse}
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, result)
+		assert.Equal(t, 3, pages)
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
-			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter) ([]models.User, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil, mockLogger, "")
-		result, err := service.Find(context.Background(), models.AdminUserFilter{}, lang)
+		result, _, err := service.Find(context.Background(), models.AdminUserFilter{}, 0, lang)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

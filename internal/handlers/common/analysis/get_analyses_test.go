@@ -25,8 +25,9 @@ func TestGetAnalyses(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindAllFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter, language string) ([]models.AnalysisResponse, error) {
-				return []models.AnalysisResponse{mockResponse}, nil
+				userID uuid.UUID, filter models.AnalysisFilter, offset int,
+				language string) ([]models.AnalysisResponse, int, error) {
+				return []models.AnalysisResponse{mockResponse}, 1, nil
 			},
 		}
 
@@ -39,8 +40,9 @@ func TestGetAnalyses(t *testing.T) {
 		handler.GetAnalyses(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.AnalysisResponse{
-				"data": {mockResponse},
+			map[string]any{
+				"data":        []models.AnalysisResponse{mockResponse},
+				"total_pages": 1,
 			},
 		)
 
@@ -71,8 +73,9 @@ func TestGetAnalyses(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindAllFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter, language string) ([]models.AnalysisResponse, error) {
-				return nil, services.ErrInternal
+				userID uuid.UUID, filter models.AnalysisFilter, offset int,
+				language string) ([]models.AnalysisResponse, int, error) {
+				return nil, 0, services.ErrInternal
 			},
 		}
 
@@ -91,6 +94,56 @@ func TestGetAnalyses(t *testing.T) {
 		)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Error - Invalid Offset", func(t *testing.T) {
+		svc := &mocks.MockAnalysisService{}
+
+		handler := analysis.NewAnalysisHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/analysis?offset=abc", "", nil, nil,
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
+		handler.GetAnalyses(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Invalid query parameters.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Success - With offset", func(t *testing.T) {
+		svc := &mocks.MockAnalysisService{
+			FindAllFunc: func(ctx context.Context,
+				userID uuid.UUID, filter models.AnalysisFilter, offset int,
+				language string) ([]models.AnalysisResponse, int, error) {
+				assert.Equal(t, 50, offset)
+				return []models.AnalysisResponse{mockResponse}, 5, nil
+			},
+		}
+
+		handler := analysis.NewAnalysisHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet, "/api/analysis?offset=50", "", nil, nil,
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
+		handler.GetAnalyses(c)
+
+		expected := testutils.ToJSON(
+			map[string]any{
+				"data":        []models.AnalysisResponse{mockResponse},
+				"total_pages": 5,
+			},
+		)
+
+		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 

@@ -40,26 +40,27 @@ func TestSampleFindAll(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return []models.Sample{mock}, nil
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				assert.Equal(t, services.ListPageLimit, limit)
+				assert.Equal(t, 50, offset)
+				return []models.Sample{mock}, 120, nil
 			},
 		}
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil,
 			nil, nil, nil, nil, nil, t.TempDir(), nil)
-		result, err := svc.FindAll(context.Background(), "", uuid.Nil, "en")
+		result, pages, err := svc.FindAll(context.Background(), "", uuid.Nil, 50, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
 		assert.Equal(t, mock.ToResponse("en"), result[0])
+		assert.Equal(t, 2, pages)
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
-			GetSamplesFunc: func(ctx context.Context, input string,
-				userID uuid.UUID) ([]models.Sample, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 
@@ -67,7 +68,7 @@ func TestSampleFindAll(t *testing.T) {
 
 		svc := services.NewSampleService(sampleRepo, nil, nil, nil, nil,
 			nil, nil, nil, nil, t.TempDir(), mockLogger)
-		result, err := svc.FindAll(context.Background(), "", uuid.Nil, "en")
+		result, _, err := svc.FindAll(context.Background(), "", uuid.Nil, 0, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

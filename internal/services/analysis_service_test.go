@@ -26,32 +26,33 @@ func TestAnalysisFindAll(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return []models.Analysis{mock}, nil
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				assert.Equal(t, services.ListPageLimit, limit)
+				assert.Equal(t, 50, offset)
+				return []models.Analysis{mock}, 120, nil
 			},
 		}
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, nil, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, "en")
+		result, pages, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, 50, "en")
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
 		assert.Equal(t, mock.ToResponse("en"), result[0])
+		assert.Equal(t, 2, pages)
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
-			GetAnalysesFunc: func(ctx context.Context,
-				userID uuid.UUID, filter models.AnalysisFilter) ([]models.Analysis, error) {
-				return nil, gorm.ErrInvalidTransaction
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter, limit, offset int) ([]models.Analysis, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
 			},
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, nil, mockLogger, t.TempDir())
-		result, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, "en")
+		result, _, err := svc.FindAll(ctx, uuid.Nil, models.AnalysisFilter{}, 0, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

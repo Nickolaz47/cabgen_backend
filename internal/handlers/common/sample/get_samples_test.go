@@ -27,10 +27,10 @@ func TestGetSamples(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			FindAllFunc: func(ctx context.Context, input string,
-				userID uuid.UUID, language string) (
-				[]models.SampleResponse, error) {
+				userID uuid.UUID, offset int, language string) (
+				[]models.SampleResponse, int, error) {
 				assert.Equal(t, mockUserID, userID)
-				return []models.SampleResponse{mockResponse}, nil
+				return []models.SampleResponse{mockResponse}, 1, nil
 			},
 		}
 
@@ -47,8 +47,9 @@ func TestGetSamples(t *testing.T) {
 		handler.GetSamples(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.SampleResponse{
-				"data": {mockResponse},
+			map[string]any{
+				"data":        []models.SampleResponse{mockResponse},
+				"total_pages": 1,
 			},
 		)
 
@@ -82,9 +83,9 @@ func TestGetSamples(t *testing.T) {
 	t.Run("Error - Internal Server", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			FindAllFunc: func(ctx context.Context, input string,
-				userID uuid.UUID, language string) (
-				[]models.SampleResponse, error) {
-				return nil, services.ErrInternal
+				userID uuid.UUID, offset int, language string) (
+				[]models.SampleResponse, int, error) {
+				return nil, 0, services.ErrInternal
 			},
 		}
 
@@ -109,4 +110,62 @@ func TestGetSamples(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	t.Run("Error - Invalid Offset", func(t *testing.T) {
+		svc := &mocks.MockSampleService{}
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet,
+			"/api/sample?offset=-1",
+			"",
+			nil,
+			nil,
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
+		handler.GetSamples(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "Invalid query parameters.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("Success - With offset", func(t *testing.T) {
+		svc := &mocks.MockSampleService{
+			FindAllFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, offset int, language string) (
+				[]models.SampleResponse, int, error) {
+				assert.Equal(t, 50, offset)
+				return []models.SampleResponse{mockResponse}, 5, nil
+			},
+		}
+
+		handler := sample.NewSampleHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodGet,
+			"/api/sample?offset=50",
+			"",
+			nil,
+			nil,
+		)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
+		handler.GetSamples(c)
+
+		expected := testutils.ToJSON(
+			map[string]any{
+				"data":        []models.SampleResponse{mockResponse},
+				"total_pages": 5,
+			},
+		)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
+
 }

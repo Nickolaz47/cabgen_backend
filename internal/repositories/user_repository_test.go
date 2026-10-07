@@ -39,7 +39,7 @@ func TestGetAllUsers(t *testing.T) {
 	userRepo := repositories.NewUserRepo(db)
 
 	t.Run("Success", func(t *testing.T) {
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		for i := range users {
 			users[i].CreatedAt = time.Time{}
@@ -59,7 +59,7 @@ func TestGetAllUsers(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockUserRepo := repositories.NewUserRepo(mockDB)
-		users, err := mockUserRepo.GetUsers(ctx, filter)
+		users, _, err := mockUserRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.Empty(t, users)
 		assert.Error(t, err)
@@ -73,7 +73,7 @@ func TestGetAllUsers(t *testing.T) {
 		filterDB.Create(&mockUser2)
 
 		filter := models.AdminUserFilter{Input: "nick"}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 1)
@@ -88,7 +88,7 @@ func TestGetAllUsers(t *testing.T) {
 		filterDB.Create(&mockUser2)
 
 		filter := models.AdminUserFilter{UserRole: models.Admin}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 1)
@@ -106,7 +106,7 @@ func TestGetAllUsers(t *testing.T) {
 
 		active := true
 		filter := models.AdminUserFilter{Active: &active}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 2)
@@ -123,7 +123,7 @@ func TestGetAllUsers(t *testing.T) {
 
 		inactive := false
 		filter := models.AdminUserFilter{Active: &inactive}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 1)
@@ -141,7 +141,7 @@ func TestGetAllUsers(t *testing.T) {
 			Input:    "admin",
 			UserRole: models.Admin,
 		}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 1)
@@ -155,10 +155,44 @@ func TestGetAllUsers(t *testing.T) {
 		filterDB.Create(&mockUser)
 
 		filter := models.AdminUserFilter{Input: "nonexistent"}
-		users, err := userRepo.GetUsers(ctx, filter)
+		users, _, err := userRepo.GetUsers(ctx, filter, 0, 0)
 
 		assert.NoError(t, err)
 		assert.Len(t, users, 0)
+	})
+
+	t.Run("Success - Pagination", func(t *testing.T) {
+		pagDB := testutils.NewMockDB()
+		pagRepo := repositories.NewUserRepo(pagDB)
+
+		pagDB.Create(&mockUser)
+		pagDB.Create(&mockUser2)
+		third := testmodels.NewInactiveUser()
+		pagDB.Create(&third)
+
+		users, total, err := pagRepo.GetUsers(ctx, filter, 2, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 2)
+		assert.Equal(t, int64(3), total)
+
+		users, total, err = pagRepo.GetUsers(ctx, filter, 2, 2)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 1)
+		assert.Equal(t, int64(3), total)
+
+		users, total, err = pagRepo.GetUsers(ctx, filter, 0, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 3)
+		assert.Equal(t, int64(0), total)
+
+		users, total, err = pagRepo.GetUsers(ctx, filter, 2, 10)
+
+		assert.NoError(t, err)
+		assert.Empty(t, users)
+		assert.Equal(t, int64(3), total)
 	})
 }
 
