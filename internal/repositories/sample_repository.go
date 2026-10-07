@@ -71,6 +71,8 @@ func (s *sampleRepo) GetSamples(ctx context.Context, input string,
 		query = query.Offset(offset)
 	}
 
+	query = query.Order("samples.created_at DESC, samples.id")
+
 	if err := query.Find(&samples).Error; err != nil {
 		return nil, 0, err
 	}

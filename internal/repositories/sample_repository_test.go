@@ -3,6 +3,7 @@ package repositories_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
@@ -105,6 +106,42 @@ func TestGetSamples(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, samples)
 		assert.Equal(t, int64(3), total)
+	})
+
+	t.Run("Success - Ordered newest first", func(t *testing.T) {
+		orderDB := testutils.NewMockDB()
+		orderRepo := repositories.NewSampleRepo(orderDB)
+
+		oldest := testmodels.CreateMockSample()
+		oldest.CreatedAt = time.Date(2020, time.January, 1,
+			0, 0, 0, 0, time.UTC)
+		orderDB.Create(&oldest)
+
+		middle := testmodels.CreateMockSample()
+		middle.HealthService.Name = "Outro Laboratorio Central"
+		middle.CreatedAt = time.Date(2022, time.January, 1,
+			0, 0, 0, 0, time.UTC)
+		orderDB.Create(&middle)
+
+		newest := testmodels.CreateMockSample()
+		newest.HealthService.Name = "Terceiro Laboratorio Central"
+		newest.CreatedAt = time.Date(2024, time.January, 1,
+			0, 0, 0, 0, time.UTC)
+		orderDB.Create(&newest)
+
+		samples, _, err := orderRepo.GetSamples(ctx, "", uuid.Nil, 2, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, samples, 2)
+		assert.Equal(t, newest.ID, samples[0].ID)
+		assert.Equal(t, middle.ID, samples[1].ID)
+
+		samples, _, err = orderRepo.GetSamples(ctx, "", uuid.Nil, 0, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, samples, 3)
+		assert.Equal(t, newest.ID, samples[0].ID)
+		assert.Equal(t, oldest.ID, samples[2].ID)
 	})
 }
 

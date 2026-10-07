@@ -111,13 +111,13 @@ func TestGetSamples(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Error - Invalid Offset", func(t *testing.T) {
+	t.Run("Error - Invalid Page", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
 		handler := sample.NewSampleHandler(svc)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/sample?offset=-1",
+			"/api/sample?page=0",
 			"",
 			nil,
 			nil,
@@ -135,12 +135,12 @@ func TestGetSamples(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Success - With offset", func(t *testing.T) {
+	t.Run("Success - With page", func(t *testing.T) {
 		svc := &mocks.MockSampleService{
 			FindAllFunc: func(ctx context.Context, input string,
 				userID uuid.UUID, offset int, language string) (
 				[]models.SampleResponse, int, error) {
-				assert.Equal(t, 50, offset)
+				assert.Equal(t, 100, offset)
 				return []models.SampleResponse{mockResponse}, 5, nil
 			},
 		}
@@ -149,7 +149,7 @@ func TestGetSamples(t *testing.T) {
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
-			"/api/sample?offset=50",
+			"/api/sample?page=2",
 			"",
 			nil,
 			nil,

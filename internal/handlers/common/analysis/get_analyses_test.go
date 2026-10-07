@@ -97,13 +97,13 @@ func TestGetAnalyses(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Error - Invalid Offset", func(t *testing.T) {
+	t.Run("Error - Invalid Page", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{}
 
 		handler := analysis.NewAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/analysis?offset=abc", "", nil, nil,
+			http.MethodGet, "/api/analysis?page=abc", "", nil, nil,
 		)
 		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalyses(c)
@@ -118,12 +118,12 @@ func TestGetAnalyses(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Success - With offset", func(t *testing.T) {
+	t.Run("Success - With page", func(t *testing.T) {
 		svc := &mocks.MockAnalysisService{
 			FindAllFunc: func(ctx context.Context,
 				userID uuid.UUID, filter models.AnalysisFilter, offset int,
 				language string) ([]models.AnalysisResponse, int, error) {
-				assert.Equal(t, 50, offset)
+				assert.Equal(t, 100, offset)
 				return []models.AnalysisResponse{mockResponse}, 5, nil
 			},
 		}
@@ -131,7 +131,7 @@ func TestGetAnalyses(t *testing.T) {
 		handler := analysis.NewAnalysisHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/analysis?offset=50", "", nil, nil,
+			http.MethodGet, "/api/analysis?page=2", "", nil, nil,
 		)
 		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockAnalysis.UserID})
 		handler.GetAnalyses(c)

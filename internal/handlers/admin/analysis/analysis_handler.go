@@ -41,7 +41,7 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 		return
 	}
 
-	offset, ok := validations.GetOffset(c)
+	page, ok := validations.GetPage(c)
 	if !ok {
 		validations.SetAuditEvent(c, models.AuditEventAdminAnalysesGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
@@ -50,6 +50,8 @@ func (h *AdminAnalysisHandler) GetAnalyses(c *gin.Context) {
 		})
 		return
 	}
+
+	offset := (page - 1) * services.ListPageLimit
 
 	analyses, pages, err := h.Service.FindAll(c.Request.Context(), uuid.Nil,
 		filter, offset, language)

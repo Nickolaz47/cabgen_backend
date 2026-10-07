@@ -339,7 +339,7 @@ Os endpoints estão organizados em três níveis de acesso:
 - **Common**: requer autenticação
 - **Admin**: acesso restrito a administradores
 
-> **Nota de paginação:** as listagens de utilizadores (`GET /api/admin/users`), amostras (`GET /api/samples`, `GET /api/admin/samples`) e análises (`GET /api/analyses`, `GET /api/admin/analyses`) aceitam o query param `?offset=N` (padrão `0`, tamanho de página fixo de 100 itens) e devolvem `total_pages` no corpo da resposta. Um `offset` inválido ou negativo retorna `400`.
+> **Nota de paginação:** as listagens de utilizadores (`GET /api/admin/users`), amostras (`GET /api/samples`, `GET /api/admin/samples`) e análises (`GET /api/analyses`, `GET /api/admin/analyses`) aceitam o query param `?page=N` (página 1-based, padrão `1`, 100 itens por página) e devolvem `total_pages` no corpo da resposta. Uma página inválida (não numérica, menor que `1` ou acima de `1.000.000`) retorna `400`.
 
 ### Público
 

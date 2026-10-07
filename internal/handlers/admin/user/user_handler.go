@@ -36,7 +36,7 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	offset, ok := validations.GetOffset(c)
+	page, ok := validations.GetPage(c)
 	if !ok {
 		validations.SetAuditEvent(c, models.AuditEventAdminUsersGetFailed, nil)
 		c.JSON(http.StatusBadRequest, responses.APIResponse{
@@ -45,6 +45,8 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 		})
 		return
 	}
+
+	offset := (page - 1) * services.ListPageLimit
 
 	users, pages, err := h.Service.Find(c.Request.Context(), filter, offset,
 		language)

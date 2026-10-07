@@ -279,16 +279,16 @@ func sanitizeMapValues(m map[string]string) {
 	}
 }
 
-func GetOffset(c *gin.Context) (int, bool) {
-	raw := c.Query("offset")
+func GetPage(c *gin.Context) (int, bool) {
+	raw := c.Query("page")
 	if raw == "" {
-		return 0, true
+		return 1, true
 	}
 
-	offset, err := strconv.Atoi(raw)
-	if err != nil || offset < 0 {
+	page, err := strconv.Atoi(raw)
+	if err != nil || page < 1 || page > 1_000_000 {
 		return 0, false
 	}
 
-	return offset, true
+	return page, true
 }

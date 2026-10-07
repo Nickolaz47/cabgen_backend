@@ -125,12 +125,12 @@ func TestGetUsers(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Error - Invalid Offset", func(t *testing.T) {
+	t.Run("Error - Invalid Page", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{}
 		handler := user.NewAdminUserHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/users?offset=abc",
+			http.MethodGet, "/api/admin/users?page=abc",
 			"", nil, nil,
 		)
 		handler.GetUsers(c)
@@ -145,19 +145,19 @@ func TestGetUsers(t *testing.T) {
 		assert.JSONEq(t, expected, w.Body.String())
 	})
 
-	t.Run("Success - With offset", func(t *testing.T) {
+	t.Run("Success - With page", func(t *testing.T) {
 		svc := &mocks.MockAdminUserService{
 			FindFunc: func(ctx context.Context,
 				filter models.AdminUserFilter, offset int,
 				language string) ([]models.AdminUserResponse, int, error) {
-				assert.Equal(t, 50, offset)
+				assert.Equal(t, 100, offset)
 				return []models.AdminUserResponse{userResponse2}, 5, nil
 			},
 		}
 		handler := user.NewAdminUserHandler(svc)
 
 		c, w := testutils.SetupGinContext(
-			http.MethodGet, "/api/admin/users?offset=50",
+			http.MethodGet, "/api/admin/users?page=2",
 			"", nil, nil,
 		)
 		handler.GetUsers(c)

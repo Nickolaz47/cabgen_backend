@@ -48,7 +48,7 @@ func TestGetAllUsers(t *testing.T) {
 		mockUser.CreatedAt, mockUser.UpdatedAt = time.Time{}, time.Time{}
 		mockUser2.CreatedAt, mockUser2.UpdatedAt = time.Time{}, time.Time{}
 
-		expected := []models.User{mockUser, mockUser2}
+		expected := []models.User{mockUser2, mockUser}
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, users)
@@ -193,6 +193,28 @@ func TestGetAllUsers(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, users)
 		assert.Equal(t, int64(3), total)
+	})
+
+	t.Run("Success - Ordered newest first", func(t *testing.T) {
+		orderDB := testutils.NewMockDB()
+		orderRepo := repositories.NewUserRepo(orderDB)
+
+		older := testmodels.NewLoginUser()
+		older.CreatedAt = time.Date(2020, time.January, 1,
+			0, 0, 0, 0, time.UTC)
+		orderDB.Create(&older)
+
+		newer := testmodels.NewAdminLoginUser()
+		newer.CreatedAt = time.Date(2024, time.January, 1,
+			0, 0, 0, 0, time.UTC)
+		orderDB.Create(&newer)
+
+		users, _, err := orderRepo.GetUsers(ctx, filter, 0, 0)
+
+		assert.NoError(t, err)
+		assert.Len(t, users, 2)
+		assert.Equal(t, newer.ID, users[0].ID)
+		assert.Equal(t, older.ID, users[1].ID)
 	})
 }
 

@@ -48,45 +48,65 @@ func TestValidate(t *testing.T) {
 	})
 }
 
-func TestGetOffset(t *testing.T) {
+func TestGetPage(t *testing.T) {
 	testutils.SetupTestContext()
 
-	t.Run("Success - Absent defaults to zero", func(t *testing.T) {
+	t.Run("Success - Absent defaults to one", func(t *testing.T) {
 		c, _ := testutils.SetupGinContext(http.MethodGet, "/", "", nil, nil)
 
-		offset, ok := validations.GetOffset(c)
+		page, ok := validations.GetPage(c)
 
 		assert.True(t, ok)
-		assert.Equal(t, 0, offset)
+		assert.Equal(t, 1, page)
 	})
 
-	t.Run("Success - Valid offset", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=250",
+	t.Run("Success - Valid page", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?page=3",
 			"", nil, nil)
 
-		offset, ok := validations.GetOffset(c)
+		page, ok := validations.GetPage(c)
 
 		assert.True(t, ok)
-		assert.Equal(t, 250, offset)
+		assert.Equal(t, 3, page)
 	})
 
 	t.Run("Error - Non numeric", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=abc",
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?page=abc",
 			"", nil, nil)
 
-		offset, ok := validations.GetOffset(c)
+		page, ok := validations.GetPage(c)
 
 		assert.False(t, ok)
-		assert.Equal(t, 0, offset)
+		assert.Equal(t, 0, page)
+	})
+
+	t.Run("Error - Zero", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?page=0",
+			"", nil, nil)
+
+		page, ok := validations.GetPage(c)
+
+		assert.False(t, ok)
+		assert.Equal(t, 0, page)
 	})
 
 	t.Run("Error - Negative", func(t *testing.T) {
-		c, _ := testutils.SetupGinContext(http.MethodGet, "/?offset=-1",
+		c, _ := testutils.SetupGinContext(http.MethodGet, "/?page=-1",
 			"", nil, nil)
 
-		offset, ok := validations.GetOffset(c)
+		page, ok := validations.GetPage(c)
 
 		assert.False(t, ok)
-		assert.Equal(t, 0, offset)
+		assert.Equal(t, 0, page)
+	})
+
+	t.Run("Error - Above max", func(t *testing.T) {
+		c, _ := testutils.SetupGinContext(http.MethodGet,
+			"/?page=999999999999", "", nil, nil)
+
+		page, ok := validations.GetPage(c)
+
+		assert.False(t, ok)
+		assert.Equal(t, 0, page)
 	})
 }
