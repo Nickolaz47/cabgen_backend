@@ -33,7 +33,7 @@ func TestDownloadDashboardTSV(t *testing.T) {
 		handler.DownloadDashboardTSV(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, "text/tab-separated-values",
+		assert.Equal(t, "text/tab-separated-values; charset=utf-8",
 			w.Header().Get("Content-Type"))
 		assert.Equal(t, "attachment; filename=cabgen_dashboard.tsv",
 			w.Header().Get("Content-Disposition"))

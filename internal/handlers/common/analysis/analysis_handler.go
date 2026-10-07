@@ -354,5 +354,5 @@ func (h *AnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	}
 
 	c.Header("Content-Disposition", "attachment; filename=cabgen_results.tsv")
-	c.Data(http.StatusOK, "text/tab-separated-values", tsvBytes)
+	c.Data(http.StatusOK, "text/tab-separated-values; charset=utf-8", tsvBytes)
 }

@@ -86,6 +86,7 @@ func GenerateDashboardTSV(analyses []models.Analysis, language string) (
 	}
 
 	buffer := &bytes.Buffer{}
+	buffer.Write([]byte{0xEF, 0xBB, 0xBF})
 	writer := csv.NewWriter(buffer)
 	writer.Comma = '\t'
 

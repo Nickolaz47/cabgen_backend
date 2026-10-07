@@ -100,7 +100,9 @@ func TestGenerateDashboardTSV(t *testing.T) {
 		}}, "en")
 
 		assert.NoError(t, err)
-		firstLine, _, _ := strings.Cut(string(result), "\n")
+		assert.True(t, strings.HasPrefix(string(result), "\ufeff"))
+		firstLine, _, _ := strings.Cut(
+			strings.TrimPrefix(string(result), "\ufeff"), "\n")
 		assert.Equal(t,
 			"ID\tEspécie\tPlasmídeos\tMLST\tCarbapenemases\tOXA-51-like"+
 				"\tFluoroquinolonas\tSulfonamidas\tAminoglicosídeos\tESBL"+

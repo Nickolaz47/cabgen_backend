@@ -54,7 +54,7 @@ func TestDownloadBatchTSV(t *testing.T) {
 		handler.DownloadBatchTSV(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, "text/tab-separated-values",
+		assert.Equal(t, "text/tab-separated-values; charset=utf-8",
 			w.Header().Get("Content-Type"))
 		assert.Equal(t, "attachment; filename=cabgen_results.tsv",
 			w.Header().Get("Content-Disposition"))

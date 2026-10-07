@@ -363,7 +363,7 @@ func (h *AdminAnalysisHandler) DownloadBatchTSV(c *gin.Context) {
 	}
 
 	c.Header("Content-Disposition", "attachment; filename=cabgen_results.tsv")
-	c.Data(http.StatusOK, "text/tab-separated-values", tsvBytes)
+	c.Data(http.StatusOK, "text/tab-separated-values; charset=utf-8", tsvBytes)
 }
 
 func (h *AdminAnalysisHandler) DownloadDashboardTSV(c *gin.Context) {
@@ -399,5 +399,5 @@ func (h *AdminAnalysisHandler) DownloadDashboardTSV(c *gin.Context) {
 
 	c.Header("Content-Disposition",
 		"attachment; filename=cabgen_dashboard.tsv")
-	c.Data(http.StatusOK, "text/tab-separated-values", tsvBytes)
+	c.Data(http.StatusOK, "text/tab-separated-values; charset=utf-8", tsvBytes)
 }

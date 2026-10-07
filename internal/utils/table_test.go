@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -40,6 +41,7 @@ func TestGenerateMetricsTSV(t *testing.T) {
 
 		assert.NoError(t, err)
 		body := string(result)
+		assert.True(t, strings.HasPrefix(body, "\ufeff"))
 		assert.Contains(t, body, "origin_code\tcoverage\tcompleteness\tcontamination\tgenome_size\tn50\tcontigs\tprimary_species\tsecondary_species\tmlst\tpoli_mutations\tother_mutations\tacquired_resistance\tvfdb\tplasmid")
 		assert.Contains(t, body, "\t30.5\t95.89\t1.23\t4500000\t12000\t745\tAcinetobacter baumannii\tKlebsiella pneumoniae\tST502\tblaOXA-23,blaOXA-51\tgyrA_S83L\tblaOXA-23,armA\tabaum_A\tIncHI2")
 	})
