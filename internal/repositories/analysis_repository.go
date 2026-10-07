@@ -123,7 +123,10 @@ func (r *analysisRepo) GetDashboardAnalyses(ctx context.Context) (
 						OR (a3.created_at = a2.created_at
 							AND a3.id > a2.id))
 			)
-	)`
+	)
+	AND CAST(NULLIF(analyses.metrics->>'completeness', '') AS REAL) >= 95
+	AND CAST(NULLIF(analyses.metrics->>'contamination', '') AS REAL) <= 5
+	AND CAST(NULLIF(analyses.metrics->>'contigs', '') AS REAL) <= 500`
 
 	if err := r.DB.WithContext(ctx).
 		Preload("Sample.SampleSource").

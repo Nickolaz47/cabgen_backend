@@ -12,6 +12,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -516,6 +517,89 @@ func TestGetDashboardAnalyses(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, analyses, 1)
 		assert.Equal(t, done.ID, analyses[0].ID)
+	})
+
+	t.Run("Success - Excludes completeness below 95", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		analysis.Metrics = datatypes.JSON(
+			`{"completeness": "80", "contamination": "1.0", "contigs": "100"}`)
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Excludes contamination above 5", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		analysis.Metrics = datatypes.JSON(
+			`{"completeness": "99", "contamination": "9.9", "contigs": "100"}`)
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Excludes contigs above 500", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		analysis.Metrics = datatypes.JSON(
+			`{"completeness": "99", "contamination": "1.0", "contigs": "600"}`)
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
+	})
+
+	t.Run("Success - Excludes analyses without metrics", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		sample.InNetwork = true
+		db.Create(&sample)
+
+		analysis := newDashboardAnalysis(sample.ID,
+			models.AnalysisStatusDone, models.AnalysisTypeGenome,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		analysis.Metrics = nil
+		db.Create(&analysis)
+
+		analyses, err := repo.GetDashboardAnalyses(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, analyses)
 	})
 
 	t.Run("Error - No tables", func(t *testing.T) {

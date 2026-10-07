@@ -84,6 +84,7 @@ func CreateMockAnalysis() rModels.Analysis {
 		"coverage":        30.5,
 		"completeness":    "95.89",
 		"contamination":   "1.23",
+		"contigs":         "312",
 		"primary_species": "Acinetobacter sp",
 		"mlst":            "ST502",
 		"poli_mutations":  []string{"blaOXA-23"},
