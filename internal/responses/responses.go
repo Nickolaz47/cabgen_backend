@@ -97,6 +97,7 @@ const (
 	AnalysisExceededLimitError                = "analysis.exceededLimit.error"
 	AnalysisFastQCDownloadError               = "analysis.fastqcDownload.error"
 	AnalysisDashboardNoData                   = "analysis.dashboardNoData.error"
+	AnalysisSampleLimitError                  = "analysis.sampleLimit.error"
 	AnalysisZipNotFound                       = "analysis.zipNotFound.error"
 	AnalysisDeleted                           = "analysis.delete.success"
 	AnalysisDeleteRunningError                = "analysis.deleteRunning.error"

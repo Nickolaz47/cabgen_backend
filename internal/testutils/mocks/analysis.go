@@ -14,6 +14,8 @@ type MockAnalysisRepository struct {
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetDashboardAnalysesFunc func(ctx context.Context) (
 		[]models.Analysis, error)
+	CountAnalysesBySampleFunc func(ctx context.Context,
+		sampleID uuid.UUID) (int64, error)
 	GetAnalysisByIDFunc func(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysisFunc func(ctx context.Context,
@@ -51,6 +53,15 @@ func (r *MockAnalysisRepository) GetDashboardAnalyses(ctx context.Context) (
 	}
 
 	return nil, nil
+}
+
+func (r *MockAnalysisRepository) CountAnalysesBySample(ctx context.Context,
+	sampleID uuid.UUID) (int64, error) {
+	if r.CountAnalysesBySampleFunc != nil {
+		return r.CountAnalysesBySampleFunc(ctx, sampleID)
+	}
+
+	return 0, nil
 }
 
 func (r *MockAnalysisRepository) GetAnalysisByID(ctx context.Context,

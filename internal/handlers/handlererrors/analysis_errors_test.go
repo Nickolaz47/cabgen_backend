@@ -33,6 +33,7 @@ func TestHandleAnalysisError(t *testing.T) {
 		{"MissingFastq1", services.ErrMissingFastq1, http.StatusBadRequest},
 		{"MissingFastq2", services.ErrMissingFastq2, http.StatusBadRequest},
 		{"DeleteRunningAnalysis", services.ErrDeleteRunningAnalysis, http.StatusBadRequest},
+		{"AnalysisSampleLimit", services.ErrAnalysisSampleLimit, http.StatusBadRequest},
 		{"Default", errors.New("unknown"), http.StatusInternalServerError},
 	}
 

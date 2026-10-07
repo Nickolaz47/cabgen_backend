@@ -17,6 +17,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const MaxAnalysesPerSample = 2
+
 type AnalysisService interface {
 	FindAll(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter,
 		language string) (
@@ -249,6 +251,23 @@ func (s *analysisService) Create(ctx context.Context,
 
 	analysis.Sample = *sample
 	analysis.User = *user
+
+	count, err := s.Repo.CountAnalysesBySample(ctx, input.SampleID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create",
+			logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	if count >= MaxAnalysesPerSample {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create",
+			logging.AnalysisSampleLimitError, ErrAnalysisSampleLimit,
+		)...)
+		return nil, ErrAnalysisSampleLimit
+	}
 
 	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
 		s.Logger.Error("Service Error",

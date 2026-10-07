@@ -177,7 +177,8 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 		})
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
-			Error: responses.GetResponse(localizer, errMsg),
+			Error: responses.GetResponseWithData(localizer, errMsg,
+				map[string]any{"Param": services.MaxAnalysesPerSample}),
 		})
 		return
 	}

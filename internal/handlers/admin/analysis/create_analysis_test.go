@@ -140,4 +140,36 @@ func TestCreateAnalysis(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
 	})
+
+	t.Run("Error - Sample Analysis Limit", func(t *testing.T) {
+		svc := &mocks.MockAnalysisService{
+			CreateFunc: func(ctx context.Context,
+				input models.AnalysisCreateDTO, language string) (
+				*models.AnalysisResponse, error) {
+				return nil, services.ErrAnalysisSampleLimit
+			},
+		}
+
+		handler := analysis.NewAdminAnalysisHandler(svc)
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost,
+			"/api/admin/analysis",
+			testutils.ToJSON(validInput),
+			nil,
+			nil,
+		)
+		handler.CreateAnalysis(c)
+
+		expected := testutils.ToJSON(
+			map[string]string{
+				"error": "The sample has already reached the maximum of " +
+					"2 analysis(es). Delete a previous analysis to create " +
+					"a new one.",
+			},
+		)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, expected, w.Body.String())
+	})
 }

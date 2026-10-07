@@ -708,6 +708,68 @@ func TestAnalysisCreate(t *testing.T) {
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
 	})
+
+	t.Run("Error - Sample Analysis Limit", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(ctx context.Context,
+				sampleID uuid.UUID) (int64, error) {
+				return services.MaxAnalysesPerSample, nil
+			},
+		}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &mock.Sample, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &mock.User, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
+			nil, nil, mockLogger, t.TempDir())
+		result, err := svc.Create(ctx, input, "en")
+
+		assert.ErrorIs(t, err, services.ErrAnalysisSampleLimit)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Count DB Internal", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(ctx context.Context,
+				sampleID uuid.UUID) (int64, error) {
+				return 0, gorm.ErrInvalidTransaction
+			},
+		}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return &mock.Sample, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &mock.User, nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo,
+			nil, nil, mockLogger, t.TempDir())
+		result, err := svc.Create(ctx, input, "en")
+
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
 }
 
 func TestAnalysisUpdate(t *testing.T) {

@@ -523,6 +523,9 @@ other = "Los análisis FASTQC no se pueden incluir en la descarga por lotes."
 [analysis.dashboardNoData.error]
 other = "No hay análisis de muestras de la red disponibles para descargar."
 
+[analysis.sampleLimit.error]
+other = "La muestra ya alcanzó el máximo de {{.Param}} análisis. Elimine un análisis anterior para crear uno nuevo."
+
 [analysis.zipNotFound.error]
 other = "El archivo zip no está disponible para este análisis."
 

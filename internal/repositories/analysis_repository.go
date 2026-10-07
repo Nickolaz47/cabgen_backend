@@ -14,6 +14,8 @@ type AnalysisRepository interface {
 	GetAnalysesByIDs(ctx context.Context, analysisIDs []uuid.UUID,
 		userID uuid.UUID) ([]models.Analysis, error)
 	GetDashboardAnalyses(ctx context.Context) ([]models.Analysis, error)
+	CountAnalysesBySample(ctx context.Context, sampleID uuid.UUID) (int64,
+		error)
 	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -137,6 +139,18 @@ func (r *analysisRepo) GetDashboardAnalyses(ctx context.Context) (
 	}
 
 	return analyses, nil
+}
+
+func (r *analysisRepo) CountAnalysesBySample(ctx context.Context,
+	sampleID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&models.Analysis{}).
+		Where("sample_id = ?", sampleID).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (r *analysisRepo) GetAnalysisByID(ctx context.Context,

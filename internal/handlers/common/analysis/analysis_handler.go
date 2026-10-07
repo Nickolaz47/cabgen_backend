@@ -207,7 +207,8 @@ func (h *AnalysisHandler) CreateAnalysis(c *gin.Context) {
 		validations.SetAuditEvent(c, models.AuditEventAnalysesCreateFailed, nil)
 		code, errMsg := handlererrors.HandleAnalysisError(err)
 		c.JSON(code, responses.APIResponse{
-			Error: responses.GetResponse(localizer, errMsg),
+			Error: responses.GetResponseWithData(localizer, errMsg,
+				map[string]any{"Param": services.MaxAnalysesPerSample}),
 		})
 		return
 	}

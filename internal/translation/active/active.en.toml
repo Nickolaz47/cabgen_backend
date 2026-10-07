@@ -523,6 +523,9 @@ other = "FASTQC analyses cannot be included in the batch download."
 [analysis.dashboardNoData.error]
 other = "No analyses from in-network samples available for download."
 
+[analysis.sampleLimit.error]
+other = "The sample has already reached the maximum of {{.Param}} analysis(es). Delete a previous analysis to create a new one."
+
 [analysis.zipNotFound.error]
 other = "The zip file is not available for this analysis."
 

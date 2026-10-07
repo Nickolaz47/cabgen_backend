@@ -613,3 +613,103 @@ func TestGetDashboardAnalyses(t *testing.T) {
 		assert.Empty(t, analyses)
 	})
 }
+
+func TestCountAnalysesBySample(t *testing.T) {
+	ctx := context.Background()
+
+	newCountAnalysis := func(sampleID uuid.UUID,
+		createdAt time.Time) models.Analysis {
+		analysis := testmodels.CreateMockAnalysis()
+		analysis.Sample = models.Sample{}
+		analysis.SampleID = sampleID
+		analysis.CreatedAt = createdAt
+		return analysis
+	}
+
+	t.Run("Success - Zero", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		db.Create(&sample)
+
+		count, err := repo.CountAnalysesBySample(ctx, sample.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), count)
+	})
+
+	t.Run("Success - One", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		db.Create(&sample)
+
+		analysis := newCountAnalysis(sample.ID,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&analysis)
+
+		count, err := repo.CountAnalysesBySample(ctx, sample.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), count)
+	})
+
+	t.Run("Success - Two", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		db.Create(&sample)
+
+		first := newCountAnalysis(sample.ID,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&first)
+
+		second := newCountAnalysis(sample.ID,
+			time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC))
+		db.Create(&second)
+
+		count, err := repo.CountAnalysesBySample(ctx, sample.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(2), count)
+	})
+
+	t.Run("Success - Other samples not counted", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		repo := repositories.NewAnalysisRepository(db)
+
+		sample := testmodels.CreateMockSample()
+		db.Create(&sample)
+
+		otherSample := testmodels.CreateMockSample()
+		otherSample.HealthService.Name = "Outro Laboratorio Central"
+		db.Create(&otherSample)
+
+		first := newCountAnalysis(sample.ID,
+			time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
+		db.Create(&first)
+
+		other := newCountAnalysis(otherSample.ID,
+			time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC))
+		db.Create(&other)
+
+		count, err := repo.CountAnalysesBySample(ctx, sample.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), count)
+	})
+
+	t.Run("Error - No tables", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		repo := repositories.NewAnalysisRepository(mockDB)
+		count, err := repo.CountAnalysesBySample(ctx, uuid.New())
+
+		assert.Error(t, err)
+		assert.Equal(t, int64(0), count)
+	})
+}
