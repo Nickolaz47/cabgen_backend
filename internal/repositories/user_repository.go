@@ -70,7 +70,7 @@ func (r *userRepository) GetUsers(ctx context.Context,
 		query = query.Offset(offset)
 	}
 
-	query = query.Order("users.created_at DESC, users.id")
+	query = query.Order("users.username")
 
 	if err := query.Find(&users).Error; err != nil {
 		return nil, 0, err

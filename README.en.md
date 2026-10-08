@@ -338,7 +338,7 @@ Endpoints are organized into three access levels:
 - **Common**: Requires authentication.
 - **Admin**: Restricted to administrators.
 
-> **Pagination note:** the user (`GET /api/admin/users`), sample (`GET /api/samples`, `GET /api/admin/samples`) and analysis (`GET /api/analyses`, `GET /api/admin/analyses`) listings support the `?page=N` query param (1-based page, default `1`, 100 items per page) and return `total_pages` in the response body. Items are sorted newest first (`created_at DESC`). An invalid page (non-numeric, less than `1`, or above `1.000.000`) returns `400`.
+> **Pagination note:** the user (`GET /api/admin/users`), sample (`GET /api/samples`, `GET /api/admin/samples`) and analysis (`GET /api/analyses`, `GET /api/admin/analyses`) listings support the `?page=N` query param (1-based page, default `1`, 100 items per page) and return `total_pages` in the response body. Analyses and samples are sorted newest first (`created_at DESC`); users are sorted alphabetically by username. An invalid page (non-numeric, less than `1`, or above `1.000.000`) returns `400`.
 
 ### Public
 
