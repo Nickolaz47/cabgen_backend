@@ -179,7 +179,6 @@ func (s *templateService) CreateTemplateTable(ctx context.Context,
 
 func (s *templateService) ValidateTemplateTable(ctx context.Context,
 	language string, file *excelize.File) ([]models.SampleCreateInput, error) {
-	// Build official template columns (contract + accepted values)
 	columns, columnHeaders, err := s.BuildColumns(ctx, language)
 	if err != nil {
 		s.Logger.Error(
