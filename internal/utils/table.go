@@ -85,13 +85,16 @@ type Column struct {
 func NewColumn(letter, header string, values map[string]string) Column {
 	labelValues := make([]string, 0, len(values))
 	realValuesMap := make(map[string]string, len(values))
-	for label, real := range values {
-		normalizedLabel := strings.TrimSpace(strings.ToLower(label))
-		realValuesMap[normalizedLabel] = real
-		labelValues = append(labelValues, label)
-	}
 
-	slices.Sort(labelValues)
+	if len(values) != 0 {
+		for label, real := range values {
+			normalizedLabel := strings.TrimSpace(strings.ToLower(label))
+			realValuesMap[normalizedLabel] = real
+			labelValues = append(labelValues, label)
+		}
+
+		slices.Sort(labelValues)
+	}
 
 	return Column{
 		Letter:        letter,

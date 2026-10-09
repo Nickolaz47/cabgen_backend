@@ -24,8 +24,8 @@ func TestGetCountriesByName(t *testing.T) {
 
 	t.Run("Success - With input", func(t *testing.T) {
 		svc := &mocks.MockCountryService{
-			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.CountryFormResponse, error) {
-				return []models.CountryFormResponse{response}, nil
+			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.SelectOption, error) {
+				return []models.SelectOption{response}, nil
 			},
 		}
 		handler := country.NewAdminCountryHandler(svc)
@@ -37,7 +37,7 @@ func TestGetCountriesByName(t *testing.T) {
 		handler.GetCountriesByName(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.CountryFormResponse{
+			map[string][]models.SelectOption{
 				"data": {response},
 			},
 		)
@@ -48,8 +48,8 @@ func TestGetCountriesByName(t *testing.T) {
 
 	t.Run("Success - Without input", func(t *testing.T) {
 		svc := &mocks.MockCountryService{
-			FindAllFunc: func(ctx context.Context, lang string) ([]models.CountryFormResponse, error) {
-				return []models.CountryFormResponse{response}, nil
+			FindAllFunc: func(ctx context.Context, lang string) ([]models.SelectOption, error) {
+				return []models.SelectOption{response}, nil
 			},
 		}
 		handler := country.NewAdminCountryHandler(svc)
@@ -61,7 +61,7 @@ func TestGetCountriesByName(t *testing.T) {
 		handler.GetCountriesByName(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.CountryFormResponse{
+			map[string][]models.SelectOption{
 				"data": {response},
 			},
 		)
@@ -72,7 +72,7 @@ func TestGetCountriesByName(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockCountryService{
-			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.CountryFormResponse, error) {
+			FindByNameFunc: func(ctx context.Context, name, lang string) ([]models.SelectOption, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}

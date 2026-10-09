@@ -24,9 +24,9 @@ func TestCountryToFormDetailResponse(t *testing.T) {
 	mockCountry := testmodels.NewCountry("", nil)
 	lang := "en"
 
-	expected := models.CountryFormResponse{
-		Code: mockCountry.Code,
-		Name: mockCountry.Names[lang],
+	expected := models.SelectOption{
+		Value: mockCountry.Code,
+		Label: mockCountry.Names[lang],
 	}
 	result := mockCountry.ToFormResponse(lang)
 

@@ -24,8 +24,8 @@ func TestGetCountries(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := &mocks.MockCountryService{
-			FindAllFunc: func(ctx context.Context, lang string) ([]models.CountryFormResponse, error) {
-				return []models.CountryFormResponse{response}, nil
+			FindAllFunc: func(ctx context.Context, lang string) ([]models.SelectOption, error) {
+				return []models.SelectOption{response}, nil
 			},
 		}
 		handler := country.NewPublicCountryHandler(svc)
@@ -36,7 +36,7 @@ func TestGetCountries(t *testing.T) {
 		handler.GetCountries(c)
 
 		expected := testutils.ToJSON(
-			map[string][]models.CountryFormResponse{
+			map[string][]models.SelectOption{
 				"data": {response},
 			},
 		)
@@ -47,7 +47,7 @@ func TestGetCountries(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		svc := &mocks.MockCountryService{
-			FindAllFunc: func(ctx context.Context, lang string) ([]models.CountryFormResponse, error) {
+			FindAllFunc: func(ctx context.Context, lang string) ([]models.SelectOption, error) {
 				return nil, gorm.ErrInvalidTransaction
 			},
 		}

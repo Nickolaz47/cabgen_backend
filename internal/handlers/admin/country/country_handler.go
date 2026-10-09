@@ -51,7 +51,7 @@ func (h *AdminCountryHandler) GetCountriesByName(c *gin.Context) {
 	name := utils.SanitizeQuery(c.Query("name"))
 
 	var (
-		countries []models.CountryFormResponse
+		countries []models.SelectOption
 		err       error
 	)
 

@@ -74,15 +74,15 @@ func (r *MockCountryRepository) DeleteCountry(ctx context.Context, country *mode
 }
 
 type MockCountryService struct {
-	FindAllFunc    func(ctx context.Context, lang string) ([]models.CountryFormResponse, error)
+	FindAllFunc    func(ctx context.Context, lang string) ([]models.SelectOption, error)
 	FindByCodeFunc func(ctx context.Context, code string) (*models.CountryAdminDetailResponse, error)
-	FindByNameFunc func(ctx context.Context, name, lang string) ([]models.CountryFormResponse, error)
+	FindByNameFunc func(ctx context.Context, name, lang string) ([]models.SelectOption, error)
 	CreateFunc     func(ctx context.Context, input models.CountryCreateInput) (*models.CountryAdminDetailResponse, error)
 	UpdateFunc     func(ctx context.Context, code string, input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error)
 	DeleteFunc     func(ctx context.Context, code string) error
 }
 
-func (m *MockCountryService) FindAll(ctx context.Context, lang string) ([]models.CountryFormResponse, error) {
+func (m *MockCountryService) FindAll(ctx context.Context, lang string) ([]models.SelectOption, error) {
 	if m.FindAllFunc != nil {
 		return m.FindAllFunc(ctx, lang)
 	}
@@ -96,7 +96,7 @@ func (m *MockCountryService) FindByCode(ctx context.Context, code string) (*mode
 	return nil, nil
 }
 
-func (m *MockCountryService) FindByName(ctx context.Context, name, lang string) ([]models.CountryFormResponse, error) {
+func (m *MockCountryService) FindByName(ctx context.Context, name, lang string) ([]models.SelectOption, error) {
 	if m.FindByNameFunc != nil {
 		return m.FindByNameFunc(ctx, name, lang)
 	}

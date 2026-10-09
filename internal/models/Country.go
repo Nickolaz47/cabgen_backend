@@ -12,11 +12,6 @@ type CountryAdminDetailResponse struct {
 	Names JSONMap `json:"names"`
 }
 
-type CountryFormResponse struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-}
-
 func (c *Country) ToAdminDetailResponse() CountryAdminDetailResponse {
 	return CountryAdminDetailResponse{
 		Code:  c.Code,
@@ -24,14 +19,14 @@ func (c *Country) ToAdminDetailResponse() CountryAdminDetailResponse {
 	}
 }
 
-func (c *Country) ToFormResponse(language string) CountryFormResponse {
+func (c *Country) ToFormResponse(language string) SelectOption {
 	if language == "" {
 		language = "en"
 	}
 
-	return CountryFormResponse{
-		Code: c.Code,
-		Name: c.Names[language],
+	return SelectOption{
+		Value: c.Code,
+		Label: c.Names[language],
 	}
 }
 

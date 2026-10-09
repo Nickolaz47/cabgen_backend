@@ -13,9 +13,9 @@ import (
 )
 
 type CountryService interface {
-	FindAll(ctx context.Context, language string) ([]models.CountryFormResponse, error)
+	FindAll(ctx context.Context, language string) ([]models.SelectOption, error)
 	FindByCode(ctx context.Context, code string) (*models.CountryAdminDetailResponse, error)
-	FindByName(ctx context.Context, name, language string) ([]models.CountryFormResponse, error)
+	FindByName(ctx context.Context, name, language string) ([]models.SelectOption, error)
 	Create(ctx context.Context, input models.CountryCreateInput) (*models.CountryAdminDetailResponse, error)
 	Update(ctx context.Context, code string, input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error)
 	Delete(ctx context.Context, code string) error
@@ -31,7 +31,8 @@ func NewCountryService(repo repositories.CountryRepository,
 	return &countryService{Repo: repo, Logger: logger}
 }
 
-func (s *countryService) FindAll(ctx context.Context, language string) ([]models.CountryFormResponse, error) {
+func (s *countryService) FindAll(ctx context.Context, language string) (
+	[]models.SelectOption, error) {
 	countries, err := s.Repo.GetCountries(ctx)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -40,14 +41,15 @@ func (s *countryService) FindAll(ctx context.Context, language string) ([]models
 		return nil, ErrInternal
 	}
 
-	responses := make([]models.CountryFormResponse, len(countries))
+	responses := make([]models.SelectOption, len(countries))
 	for i, country := range countries {
 		responses[i] = country.ToFormResponse(language)
 	}
 	return responses, nil
 }
 
-func (s *countryService) FindByCode(ctx context.Context, code string) (*models.CountryAdminDetailResponse, error) {
+func (s *countryService) FindByCode(ctx context.Context, code string) (
+	*models.CountryAdminDetailResponse, error) {
 	country, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
@@ -67,7 +69,8 @@ func (s *countryService) FindByCode(ctx context.Context, code string) (*models.C
 	return &detailResponse, nil
 }
 
-func (s *countryService) FindByName(ctx context.Context, name, language string) ([]models.CountryFormResponse, error) {
+func (s *countryService) FindByName(ctx context.Context, name,
+	 language string) ([]models.SelectOption, error) {
 	countries, err := s.Repo.GetCountriesByName(ctx, name, language)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -76,7 +79,7 @@ func (s *countryService) FindByName(ctx context.Context, name, language string) 
 		return nil, ErrInternal
 	}
 
-	responses := make([]models.CountryFormResponse, len(countries))
+	responses := make([]models.SelectOption, len(countries))
 	for i, country := range countries {
 		responses[i] = country.ToFormResponse(language)
 	}
@@ -115,7 +118,8 @@ func (s *countryService) Create(ctx context.Context, input models.CountryCreateI
 	return &response, nil
 }
 
-func (s *countryService) Update(ctx context.Context, code string, input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error) {
+func (s *countryService) Update(ctx context.Context, code string,
+	 input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error) {
 	existingCountry, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
