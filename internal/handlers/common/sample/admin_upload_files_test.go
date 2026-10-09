@@ -52,7 +52,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return nil
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -105,7 +105,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return nil
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -141,7 +141,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -171,7 +171,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -195,7 +195,7 @@ func TestAdminUploadFiles(t *testing.T) {
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -236,7 +236,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -272,7 +272,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -299,7 +299,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -339,7 +339,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrMissingFastq1
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -382,7 +382,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrMissingFastq2
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -425,7 +425,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrMissingFiles
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -465,7 +465,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return dir, services.ErrInternal
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -509,7 +509,7 @@ func TestAdminUploadFiles(t *testing.T) {
 				return services.ErrInternal
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,

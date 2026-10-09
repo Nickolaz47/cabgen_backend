@@ -45,7 +45,7 @@ func TestUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -77,7 +77,7 @@ func TestUpdateSample(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		body := testutils.CopyMap(validUpdateInput)
 		body["in_network"] = true
@@ -105,7 +105,7 @@ func TestUpdateSample(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		body := testutils.CopyMap(validUpdateInput)
 		body["in_network"] = false
@@ -126,7 +126,7 @@ func TestUpdateSample(t *testing.T) {
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -150,7 +150,7 @@ func TestUpdateSample(t *testing.T) {
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -174,7 +174,7 @@ func TestUpdateSample(t *testing.T) {
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		for _, test := range data.UpdateSampleTests {
 			t.Run(test.Name, func(t *testing.T) {
@@ -205,7 +205,7 @@ func TestUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -237,7 +237,7 @@ func TestUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,

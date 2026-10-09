@@ -155,6 +155,8 @@ func main() {
 		asynqInspector, logging.FileLogger, rootDir)
 	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
 		logging.FileLogger)
+	templateSvc := container.BuildTemplateService(mainDB.DB(), countrySvc,
+		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),
 		logging.FileLogger)
 
@@ -168,7 +170,7 @@ func main() {
 	// Common handlers
 	authHandler := container.BuildCommonAuthHandler(authSvc)
 	userHandler := container.BuildUserHandler(userSvc)
-	sampleHandler := container.BuildSampleHandler(sampleSvc)
+	sampleHandler := container.BuildSampleHandler(sampleSvc, templateSvc)
 	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
 
 	labRepo := repositories.NewLaboratoryRepo(mainDB.DB())
@@ -198,7 +200,8 @@ func main() {
 	adminMicroHandler := container.BuildAdminMicroorganismHandler(microSvc)
 	adminHealthServiceHandler := container.BuildAdminHealthServiceHandler(
 		healthServiceSvc)
-	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc)
+	adminSampleHandler := container.BuildAdminSampleHandler(sampleSvc,
+		templateSvc)
 	adminAnalysisHandler := container.BuildAdminAnalysisHandler(analysisSvc)
 	adminTicketHandler := container.BuildAdminTicketHandler(ticketSvc)
 	adminMetricsHandler := container.BuildAdminMetricsHandler(metricsSvc)

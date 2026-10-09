@@ -32,7 +32,7 @@ func TestAdminGetSamples(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -65,7 +65,7 @@ func TestAdminGetSamples(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

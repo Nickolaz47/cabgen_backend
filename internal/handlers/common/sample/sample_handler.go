@@ -28,21 +28,26 @@ const (
 )
 
 type SampleHandler struct {
-	Service services.SampleService
-	Scope   Scope
+	Service         services.SampleService
+	TemplateService services.TemplateService
+	Scope           Scope
 }
 
-func NewSampleHandler(svc services.SampleService) *SampleHandler {
+func NewSampleHandler(svc services.SampleService,
+	templateSvc services.TemplateService) *SampleHandler {
 	return &SampleHandler{
-		Service: svc,
-		Scope:   ScopeSelf,
+		Service:         svc,
+		TemplateService: templateSvc,
+		Scope:           ScopeSelf,
 	}
 }
 
-func NewAdminSampleHandler(svc services.SampleService) *SampleHandler {
+func NewAdminSampleHandler(svc services.SampleService,
+	templateSvc services.TemplateService) *SampleHandler {
 	return &SampleHandler{
-		Service: svc,
-		Scope:   ScopeAll,
+		Service:         svc,
+		TemplateService: templateSvc,
+		Scope:           ScopeAll,
 	}
 }
 

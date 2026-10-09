@@ -32,7 +32,7 @@ func TestAdminGetSampleByID(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -57,7 +57,7 @@ func TestAdminGetSampleByID(t *testing.T) {
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -88,7 +88,7 @@ func TestAdminGetSampleByID(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -120,7 +120,7 @@ func TestAdminGetSampleByID(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

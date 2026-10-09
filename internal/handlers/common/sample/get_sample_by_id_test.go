@@ -34,7 +34,7 @@ func TestGetSampleByID(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -59,7 +59,7 @@ func TestGetSampleByID(t *testing.T) {
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -83,7 +83,7 @@ func TestGetSampleByID(t *testing.T) {
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -114,7 +114,7 @@ func TestGetSampleByID(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,
@@ -146,7 +146,7 @@ func TestGetSampleByID(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodGet,

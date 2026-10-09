@@ -29,7 +29,7 @@ func TestAdminDeleteSample(t *testing.T) {
 				return nil
 			},
 		}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete,
@@ -54,7 +54,7 @@ func TestAdminDeleteSample(t *testing.T) {
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete,
@@ -85,7 +85,7 @@ func TestAdminDeleteSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete,
@@ -116,7 +116,7 @@ func TestAdminDeleteSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodDelete,

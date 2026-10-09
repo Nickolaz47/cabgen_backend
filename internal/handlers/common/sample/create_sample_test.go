@@ -54,7 +54,7 @@ func TestCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -87,7 +87,7 @@ func TestCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		minimalInput := map[string]any{
 			"origin_code":       "Minimal-Sample",
@@ -123,7 +123,7 @@ func TestCreateSample(t *testing.T) {
 			validInput["gender"] = originalGender
 		}()
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -148,7 +148,7 @@ func TestCreateSample(t *testing.T) {
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		for _, test := range data.CreateSampleTests {
 			if test.Name == "Missing user_id" {
@@ -174,7 +174,7 @@ func TestCreateSample(t *testing.T) {
 
 	t.Run("Error - Unauthorized", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -204,7 +204,7 @@ func TestCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,

@@ -56,7 +56,7 @@ func TestUploadFiles(t *testing.T) {
 				return nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -96,7 +96,7 @@ func TestUploadFiles(t *testing.T) {
 					return &sample, nil
 				},
 			}
-			handler := sample.NewSampleHandler(svc)
+			handler := sample.NewSampleHandler(svc, nil)
 
 			c, w := testutils.SetupGinMultipartContext(
 				http.MethodPut,
@@ -131,7 +131,7 @@ func TestUploadFiles(t *testing.T) {
 				return nil, services.ErrNotFound
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -161,7 +161,7 @@ func TestUploadFiles(t *testing.T) {
 				return nil, services.ErrInternal
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -185,7 +185,7 @@ func TestUploadFiles(t *testing.T) {
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		buf, mw := createFormFile("fastq1", "reads_R1.fastq")
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -226,7 +226,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -262,7 +262,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -290,7 +290,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrNotFound
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -330,7 +330,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrMissingFastq1
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -373,7 +373,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrMissingFastq2
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -416,7 +416,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrMissingFiles
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -456,7 +456,7 @@ func TestUploadFiles(t *testing.T) {
 				return dir, services.ErrInternal
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -500,7 +500,7 @@ func TestUploadFiles(t *testing.T) {
 				return services.ErrInternal
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut,
@@ -569,7 +569,7 @@ func TestUploadFilesValidations(t *testing.T) {
 				return nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", &buf, mw.FormDataContentType(),
@@ -588,7 +588,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -607,7 +607,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -627,7 +627,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -645,7 +645,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -666,7 +666,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -691,7 +691,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, nil)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),
@@ -712,7 +712,7 @@ func TestUploadFilesValidations(t *testing.T) {
 		dir := t.TempDir()
 
 		svc := uploadMock(mockUserID, dir, services.ErrMissingFiles)
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinMultipartContext(
 			http.MethodPut, "/api/sample", buf, mw.FormDataContentType(),

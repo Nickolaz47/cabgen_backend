@@ -40,7 +40,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -72,7 +72,7 @@ func TestAdminUpdateSample(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		body := testutils.CopyMap(validUpdateInput)
 		body["in_network"] = true
@@ -99,7 +99,7 @@ func TestAdminUpdateSample(t *testing.T) {
 				return &mockResponse, nil
 			},
 		}
-		handler := sample.NewSampleHandler(svc)
+		handler := sample.NewSampleHandler(svc, nil)
 
 		body := testutils.CopyMap(validUpdateInput)
 		body["in_network"] = false
@@ -119,7 +119,7 @@ func TestAdminUpdateSample(t *testing.T) {
 
 	t.Run("Error - Invalid ID", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -144,7 +144,7 @@ func TestAdminUpdateSample(t *testing.T) {
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		for _, test := range data.UpdateSampleTests {
 			t.Run(test.Name, func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,
@@ -206,7 +206,7 @@ func TestAdminUpdateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPut,

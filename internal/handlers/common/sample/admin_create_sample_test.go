@@ -53,7 +53,7 @@ func TestAdminCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -86,7 +86,7 @@ func TestAdminCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		minimalInput := map[string]any{
 			"origin_code":       "Minimal-Sample",
@@ -122,7 +122,7 @@ func TestAdminCreateSample(t *testing.T) {
 			validInput["gender"] = originalGender
 		}()
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
@@ -147,7 +147,7 @@ func TestAdminCreateSample(t *testing.T) {
 
 	t.Run("Error - Bad Request", func(t *testing.T) {
 		svc := &mocks.MockSampleService{}
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		for _, test := range data.CreateSampleTests {
 			t.Run(test.Name, func(t *testing.T) {
@@ -177,7 +177,7 @@ func TestAdminCreateSample(t *testing.T) {
 			},
 		}
 
-		handler := sample.NewAdminSampleHandler(svc)
+		handler := sample.NewAdminSampleHandler(svc, nil)
 
 		c, w := testutils.SetupGinContext(
 			http.MethodPost,
