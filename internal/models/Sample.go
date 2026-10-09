@@ -376,3 +376,7 @@ type SampleAttachmentInput struct {
 	Fastq2 *string `json:"fastq2" binding:"max=255"`
 	Fasta  *string `json:"fasta" binding:"max=255"`
 }
+
+type SampleTableInput struct {
+	Table string `json:"table" binding:"max=255"`
+}

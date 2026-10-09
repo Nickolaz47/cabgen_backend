@@ -393,8 +393,9 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 			cleanup()
 			validations.SetAuditEvent(c, failedEvent, map[string]string{"sample_id": rawID})
 			c.JSON(http.StatusBadRequest, responses.APIResponse{
-				Error: responses.GetResponse(localizer,
-					responses.SampleFileTooLarge),
+				Error: responses.GetResponseWithData(localizer,
+					responses.SampleFileTooLarge,
+					map[string]any{"Param": config.MaxUploadSize >> 20}),
 			})
 			return
 		}

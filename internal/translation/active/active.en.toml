@@ -481,11 +481,23 @@ other = "No files were sent for upload."
 [admin.sample.contentType.error]
 other = "The request must be multipart/form-data."
 
+[admin.sample.tableRead.error]
+other = "Could not read the uploaded table. Check the file and try again."
+
+[admin.sample.tableTooLarge.error]
+other = "The table exceeds the maximum size of {{.Param}}MB."
+
+[admin.sample.tableMissing.error]
+other = "No table was sent."
+
+[admin.sample.tableUnsupported.error]
+other = "Unsupported table format. Send an .xlsx file."
+
 [admin.sample.unsupportedFile.error]
 other = "File type not supported."
 
 [admin.sample.fileTooLarge.error]
-other = "The file exceeds the maximum upload size."
+other = "The upload exceeds the maximum size of {{.Param}}MB."
 
 [admin.sample.notFound.error]
 other = "Sample not found."

@@ -3,6 +3,7 @@ package sample_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -700,7 +701,9 @@ func TestUploadFilesValidations(t *testing.T) {
 		handler.UploadFiles(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, w.Body.String(), "The file exceeds the maximum upload size.")
+		assert.Contains(t, w.Body.String(),
+			fmt.Sprintf("The upload exceeds the maximum size of %dMB.",
+				config.MaxUploadSize>>20))
 		assert.NoFileExists(t, filepath.Join(dir, "reads_R1.fastq"))
 	})
 

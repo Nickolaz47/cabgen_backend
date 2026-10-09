@@ -481,11 +481,23 @@ other = "No se enviaron archivos para la carga."
 [admin.sample.contentType.error]
 other = "La solicitud debe ser multipart/form-data."
 
+[admin.sample.tableRead.error]
+other = "No se pudo leer la tabla cargada. Verifique el archivo e inténtelo de nuevo."
+
+[admin.sample.tableTooLarge.error]
+other = "La tabla excede el tamaño máximo de {{.Param}}MB."
+
+[admin.sample.tableMissing.error]
+other = "No se envió ninguna tabla."
+
+[admin.sample.tableUnsupported.error]
+other = "Formato de tabla no soportado. Envíe un archivo .xlsx."
+
 [admin.sample.unsupportedFile.error]
 other = "Tipo de archivo no soportado."
 
 [admin.sample.fileTooLarge.error]
-other = "El archivo excede el límite máximo de subida."
+other = "La carga excede el tamaño máximo de {{.Param}}MB."
 
 [admin.sample.notFound.error]
 other = "Muestra no encontrada."
