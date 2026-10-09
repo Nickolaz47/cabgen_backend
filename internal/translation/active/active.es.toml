@@ -493,6 +493,15 @@ other = "No se envió ninguna tabla."
 [admin.sample.tableUnsupported.error]
 other = "Formato de tabla no soportado. Envíe un archivo .xlsx."
 
+[admin.sample.tableHeaders.error]
+other = "Cabeceras ausentes o no válidas: {{.Param}}."
+
+[admin.sample.tableValue.error]
+other = "Valor no válido en la fila {{.Row}}, columna {{.Col}}."
+
+[admin.sample.tableEmpty.error]
+other = "La hoja de cálculo no contiene filas de datos."
+
 [admin.sample.unsupportedFile.error]
 other = "Tipo de archivo no soportado."
 

@@ -1,6 +1,10 @@
 package services
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // Generic errors
 var ErrNotFound = errors.New("record not found")
@@ -46,3 +50,25 @@ var ErrEmailSame = errors.New("new email is the same as current email")
 var ErrDuplicateTask = errors.New("duplicate task already pending")
 var ErrInvalidStatusTransition = errors.New("invalid status transition")
 var ErrAnalysisSampleLimit = errors.New("sample already has 2 analyses")
+
+// Template table errors
+var ErrInvalidTable = errors.New("invalid template table")
+var ErrEmptyTable = errors.New("template table has no rows")
+
+type TableHeadersError struct {
+	Invalid []string
+}
+
+func (e *TableHeadersError) Error() string {
+	return "missing or invalid table headers: " +
+		strings.Join(e.Invalid, ", ")
+}
+
+type TableValueError struct {
+	Row int
+	Col string
+}
+
+func (e *TableValueError) Error() string {
+	return fmt.Sprintf("invalid value at row %d, column %s", e.Row, e.Col)
+}

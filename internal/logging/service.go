@@ -41,6 +41,7 @@ const (
 	AnalysisSampleLimitError        = "ANALYSIS_SAMPLE_LIMIT"
 	CreateAuditError                = "CREATE_AUDIT_ERROR"
 	UserPartOfNetworkError          = "USER_PART_OF_NETWORK"
+	ValidationError                 = "VALIDATION_ERROR"
 )
 
 const (

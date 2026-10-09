@@ -493,6 +493,15 @@ other = "No table was sent."
 [admin.sample.tableUnsupported.error]
 other = "Unsupported table format. Send an .xlsx file."
 
+[admin.sample.tableHeaders.error]
+other = "Missing or invalid headers: {{.Param}}."
+
+[admin.sample.tableValue.error]
+other = "Invalid value in row {{.Row}}, column {{.Col}}."
+
+[admin.sample.tableEmpty.error]
+other = "The spreadsheet contains no data rows."
+
 [admin.sample.unsupportedFile.error]
 other = "File type not supported."
 

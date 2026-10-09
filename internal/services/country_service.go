@@ -70,7 +70,7 @@ func (s *countryService) FindByCode(ctx context.Context, code string) (
 }
 
 func (s *countryService) FindByName(ctx context.Context, name,
-	 language string) ([]models.SelectOption, error) {
+	language string) ([]models.SelectOption, error) {
 	countries, err := s.Repo.GetCountriesByName(ctx, name, language)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -119,7 +119,7 @@ func (s *countryService) Create(ctx context.Context, input models.CountryCreateI
 }
 
 func (s *countryService) Update(ctx context.Context, code string,
-	 input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error) {
+	input models.CountryUpdateInput) (*models.CountryAdminDetailResponse, error) {
 	existingCountry, err := s.Repo.GetCountryByCode(ctx, code)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,

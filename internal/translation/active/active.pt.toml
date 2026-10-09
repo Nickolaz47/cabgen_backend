@@ -493,6 +493,15 @@ other = "Nenhuma tabela foi enviada."
 [admin.sample.tableUnsupported.error]
 other = "Formato de tabela não suportado. Envie um arquivo .xlsx."
 
+[admin.sample.tableHeaders.error]
+other = "Cabeçalhos ausentes ou inválidos: {{.Param}}."
+
+[admin.sample.tableValue.error]
+other = "Valor inválido na linha {{.Row}}, coluna {{.Col}}."
+
+[admin.sample.tableEmpty.error]
+other = "A planilha não contém linhas de dados."
+
 [admin.sample.unsupportedFile.error]
 other = "Tipo de arquivo não suportado."
 
