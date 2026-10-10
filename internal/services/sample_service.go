@@ -26,6 +26,8 @@ type SampleService interface {
 		language string) (*models.SampleResponse, error)
 	Create(ctx context.Context, input models.SampleCreateDTO,
 		language string) (*models.SampleResponse, error)
+	CreateMany(ctx context.Context,
+		inputs []models.SampleCreateDTO) (int, error)
 	AttachFiles(ctx context.Context, sampleID, userID uuid.UUID,
 		input models.SampleAttachmentInput) error
 	Update(ctx context.Context, sampleID, userID uuid.UUID,
@@ -173,6 +175,26 @@ func (s *sampleService) Create(
 	ctx context.Context,
 	input models.SampleCreateDTO,
 	language string) (*models.SampleResponse, error) {
+	sample, err := s.buildSample(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.Repo.CreateSample(ctx, sample); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"SampleService", "Create",
+				logging.DatabaseError, err,
+			)...)
+		return nil, ErrInternal
+	}
+
+	response := sample.ToResponse(language)
+	return &response, nil
+}
+
+func (s *sampleService) buildSample(ctx context.Context,
+	input models.SampleCreateDTO) (*models.Sample, error) {
 	country, err := s.CountryRepo.GetCountryByCode(ctx, input.CountryCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -350,17 +372,31 @@ func (s *sampleService) Create(
 	sample.Laboratory = *laboratory
 	sample.HealthService = *healthService
 
-	if err := s.Repo.CreateSample(ctx, &sample); err != nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"SampleService", "Create",
-				logging.DatabaseError, err,
-			)...)
-		return nil, ErrInternal
+	return &sample, nil
+}
+
+func (s *sampleService) CreateMany(ctx context.Context,
+	inputs []models.SampleCreateDTO) (int, error) {
+	samples := make([]models.Sample, 0, len(inputs))
+	for _, input := range inputs {
+		sample, err := s.buildSample(ctx, input)
+		if err != nil {
+			return 0, err
+		}
+
+		samples = append(samples, *sample)
 	}
 
-	response := sample.ToResponse(language)
-	return &response, nil
+	if err := s.Repo.CreateSamples(ctx, samples); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"SampleService", "CreateMany",
+				logging.DatabaseError, err,
+			)...)
+		return 0, ErrInternal
+	}
+
+	return len(samples), nil
 }
 
 func (s *sampleService) AttachFiles(ctx context.Context,

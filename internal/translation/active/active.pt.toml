@@ -502,6 +502,10 @@ other = "Valor inválido na linha {{.Row}}, coluna {{.Col}}."
 [admin.sample.tableEmpty.error]
 other = "A planilha não contém linhas de dados."
 
+[admin.sample.tableCreate.success]
+other = "{{.Param}} amostras criadas com sucesso."
+
+
 [admin.sample.unsupportedFile.error]
 other = "Tipo de arquivo não suportado."
 

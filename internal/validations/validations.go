@@ -8,6 +8,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	sanitize "github.com/mrz1836/go-sanitize"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -36,33 +37,45 @@ type Model interface {
 func Validate[T Model](
 	c *gin.Context, localizer *i18n.Localizer, model *T) (string, bool) {
 	if err := c.ShouldBindJSON(model); err != nil {
-		var ve validator.ValidationErrors
-		if errors.As(err, &ve) && len(ve) > 0 {
-			validationErr := ve[0]
-			tag := validationErr.Tag()
-			field := validationErr.Field()
-			data := map[string]any{"Param": validationErr.Param()}
+		return validationMsg(localizer, err), false
+	}
 
-			namespace := validationErr.StructNamespace()
-			structName := strings.SplitN(namespace, ".", 2)[0]
+	return ValidateStruct(localizer, model)
+}
 
-			specificKey := "validation." + structName + "." + field + "." + tag
-			if msg := getResponseOrEmpty(localizer, specificKey,
-				data); msg != "" {
-				return msg, false
-			}
-
-			genericKey := "validation." + field + "." + tag
-			return responses.GetResponseWithData(localizer, genericKey, data),
-				false
-		}
-		return responses.GetResponse(localizer, responses.ValidationGeneric),
-			false
+func ValidateStruct[T Model](localizer *i18n.Localizer,
+	model *T) (string, bool) {
+	if err := binding.Validator.ValidateStruct(model); err != nil {
+		return validationMsg(localizer, err), false
 	}
 
 	SanitizeInput(model)
 
 	return validateRequiredDates(model, localizer)
+}
+
+func validationMsg(localizer *i18n.Localizer, err error) string {
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) && len(ve) > 0 {
+		validationErr := ve[0]
+		tag := validationErr.Tag()
+		field := validationErr.Field()
+		data := map[string]any{"Param": validationErr.Param()}
+
+		namespace := validationErr.StructNamespace()
+		structName := strings.SplitN(namespace, ".", 2)[0]
+
+		specificKey := "validation." + structName + "." + field + "." + tag
+		if msg := getResponseOrEmpty(localizer, specificKey,
+			data); msg != "" {
+			return msg
+		}
+
+		genericKey := "validation." + field + "." + tag
+		return responses.GetResponseWithData(localizer, genericKey, data)
+	}
+
+	return responses.GetResponse(localizer, responses.ValidationGeneric)
 }
 
 func validateRequiredDates[T Model](

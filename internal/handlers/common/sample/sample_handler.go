@@ -1,10 +1,13 @@
 package sample
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -18,6 +21,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/validations"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/xuri/excelize/v2"
 )
 
 type Scope int
@@ -231,6 +235,150 @@ func (h *SampleHandler) CreateSample(c *gin.Context) {
 		Data: sample,
 		Message: responses.GetResponse(localizer,
 			responses.SampleCreationSuccess),
+	})
+}
+
+func (h *SampleHandler) CreateSamplesFromTable(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
+	event, failedEvent := models.AuditEventSamplesCreateFromTable,
+		models.AuditEventSamplesCreateFromTableFailed
+	validations.SetAuditEvent(c, event, nil)
+
+	userToken, ok := validations.GetUserTokenFromContext(c)
+	if !ok {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		c.JSON(http.StatusUnauthorized,
+			responses.APIResponse{Error: responses.GetResponse(localizer,
+				responses.UnauthorizedError)})
+		return
+	}
+
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body,
+		validations.MaxTableSize+(1<<20))
+	err := c.Request.ParseMultipartForm(validations.MaxTableSize)
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		var maxErr *http.MaxBytesError
+		if errors.As(err, &maxErr) {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponseWithData(localizer,
+					responses.SampleTableTooLargeError,
+					map[string]any{
+						"Param": validations.MaxTableSize >> 20}),
+			})
+			return
+		}
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.SampleTableReadError),
+		})
+		return
+	}
+
+	file, header, err := c.Request.FormFile("table")
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		errMsg := responses.SampleTableReadError
+		if errors.Is(err, http.ErrMissingFile) {
+			errMsg = responses.SampleTableMissingError
+		}
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+	defer file.Close()
+
+	if !validations.IsAllowedTableFile(header.Filename) {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.SampleTableUnsupportedError),
+		})
+		return
+	}
+
+	content, err := validations.ReadTablePart(file)
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		if errors.Is(err, validations.ErrTableTooLarge) {
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponseWithData(localizer,
+					responses.SampleTableTooLargeError,
+					map[string]any{
+						"Param": validations.MaxTableSize >> 20}),
+			})
+			return
+		}
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.SampleTableReadError),
+		})
+		return
+	}
+
+	excFile, err := excelize.OpenReader(bytes.NewReader(content))
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.SampleTableReadError),
+		})
+		return
+	}
+	defer excFile.Close()
+
+	inputs, err := h.TemplateService.ValidateTemplateTable(
+		c.Request.Context(), language, excFile)
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		code, errMsg, data := handlererrors.HandleTableError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponseWithData(localizer, errMsg, data),
+		})
+		return
+	}
+
+	if len(inputs) == 0 {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.SampleTableEmptyError),
+		})
+		return
+	}
+
+	dtos := make([]models.SampleCreateDTO, 0, len(inputs))
+	for i := range inputs {
+		if errMsg, valid := validations.ValidateStruct(localizer,
+			&inputs[i]); !valid {
+			validations.SetAuditEvent(c, failedEvent, nil)
+			c.JSON(http.StatusBadRequest,
+				responses.APIResponse{Error: errMsg})
+			return
+		}
+
+		dtos = append(dtos,
+			models.SampleCreateInputToDTO(inputs[i], userToken.ID))
+	}
+
+	count, err := h.Service.CreateMany(c.Request.Context(), dtos)
+	if err != nil {
+		validations.SetAuditEvent(c, failedEvent, nil)
+		code, errMsg := handlererrors.HandleSampleError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+
+	validations.SetAuditEvent(c, event,
+		map[string]string{"count": strconv.Itoa(count)})
+	c.JSON(http.StatusCreated, responses.APIResponse{
+		Message: responses.GetResponseWithData(localizer,
+			responses.SampleTableCreationSuccess,
+			map[string]any{"Param": count}),
 	})
 }
 

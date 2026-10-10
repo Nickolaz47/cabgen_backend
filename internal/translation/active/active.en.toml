@@ -502,6 +502,10 @@ other = "Invalid value in row {{.Row}}, column {{.Col}}."
 [admin.sample.tableEmpty.error]
 other = "The spreadsheet contains no data rows."
 
+[admin.sample.tableCreate.success]
+other = "{{.Param}} samples created successfully."
+
+
 [admin.sample.unsupportedFile.error]
 other = "File type not supported."
 

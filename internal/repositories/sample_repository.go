@@ -15,6 +15,7 @@ type SampleRepository interface {
 		error)
 	GetSampleByID(ctx context.Context, ID uuid.UUID) (*models.Sample, error)
 	CreateSample(ctx context.Context, sample *models.Sample) error
+	CreateSamples(ctx context.Context, samples []models.Sample) error
 	UpdateSample(ctx context.Context, sample *models.Sample) error
 	DeleteSample(ctx context.Context, sample *models.Sample) error
 }
@@ -103,6 +104,19 @@ func (s *sampleRepo) GetSampleByID(ctx context.Context,
 func (s *sampleRepo) CreateSample(ctx context.Context,
 	sample *models.Sample) error {
 	return s.DB.WithContext(ctx).Create(sample).Error
+}
+
+func (s *sampleRepo) CreateSamples(ctx context.Context,
+	samples []models.Sample) error {
+	return s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for i := range samples {
+			if err := tx.Create(&samples[i]).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (s *sampleRepo) UpdateSample(ctx context.Context,

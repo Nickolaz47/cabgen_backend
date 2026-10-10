@@ -13,7 +13,9 @@ type MockSampleRepository struct {
 		error)
 	GetSampleByIDFunc func(ctx context.Context,
 		ID uuid.UUID) (*models.Sample, error)
-	CreateSampleFunc func(ctx context.Context, sample *models.Sample) error
+	CreateSampleFunc  func(ctx context.Context, sample *models.Sample) error
+	CreateSamplesFunc func(ctx context.Context,
+		samples []models.Sample) error
 	UpdateSampleFunc func(ctx context.Context, sample *models.Sample) error
 	DeleteSampleFunc func(ctx context.Context, sample *models.Sample) error
 }
@@ -41,6 +43,15 @@ func (r *MockSampleRepository) CreateSample(ctx context.Context,
 	sample *models.Sample) error {
 	if r.CreateSampleFunc != nil {
 		return r.CreateSampleFunc(ctx, sample)
+	}
+
+	return nil
+}
+
+func (r *MockSampleRepository) CreateSamples(ctx context.Context,
+	samples []models.Sample) error {
+	if r.CreateSamplesFunc != nil {
+		return r.CreateSamplesFunc(ctx, samples)
 	}
 
 	return nil
@@ -76,6 +87,8 @@ type MockSampleService struct {
 		language string) (*models.SampleResponse, error)
 	CreateFunc func(ctx context.Context, input models.SampleCreateDTO,
 		language string) (*models.SampleResponse, error)
+	CreateManyFunc func(ctx context.Context,
+		inputs []models.SampleCreateDTO) (int, error)
 	AttachFilesFunc func(ctx context.Context, sampleID, userID uuid.UUID,
 		input models.SampleAttachmentInput) error
 	UpdateFunc func(ctx context.Context, sampleID, userID uuid.UUID,
@@ -126,6 +139,15 @@ func (r *MockSampleService) Create(ctx context.Context,
 		return r.CreateFunc(ctx, input, language)
 	}
 	return nil, nil
+}
+
+func (r *MockSampleService) CreateMany(ctx context.Context,
+	inputs []models.SampleCreateDTO) (int, error) {
+	if r.CreateManyFunc != nil {
+		return r.CreateManyFunc(ctx, inputs)
+	}
+
+	return 0, nil
 }
 
 func (r *MockSampleService) AttachFiles(ctx context.Context,

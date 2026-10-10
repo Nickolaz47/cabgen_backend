@@ -1735,3 +1735,175 @@ func TestSampleDelete(t *testing.T) {
 		assert.Equal(t, 1, logs.FilterLevelExact(zapcore.WarnLevel).Len())
 	})
 }
+
+func TestSampleCreateMany(t *testing.T) {
+	mock := testmodels.CreateMockSample()
+	input := testmodels.NewSampleCreateDTO(mock)
+
+	happyRepos := func() (
+		*mocks.MockCountryRepository,
+		*mocks.MockUserRepository,
+		*mocks.MockOriginRepository,
+		*mocks.MockSampleSourceRepository,
+		*mocks.MockMicroorganismRepository,
+		*mocks.MockSequencerRepository,
+		*mocks.MockLaboratoryRepository,
+		*mocks.MockHealthServiceRepository,
+	) {
+		return &mocks.MockCountryRepository{
+				GetCountryByCodeFunc: func(ctx context.Context,
+					code string) (*models.Country, error) {
+					c := mock.Country
+					return &c, nil
+				},
+			},
+			&mocks.MockUserRepository{
+				GetUserByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.User, error) {
+					u := mock.User
+					return &u, nil
+				},
+			},
+			&mocks.MockOriginRepository{
+				GetOriginByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.Origin, error) {
+					o := mock.Origin
+					return &o, nil
+				},
+			},
+			&mocks.MockSampleSourceRepository{
+				GetSampleSourceByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.SampleSource, error) {
+					ss := mock.SampleSource
+					return &ss, nil
+				},
+			},
+			&mocks.MockMicroorganismRepository{
+				GetMicroorganismByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.Microorganism, error) {
+					m := mock.Microorganism
+					return &m, nil
+				},
+			},
+			&mocks.MockSequencerRepository{
+				GetSequencerByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.Sequencer, error) {
+					sq := mock.Sequencer
+					return &sq, nil
+				},
+			},
+			&mocks.MockLaboratoryRepository{
+				GetLaboratoryByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.Laboratory, error) {
+					l := mock.Laboratory
+					return &l, nil
+				},
+			},
+			&mocks.MockHealthServiceRepository{
+				GetHealthServiceByIDFunc: func(ctx context.Context,
+					ID uuid.UUID) (*models.HealthService, error) {
+					hs := mock.HealthService
+					return &hs, nil
+				},
+			}
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		var got []models.Sample
+		sampleRepo := &mocks.MockSampleRepository{
+			CreateSamplesFunc: func(ctx context.Context,
+				samples []models.Sample) error {
+				got = samples
+				return nil
+			},
+		}
+		countryRepo, userRepo, originRepo, ssRepo, microRepo, seqRepo,
+			labRepo, hsRepo := happyRepos()
+
+		svc := services.NewSampleService(sampleRepo, countryRepo, userRepo,
+			originRepo, ssRepo, microRepo, seqRepo, labRepo, hsRepo,
+			t.TempDir(), nil)
+
+		count, err := svc.CreateMany(context.Background(),
+			[]models.SampleCreateDTO{input, input})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 2, count)
+		assert.Len(t, got, 2)
+	})
+
+	t.Run("Error - Country Not Found", func(t *testing.T) {
+		created := false
+		sampleRepo := &mocks.MockSampleRepository{
+			CreateSamplesFunc: func(ctx context.Context,
+				samples []models.Sample) error {
+				created = true
+				return nil
+			},
+		}
+		countryRepo := &mocks.MockCountryRepository{
+			GetCountryByCodeFunc: func(ctx context.Context,
+				code string) (*models.Country, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewSampleService(sampleRepo, countryRepo, nil, nil,
+			nil, nil, nil, nil, nil, t.TempDir(), mockLogger)
+
+		count, err := svc.CreateMany(context.Background(),
+			[]models.SampleCreateDTO{input, input})
+
+		assert.ErrorIs(t, err, services.ErrInvalidCountryCode)
+		assert.Equal(t, 0, count)
+		assert.False(t, created)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Create Samples", func(t *testing.T) {
+		sampleRepo := &mocks.MockSampleRepository{
+			CreateSamplesFunc: func(ctx context.Context,
+				samples []models.Sample) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+		countryRepo, userRepo, originRepo, ssRepo, microRepo, seqRepo,
+			labRepo, hsRepo := happyRepos()
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		svc := services.NewSampleService(sampleRepo, countryRepo, userRepo,
+			originRepo, ssRepo, microRepo, seqRepo, labRepo, hsRepo,
+			t.TempDir(), mockLogger)
+
+		count, err := svc.CreateMany(context.Background(),
+			[]models.SampleCreateDTO{input})
+
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 0, count)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Empty inputs", func(t *testing.T) {
+		created := false
+		sampleRepo := &mocks.MockSampleRepository{
+			CreateSamplesFunc: func(ctx context.Context,
+				samples []models.Sample) error {
+				created = true
+				assert.Empty(t, samples)
+				return nil
+			},
+		}
+
+		svc := services.NewSampleService(sampleRepo, nil, nil, nil,
+			nil, nil, nil, nil, nil, t.TempDir(), nil)
+
+		count, err := svc.CreateMany(context.Background(), nil)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 0, count)
+		assert.True(t, created)
+	})
+}

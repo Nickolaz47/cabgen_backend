@@ -502,6 +502,10 @@ other = "Valor no válido en la fila {{.Row}}, columna {{.Col}}."
 [admin.sample.tableEmpty.error]
 other = "La hoja de cálculo no contiene filas de datos."
 
+[admin.sample.tableCreate.success]
+other = "{{.Param}} muestras creadas con éxito."
+
+
 [admin.sample.unsupportedFile.error]
 other = "Tipo de archivo no soportado."
 

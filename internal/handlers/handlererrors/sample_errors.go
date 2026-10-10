@@ -3,6 +3,7 @@ package handlererrors
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -39,5 +40,25 @@ func HandleSampleError(err error) (int, string) {
 	default:
 		return http.StatusInternalServerError,
 			responses.GenericInternalServerError
+	}
+}
+
+func HandleTableError(err error) (int, string, map[string]any) {
+	var thErr *services.TableHeadersError
+	var tvErr *services.TableValueError
+	switch {
+	case errors.As(err, &thErr):
+		return http.StatusBadRequest, responses.SampleTableHeadersError,
+			map[string]any{"Param": strings.Join(thErr.Invalid, ", ")}
+	case errors.As(err, &tvErr):
+		return http.StatusBadRequest, responses.SampleTableValueError,
+			map[string]any{"Row": tvErr.Row, "Col": tvErr.Col}
+	case errors.Is(err, services.ErrEmptyTable):
+		return http.StatusBadRequest, responses.SampleTableEmptyError, nil
+	case errors.Is(err, services.ErrInvalidTable):
+		return http.StatusBadRequest, responses.SampleTableReadError, nil
+	default:
+		return http.StatusInternalServerError,
+			responses.GenericInternalServerError, nil
 	}
 }

@@ -301,3 +301,61 @@ func TestDeleteSampleCascadeAnalyses(t *testing.T) {
 		assert.Empty(t, result)
 	})
 }
+
+func TestCreateSamples(t *testing.T) {
+	stripAssocs := func(s models.Sample) models.Sample {
+		s.Country = models.Country{}
+		s.User = models.User{}
+		s.Origin = models.Origin{}
+		s.SampleSource = models.SampleSource{}
+		s.Microorganism = models.Microorganism{}
+		s.Sequencer = models.Sequencer{}
+		s.Laboratory = models.Laboratory{}
+		s.HealthService = models.HealthService{}
+		return s
+	}
+
+	countSamples := func(db *gorm.DB) int64 {
+		var count int64
+		db.Model(&models.Sample{}).Count(&count)
+		return count
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		sampleRepo := repositories.NewSampleRepo(db)
+
+		base := testmodels.CreateMockSample()
+		assert.NoError(t, db.Create(&base).Error)
+
+		a := stripAssocs(base)
+		a.ID = uuid.New()
+		b := stripAssocs(base)
+		b.ID = uuid.New()
+
+		err := sampleRepo.CreateSamples(context.Background(),
+			[]models.Sample{a, b})
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(3), countSamples(db))
+	})
+
+	t.Run("Rollback - duplicate id", func(t *testing.T) {
+		db := testutils.NewMockDB()
+		sampleRepo := repositories.NewSampleRepo(db)
+
+		base := testmodels.CreateMockSample()
+		assert.NoError(t, db.Create(&base).Error)
+
+		a := stripAssocs(base)
+		a.ID = uuid.New()
+		b := stripAssocs(base)
+		b.ID = a.ID
+
+		err := sampleRepo.CreateSamples(context.Background(),
+			[]models.Sample{a, b})
+
+		assert.Error(t, err)
+		assert.Equal(t, int64(1), countSamples(db))
+	})
+}
