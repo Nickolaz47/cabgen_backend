@@ -5,11 +5,19 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"math"
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/xuri/excelize/v2"
+)
+
+const (
+	SheetName   = "Samples"
+	hiddenSheet = "AcceptedValues"
+	maxRows     = 1000
 )
 
 var metricsHeaders = []string{
@@ -112,45 +120,98 @@ func (c *Column) FindRealValue(labelValue string) (string, bool) {
 
 func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 	f := excelize.NewFile()
+	if err := f.SetSheetName("Sheet1", SheetName); err != nil {
+		return nil, err
+	}
 
-	sheetName := "Samples"
-	f.SetSheetName("Sheet1", sheetName)
+	border := []excelize.Border{
+		{Type: "left", Color: "BFBFBF", Style: 1},
+		{Type: "right", Color: "BFBFBF", Style: 1},
+		{Type: "top", Color: "BFBFBF", Style: 1},
+		{Type: "bottom", Color: "BFBFBF", Style: 1},
+	}
+	headerStyle, err := f.NewStyle(&excelize.Style{
+		Font:   &excelize.Font{Bold: true, Color: "FFFFFF", Size: 11},
+		Fill:   excelize.Fill{Type: "pattern", Color: []string{"0A6354"}, Pattern: 1},
+		Border: border,
+		Alignment: &excelize.Alignment{
+			Horizontal: "center", Vertical: "center", WrapText: true,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
 
+	if err := f.SetRowHeight(SheetName, 1, 30); err != nil {
+		return nil, err
+	}
 	for _, col := range columns {
-		cellName := fmt.Sprintf("%s1", col.Letter)
-		if err := f.SetCellValue(sheetName, cellName, col.Header); err != nil {
-			return nil, fmt.Errorf(
-				"failed to define metadata header %s: %v", col.Header, err)
+		cell := col.Letter + "1"
+		if err := f.SetCellValue(SheetName, cell, col.Header); err != nil {
+			return nil, fmt.Errorf("failed to define header %s: %w", col.Header, err)
+		}
+		if err := f.SetCellStyle(SheetName, cell, cell, headerStyle); err != nil {
+			return nil, err
+		}
+		width := math.Min(math.Max(float64(len(col.Header))+4, 14), 40)
+		if err := f.SetColWidth(SheetName, col.Letter, col.Letter, width); err != nil {
+			return nil, err
 		}
 	}
 
-	hiddenSheet := "AcceptedValues"
-	f.NewSheet(hiddenSheet)
-	f.SetSheetVisible(hiddenSheet, false)
+	if err := f.SetPanes(SheetName, &excelize.Panes{
+		Freeze:      true,
+		Split:       false,
+		YSplit:      1,
+		TopLeftCell: "A2",
+		ActivePane:  "bottomLeft",
+	}); err != nil {
+		return nil, err
+	}
+
+	if _, err := f.NewSheet(hiddenSheet); err != nil {
+		return nil, err
+	}
 
 	for _, col := range columns {
 		if len(col.LabelValues) == 0 {
 			continue
 		}
 
-		for i, val := range col.LabelValues {
-			cellName := fmt.Sprintf("%s%d", col.Letter, i+1)
-			f.SetCellValue(hiddenSheet, cellName, val)
+		values := make([]string, len(col.LabelValues))
+		copy(values, col.LabelValues)
+		sort.Strings(values)
+
+		for i, val := range values {
+			cell := fmt.Sprintf("%s%d", col.Letter, i+1)
+			if err := f.SetCellValue(hiddenSheet, cell, val); err != nil {
+				return nil, err
+			}
 		}
 
-		dvOpts := excelize.NewDataValidation(true)
-		dvOpts.Sqref = fmt.Sprintf("%s2:%s100", col.Letter, col.Letter)
-		dvOpts.SetError(excelize.DataValidationErrorStyleStop,
-			"Invalid Option", "Please select an option from the list.")
+		dv := excelize.NewDataValidation(true)
+		dv.Sqref = fmt.Sprintf("%s2:%s%d", col.Letter, col.Letter, maxRows)
+		dv.SetInput("Select or type", "Pick a value from the list or start typing to filter.")
+		dv.SetError(excelize.DataValidationErrorStyleStop,
+			"Invalid option", "Please select an option from the list.")
 
-		formula := fmt.Sprintf("='%s'!$%s$1:$%s$%d",
-			hiddenSheet, col.Letter, col.Letter, len(col.LabelValues))
-		dvOpts.SetSqrefDropList(formula)
+		ref := fmt.Sprintf("'%s'!$%s$1:$%s$%d", hiddenSheet, col.Letter, col.Letter, len(values))
+		dv.SetSqrefDropList(ref)
 
-		if err := f.AddDataValidation(sheetName, dvOpts); err != nil {
-			return nil, fmt.Errorf("failed to add column validation: %v", err)
+		if err := f.AddDataValidation(SheetName, dv); err != nil {
+			return nil, fmt.Errorf("failed to add validation for %s: %w", col.Header, err)
 		}
 	}
+
+	if err := f.SetSheetVisible(hiddenSheet, false); err != nil {
+		return nil, err
+	}
+
+	idx, err := f.GetSheetIndex(SheetName)
+	if err != nil {
+		return nil, err
+	}
+	f.SetActiveSheet(idx)
 
 	return f, nil
 }

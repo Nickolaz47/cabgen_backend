@@ -189,8 +189,8 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 		return nil, err
 	}
 
-	// Read the "Samples" sheet; missing or unreadable = invalid file
-	rows, err := file.GetRows("Samples")
+	// Read the sample sheet; missing or unreadable = invalid file
+	rows, err := file.GetRows(utils.SheetName)
 	if err != nil {
 		s.Logger.Error(
 			"Service Error", logging.ServiceLogging(ctx,

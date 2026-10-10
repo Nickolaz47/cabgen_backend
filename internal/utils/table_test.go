@@ -216,7 +216,7 @@ func TestGenerateMetadataTemplate(t *testing.T) {
 		validations, dvErr := f.GetDataValidations("Samples")
 		assert.NoError(t, dvErr)
 		if assert.Len(t, validations, 1) {
-			assert.Equal(t, "B2:B100", validations[0].Sqref)
+			assert.Equal(t, "B2:B1000", validations[0].Sqref)
 			assert.Contains(t, validations[0].Formula1,
 				"'AcceptedValues'!$B$1:$B$3")
 			if assert.NotNil(t, validations[0].Error) {
