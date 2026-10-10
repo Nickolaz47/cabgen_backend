@@ -55,6 +55,43 @@ func NewAdminSampleHandler(svc services.SampleService,
 	}
 }
 
+func (h *SampleHandler) DownloadSampleTemplate(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	language := translation.GetLanguageFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventSamplesDownloadTemplate,
+		nil)
+
+	f, err := h.TemplateService.CreateTemplateTable(c.Request.Context(),
+		language)
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventSamplesDownloadTemplateFailed, nil)
+		c.JSON(http.StatusInternalServerError, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.GenericInternalServerError),
+		})
+		return
+	}
+	defer f.Close()
+
+	buf, err := f.WriteToBuffer()
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventSamplesDownloadTemplateFailed, nil)
+		c.JSON(http.StatusInternalServerError, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.GenericInternalServerError),
+		})
+		return
+	}
+
+	c.Header("Content-Disposition",
+		"attachment; filename=cabgen_samples_template.xlsx")
+	c.Data(http.StatusOK,
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		buf.Bytes())
+}
+
 func (h *SampleHandler) getUserID(userToken *models.UserToken) uuid.UUID {
 	if h.Scope == ScopeAll {
 		return uuid.Nil

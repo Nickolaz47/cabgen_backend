@@ -44,6 +44,8 @@ const (
 	AuditEventSamplesCreate                        = "samples.create"
 	AuditEventSamplesCreateFromTable               = "samples.createFromTable"
 	AuditEventSamplesCreateFromTableFailed         = "samples.createFromTable_failed"
+	AuditEventSamplesDownloadTemplate              = "samples.downloadTemplate"
+	AuditEventSamplesDownloadTemplateFailed        = "samples.downloadTemplate_failed"
 	AuditEventSamplesCreateFailed                  = "samples.create_failed"
 	AuditEventSamplesUpload                        = "samples.upload"
 	AuditEventSamplesUploadFailed                  = "samples.upload_failed"
@@ -244,6 +246,8 @@ var AuditEvents = []string{
 	AuditEventSamplesCreateFailed,
 	AuditEventSamplesCreateFromTable,
 	AuditEventSamplesCreateFromTableFailed,
+	AuditEventSamplesDownloadTemplate,
+	AuditEventSamplesDownloadTemplateFailed,
 	AuditEventSamplesUpload,
 	AuditEventSamplesUploadFailed,
 	AuditEventSamplesUpdate,
