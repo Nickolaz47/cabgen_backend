@@ -406,6 +406,8 @@ Os endpoints estão organizados em três níveis de acesso:
 | GET | `/api/samples` | Lista todas as amostras do usuário (input: código da origem, busca parcial) |
 | GET | `/api/samples/:sampleId` | Retorna uma amostra específica |
 | POST | `/api/samples` | Cria uma nova amostra |
+| GET | `/api/samples/download/template` | Faz o download do template .xlsx para preenchimento de amostras |
+| POST | `/api/samples/table` | Cria amostras em lote a partir de uma planilha .xlsx |
 | PUT | `/api/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
 | PUT | `/api/samples/:sampleId` | Atualiza os dados de uma amostra |
 | DELETE | `/api/samples/:sampleId` | Deleta uma amostra |
@@ -533,8 +535,9 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | --- | --- | --- |
 | GET | `/api/admin/samples` | Lista todas as amostras (input: código da origem, busca parcial) |
 | GET | `/api/admin/samples/:sampleId` | Retorna uma amostra específica |
-| GET | `/api/admin/samples/genders` | Retorna os gêneros válidos para amostras |
 | POST | `/api/admin/samples` | Cria uma nova amostra |
+| GET | `/api/admin/samples/download/template` | Faz o download do template .xlsx para preenchimento de amostras |
+| POST | `/api/admin/samples/table` | Cria amostras em lote a partir de uma planilha .xlsx |
 | PUT | `/api/admin/samples/:sampleId/upload` | Faz upload dos arquivos (FASTQ/FASTA) |
 | PUT | `/api/admin/samples/:sampleId` | Atualiza os dados de uma amostra |
 | DELETE | `/api/admin/samples/:sampleId` | Deleta uma amostra |

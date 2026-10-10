@@ -149,6 +149,10 @@ const (
 	AuditEventAdminSamplesGetByIDFailed            = "admin.samples.getById_failed"
 	AuditEventAdminSamplesCreate                   = "admin.samples.create"
 	AuditEventAdminSamplesCreateFailed             = "admin.samples.create_failed"
+	AuditEventAdminSamplesCreateFromTable          = "admin.samples.createFromTable"
+	AuditEventAdminSamplesCreateFromTableFailed    = "admin.samples.createFromTable_failed"
+	AuditEventAdminSamplesDownloadTemplate         = "admin.samples.downloadTemplate"
+	AuditEventAdminSamplesDownloadTemplateFailed   = "admin.samples.downloadTemplate_failed"
 	AuditEventAdminSamplesUpload                   = "admin.samples.upload"
 	AuditEventAdminSamplesUploadFailed             = "admin.samples.upload_failed"
 	AuditEventAdminSamplesUpdate                   = "admin.samples.update"
@@ -352,6 +356,10 @@ var AuditEvents = []string{
 	AuditEventAdminSamplesGetByIDFailed,
 	AuditEventAdminSamplesCreate,
 	AuditEventAdminSamplesCreateFailed,
+	AuditEventAdminSamplesCreateFromTable,
+	AuditEventAdminSamplesCreateFromTableFailed,
+	AuditEventAdminSamplesDownloadTemplate,
+	AuditEventAdminSamplesDownloadTemplateFailed,
 	AuditEventAdminSamplesUpload,
 	AuditEventAdminSamplesUploadFailed,
 	AuditEventAdminSamplesUpdate,

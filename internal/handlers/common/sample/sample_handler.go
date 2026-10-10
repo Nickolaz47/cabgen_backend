@@ -58,14 +58,18 @@ func NewAdminSampleHandler(svc services.SampleService,
 func (h *SampleHandler) DownloadSampleTemplate(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	language := translation.GetLanguageFromContext(c)
-	validations.SetAuditEvent(c, models.AuditEventSamplesDownloadTemplate,
-		nil)
+	event, failedEvent := models.AuditEventSamplesDownloadTemplate,
+		models.AuditEventSamplesDownloadTemplateFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesDownloadTemplate,
+			models.AuditEventAdminSamplesDownloadTemplateFailed
+	}
+	validations.SetAuditEvent(c, event, nil)
 
 	f, err := h.TemplateService.CreateTemplateTable(c.Request.Context(),
 		language)
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventSamplesDownloadTemplateFailed, nil)
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.GenericInternalServerError),
@@ -76,8 +80,7 @@ func (h *SampleHandler) DownloadSampleTemplate(c *gin.Context) {
 
 	buf, err := f.WriteToBuffer()
 	if err != nil {
-		validations.SetAuditEvent(c,
-			models.AuditEventSamplesDownloadTemplateFailed, nil)
+		validations.SetAuditEvent(c, failedEvent, nil)
 		c.JSON(http.StatusInternalServerError, responses.APIResponse{
 			Error: responses.GetResponse(localizer,
 				responses.GenericInternalServerError),
@@ -280,6 +283,10 @@ func (h *SampleHandler) CreateSamplesFromTable(c *gin.Context) {
 	language := translation.GetLanguageFromContext(c)
 	event, failedEvent := models.AuditEventSamplesCreateFromTable,
 		models.AuditEventSamplesCreateFromTableFailed
+	if h.Scope == ScopeAll {
+		event, failedEvent = models.AuditEventAdminSamplesCreateFromTable,
+			models.AuditEventAdminSamplesCreateFromTableFailed
+	}
 	validations.SetAuditEvent(c, event, nil)
 
 	userToken, ok := validations.GetUserTokenFromContext(c)
@@ -311,6 +318,21 @@ func (h *SampleHandler) CreateSamplesFromTable(c *gin.Context) {
 				responses.SampleTableReadError),
 		})
 		return
+	}
+
+	ownerID := userToken.ID
+	if h.Scope == ScopeAll {
+		rawUserID := c.PostForm("user_id")
+		parsedUserID, err := uuid.Parse(rawUserID)
+		if rawUserID == "" || err != nil {
+			validations.SetAuditEvent(c, failedEvent, nil)
+			c.JSON(http.StatusBadRequest, responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.ValidationGeneric),
+			})
+			return
+		}
+		ownerID = parsedUserID
 	}
 
 	file, header, err := c.Request.FormFile("table")
@@ -397,7 +419,7 @@ func (h *SampleHandler) CreateSamplesFromTable(c *gin.Context) {
 		}
 
 		dtos = append(dtos,
-			models.SampleCreateInputToDTO(inputs[i], userToken.ID))
+			models.SampleCreateInputToDTO(inputs[i], ownerID))
 	}
 
 	count, err := h.Service.CreateMany(c.Request.Context(), dtos)
@@ -410,8 +432,11 @@ func (h *SampleHandler) CreateSamplesFromTable(c *gin.Context) {
 		return
 	}
 
-	validations.SetAuditEvent(c, event,
-		map[string]string{"count": strconv.Itoa(count)})
+	auditMeta := map[string]string{"count": strconv.Itoa(count)}
+	if h.Scope == ScopeAll {
+		auditMeta["user_id"] = ownerID.String()
+	}
+	validations.SetAuditEvent(c, event, auditMeta)
 	c.JSON(http.StatusCreated, responses.APIResponse{
 		Message: responses.GetResponseWithData(localizer,
 			responses.SampleTableCreationSuccess,

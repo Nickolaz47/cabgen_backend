@@ -47,6 +47,23 @@ func tableMultipart(t *testing.T, filename string,
 	return &buf, mw.FormDataContentType()
 }
 
+func tableMultipartWithUser(t *testing.T, filename string,
+	content []byte, userID string) (*bytes.Buffer, string) {
+	t.Helper()
+
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+
+	if userID != "" {
+		assert.NoError(t, mw.WriteField("user_id", userID))
+	}
+	fw, _ := mw.CreateFormFile("table", filename)
+	_, _ = fw.Write(content)
+	mw.Close()
+
+	return &buf, mw.FormDataContentType()
+}
+
 func tableInputs() []models.SampleCreateInput {
 	inNetwork := true
 	id := uuid.New()
@@ -385,5 +402,115 @@ func TestCreateSamplesFromTable(t *testing.T) {
 		assert.JSONEq(t,
 			`{"error":"Unauthorized. Please log in to continue."}`,
 			w.Body.String())
+	})
+}
+
+func TestCreateSamplesFromTableAdminScope(t *testing.T) {
+	testutils.SetupTestContext()
+	tokenUserID := uuid.New()
+	targetUserID := uuid.New()
+
+	t.Run("Success - Admin User ID", func(t *testing.T) {
+		svc := &mocks.MockSampleService{
+			CreateManyFunc: func(ctx context.Context,
+				inputs []models.SampleCreateDTO) (int, error) {
+				assert.Len(t, inputs, 2)
+				for _, dto := range inputs {
+					assert.Equal(t, targetUserID, dto.UserID)
+				}
+				return 2, nil
+			},
+		}
+		tmpl := &mocks.MockTemplateService{
+			ValidateTemplateTableFunc: func(ctx context.Context,
+				language string, file *excelize.File) (
+				[]models.SampleCreateInput, error) {
+				return tableInputs(), nil
+			},
+		}
+		handler := sample.NewAdminSampleHandler(svc, tmpl)
+
+		buf, ctype := tableMultipartWithUser(t, "samples.xlsx",
+			tableXlsxBytes(t), targetUserID.String())
+		c, w := testutils.SetupGinMultipartContext(http.MethodPost,
+			"/api/admin/samples/table", buf, ctype, nil, nil)
+		c.Set(validations.UserTokenKey,
+			&models.UserToken{ID: tokenUserID})
+
+		handler.CreateSamplesFromTable(c)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+		assert.JSONEq(t,
+			`{"message":"2 samples created successfully."}`,
+			w.Body.String())
+	})
+
+	t.Run("Error - Missing User ID", func(t *testing.T) {
+		handler := sample.NewAdminSampleHandler(
+			&mocks.MockSampleService{}, nil)
+
+		buf, ctype := tableMultipart(t, "samples.xlsx",
+			tableXlsxBytes(t))
+		c, w := testutils.SetupGinMultipartContext(http.MethodPost,
+			"/api/admin/samples/table", buf, ctype, nil, nil)
+		c.Set(validations.UserTokenKey,
+			&models.UserToken{ID: tokenUserID})
+
+		handler.CreateSamplesFromTable(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t,
+			`{"error":"Invalid input. Please check the fields and try again."}`,
+			w.Body.String())
+	})
+
+	t.Run("Error - Invalid User ID", func(t *testing.T) {
+		handler := sample.NewAdminSampleHandler(
+			&mocks.MockSampleService{}, nil)
+
+		buf, ctype := tableMultipartWithUser(t, "samples.xlsx",
+			tableXlsxBytes(t), "not-a-uuid")
+		c, w := testutils.SetupGinMultipartContext(http.MethodPost,
+			"/api/admin/samples/table", buf, ctype, nil, nil)
+		c.Set(validations.UserTokenKey,
+			&models.UserToken{ID: tokenUserID})
+
+		handler.CreateSamplesFromTable(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t,
+			`{"error":"Invalid input. Please check the fields and try again."}`,
+			w.Body.String())
+	})
+
+	t.Run("Success - Common Ignores User ID", func(t *testing.T) {
+		svc := &mocks.MockSampleService{
+			CreateManyFunc: func(ctx context.Context,
+				inputs []models.SampleCreateDTO) (int, error) {
+				for _, dto := range inputs {
+					assert.Equal(t, tokenUserID, dto.UserID)
+				}
+				return len(inputs), nil
+			},
+		}
+		tmpl := &mocks.MockTemplateService{
+			ValidateTemplateTableFunc: func(ctx context.Context,
+				language string, file *excelize.File) (
+				[]models.SampleCreateInput, error) {
+				return tableInputs(), nil
+			},
+		}
+		handler := sample.NewSampleHandler(svc, tmpl)
+
+		buf, ctype := tableMultipartWithUser(t, "samples.xlsx",
+			tableXlsxBytes(t), targetUserID.String())
+		c, w := testutils.SetupGinMultipartContext(http.MethodPost,
+			"/api/samples/table", buf, ctype, nil, nil)
+		c.Set(validations.UserTokenKey,
+			&models.UserToken{ID: tokenUserID})
+
+		handler.CreateSamplesFromTable(c)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
 	})
 }

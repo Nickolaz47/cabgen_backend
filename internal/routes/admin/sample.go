@@ -15,4 +15,6 @@ func SetupAdminSampleRoutes(r *gin.RouterGroup,
 	sampleRouter.PUT("/:sampleId/upload", handler.UploadFiles)
 	sampleRouter.PUT("/:sampleId", handler.UpdateSample)
 	sampleRouter.DELETE("/:sampleId", handler.DeleteSample)
+	sampleRouter.GET("/download/template", handler.DownloadSampleTemplate)
+	sampleRouter.POST("/table", handler.CreateSamplesFromTable)
 }

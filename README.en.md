@@ -405,6 +405,8 @@ Endpoints are organized into three access levels:
 | GET | `/api/samples` | Lists all user samples (input: origin code, partial search) |
 | GET | `/api/samples/:sampleId` | Returns a specific sample |
 | POST | `/api/samples` | Creates a new sample |
+| GET | `/api/samples/download/template` | Downloads the .xlsx sample template |
+| POST | `/api/samples/table` | Creates samples in bulk from an .xlsx spreadsheet |
 | PUT | `/api/samples/:sampleId/upload` | Uploads files (FASTQ/FASTA) |
 | PUT | `/api/samples/:sampleId` | Updates sample data |
 | DELETE | `/api/samples/:sampleId` | Deletes a sample |
@@ -532,8 +534,9 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | --- | --- | --- |
 | GET | `/api/admin/samples` | Lists all samples (input: origin code, partial search) |
 | GET | `/api/admin/samples/:sampleId` | Returns a specific sample |
-| GET | `/api/admin/samples/genders` | Returns valid genders for samples |
 | POST | `/api/admin/samples` | Creates a new sample |
+| GET | `/api/admin/samples/download/template` | Downloads the .xlsx sample template |
+| POST | `/api/admin/samples/table` | Creates samples in bulk from an .xlsx spreadsheet |
 | PUT | `/api/admin/samples/:sampleId/upload` | Uploads files (FASTQ/FASTA) |
 | PUT | `/api/admin/samples/:sampleId` | Updates sample data |
 | DELETE | `/api/admin/samples/:sampleId` | Deletes a sample |
