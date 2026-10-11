@@ -91,6 +91,7 @@ const (
 	SampleTableHeadersError                   = "admin.sample.tableHeaders.error"
 	SampleTableValueError                     = "admin.sample.tableValue.error"
 	SampleTableEmptyError                     = "admin.sample.tableEmpty.error"
+	SampleTableTooManyRowsError               = "admin.sample.tableTooManyRows.error"
 	SampleTableCreationSuccess                = "admin.sample.tableCreate.success"
 	SampleUnsupportedFile                     = "admin.sample.unsupportedFile.error"
 	SampleFileTooLarge                        = "admin.sample.fileTooLarge.error"

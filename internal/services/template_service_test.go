@@ -562,4 +562,42 @@ func TestTemplateServiceValidateTemplateTable(t *testing.T) {
 		assert.Nil(t, inputs)
 		assert.Equal(t, 1, logs.Len())
 	})
+
+	t.Run("Error - Too many rows", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			mockLogger)
+
+		rows := [][]string{sampleHeaders()}
+		for i := 0; i < 1001; i++ {
+			rows = append(rows, fullSampleRow())
+		}
+		f := newSamplesSheet(t, rows)
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.ErrorIs(t, err, services.ErrTooManyRows)
+		assert.Nil(t, inputs)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Success - Max rows boundary", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+
+		rows := [][]string{sampleHeaders()}
+		for i := 0; i < 1000; i++ {
+			rows = append(rows, fullSampleRow())
+		}
+		f := newSamplesSheet(t, rows)
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		assert.Len(t, inputs, 1000)
+	})
 }

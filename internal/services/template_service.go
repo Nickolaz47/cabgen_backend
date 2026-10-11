@@ -210,6 +210,16 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 		return nil, ErrEmptyTable
 	}
 
+	// More data rows than allowed = rejected
+	if len(rows)-1 > utils.MaxTableRows {
+		s.Logger.Error(
+			"Service Error", logging.ServiceLogging(ctx,
+				"TemplateService", "ValidateTemplateTable",
+				logging.ExternalRepositoryError, err,
+			)...)
+		return nil, ErrTooManyRows
+	}
+
 	// Compare submitted headers against the contract: missing or unknown = error
 	present := make(map[string]struct{}, len(rows[0]))
 	for _, h := range rows[0] {

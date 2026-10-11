@@ -403,6 +403,31 @@ func TestCreateSamplesFromTable(t *testing.T) {
 			`{"error":"Unauthorized. Please log in to continue."}`,
 			w.Body.String())
 	})
+
+	t.Run("Error - Too Many Rows", func(t *testing.T) {
+		tmpl := &mocks.MockTemplateService{
+			ValidateTemplateTableFunc: func(ctx context.Context,
+				language string, file *excelize.File) (
+				[]models.SampleCreateInput, error) {
+				return nil, services.ErrTooManyRows
+			},
+		}
+		handler := sample.NewSampleHandler(&mocks.MockSampleService{},
+			tmpl)
+
+		buf, ctype := tableMultipart(t, "samples.xlsx",
+			tableXlsxBytes(t))
+		c, w := testutils.SetupGinMultipartContext(http.MethodPost,
+			"/api/samples/table", buf, ctype, nil, nil)
+		c.Set(validations.UserTokenKey, &models.UserToken{ID: mockUserID})
+
+		handler.CreateSamplesFromTable(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t,
+			`{"error":"The spreadsheet exceeds the maximum of 1000 samples."}`,
+			w.Body.String())
+	})
 }
 
 func TestCreateSamplesFromTableAdminScope(t *testing.T) {

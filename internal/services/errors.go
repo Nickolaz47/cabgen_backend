@@ -54,6 +54,7 @@ var ErrAnalysisSampleLimit = errors.New("sample already has 2 analyses")
 // Template table errors
 var ErrInvalidTable = errors.New("invalid template table")
 var ErrEmptyTable = errors.New("template table has no rows")
+var ErrTooManyRows = errors.New("template table exceeds row limit")
 
 type TableHeadersError struct {
 	Invalid []string

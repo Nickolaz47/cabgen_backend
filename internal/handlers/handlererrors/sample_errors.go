@@ -7,6 +7,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
+	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 )
 
 func HandleSampleError(err error) (int, string) {
@@ -57,6 +58,9 @@ func HandleTableError(err error) (int, string, map[string]any) {
 		return http.StatusBadRequest, responses.SampleTableEmptyError, nil
 	case errors.Is(err, services.ErrInvalidTable):
 		return http.StatusBadRequest, responses.SampleTableReadError, nil
+	case errors.Is(err, services.ErrTooManyRows):
+		return http.StatusBadRequest, responses.SampleTableTooManyRowsError,
+			map[string]any{"Param": utils.MaxTableRows}
 	default:
 		return http.StatusInternalServerError,
 			responses.GenericInternalServerError, nil

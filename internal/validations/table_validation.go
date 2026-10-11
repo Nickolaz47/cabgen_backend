@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const MaxTableSize = int64(50) << 20
+const MaxTableSize = int64(20) << 20
 
 var ErrTableTooLarge = errors.New("table exceeds size limit")
 

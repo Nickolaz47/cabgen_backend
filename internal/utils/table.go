@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	SheetName   = "Samples"
-	hiddenSheet = "AcceptedValues"
-	maxRows     = 1000
+	SheetName    = "Samples"
+	hiddenSheet  = "AcceptedValues"
+	MaxTableRows = 1000
 )
 
 var metricsHeaders = []string{
@@ -190,7 +190,8 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 		}
 
 		dv := excelize.NewDataValidation(true)
-		dv.Sqref = fmt.Sprintf("%s2:%s%d", col.Letter, col.Letter, maxRows)
+		dv.Sqref = fmt.Sprintf("%s2:%s%d", col.Letter, col.Letter,
+			MaxTableRows+1)
 		dv.SetInput("Select or type", "Pick a value from the list or start typing to filter.")
 		dv.SetError(excelize.DataValidationErrorStyleStop,
 			"Invalid option", "Please select an option from the list.")

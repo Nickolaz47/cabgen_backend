@@ -502,6 +502,9 @@ other = "Valor inválido na linha {{.Row}}, coluna {{.Col}}."
 [admin.sample.tableEmpty.error]
 other = "A planilha não contém linhas de dados."
 
+[admin.sample.tableTooManyRows.error]
+other = "A planilha excede o máximo de {{.Param}} amostras."
+
 [admin.sample.tableCreate.success]
 other = "{{.Param}} amostras criadas com sucesso."
 
