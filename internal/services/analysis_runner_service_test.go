@@ -602,6 +602,67 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
+
+	t.Run("Cancelled ctx mid-run - Finalize and Email Survive",
+		func(t *testing.T) {
+			rootDir := t.TempDir()
+			mock := testmodels.CreateMockAnalysis()
+			mock.Type = models.AnalysisTypeFastQC
+			mock.Status = models.AnalysisStatusPending
+			fq1, fq2 := "r1.fq", "r2.fq"
+			mock.Sample.Fastq1 = &fq1
+			mock.Sample.Fastq2 = &fq2
+			createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq1)
+			createTestFastq(t, rootDir, mock.UserID, mock.SampleID, fq2)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			var finalCtx context.Context
+			updated := (*models.Analysis)(nil)
+			repo := &mocks.MockAnalysisRepository{
+				GetAnalysisByIDFunc: func(_ context.Context,
+					_ uuid.UUID) (*models.Analysis, error) {
+					mockCopy := mock
+					return &mockCopy, nil
+				},
+				UpdateAnalysisFunc: func(c context.Context,
+					analysis *models.Analysis) error {
+					finalCtx = c
+					updated = analysis
+					return nil
+				},
+			}
+			pl := &mocks.MockCabgenPipeline{
+				RunFastQCFunc: func(_ context.Context, _, _,
+					_ string) (string, string, error) {
+					cancel()
+					return "fastqc1.html", "fastqc2.html", nil
+				},
+			}
+			enqueuer := &mocks.MockTaskEnqueuer{
+				EnqueueContextFunc: func(c context.Context,
+					task *asynq.Task, _ ...asynq.Option) (*asynq.TaskInfo,
+					error) {
+					assert.NoError(t, c.Err())
+					assert.Equal(t, tasks.TaskTypeAnalysisDoneEmail,
+						task.Type())
+					return &asynq.TaskInfo{ID: "t1", Queue: "emails"}, nil
+				},
+			}
+
+			svc := services.NewAnalysisRunnerService(repo, pl,
+				&mocks.MockCommander{}, enqueuer, zap.NewNop(), rootDir)
+			err := svc.Run(ctx, mock.ID)
+
+			assert.NoError(t, err)
+			if assert.NotNil(t, updated) {
+				assert.Equal(t, models.AnalysisStatusDone, updated.Status)
+			}
+			if assert.NotNil(t, finalCtx) {
+				assert.NoError(t, finalCtx.Err())
+			}
+		})
 }
 
 func writeAbricateOutput(outputFile string) error {

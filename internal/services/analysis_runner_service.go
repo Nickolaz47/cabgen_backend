@@ -591,6 +591,7 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 
 	var results models.AnalysisResults
 
+	var runErr error
 	folders, err := s.prepareFolders(ctx, analysis.UserID.String(),
 		analysis.SampleID.String(), analysis.ID.String())
 	if err != nil {
@@ -600,36 +601,37 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 				logging.CreateFolderError, err,
 				zap.String("analysis_id", analysisID.String()),
 			)...)
-		s.finalizeAnalysis(ctx, analysis, &results, pipeline.ErrPrepareFolders)
-		return pipeline.ErrAnalysisRun
-	}
-
-	s.Logger.Info("Analysis started",
-		logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
-			"CabgenPipeline",
-			zap.String("analysis_id", analysisID.String()),
-			zap.String("type", string(analysis.Type)))...,
-	)
-
-	var runErr error
-	switch analysis.Type {
-	case models.AnalysisTypeFastQC:
-		runErr = s.runFastQC(ctx, analysis, folders.QCDir)
-	case models.AnalysisTypeGenome:
-		runErr = s.runGenome(ctx, analysis, &results, folders)
-	case models.AnalysisTypeComplete:
-		runErr = s.runComplete(ctx, analysis, &results, folders)
-	default:
-		s.Logger.Error("Unknown analysis type",
-			logging.ServiceLogging(ctx,
-				"AnalysisRunnerService", "Run",
-				logging.AnalysisRunError,
-				fmt.Errorf("unknown type: %s", analysis.Type),
+		runErr = pipeline.ErrPrepareFolders
+	} else {
+		s.Logger.Info("Analysis started",
+			logging.ServiceInfoLogging(ctx, "AnalysisRunnerService", "Run",
+				"CabgenPipeline",
 				zap.String("analysis_id", analysisID.String()),
-				zap.String("type", string(analysis.Type)),
-			)...)
-		runErr = pipeline.ErrUnknownAnalysisType
+				zap.String("type", string(analysis.Type)))...,
+		)
+
+		switch analysis.Type {
+		case models.AnalysisTypeFastQC:
+			runErr = s.runFastQC(ctx, analysis, folders.QCDir)
+		case models.AnalysisTypeGenome:
+			runErr = s.runGenome(ctx, analysis, &results, folders)
+		case models.AnalysisTypeComplete:
+			runErr = s.runComplete(ctx, analysis, &results, folders)
+		default:
+			s.Logger.Error("Unknown analysis type",
+				logging.ServiceLogging(ctx,
+					"AnalysisRunnerService", "Run",
+					logging.AnalysisRunError,
+					fmt.Errorf("unknown type: %s", analysis.Type),
+					zap.String("analysis_id", analysisID.String()),
+					zap.String("type", string(analysis.Type)),
+				)...)
+			runErr = pipeline.ErrUnknownAnalysisType
+		}
 	}
+
+	// Detach from task deadline so finalize + email survive a timeout kill.
+	ctx = context.WithoutCancel(ctx)
 
 	s.finalizeAnalysis(ctx, analysis, &results, runErr)
 
