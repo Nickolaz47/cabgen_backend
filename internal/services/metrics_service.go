@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -87,6 +88,8 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 			metrics.AnalysesByStatus.Failed++
 		}
 	}
+
+	metrics.AnalysesByType = analysisTypeMetrics(analyses)
 
 	species, genes := uniqueSpeciesResults(analyses)
 	metrics.TotalSpecies = int64(len(species))
@@ -175,4 +178,65 @@ func uniqueSpeciesResults(analyses []models.Analysis) (map[string]struct{}, map[
 		}
 	}
 	return species, genes
+}
+
+func analysisTypeMetrics(analyses []models.Analysis) []models.AnalysisTypeMetric {
+	type bucket struct {
+		count     int64
+		durations []time.Duration
+	}
+	buckets := make(map[models.AnalysisType]*bucket, len(models.AnalysisTypes))
+	for _, analysis := range analyses {
+		b := buckets[analysis.Type]
+		if b == nil {
+			b = &bucket{}
+			buckets[analysis.Type] = b
+		}
+		b.count++
+		if analysis.Status == models.AnalysisStatusDone &&
+			analysis.StartedAt != nil && analysis.FinishedAt != nil {
+			b.durations = append(b.durations,
+				analysis.FinishedAt.Sub(*analysis.StartedAt))
+		}
+	}
+	metrics := make([]models.AnalysisTypeMetric, 0, len(models.AnalysisTypes))
+	for _, analysisType := range models.AnalysisTypes {
+		b := buckets[analysisType]
+		if b == nil {
+			metrics = append(metrics, models.AnalysisTypeMetric{
+				Type: string(analysisType),
+			})
+			continue
+		}
+		metrics = append(metrics, models.AnalysisTypeMetric{
+			Type:               string(analysisType),
+			Count:              b.count,
+			AvgDurationSeconds: avgDuration(b.durations),
+			P99DurationSeconds: p99Duration(b.durations),
+		})
+	}
+	return metrics
+}
+
+func avgDuration(durations []time.Duration) float64 {
+	if len(durations) == 0 {
+		return 0
+	}
+	var sum time.Duration
+	for _, d := range durations {
+		sum += d
+	}
+	return sum.Seconds() / float64(len(durations))
+}
+
+func p99Duration(durations []time.Duration) float64 {
+	if len(durations) == 0 {
+		return 0
+	}
+	sorted := append([]time.Duration(nil), durations...)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i] < sorted[j]
+	})
+	idx := (len(sorted)*99+99)/100 - 1
+	return sorted[idx].Seconds()
 }

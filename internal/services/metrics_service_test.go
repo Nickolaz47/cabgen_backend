@@ -3,6 +3,7 @@ package services_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -163,6 +164,79 @@ func TestMetricsGetMetrics(t *testing.T) {
 		assert.Equal(t, int64(1), result.TotalResistance)
 		assert.Equal(t, int64(2), result.AnalysesByStatus.Done)
 		assert.Equal(t, int64(3), result.TotalAnalyses)
+	})
+
+	t.Run("Analysis Type Metrics", func(t *testing.T) {
+		t0 := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
+		at := func(sec int) *time.Time {
+			ts := t0.Add(time.Duration(sec) * time.Second)
+			return &ts
+		}
+		newAnalysis := func(analysisType models.AnalysisType,
+			status models.AnalysisStatus, startSec, finishSec int) models.Analysis {
+			a := testmodels.CreateMockAnalysis()
+			a.Type = analysisType
+			a.Status = status
+			a.StartedAt = at(startSec)
+			if finishSec > startSec {
+				a.FinishedAt = at(finishSec)
+			}
+			return a
+		}
+
+		fastqcDone1 := newAnalysis(models.AnalysisTypeFastQC,
+			models.AnalysisStatusDone, 0, 100)
+		fastqcDone2 := newAnalysis(models.AnalysisTypeFastQC,
+			models.AnalysisStatusDone, 0, 300)
+		fastqcFailed := newAnalysis(models.AnalysisTypeFastQC,
+			models.AnalysisStatusFailed, 0, 5)
+		genomeDone := newAnalysis(models.AnalysisTypeGenome,
+			models.AnalysisStatusDone, 0, 50)
+		completePending := newAnalysis(models.AnalysisTypeComplete,
+			models.AnalysisStatusPending, 0, 0)
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return nil, 0, nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return []models.Analysis{fastqcDone1, fastqcDone2,
+					fastqcFailed, genomeDone, completePending}, 0, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, limit, offset int) (
+				[]models.User, int64, error) {
+				return nil, 0, nil
+			},
+		}
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetMetrics(ctx)
+
+		assert.NoError(t, err)
+		if !assert.Len(t, result.AnalysesByType, 3) {
+			return
+		}
+		assert.Equal(t, models.AnalysisTypeMetric{
+			Type: "FASTQC", Count: 3,
+			AvgDurationSeconds: 200, P99DurationSeconds: 300,
+		}, result.AnalysesByType[0])
+		assert.Equal(t, models.AnalysisTypeMetric{
+			Type: "GENOME", Count: 1,
+			AvgDurationSeconds: 50, P99DurationSeconds: 50,
+		}, result.AnalysesByType[1])
+		assert.Equal(t, models.AnalysisTypeMetric{
+			Type: "COMPLETE", Count: 1,
+		}, result.AnalysesByType[2])
 	})
 
 	t.Run("Error", func(t *testing.T) {

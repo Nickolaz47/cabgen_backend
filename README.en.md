@@ -569,7 +569,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/admin/metrics` | Returns general platform metrics (samples, countries, species, resistance genes, users, analyses by status, top countries, and species breakdown) |
+| GET | `/api/admin/metrics` | Returns general platform metrics (samples, countries, species, resistance genes, users, analyses by status, analyses by type with average/p99 duration, top countries, and species breakdown) |
 
 #### Audit
 

@@ -9,11 +9,12 @@ type PublicMetricsResponse struct {
 
 type AdminMetricsResponse struct {
 	PublicMetricsResponse
-	TotalUsers       int64            `json:"total_users"`
-	TotalAnalyses    int64            `json:"total_analyses"`
-	AnalysesByStatus AnalysesByStatus `json:"analyses_by_status"`
-	TopCountries     []CountryMetric  `json:"top_countries"`
-	SpeciesBreakdown []SpeciesMetric  `json:"species_breakdown"`
+	TotalUsers       int64                `json:"total_users"`
+	TotalAnalyses    int64                `json:"total_analyses"`
+	AnalysesByStatus AnalysesByStatus     `json:"analyses_by_status"`
+	AnalysesByType   []AnalysisTypeMetric `json:"analyses_by_type"`
+	TopCountries     []CountryMetric      `json:"top_countries"`
+	SpeciesBreakdown []SpeciesMetric      `json:"species_breakdown"`
 }
 
 type AnalysesByStatus struct {
@@ -21,6 +22,13 @@ type AnalysesByStatus struct {
 	Running int64 `json:"running"`
 	Pending int64 `json:"pending"`
 	Failed  int64 `json:"failed"`
+}
+
+type AnalysisTypeMetric struct {
+	Type               string  `json:"type"`
+	Count              int64   `json:"count"`
+	AvgDurationSeconds float64 `json:"avg_duration_seconds"`
+	P99DurationSeconds float64 `json:"p99_duration_seconds"`
 }
 
 type CountryMetric struct {
