@@ -228,11 +228,11 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}
 		assert.Equal(t, models.AnalysisTypeMetric{
 			Type: "FASTQC", Count: 3,
-			AvgDurationSeconds: 200, P99DurationSeconds: 300,
+			AvgDurationSeconds: 200, P95DurationSeconds: 300,
 		}, result.AnalysesByType[0])
 		assert.Equal(t, models.AnalysisTypeMetric{
 			Type: "GENOME", Count: 1,
-			AvgDurationSeconds: 50, P99DurationSeconds: 50,
+			AvgDurationSeconds: 50, P95DurationSeconds: 50,
 		}, result.AnalysesByType[1])
 		assert.Equal(t, models.AnalysisTypeMetric{
 			Type: "COMPLETE", Count: 1,

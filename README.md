@@ -570,7 +570,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
-| GET | `/api/admin/metrics` | Retorna métricas gerais da plataforma (amostras, países, espécies, genes de resistência, usuários, análises por status, análises por tipo com duração média/p99, países mais frequentes e espécies) |
+| GET | `/api/admin/metrics` | Retorna métricas gerais da plataforma (amostras, países, espécies, genes de resistência, usuários, análises por status, análises por tipo com duração média/p95, países mais frequentes e espécies) |
 
 #### Auditoria
 

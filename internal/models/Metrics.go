@@ -28,7 +28,7 @@ type AnalysisTypeMetric struct {
 	Type               string  `json:"type"`
 	Count              int64   `json:"count"`
 	AvgDurationSeconds float64 `json:"avg_duration_seconds"`
-	P99DurationSeconds float64 `json:"p99_duration_seconds"`
+	P95DurationSeconds float64 `json:"p95_duration_seconds"`
 }
 
 type CountryMetric struct {

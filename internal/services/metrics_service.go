@@ -212,7 +212,7 @@ func analysisTypeMetrics(analyses []models.Analysis) []models.AnalysisTypeMetric
 			Type:               string(analysisType),
 			Count:              b.count,
 			AvgDurationSeconds: avgDuration(b.durations),
-			P99DurationSeconds: p99Duration(b.durations),
+			P95DurationSeconds: p95Duration(b.durations),
 		})
 	}
 	return metrics
@@ -229,7 +229,7 @@ func avgDuration(durations []time.Duration) float64 {
 	return sum.Seconds() / float64(len(durations))
 }
 
-func p99Duration(durations []time.Duration) float64 {
+func p95Duration(durations []time.Duration) float64 {
 	if len(durations) == 0 {
 		return 0
 	}
@@ -237,6 +237,6 @@ func p99Duration(durations []time.Duration) float64 {
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i] < sorted[j]
 	})
-	idx := (len(sorted)*99+99)/100 - 1
+	idx := (len(sorted)*95+99)/100 - 1
 	return sorted[idx].Seconds()
 }
