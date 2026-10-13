@@ -89,14 +89,24 @@ type MockAdminUserService struct {
 	FindFunc func(ctx context.Context, filter models.AdminUserFilter,
 		offset int, language string) (
 		[]models.AdminUserResponse, int, error)
-	FindByIDFunc       func(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error)
-	FindByUsernameFunc func(ctx context.Context, username, language string) (*models.AdminUserResponse, error)
-	FindByEmailFunc    func(ctx context.Context, email, language string) (*models.AdminUserResponse, error)
-	CreateFunc         func(ctx context.Context, input models.AdminUserCreateInput, adminName, language string) (*models.AdminUserResponse, error)
-	UpdateFunc         func(ctx context.Context, ID uuid.UUID, input models.AdminUserUpdateInput, language string) (*models.AdminUserResponse, error)
-	ActivateUserFunc   func(ctx context.Context, ID uuid.UUID, adminName string) error
-	DeactivateUserFunc func(ctx context.Context, ID uuid.UUID) error
-	DeleteFunc         func(ctx context.Context, ID uuid.UUID) error
+	FindAllUsernamesFunc func(ctx context.Context) ([]string, error)
+	FindByIDFunc         func(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error)
+	FindByUsernameFunc   func(ctx context.Context, username, language string) (*models.AdminUserResponse, error)
+	FindByEmailFunc      func(ctx context.Context, email, language string) (*models.AdminUserResponse, error)
+	CreateFunc           func(ctx context.Context, input models.AdminUserCreateInput, adminName, language string) (*models.AdminUserResponse, error)
+	UpdateFunc           func(ctx context.Context, ID uuid.UUID, input models.AdminUserUpdateInput, language string) (*models.AdminUserResponse, error)
+	ActivateUserFunc     func(ctx context.Context, ID uuid.UUID, adminName string) error
+	DeactivateUserFunc   func(ctx context.Context, ID uuid.UUID) error
+	DeleteFunc           func(ctx context.Context, ID uuid.UUID) error
+}
+
+func (m *MockAdminUserService) FindAllUsernames(
+	ctx context.Context,
+) ([]string, error) {
+	if m.FindAllUsernamesFunc != nil {
+		return m.FindAllUsernamesFunc(ctx)
+	}
+	return nil, nil
 }
 
 func (m *MockAdminUserService) Find(

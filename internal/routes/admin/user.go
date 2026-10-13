@@ -9,6 +9,7 @@ func SetupAdminUserRoutes(r *gin.RouterGroup, handler *user.AdminUserHandler) {
 	userRouter := r.Group("/users")
 
 	userRouter.GET("", handler.GetUsers)
+	userRouter.GET("/usernames", handler.GetUsernames)
 	userRouter.GET("/:userId", handler.GetUserByID)
 	userRouter.POST("", handler.CreateUser)
 	userRouter.PUT("/:userId", handler.UpdateUser)

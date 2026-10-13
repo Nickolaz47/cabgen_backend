@@ -63,6 +63,47 @@ func TestAdminUserFind(t *testing.T) {
 	})
 }
 
+func TestAdminUserFindAllUsernames(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				assert.Equal(t, 0, limit)
+				assert.Equal(t, 0, offset)
+				return []models.User{
+					{Username: "alice"},
+					{Username: "nick"},
+				}, 2, nil
+			},
+		}
+
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil,
+			nil, "")
+		result, err := service.FindAllUsernames(context.Background())
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"alice", "nick"}, result)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context, filter models.AdminUserFilter, limit, offset int) ([]models.User, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil,
+			mockLogger, "")
+		result, err := service.FindAllUsernames(context.Background())
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
 func TestAdminUserFindByID(t *testing.T) {
 	user := testmodels.NewAdminLoginUser()
 	lang := "en"

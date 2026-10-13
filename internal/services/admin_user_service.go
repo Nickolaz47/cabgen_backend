@@ -24,6 +24,7 @@ type AdminUserService interface {
 	Find(ctx context.Context, filter models.AdminUserFilter, offset int,
 		language string) (
 		[]models.AdminUserResponse, int, error)
+	FindAllUsernames(ctx context.Context) ([]string, error)
 	FindByID(ctx context.Context, ID uuid.UUID, language string) (
 		*models.AdminUserResponse, error)
 	FindByUsername(ctx context.Context, username, language string) (
@@ -90,6 +91,25 @@ func (s *adminUserService) Find(
 	}
 
 	return responses, TotalPages(total), nil
+}
+
+func (s *adminUserService) FindAllUsernames(ctx context.Context) ([]string, error) {
+	users, _, err := s.Repo.GetUsers(ctx, models.AdminUserFilter{}, 0, 0)
+	if err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AdminUserService", "FindAllUsernames",
+				logging.DatabaseError, err,
+			)...)
+		return nil, ErrInternal
+	}
+
+	usernames := make([]string, len(users))
+	for i, user := range users {
+		usernames[i] = user.Username
+	}
+
+	return usernames, nil
 }
 
 func (s *adminUserService) FindByID(ctx context.Context, ID uuid.UUID, language string) (*models.AdminUserResponse, error) {

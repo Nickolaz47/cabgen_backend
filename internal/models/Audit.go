@@ -207,6 +207,8 @@ const (
 	AuditEventAdminUsersDeactivateFailed           = "admin.users.deactivate_failed"
 	AuditEventAdminUsersDelete                     = "admin.users.delete"
 	AuditEventAdminUsersDeleteFailed               = "admin.users.delete_failed"
+	AuditEventAdminUsersGetUsernames               = "admin.users.getUsernames"
+	AuditEventAdminUsersGetUsernamesFailed         = "admin.users.getUsernames_failed"
 	AuditEventAdminAnalysesDownloadDashboard       = "admin.analyses.downloadDashboard"
 	AuditEventAdminAnalysesDownloadDashboardFailed = "admin.analyses.downloadDashboard_failed"
 )
@@ -414,6 +416,8 @@ var AuditEvents = []string{
 	AuditEventAdminUsersDeactivateFailed,
 	AuditEventAdminUsersDelete,
 	AuditEventAdminUsersDeleteFailed,
+	AuditEventAdminUsersGetUsernames,
+	AuditEventAdminUsersGetUsernamesFailed,
 }
 
 func AuditEventSelectOptions() []SelectOption {

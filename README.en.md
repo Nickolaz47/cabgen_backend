@@ -444,6 +444,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lists all users (filters: input — name, username or email, partial; userRole — exact: Admin, Collaborator; active — exact: true/false) |
+| GET | `/api/admin/users/usernames` | Lists all usernames (alphabetical order) for filter selects |
 | GET | `/api/admin/users/:id` | Returns a specific user |
 | POST | `/api/admin/users` | Creates a pre-activated user |
 | PUT | `/api/admin/users/:id` | Updates a user |

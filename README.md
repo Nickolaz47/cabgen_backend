@@ -445,6 +445,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | Método | Endpoint | Descrição |
 | --- | --- | --- |
 | GET | `/api/admin/users` | Lista todos os usuários (filtros: input — nome, username ou email, parcial; userRole — exato: Admin, Collaborator; active — exato: true/false) |
+| GET | `/api/admin/users/usernames` | Lista todos os usernames (ordem alfabética) para os selects de filtro |
 | GET | `/api/admin/users/:id` | Retorna um usuário específico |
 | POST | `/api/admin/users` | Cria um usuário já ativado |
 | PUT | `/api/admin/users/:id` | Atualiza um usuário |

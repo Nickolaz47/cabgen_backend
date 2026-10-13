@@ -64,6 +64,26 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 		Data: users, TotalPages: &pages})
 }
 
+func (h *AdminUserHandler) GetUsernames(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminUsersGetUsernames, nil)
+
+	usernames, err := h.Service.FindAllUsernames(c.Request.Context())
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminUsersGetUsernamesFailed, nil)
+		code, errMsg := handlererrors.HandleUserError(err)
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponse(localizer, errMsg),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.APIResponse{
+		Data: usernames,
+	})
+}
+
 func (h *AdminUserHandler) GetUserByID(c *gin.Context) {
 	localizer := translation.GetLocalizerFromContext(c)
 	validations.SetAuditEvent(c, models.AuditEventAdminUsersGetByID, nil)
