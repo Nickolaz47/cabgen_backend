@@ -283,6 +283,155 @@ func TestMetricsGetMetrics(t *testing.T) {
 			result.UsersByNetwork)
 	})
 
+	t.Run("Success - Top Resistance Genes", func(t *testing.T) {
+		mockDone := testmodels.CreateMockAnalysis()
+		mockDone.Status = models.AnalysisStatusDone
+		mockDone.Metrics = []byte(`{"primary_species":"Klebsiella pneumoniae","acquired_resistance":["blaOXA-23","armA"]}`)
+		mockDuplicate := testmodels.CreateMockAnalysis()
+		mockDuplicate.Status = models.AnalysisStatusDone
+		mockDuplicate.Metrics = []byte(`{"acquired_resistance":["blaOXA-23"]}`)
+		mockInvalid := testmodels.CreateMockAnalysis()
+		mockInvalid.Status = models.AnalysisStatusDone
+		mockInvalid.Metrics = []byte(`{"acquired_resistance":`)
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return nil, 0, nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return []models.Analysis{mockDone, mockDuplicate,
+					mockInvalid}, 0, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, limit, offset int) (
+				[]models.User, int64, error) {
+				return nil, 0, nil
+			},
+		}
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetMetrics(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, []models.GeneMetric{
+			{Gene: "blaOXA-23", Count: 2},
+			{Gene: "armA", Count: 1},
+		}, result.TopResistanceGenes)
+		assert.Equal(t, int64(2), result.TotalResistance)
+	})
+
+	t.Run("Success - Samples by Month", func(t *testing.T) {
+		now := time.Now()
+		mockNow := testmodels.CreateMockSample()
+		mockNow.CreatedAt = now
+		mockPast := testmodels.CreateMockSample()
+		mockPast.CreatedAt = now.AddDate(0, -2, 0)
+		mockOld := testmodels.CreateMockSample()
+		mockOld.CreatedAt = now.AddDate(0, -13, 0)
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return []models.Sample{mockNow, mockPast, mockOld}, 0, nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return nil, 0, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, limit, offset int) (
+				[]models.User, int64, error) {
+				return nil, 0, nil
+			},
+		}
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetMetrics(ctx)
+
+		assert.NoError(t, err)
+		if assert.Len(t, result.SamplesByMonth, 12) {
+			for i := 1; i < len(result.SamplesByMonth); i++ {
+				assert.True(t,
+					result.SamplesByMonth[i].Month > result.SamplesByMonth[i-1].Month,
+					"months must be ascending")
+			}
+		}
+		byMonth := make(map[string]models.MonthMetric, 12)
+		for _, m := range result.SamplesByMonth {
+			byMonth[m.Month] = m
+		}
+		assert.Equal(t, int64(1),
+			byMonth[now.Format("2006-01")].Count)
+		assert.Equal(t, int64(1),
+			byMonth[now.AddDate(0, -2, 0).Format("2006-01")].Count)
+		assert.Equal(t, int64(0),
+			byMonth[now.AddDate(0, -13, 0).Format("2006-01")].Count)
+	})
+
+	t.Run("Success - Queue Wait", func(t *testing.T) {
+		t0 := time.Date(2024, time.May, 11, 0, 0, 0, 0, time.UTC)
+		newAnalysis := func(waitSec int, started bool) models.Analysis {
+			a := testmodels.CreateMockAnalysis()
+			a.CreatedAt = t0
+			a.StartedAt = nil
+			if started {
+				startedAt := t0.Add(time.Duration(waitSec) * time.Second)
+				a.StartedAt = &startedAt
+			}
+			return a
+		}
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return nil, 0, nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return []models.Analysis{
+					newAnalysis(100, true),
+					newAnalysis(300, true),
+					newAnalysis(0, false),
+				}, 0, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, limit, offset int) (
+				[]models.User, int64, error) {
+				return nil, 0, nil
+			},
+		}
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetMetrics(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, models.QueueWaitMetric{
+			AvgSeconds: 200,
+			P95Seconds: 300,
+		}, result.QueueWait)
+	})
+
 	t.Run("Error", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {

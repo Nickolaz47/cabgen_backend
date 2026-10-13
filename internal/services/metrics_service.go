@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"slices"
 	"sort"
 	"time"
 
@@ -96,6 +97,9 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 	species, genes := uniqueSpeciesResults(analyses)
 	metrics.TotalSpecies = int64(len(species))
 	metrics.TotalResistance = int64(len(genes))
+	metrics.TopResistanceGenes = sortedGeneMetrics(genes)
+	metrics.SamplesByMonth = samplesByMonth(samples)
+	metrics.QueueWait = queueWait(analyses)
 
 	return metrics, nil
 }
@@ -185,9 +189,9 @@ func speciesMetrics(analyses []models.Analysis) []models.SpeciesMetric {
 	return metrics
 }
 
-func uniqueSpeciesResults(analyses []models.Analysis) (map[string]struct{}, map[string]struct{}) {
+func uniqueSpeciesResults(analyses []models.Analysis) (map[string]struct{}, map[string]int64) {
 	species := make(map[string]struct{})
-	genes := make(map[string]struct{})
+	genes := make(map[string]int64)
 	for _, analysis := range analyses {
 		if analysis.Status != models.AnalysisStatusDone || len(analysis.Metrics) == 0 {
 			continue
@@ -201,11 +205,56 @@ func uniqueSpeciesResults(analyses []models.Analysis) (map[string]struct{}, map[
 		}
 		for _, gene := range results.AcquiredResistance {
 			if gene != "" {
-				genes[gene] = struct{}{}
+				genes[gene]++
 			}
 		}
 	}
 	return species, genes
+}
+
+func sortedGeneMetrics(counts map[string]int64) []models.GeneMetric {
+	metrics := make([]models.GeneMetric, 0, len(counts))
+	for gene, count := range counts {
+		metrics = append(metrics, models.GeneMetric{
+			Gene: gene, Count: count,
+		})
+	}
+	sort.Slice(metrics, func(i, j int) bool {
+		return metrics[i].Count > metrics[j].Count
+	})
+	return metrics
+}
+
+func samplesByMonth(samples []models.Sample) []models.MonthMetric {
+	start := time.Now().AddDate(0, -11, 0)
+
+	counts := make(map[string]int64)
+	for _, sample := range samples {
+		counts[sample.CreatedAt.Format("2006-01")]++
+	}
+
+	metrics := make([]models.MonthMetric, 0, 12)
+	for i := range 12 {
+		key := start.AddDate(0, i, 0).Format("2006-01")
+		metrics = append(metrics, models.MonthMetric{
+			Month: key, Count: counts[key],
+		})
+	}
+	return metrics
+}
+
+func queueWait(analyses []models.Analysis) models.QueueWaitMetric {
+	var waits []time.Duration
+	for _, analysis := range analyses {
+		if analysis.StartedAt != nil {
+			waits = append(waits, analysis.StartedAt.Sub(analysis.CreatedAt))
+		}
+	}
+
+	return models.QueueWaitMetric{
+		AvgSeconds: avgDuration(waits),
+		P95Seconds: p95Duration(waits),
+	}
 }
 
 func analysisTypeMetrics(analyses []models.Analysis) []models.AnalysisTypeMetric {
@@ -262,9 +311,7 @@ func p95Duration(durations []time.Duration) float64 {
 		return 0
 	}
 	sorted := append([]time.Duration(nil), durations...)
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i] < sorted[j]
-	})
+	slices.Sort(sorted)
 	idx := (len(sorted)*95+99)/100 - 1
 	return sorted[idx].Seconds()
 }

@@ -9,14 +9,17 @@ type PublicMetricsResponse struct {
 
 type AdminMetricsResponse struct {
 	PublicMetricsResponse
-	TotalUsers       int64                `json:"total_users"`
-	TotalAnalyses    int64                `json:"total_analyses"`
-	UsersByNetwork   NetworkMetric        `json:"users_by_network"`
-	SamplesByNetwork NetworkMetric        `json:"samples_by_network"`
-	AnalysesByStatus AnalysesByStatus     `json:"analyses_by_status"`
-	AnalysesByType   []AnalysisTypeMetric `json:"analyses_by_type"`
-	TopCountries     []CountryMetric      `json:"top_countries"`
-	SpeciesBreakdown []SpeciesMetric      `json:"species_breakdown"`
+	TotalUsers         int64                `json:"total_users"`
+	TotalAnalyses      int64                `json:"total_analyses"`
+	UsersByNetwork     NetworkMetric        `json:"users_by_network"`
+	SamplesByNetwork   NetworkMetric        `json:"samples_by_network"`
+	AnalysesByStatus   AnalysesByStatus     `json:"analyses_by_status"`
+	AnalysesByType     []AnalysisTypeMetric `json:"analyses_by_type"`
+	TopResistanceGenes []GeneMetric         `json:"top_resistance_genes"`
+	SamplesByMonth     []MonthMetric        `json:"samples_by_month"`
+	QueueWait          QueueWaitMetric      `json:"queue_wait"`
+	TopCountries       []CountryMetric      `json:"top_countries"`
+	SpeciesBreakdown   []SpeciesMetric      `json:"species_breakdown"`
 }
 
 type AnalysesByStatus struct {
@@ -29,6 +32,21 @@ type AnalysesByStatus struct {
 type NetworkMetric struct {
 	InNetwork  int64 `json:"in_network"`
 	OutNetwork int64 `json:"out_network"`
+}
+
+type GeneMetric struct {
+	Gene  string `json:"gene"`
+	Count int64  `json:"count"`
+}
+
+type MonthMetric struct {
+	Month string `json:"month"`
+	Count int64  `json:"count"`
+}
+
+type QueueWaitMetric struct {
+	AvgSeconds float64 `json:"avg_seconds"`
+	P95Seconds float64 `json:"p95_seconds"`
 }
 
 type AnalysisTypeMetric struct {
