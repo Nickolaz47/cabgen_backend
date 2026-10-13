@@ -239,6 +239,50 @@ func TestMetricsGetMetrics(t *testing.T) {
 		}, result.AnalysesByType[2])
 	})
 
+	t.Run("Success - Network counts", func(t *testing.T) {
+		sampleIn := testmodels.CreateMockSample()
+		sampleIn.InNetwork = true
+		sampleOut := testmodels.CreateMockSample()
+		sampleOut.InNetwork = false
+		userIn := testmodels.NewLoginUser()
+		userIn.IsPartOfNetwork = true
+		userOut := testmodels.NewLoginUser()
+		userOut.IsPartOfNetwork = false
+
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				userID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return []models.Sample{sampleIn, sampleOut, sampleIn}, 0,
+					nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, userID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return nil, 0, nil
+			},
+		}
+		userRepo := &mocks.MockUserRepository{
+			GetUsersFunc: func(ctx context.Context,
+				filter models.AdminUserFilter, limit, offset int) (
+				[]models.User, int64, error) {
+				return []models.User{userIn, userOut}, 0, nil
+			},
+		}
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetMetrics(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, models.NetworkMetric{InNetwork: 2, OutNetwork: 1},
+			result.SamplesByNetwork)
+		assert.Equal(t, models.NetworkMetric{InNetwork: 1, OutNetwork: 1},
+			result.UsersByNetwork)
+	})
+
 	t.Run("Error", func(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSamplesFunc: func(ctx context.Context, input string, userID uuid.UUID, limit, offset int) ([]models.Sample, int64, error) {

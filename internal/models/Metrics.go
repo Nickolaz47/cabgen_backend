@@ -11,6 +11,8 @@ type AdminMetricsResponse struct {
 	PublicMetricsResponse
 	TotalUsers       int64                `json:"total_users"`
 	TotalAnalyses    int64                `json:"total_analyses"`
+	UsersByNetwork   NetworkMetric        `json:"users_by_network"`
+	SamplesByNetwork NetworkMetric        `json:"samples_by_network"`
 	AnalysesByStatus AnalysesByStatus     `json:"analyses_by_status"`
 	AnalysesByType   []AnalysisTypeMetric `json:"analyses_by_type"`
 	TopCountries     []CountryMetric      `json:"top_countries"`
@@ -22,6 +24,11 @@ type AnalysesByStatus struct {
 	Running int64 `json:"running"`
 	Pending int64 `json:"pending"`
 	Failed  int64 `json:"failed"`
+}
+
+type NetworkMetric struct {
+	InNetwork  int64 `json:"in_network"`
+	OutNetwork int64 `json:"out_network"`
 }
 
 type AnalysisTypeMetric struct {

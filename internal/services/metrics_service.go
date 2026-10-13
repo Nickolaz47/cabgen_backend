@@ -72,6 +72,8 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 		},
 		TotalUsers:       int64(len(users)),
 		TotalAnalyses:    int64(len(analyses)),
+		UsersByNetwork:   countUsersByNetwork(users),
+		SamplesByNetwork: countSamplesByNetwork(samples),
 		TopCountries:     countryMetrics(samples),
 		SpeciesBreakdown: speciesMetrics(analyses),
 	}
@@ -96,6 +98,32 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 	metrics.TotalResistance = int64(len(genes))
 
 	return metrics, nil
+}
+
+func countUsersByNetwork(users []models.User) models.NetworkMetric {
+	var metric models.NetworkMetric
+	for _, user := range users {
+		if user.IsPartOfNetwork {
+			metric.InNetwork++
+		} else {
+			metric.OutNetwork++
+		}
+	}
+
+	return metric
+}
+
+func countSamplesByNetwork(samples []models.Sample) models.NetworkMetric {
+	var metric models.NetworkMetric
+	for _, sample := range samples {
+		if sample.InNetwork {
+			metric.InNetwork++
+		} else {
+			metric.OutNetwork++
+		}
+	}
+
+	return metric
 }
 
 func uniqueCountryCodes(samples []models.Sample) map[string]struct{} {
