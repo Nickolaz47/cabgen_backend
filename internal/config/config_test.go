@@ -39,7 +39,7 @@ func TestLoadEnvVariables(t *testing.T) {
 			FASTQC_PATH=/usr/bin/fastqc
 			ABRICATE_PATH=/usr/bin/abricate
 			MLST_PATH=/usr/bin/mlst
-			CHECKM_PATH=/usr/bin/checkm
+			CHECKM_PATH=/usr/bin/checkm2
 			CHECKM_DATA_PATH=/usr/lib/checkm2/database.dmnd
 			KRAKEN2_PATH=/usr/bin/kraken2
 			KRAKEN_DB_PATH=/data/kraken_db
@@ -81,7 +81,7 @@ func TestLoadEnvVariables(t *testing.T) {
 		expectedFastQCPath := "/usr/bin/fastqc"
 		expectedAbricatePath := "/usr/bin/abricate"
 		expectedMlstPath := "/usr/bin/mlst"
-		expectedCheckMPath := "/usr/bin/checkm"
+		expectedCheckMPath := "/usr/bin/checkm2"
 		expectedCheckMDataPath := "/usr/lib/checkm2/database.dmnd"
 		expectedKraken2Path := "/usr/bin/kraken2"
 		expectedKrakenDBPath := "/data/kraken_db"

@@ -23,7 +23,7 @@ func createMockParserFile(t *testing.T, content string) string {
 	return tmpFile.Name()
 }
 
-func TestParseCheckM(t *testing.T) {
+func TestParseCheckM2(t *testing.T) {
 	const header = "Name\tCompleteness\tContamination\tCompleteness_Model_Used\tTranslation_Table_Used\tCoding_Density\tContig_N50\tAverage_Gene_Length\tGenome_Size\tGC_Content\tTotal_Coding_Sequences\tTotal_Contigs\tMax_Contig_Length\tAdditional_Notes\n"
 
 	t.Run("Success - Valid Quality Report", func(t *testing.T) {
@@ -31,7 +31,7 @@ func TestParseCheckM(t *testing.T) {
 			"cabgen17_assembly\t99.99\t0.25\tNeural Network (Specific Model)\t11\t0.859\t17364\t307.0454662877809\t4144828\t0.41\t3871\t384\t121235\tNone\n"
 		path := createMockParserFile(t, content)
 
-		result, err := ParseCheckM(path)
+		result, err := ParseCheckM2(path)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, "99.99", result.Completeness)
@@ -47,7 +47,7 @@ func TestParseCheckM(t *testing.T) {
 			"bin2\t88.10\t2.50\tGeneral Model\t11\t0.880\t5200\t3100\t2100000\t41.5\t1900\t300\t18000\tNone\n"
 		path := createMockParserFile(t, content)
 
-		result, err := ParseCheckM(path)
+		result, err := ParseCheckM2(path)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, "97.95", result.Completeness)
@@ -57,36 +57,36 @@ func TestParseCheckM(t *testing.T) {
 	t.Run("Error - Empty File", func(t *testing.T) {
 		path := createMockParserFile(t, "")
 
-		result, err := ParseCheckM(path)
+		result, err := ParseCheckM2(path)
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "Empty checkm result")
+		assert.Contains(t, err.Error(), "Empty checkm2 result")
 	})
 
 	t.Run("Error - Only Header No Data", func(t *testing.T) {
 		path := createMockParserFile(t, header)
 
-		result, err := ParseCheckM(path)
+		result, err := ParseCheckM2(path)
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "No valid data found in checkm result")
+		assert.Contains(t, err.Error(), "No valid data found in checkm2 result")
 	})
 
 	t.Run("Error - Missing Required Column", func(t *testing.T) {
 		content := "Name\tCompleteness\tContamination\nbin1\t97.95\t0.66\n"
 		path := createMockParserFile(t, content)
 
-		result, err := ParseCheckM(path)
+		result, err := ParseCheckM2(path)
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "Missing column Genome_Size in checkm result")
+		assert.Contains(t, err.Error(), "Missing column Genome_Size in checkm2 result")
 	})
 
 	t.Run("Error - File Not Found", func(t *testing.T) {
-		result, err := ParseCheckM("/nonexistent/quality_report.tsv")
+		result, err := ParseCheckM2("/nonexistent/quality_report.tsv")
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "Failed to open checkm result")
+		assert.Contains(t, err.Error(), "Failed to open checkm2 result")
 	})
 }
 

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -286,28 +285,26 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		return pipeline.ErrBakta
 	}
 
-	ext := filepath.Ext(*assemblyPath)
-	checkmSample := strings.TrimSuffix(filepath.Base(*assemblyPath), ext)
-	checkMOutput := filepath.Join(folders.AssemblyDir, "checkm_output")
-	s.updateStep(ctx, analysis, models.StepCheckM)
-	checkmResult, err := s.Pipeline.RunCheckM(ctx, threads, checkmSample,
-		folders.AssemblyDir, checkMOutput)
+	checkm2Output := filepath.Join(folders.AssemblyDir, "checkm2_output")
+	s.updateStep(ctx, analysis, models.StepCheckM2)
+	checkm2Result, err := s.Pipeline.RunCheckM2(ctx, threads,
+		folders.AssemblyDir, checkm2Output)
 	if err != nil {
-		s.Logger.Error("Failed Genome step - CheckM",
+		s.Logger.Error("Failed Genome step - CheckM2",
 			logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "runGenome",
 				logging.AnalysisRunError, err,
 				zap.String("analysis_id", analysis.ID.String()),
 			)...)
-		return pipeline.ErrCheckM
+		return pipeline.ErrCheckM2
 	}
 
-	if checkmResult != nil {
-		results.CheckMCompleteness = checkmResult.Completeness
-		results.CheckMContamination = checkmResult.Contamination
-		results.CheckMGenomeSize = checkmResult.GenomeSize
-		results.CheckMContigs = checkmResult.Contigs
-		results.CheckMN50 = checkmResult.N50
+	if checkm2Result != nil {
+		results.CheckM2Completeness = checkm2Result.Completeness
+		results.CheckM2Contamination = checkm2Result.Contamination
+		results.CheckM2GenomeSize = checkm2Result.GenomeSize
+		results.CheckM2Contigs = checkm2Result.Contigs
+		results.CheckM2N50 = checkm2Result.N50
 	}
 
 	s.updateStep(ctx, analysis, models.StepKraken2)
@@ -348,14 +345,14 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 
 	if krakenResult2 != nil {
 		contamination, err := strconv.ParseFloat(
-			results.CheckMContamination, 32)
+			results.CheckM2Contamination, 32)
 		if err != nil {
-			s.Logger.Warn("Invalid CheckM contamination value",
+			s.Logger.Warn("Invalid CheckM2 contamination value",
 				logging.ServiceLogging(ctx,
 					"AnalysisRunnerService", "runGenome",
 					logging.AnalysisRunError, err,
 					zap.String("analysis_id", analysis.ID.String()),
-					zap.String("contamination", results.CheckMContamination),
+					zap.String("contamination", results.CheckM2Contamination),
 				)...)
 		}
 		if contamination > SecondarySpeciesContaminationThreshold {
@@ -419,7 +416,7 @@ func (s *analysisRunnerService) runGenome(ctx context.Context,
 		}
 	}
 
-	genomeSize, _ := strconv.Atoi(results.CheckMGenomeSize)
+	genomeSize, _ := strconv.Atoi(results.CheckM2GenomeSize)
 	if analysis.Sample.Fastq1 != nil && analysis.Sample.Fastq2 != nil &&
 		genomeSize > 0 {
 		s.updateStep(ctx, analysis, models.StepCoverage)

@@ -21,7 +21,7 @@ var tools = []toolSpec{
 	{"FastQC", []string{"fastqc", "--version"}, `v([\d.]+)`},
 	{"Unicycler", []string{"unicycler", "--version"}, `v([\d.]+)`},
 	{"Bakta", []string{"bakta", "--version"}, `bakta ([\d.]+)`},
-	{"CheckM", []string{"/usr/local/bin/checkm2", "--version"}, `([\d.]+)`},
+	{"CheckM2", []string{"/usr/local/bin/checkm2", "--version"}, `([\d.]+)`},
 	{"Kraken2", []string{"kraken2", "--version"}, `version ([\d.]+)`},
 	{"FastANI", []string{"fastANI", "--version"}, `([\d.]+)`},
 	{"Abricate", []string{"/usr/local/bin/abricate", "--version"}, `([\d.]+)`},

@@ -25,7 +25,7 @@ func defaultConfig() pipeline.ToolsConfig {
 		FastQCPath:         "fastqc",
 		UnicyclerPath:      "unicycler",
 		SpadesPath:         "/spades",
-		CheckMPath:         "checkm",
+		CheckMPath:         "checkm2",
 		Kraken2Path:        "kraken2",
 		KrakenDBPath:       "/db",
 		FastANIPath:        "fastani",
@@ -196,7 +196,7 @@ func TestRunBlastX(t *testing.T) {
 	})
 }
 
-func TestRunCheckM(t *testing.T) {
+func TestRunCheckM2(t *testing.T) {
 	const qualityReport = "Name\tCompleteness\tContamination\tCompleteness_Model_Used\tTranslation_Table_Used\tCoding_Density\tContig_N50\tAverage_Gene_Length\tGenome_Size\tGC_Content\tTotal_Coding_Sequences\tTotal_Contigs\tMax_Contig_Length\tAdditional_Notes\n"
 
 	t.Run("Success", func(t *testing.T) {
@@ -207,7 +207,7 @@ func TestRunCheckM(t *testing.T) {
 
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig(), nil)
-		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
+		result, err := p.RunCheckM2(context.Background(), 4, "/in",
 			outDir)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -221,7 +221,7 @@ func TestRunCheckM(t *testing.T) {
 	t.Run("Error - Predict Fails", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: errorRun},
 			defaultConfig(), nil)
-		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
+		result, err := p.RunCheckM2(context.Background(), 4, "/in",
 			"/out")
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -230,11 +230,11 @@ func TestRunCheckM(t *testing.T) {
 	t.Run("Error - Missing Quality Report", func(t *testing.T) {
 		p := pipeline.NewCabgenPipeline(&mocks.MockToolRunner{RunFunc: successRun},
 			defaultConfig(), nil)
-		result, err := p.RunCheckM(context.Background(), 4, "s1", "/in",
+		result, err := p.RunCheckM2(context.Background(), 4, "/in",
 			"/out")
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "Failed to open checkm result")
+		assert.Contains(t, err.Error(), "Failed to open checkm2 result")
 	})
 }
 

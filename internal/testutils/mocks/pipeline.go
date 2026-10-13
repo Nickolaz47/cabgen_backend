@@ -113,8 +113,8 @@ type MockCabgenPipeline struct {
 		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
 	RunBaktaFunc func(ctx context.Context, threads int,
 		assembly, outputDir string) error
-	RunCheckMFunc func(ctx context.Context, threads int, sample,
-		assemblyDir, outputDir string) (*pipeline.CheckMResult, error)
+	RunCheckM2Func func(ctx context.Context, threads int,
+		assemblyDir, outputDir string) (*pipeline.CheckM2Result, error)
 	RunKraken2Func func(ctx context.Context, threads int,
 		assembly, outputDir string) (*pipeline.KrakenSpecies,
 		*pipeline.KrakenSpecies, error)
@@ -156,12 +156,12 @@ func (m *MockCabgenPipeline) RunBakta(ctx context.Context, threads int,
 	return nil
 }
 
-func (m *MockCabgenPipeline) RunCheckM(ctx context.Context, threads int,
-	sample, assemblyDir, outputDir string) (*pipeline.CheckMResult, error) {
-	if m.RunCheckMFunc != nil {
-		return m.RunCheckMFunc(ctx, threads, sample, assemblyDir, outputDir)
+func (m *MockCabgenPipeline) RunCheckM2(ctx context.Context, threads int,
+	assemblyDir, outputDir string) (*pipeline.CheckM2Result, error) {
+	if m.RunCheckM2Func != nil {
+		return m.RunCheckM2Func(ctx, threads, assemblyDir, outputDir)
 	}
-	return &pipeline.CheckMResult{
+	return &pipeline.CheckM2Result{
 		Completeness: "99.5", Contamination: "0.5",
 		GenomeSize: "5000000", Contigs: "745", N50: "100000",
 	}, nil

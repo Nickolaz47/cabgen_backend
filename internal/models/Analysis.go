@@ -47,10 +47,10 @@ var errorMessageTranslations = map[error]map[string]string{
 		"pt": "A etapa do Bakta falhou. Crie uma nova análise.",
 		"es": "El paso de Bakta falló. Cree un nuevo análisis.",
 	},
-	pipeline.ErrCheckM: {
-		"en": "The CheckM step failed. Create a new analysis.",
-		"pt": "A etapa do CheckM falhou. Crie uma nova análise.",
-		"es": "El paso de CheckM falló. Cree un nuevo análisis.",
+	pipeline.ErrCheckM2: {
+		"en": "The CheckM2 step failed. Create a new analysis.",
+		"pt": "A etapa do CheckM2 falhou. Crie uma nova análise.",
+		"es": "El paso de CheckM2 falló. Cree un nuevo análisis.",
 	},
 	pipeline.ErrKraken2: {
 		"en": "The Kraken2 step failed. Create a new analysis.",
@@ -113,7 +113,7 @@ const (
 	StepFastQC    AnalysisStep = "FastQC"
 	StepUnicycler AnalysisStep = "Unicycler"
 	StepBakta     AnalysisStep = "Bakta"
-	StepCheckM    AnalysisStep = "CheckM"
+	StepCheckM2   AnalysisStep = "CheckM2"
 	StepKraken2   AnalysisStep = "Kraken2"
 	StepSpecies   AnalysisStep = "Species"
 	StepAbricate  AnalysisStep = "Abricate"
@@ -167,12 +167,12 @@ type AnalysisResults struct {
 	// --- Genomic Coverage ---
 	Coverage float64 `json:"coverage,omitempty"`
 
-	// --- Assembly Quality (CheckM) ---
-	CheckMCompleteness  string `json:"completeness,omitempty"`
-	CheckMContamination string `json:"contamination,omitempty"`
-	CheckMGenomeSize    string `json:"genome_size,omitempty"`
-	CheckMContigs       string `json:"contigs,omitempty"`
-	CheckMN50           string `json:"n50,omitempty"`
+	// --- Assembly Quality (CheckM2) ---
+	CheckM2Completeness  string `json:"completeness,omitempty"`
+	CheckM2Contamination string `json:"contamination,omitempty"`
+	CheckM2GenomeSize    string `json:"genome_size,omitempty"`
+	CheckM2Contigs       string `json:"contigs,omitempty"`
+	CheckM2N50           string `json:"n50,omitempty"`
 
 	// --- Taxonomy and Typing ---
 	PrimarySpeciesName   string `json:"primary_species,omitempty"`

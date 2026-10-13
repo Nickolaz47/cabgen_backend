@@ -609,7 +609,7 @@ uploads/
 > **Nota:** Para análises `FASTQC`, apenas os arquivos FastQ são necessários. Para análises `GENOME`, aceita-se tanto FastQ quanto FASTA. Para análises `COMPLETE`, FastQ é obrigatório.
 
 - **`qc/`**: controle de qualidade dos reads brutos (FastQC).
-- **`assembly/`**: tudo que deriva da montagem — contigs (Unicycler), cobertura, qualidade da montagem (CheckM), identificação de espécie (Kraken2/FastANI) e anotação (Bakta).
+- **`assembly/`**: tudo que deriva da montagem — contigs (Unicycler), cobertura, qualidade da montagem (CheckM2), identificação de espécie (Kraken2/FastANI) e anotação (Bakta).
 - **`amr/`**: resultados de resistência, virulência, plasmídeos, MLST e mutações pontuais (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
 - **`report/`**: relatório final consolidado com os resultados clinicamente relevantes.
 
@@ -758,7 +758,7 @@ User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, Healt
 
 ### Ferramentas do Pipeline de Análise
 
-FastQC, Unicycler, SPAdes, Bakta, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
+FastQC, Unicycler, SPAdes, Bakta, CheckM2, Kraken2, FastANI, ABRicate, MLST, BLAST
 
 ### Filtros de resultado do ABRicate
 
@@ -792,7 +792,7 @@ A plataforma suporta três tipos de análise, cada um com requisitos de entrada 
 | `GENOME` | Pipeline completo de genômica | FastQ (R1 + R2) **ou** FASTA |
 | `COMPLETE` | FastQC + Genômica completo | FastQ (R1 + R2) |
 
-**Suporte a FASTA-only:** O tipo `GENOME` aceita tanto pares de reads FastQ quanto arquivos FASTA já montados. Quando apenas o FASTA é fornecido, o Unicycler é pulado e o arquivo é utilizado diretamente para as etapas subsequentes (Bakta, CheckM, Kraken2, ABRicate, etc.).
+**Suporte a FASTA-only:** O tipo `GENOME` aceita tanto pares de reads FastQ quanto arquivos FASTA já montados. Quando apenas o FASTA é fornecido, o Unicycler é pulado e o arquivo é utilizado diretamente para as etapas subsequentes (Bakta, CheckM2, Kraken2, ABRicate, etc.).
 
 ### Docker Compose
 

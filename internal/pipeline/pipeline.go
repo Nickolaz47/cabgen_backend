@@ -45,8 +45,8 @@ type CabgenPipeline interface {
 		read1, read2, spadesPath, outputDir, outputFile string) (string, error)
 	RunBakta(ctx context.Context, threads int,
 		assembly, outputDir string) error
-	RunCheckM(ctx context.Context, threads int, sample, assemblyDir,
-		outputDir string) (*CheckMResult, error)
+	RunCheckM2(ctx context.Context, threads int, assemblyDir,
+		outputDir string) (*CheckM2Result, error)
 	RunKraken2(ctx context.Context, threads int, assembly,
 		outputDir string) (*KrakenSpecies, *KrakenSpecies, error)
 	RunBlastX(ctx context.Context, query, DB, outputFile string) error
@@ -146,8 +146,8 @@ func (p *cabgenPipeline) RunBakta(ctx context.Context, threads int,
 	return nil
 }
 
-func (p *cabgenPipeline) RunCheckM(ctx context.Context, threads int,
-	sample, assemblyDir, outputDir string) (*CheckMResult, error) {
+func (p *cabgenPipeline) RunCheckM2(ctx context.Context, threads int,
+	assemblyDir, outputDir string) (*CheckM2Result, error) {
 	threadsStr := strconv.Itoa(threads)
 
 	predictArgs := p.Runner.BuildCheckM2Cmd(p.Config.CheckMPath,
@@ -157,7 +157,7 @@ func (p *cabgenPipeline) RunCheckM(ctx context.Context, threads int,
 	}
 
 	resultPath := filepath.Join(outputDir, "quality_report.tsv")
-	result, err := ParseCheckM(resultPath)
+	result, err := ParseCheckM2(resultPath)
 	if err != nil {
 		return nil, err
 	}

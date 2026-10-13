@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type CheckMResult struct {
+type CheckM2Result struct {
 	Completeness  string
 	Contamination string
 	GenomeSize    string
@@ -17,19 +17,19 @@ type CheckMResult struct {
 	N50           string
 }
 
-func ParseCheckM(filePath string) (*CheckMResult, error) {
+func ParseCheckM2(filePath string) (*CheckM2Result, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open checkm result: %v", err)
+		return nil, fmt.Errorf("Failed to open checkm2 result: %v", err)
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	if !scanner.Scan() {
 		if err := scanner.Err(); err != nil {
-			return nil, fmt.Errorf("Error reading checkm file: %v", err)
+			return nil, fmt.Errorf("Error reading checkm2 file: %v", err)
 		}
-		return nil, errors.New("Empty checkm result")
+		return nil, errors.New("Empty checkm2 result")
 	}
 
 	columns := make(map[string]int)
@@ -40,7 +40,7 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 	for _, key := range []string{"Name", "Completeness", "Contamination",
 		"Genome_Size", "Total_Contigs", "Contig_N50"} {
 		if _, ok := columns[key]; !ok {
-			return nil, fmt.Errorf("Missing column %s in checkm result", key)
+			return nil, fmt.Errorf("Missing column %s in checkm2 result", key)
 		}
 	}
 	name, completeness := columns["Name"], columns["Completeness"]
@@ -58,7 +58,7 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 			continue
 		}
 
-		return &CheckMResult{
+		return &CheckM2Result{
 			Completeness:  fields[completeness],
 			Contamination: fields[contamination],
 			GenomeSize:    fields[genomeSize],
@@ -67,7 +67,7 @@ func ParseCheckM(filePath string) (*CheckMResult, error) {
 		}, nil
 	}
 
-	return nil, errors.New("No valid data found in checkm result")
+	return nil, errors.New("No valid data found in checkm2 result")
 }
 
 func ParseFastANI(filePath string) (string, error) {

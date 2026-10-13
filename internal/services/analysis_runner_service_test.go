@@ -1075,7 +1075,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Empty(t, updated.Step)
 	})
 
-	t.Run("Error - CheckM", func(t *testing.T) {
+	t.Run("Error - CheckM2", func(t *testing.T) {
 		mock := testmodels.CreateMockAnalysis()
 		mock.Type = models.AnalysisTypeGenome
 		mock.Status = models.AnalysisStatusPending
@@ -1101,10 +1101,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{
-			RunCheckMFunc: func(_ context.Context, threads int,
-				sample, assemblyDir, outputDir string) (
-				*pipeline.CheckMResult, error) {
-				return nil, fmt.Errorf("checkm db corrupt")
+			RunCheckM2Func: func(_ context.Context, threads int,
+				assemblyDir, outputDir string) (
+				*pipeline.CheckM2Result, error) {
+				return nil, fmt.Errorf("checkm2 db corrupt")
 			},
 		}
 
@@ -1117,10 +1117,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		assert.Equal(t, models.AnalysisStatusFailed, updated.Status)
 		assert.NotNil(t, updated.ErrorMessage)
 		assert.Contains(t, *updated.ErrorMessage,
-			pipeline.ErrCheckM.Error())
+			pipeline.ErrCheckM2.Error())
 		assert.NotContains(t, *updated.ErrorMessage,
-			"checkm db corrupt")
-		assert.Contains(t, steps, models.StepCheckM)
+			"checkm2 db corrupt")
+		assert.Contains(t, steps, models.StepCheckM2)
 		assert.Empty(t, updated.Step)
 	})
 
@@ -1197,10 +1197,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			Config: pipeline.ToolsConfig{
 				ResfinderDBPath: newResfinderRef(t),
 			},
-			RunCheckMFunc: func(_ context.Context, threads int,
-				sample, assemblyDir, outputDir string) (
-				*pipeline.CheckMResult, error) {
-				return &pipeline.CheckMResult{
+			RunCheckM2Func: func(_ context.Context, threads int,
+				assemblyDir, outputDir string) (
+				*pipeline.CheckM2Result, error) {
+				return &pipeline.CheckM2Result{
 					Completeness: "99.5", Contamination: "0.5",
 					GenomeSize: "5000000", Contigs: "745", N50: "100000",
 				}, nil
@@ -1251,10 +1251,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 				Config: pipeline.ToolsConfig{
 					ResfinderDBPath: newResfinderRef(t),
 				},
-				RunCheckMFunc: func(_ context.Context, threads int,
-					sample, assemblyDir, outputDir string) (
-					*pipeline.CheckMResult, error) {
-					return &pipeline.CheckMResult{
+				RunCheckM2Func: func(_ context.Context, threads int,
+					assemblyDir, outputDir string) (
+					*pipeline.CheckM2Result, error) {
+					return &pipeline.CheckM2Result{
 						Completeness: "99.5", Contamination: "8.0",
 						GenomeSize: "5000000", Contigs: "745", N50: "100000",
 					}, nil
@@ -1309,10 +1309,10 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 				Config: pipeline.ToolsConfig{
 					ResfinderDBPath: newResfinderRef(t),
 				},
-				RunCheckMFunc: func(_ context.Context, threads int,
-					sample, assemblyDir, outputDir string) (
-					*pipeline.CheckMResult, error) {
-					return &pipeline.CheckMResult{
+				RunCheckM2Func: func(_ context.Context, threads int,
+					assemblyDir, outputDir string) (
+					*pipeline.CheckM2Result, error) {
+					return &pipeline.CheckM2Result{
 						Completeness: "99.5", Contamination: "0.5",
 						GenomeSize: "5000000", Contigs: "745", N50: "100000",
 					}, nil

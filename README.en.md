@@ -608,7 +608,7 @@ uploads/
 > **Note:** For `FASTQC` analyses, only FastQ files are required. For `GENOME` analyses, both FastQ and FASTA are accepted. For `COMPLETE` analyses, FastQ is required.
 
 - **`qc/`**: quality control of the raw reads (FastQC).
-- **`assembly/`**: everything derived from the assembly — contigs (Unicycler), coverage, assembly quality (CheckM), species identification (Kraken2/FastANI), and annotation (Bakta).
+- **`assembly/`**: everything derived from the assembly — contigs (Unicycler), coverage, assembly quality (CheckM2), species identification (Kraken2/FastANI), and annotation (Bakta).
 - **`amr/`**: resistance, virulence, plasmid, MLST, and point mutation results (ABRicate + ResFinder/VFDB/PlasmidFinder, `mlst`, BLASTx).
 - **`report/`**: consolidated final report with the clinically relevant results.
 
@@ -758,7 +758,7 @@ User, Country, Origin, Sequencer, SampleSource, Laboratory, Microorganism, Healt
 
 ### Bioinformatics Tools
 
-FastQC, Unicycler, SPAdes, Bakta, CheckM, Kraken2, FastANI, ABRicate, MLST, BLAST
+FastQC, Unicycler, SPAdes, Bakta, CheckM2, Kraken2, FastANI, ABRicate, MLST, BLAST
 
 ### ABRicate result filters
 
@@ -792,7 +792,7 @@ The platform supports three analysis types, each with different input requiremen
 | `GENOME` | Full genomics pipeline | FastQ (R1 + R2) **or** FASTA |
 | `COMPLETE` | FastQC + Full genomics | FastQ (R1 + R2) |
 
-**FASTA-only support:** The `GENOME` type accepts both FastQ read pairs and pre-assembled FASTA files. When only FASTA is provided, Unicycler is skipped and the file is used directly for subsequent steps (Bakta, CheckM, Kraken2, ABRicate, etc.).
+**FASTA-only support:** The `GENOME` type accepts both FastQ read pairs and pre-assembled FASTA files. When only FASTA is provided, Unicycler is skipped and the file is used directly for subsequent steps (Bakta, CheckM2, Kraken2, ABRicate, etc.).
 
 ### Docker Compose
 

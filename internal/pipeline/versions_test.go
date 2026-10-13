@@ -39,7 +39,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 
 		expected := map[string]string{
 			"FastQC": "1.2.3", "Unicycler": "1.2.3",
-			"Bakta": "1.2.3", "CheckM": "1.2.3",
+			"Bakta": "1.2.3", "CheckM2": "1.2.3",
 			"Kraken2": "1.2.3", "FastANI": "1.2.3",
 			"Abricate": "1.2.3", "MLST": "1.2.3",
 			"Blast": "1.2.3",
@@ -70,7 +70,7 @@ func TestGetBioinfoProgramVersions(t *testing.T) {
 		)
 
 		for _, tv := range result {
-			if tv.Name == "CheckM" {
+			if tv.Name == "CheckM2" {
 				assert.Equal(t, "2.1.0", tv.Version)
 			} else {
 				assert.Equal(t, "1.2.3", tv.Version)

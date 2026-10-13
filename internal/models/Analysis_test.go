@@ -12,7 +12,7 @@ import (
 
 func TestAnalysisToResponse(t *testing.T) {
 	mockAnalysis := testmodels.CreateMockAnalysis()
-	mockAnalysis.Step = models.StepCheckM
+	mockAnalysis.Step = models.StepCheckM2
 
 	expected := models.AnalysisResponse{
 		ID:             mockAnalysis.ID,
