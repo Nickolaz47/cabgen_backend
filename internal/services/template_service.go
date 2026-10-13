@@ -5,9 +5,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
@@ -56,6 +58,30 @@ func emptyRow(row []string) bool {
 
 	return true
 }
+
+// Serial (raw cell number) wins over text; text tries ISO then DD/MM (BR)
+func parseTableDate(raw string) (models.Date, bool) {
+	raw = strings.TrimSpace(raw)
+	if f, err := strconv.ParseFloat(raw, 64); err == nil && f > 0 &&
+		f <= maxExcelDateSerial {
+		if t, tErr := excelize.ExcelDateToTime(f, false); tErr == nil {
+			y, m, d := t.Date()
+			return models.Date{
+				Time: time.Date(y, m, d, 0, 0, 0, 0, time.UTC),
+			}, true
+		}
+	}
+	for _, layout := range []string{"2006-01-02", "02/01/2006"} {
+		if t, err := time.Parse(layout, raw); err == nil {
+			return models.Date{Time: t}, true
+		}
+	}
+
+	return models.Date{}, false
+}
+
+// 9999-12-31 in the Excel 1900 date system
+const maxExcelDateSerial = 2958465
 
 type TemplateService interface {
 	BuildColumns(ctx context.Context, language string) ([]utils.Column,
@@ -189,8 +215,29 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 		return nil, err
 	}
 
+	// Accept dropdown labels in every supported language: download and upload
+	// may carry different Accept-Language headers
+	for _, lang := range translation.Languages {
+		if lang == language {
+			continue
+		}
+		other, _, oErr := s.BuildColumns(ctx, lang)
+		if oErr != nil {
+			return nil, oErr
+		}
+		for i := range columns {
+			for _, o := range other {
+				if o.Header == columns[i].Header {
+					columns[i].MergeLabels(o)
+					break
+				}
+			}
+		}
+	}
+
 	// Read the sample sheet; missing or unreadable = invalid file
-	rows, err := file.GetRows(utils.SheetName)
+	rows, err := file.GetRows(utils.SheetName,
+		excelize.Options{RawCellValue: true})
 	if err != nil {
 		s.Logger.Error(
 			"Service Error", logging.ServiceLogging(ctx,
@@ -339,7 +386,31 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 			*target = u
 		}
 
-		// Date columns stay zero/nil; Gin validates required/format
+		// Dates parse here; empty required stays zero for Gin binding
+		if raw := cell("collection_date"); raw != "" {
+			d, ok := parseTableDate(raw)
+			if !ok {
+				return s.logValidationError(ctx,
+					&TableValueError{Row: line, Col: "collection_date"})
+			}
+			in.CollectionDate = d
+		}
+		if raw := cell("run_date"); raw != "" {
+			d, ok := parseTableDate(raw)
+			if !ok {
+				return s.logValidationError(ctx,
+					&TableValueError{Row: line, Col: "run_date"})
+			}
+			in.RunDate = d
+		}
+		if raw := cell("date_of_birth"); raw != "" {
+			d, ok := parseTableDate(raw)
+			if !ok {
+				return s.logValidationError(ctx,
+					&TableValueError{Row: line, Col: "date_of_birth"})
+			}
+			in.DateOfBirth = &d
+		}
 		inputs = append(inputs, in)
 	}
 

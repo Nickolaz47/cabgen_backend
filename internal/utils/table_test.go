@@ -7,6 +7,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/xuri/excelize/v2"
 	"gorm.io/datatypes"
 )
 
@@ -222,6 +223,50 @@ func TestGenerateMetadataTemplate(t *testing.T) {
 			if assert.NotNil(t, validations[0].Error) {
 				assert.Equal(t, "Please select an option from the list.",
 					*validations[0].Error)
+			}
+		}
+	})
+
+	t.Run("Success - Date columns styled and validated", func(t *testing.T) {
+		f, err := utils.GenerateMetadataTemplate([]utils.Column{
+			utils.NewColumn("A", "origin_code", nil),
+			utils.NewColumn("B", "collection_date", nil),
+			utils.NewColumn("D", "run_date", nil),
+			utils.NewColumn("G", "date_of_birth", nil),
+		})
+
+		assert.NoError(t, err)
+
+		styleID, stErr := f.GetColStyle("Samples", "B")
+		assert.NoError(t, stErr)
+		style, stErr := f.GetStyle(styleID)
+		assert.NoError(t, stErr)
+		if assert.NotNil(t, style.CustomNumFmt) {
+			assert.Equal(t, "dd/mm/yyyy", *style.CustomNumFmt)
+		}
+
+		validations, dvErr := f.GetDataValidations("Samples")
+		assert.NoError(t, dvErr)
+		if assert.Len(t, validations, 3) {
+			bySqref := map[string]*excelize.DataValidation{}
+			for _, dv := range validations {
+				bySqref[dv.Sqref] = dv
+			}
+			for _, sqref := range []string{"B2:B1001", "D2:D1001",
+				"G2:G1001"} {
+				dv, ok := bySqref[sqref]
+				if !assert.True(t, ok, "missing date validation %s",
+					sqref) {
+					continue
+				}
+				assert.Equal(t, "date", dv.Type)
+				assert.Equal(t, "between", dv.Operator)
+				assert.Equal(t, "DATE(1900,1,1)", dv.Formula1)
+				assert.Equal(t, "DATE(9999,12,31)", dv.Formula2)
+				if assert.NotNil(t, dv.Error) {
+					assert.Equal(t, "Please enter a valid date.",
+						*dv.Error)
+				}
 			}
 		}
 	})

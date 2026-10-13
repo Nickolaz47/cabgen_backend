@@ -118,6 +118,25 @@ func (c *Column) FindRealValue(labelValue string) (string, bool) {
 	return realValue, ok
 }
 
+func (c *Column) MergeLabels(other Column) {
+	for label, real := range other.realValuesMap {
+		if _, ok := c.realValuesMap[label]; !ok {
+			c.realValuesMap[label] = real
+		}
+	}
+}
+
+var dateHeaders = map[string]struct{}{
+	"collection_date": {},
+	"run_date":        {},
+	"date_of_birth":   {},
+}
+
+func isDateHeader(header string) bool {
+	_, ok := dateHeaders[header]
+	return ok
+}
+
 func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 	f := excelize.NewFile()
 	if err := f.SetSheetName("Sheet1", SheetName); err != nil {
@@ -140,6 +159,21 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	dateFmt := "dd/mm/yyyy"
+	dateStyle, err := f.NewStyle(&excelize.Style{CustomNumFmt: &dateFmt})
+	if err != nil {
+		return nil, err
+	}
+	for _, col := range columns {
+		if !isDateHeader(col.Header) {
+			continue
+		}
+		if err := f.SetColStyle(SheetName, col.Letter, dateStyle); err != nil {
+			return nil, fmt.Errorf("failed to style date column %s: %w",
+				col.Header, err)
+		}
 	}
 
 	if err := f.SetRowHeight(SheetName, 1, 30); err != nil {
@@ -201,6 +235,29 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 
 		if err := f.AddDataValidation(SheetName, dv); err != nil {
 			return nil, fmt.Errorf("failed to add validation for %s: %w", col.Header, err)
+		}
+	}
+
+	for _, col := range columns {
+		if !isDateHeader(col.Header) {
+			continue
+		}
+
+		dv := excelize.NewDataValidation(true)
+		if err := dv.SetRange("DATE(1900,1,1)", "DATE(9999,12,31)",
+			excelize.DataValidationTypeDate,
+			excelize.DataValidationOperatorBetween); err != nil {
+			return nil, err
+		}
+		dv.Sqref = fmt.Sprintf("%s2:%s%d", col.Letter, col.Letter,
+			MaxTableRows+1)
+		dv.SetInput("Enter a date", "dd/mm/yyyy or yyyy-mm-dd.")
+		dv.SetError(excelize.DataValidationErrorStyleStop,
+			"Invalid date", "Please enter a valid date.")
+
+		if err := f.AddDataValidation(SheetName, dv); err != nil {
+			return nil, fmt.Errorf("failed to add date validation for %s: %w",
+				col.Header, err)
 		}
 	}
 

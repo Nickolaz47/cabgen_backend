@@ -79,6 +79,67 @@ func templateSuccessMocks() (
 	return citySvc, countrySvc, selectOpts
 }
 
+// Labels vary by language; values stay identical across languages
+func templateSuccessMocksByLang() (
+	*mocks.MockCityService, *mocks.MockCountryService,
+	*mocks.MockSelectOptionsService) {
+	countryLabels := map[string]string{
+		"pt": "Brasil", "en": "Brazil", "es": "Brasil",
+	}
+	genderLabels := map[string]string{
+		"pt": "Masculino", "en": "Male", "es": "Masculino",
+	}
+	originLabels := map[string]string{
+		"pt": "Humano", "en": "Human", "es": "Humano",
+	}
+
+	citySvc := &mocks.MockCityService{
+		FindAllFunc: func(ctx context.Context, language string) (
+			[]models.SelectOption, error) {
+			return []models.SelectOption{
+				{Label: "Rio de Janeiro", Value: "Rio de Janeiro"},
+			}, nil
+		},
+	}
+	countrySvc := &mocks.MockCountryService{
+		FindAllFunc: func(ctx context.Context, lang string) (
+			[]models.SelectOption, error) {
+			return []models.SelectOption{
+				{Label: countryLabels[lang], Value: "BRA"},
+			}, nil
+		},
+	}
+	selectOpts := &mocks.MockSelectOptionsService{
+		FindAllFormSelectsFunc: func(ctx context.Context,
+			language string) (*models.FormSelectsResponse, error) {
+			return &models.FormSelectsResponse{
+				Laboratories: []models.SelectOption{
+					{Label: "LACEN/RJ", Value: testLaboratoryID.String()},
+				},
+				Sequencers: []models.SelectOption{
+					{Label: "Illumina", Value: testSequencerID.String()},
+				},
+				HealthServices: []models.SelectOption{
+					{Label: "Hospital Central", Value: testHealthServiceID.String()},
+				},
+				Origins: []models.SelectOption{
+					{Label: originLabels[language], Value: testOriginID.String()},
+				},
+				Microorganisms: []models.SelectOption{
+					{Label: "Escherichia coli", Value: testMicroorganismID.String()},
+				},
+				SampleSources: []models.SelectOption{
+					{Label: "Aspirado", Value: testSampleSourceID.String()},
+				},
+				Genders: []models.SelectOption{
+					{Label: genderLabels[language], Value: "Male"},
+				},
+			}, nil
+		},
+	}
+	return citySvc, countrySvc, selectOpts
+}
+
 func columnByLetter(t *testing.T, columns []utils.Column,
 	letter string) utils.Column {
 	t.Helper()
@@ -400,8 +461,8 @@ func TestTemplateServiceValidateTemplateTable(t *testing.T) {
 		in := inputs[0]
 		assert.Equal(t, "ORIG-001", in.OriginCode)
 		assert.Equal(t, "42", in.RunNumber)
-		assert.True(t, in.CollectionDate.IsZero())
-		assert.True(t, in.RunDate.IsZero())
+		assert.Equal(t, "2025-01-15", in.CollectionDate.Format("2006-01-02"))
+		assert.Equal(t, "2025-01-16", in.RunDate.Format("2006-01-02"))
 		assert.Nil(t, in.DateOfBirth)
 		assert.Equal(t, "Rio de Janeiro", in.City)
 		if assert.NotNil(t, in.Gender) {
@@ -417,6 +478,91 @@ func TestTemplateServiceValidateTemplateTable(t *testing.T) {
 		assert.Equal(t, testSequencerID, in.SequencerID)
 		assert.Equal(t, testLaboratoryID, in.LaboratoryID)
 		assert.Equal(t, testHealthServiceID, in.HealthServiceID)
+	})
+
+	t.Run("Success - DD/MM dates", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+		row := fullSampleRow()
+		row[1] = "22/05/2019"
+		row[3] = "01/06/2019"
+		row[6] = "15/03/1990"
+		f := newSamplesSheet(t, [][]string{sampleHeaders(), row})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		if assert.Len(t, inputs, 1) {
+			in := inputs[0]
+			assert.Equal(t, "2019-05-22",
+				in.CollectionDate.Format("2006-01-02"))
+			assert.Equal(t, "2019-06-01", in.RunDate.Format("2006-01-02"))
+			if assert.NotNil(t, in.DateOfBirth) {
+				assert.Equal(t, "1990-03-15",
+					in.DateOfBirth.Format("2006-01-02"))
+			}
+		}
+	})
+
+	t.Run("Success - Date serial", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+		f := newSamplesSheet(t, [][]string{sampleHeaders(),
+			fullSampleRow()})
+		if err := f.SetCellValue("Samples", "B2", 43607); err != nil {
+			t.Fatalf("set serial: %v", err)
+		}
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		if assert.Len(t, inputs, 1) {
+			assert.Equal(t, "2019-05-22",
+				inputs[0].CollectionDate.Format("2006-01-02"))
+		}
+	})
+
+	t.Run("Success - Ambiguous text reads as DD/MM", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+		row := fullSampleRow()
+		row[1] = "05/06/2019"
+		f := newSamplesSheet(t, [][]string{sampleHeaders(), row})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		if assert.Len(t, inputs, 1) {
+			assert.Equal(t, "2019-06-05",
+				inputs[0].CollectionDate.Format("2006-01-02"))
+		}
+	})
+
+	t.Run("Error - Invalid date", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			mockLogger)
+		row := fullSampleRow()
+		row[1] = "abc"
+		f := newSamplesSheet(t, [][]string{sampleHeaders(), row})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		var tvErr *services.TableValueError
+		if assert.ErrorAs(t, err, &tvErr) {
+			assert.Equal(t, 2, tvErr.Row)
+			assert.Equal(t, "collection_date", tvErr.Col)
+		}
+		assert.Nil(t, inputs)
+		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Success - Empty row skipped", func(t *testing.T) {
@@ -599,5 +745,54 @@ func TestTemplateServiceValidateTemplateTable(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, inputs, 1000)
+	})
+
+	t.Run("Success - Labels in another language", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocksByLang()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+		row := fullSampleRow()
+		row[5] = "Male"
+		row[7] = models.ToTranslatedInNetwork(true, "en")
+		row[8] = "Brazil"
+		row[9] = "Human"
+		f := newSamplesSheet(t, [][]string{sampleHeaders(), row})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		if assert.Len(t, inputs, 1) {
+			in := inputs[0]
+			assert.Equal(t, "BRA", in.CountryCode)
+			if assert.NotNil(t, in.InNetwork) {
+				assert.True(t, *in.InNetwork)
+			}
+			if assert.NotNil(t, in.Gender) {
+				assert.Equal(t, models.Male, *in.Gender)
+			}
+			assert.Equal(t, testOriginID, in.OriginID)
+		}
+	})
+
+	t.Run("Error - Unknown in every language", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocksByLang()
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			mockLogger)
+		row := fullSampleRow()
+		row[8] = "Atlantis"
+		f := newSamplesSheet(t, [][]string{sampleHeaders(), row})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		var tvErr *services.TableValueError
+		if assert.ErrorAs(t, err, &tvErr) {
+			assert.Equal(t, 2, tvErr.Row)
+			assert.Equal(t, "country_code", tvErr.Col)
+		}
+		assert.Nil(t, inputs)
+		assert.Equal(t, 1, logs.Len())
 	})
 }

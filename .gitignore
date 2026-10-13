@@ -10,3 +10,4 @@
 /jsons/o*.json
 /jsons/s*.json
 docker-compose.override.yaml
+AGENTS.md
