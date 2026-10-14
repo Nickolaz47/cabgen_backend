@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func TestMetricsGetMetrics(t *testing.T) {
@@ -445,6 +446,151 @@ func TestMetricsGetMetrics(t *testing.T) {
 		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
 			mockLogger)
 		result, err := svc.GetMetrics(ctx)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestMetricsGetUserMetrics(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+
+	buildRepos := func(samples []models.Sample, analyses []models.Analysis) (
+		*mocks.MockSampleRepository, *mocks.MockAnalysisRepository,
+		*mocks.MockUserRepository) {
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				repoUserID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				assert.Equal(t, userID, repoUserID)
+				return samples, 0, nil
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, repoUserID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				assert.Equal(t, userID, repoUserID)
+				return analyses, 0, nil
+			},
+		}
+		return sampleRepo, analysisRepo, &mocks.MockUserRepository{}
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		now := time.Now()
+		mockDone := testmodels.CreateMockAnalysis()
+		mockDone.Type = models.AnalysisTypeFastQC
+		mockDone.Status = models.AnalysisStatusDone
+		mockDone.UserID = userID
+		mockDone.Metrics = []byte(`{"primary_species":"Acinetobacter sp","acquired_resistance":["g01","g01","g01","g02","g02","g03","g04","g05","g06","g07","g08","g09","g10","g11"]}`)
+		mockSampleNow := testmodels.CreateMockSample()
+		mockSampleNow.UserID = userID
+		mockSampleNow.CreatedAt = now
+		mockSamplePast := testmodels.CreateMockSample()
+		mockSamplePast.UserID = userID
+		mockSamplePast.CreatedAt = now.AddDate(0, -2, 0)
+
+		sampleRepo, analysisRepo, userRepo := buildRepos(
+			[]models.Sample{mockSampleNow, mockSamplePast},
+			[]models.Analysis{mockDone})
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetUserMetrics(ctx, userID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, models.AnalysesByStatus{Done: 1},
+			result.AnalysesByStatus)
+		if assert.Len(t, result.AnalysesByType, 3) {
+			assert.Equal(t, models.AnalysisTypeMetric{
+				Type: string(models.AnalysisTypeFastQC), Count: 1},
+				result.AnalysesByType[0])
+		}
+		assert.Equal(t, []models.SpeciesMetric{
+			{Species: "Acinetobacter sp", Count: 1},
+		}, result.TopSpecies)
+		if assert.Len(t, result.TopResistanceGenes, 11) {
+			assert.Equal(t, models.GeneMetric{Gene: "g01", Count: 3},
+				result.TopResistanceGenes[0])
+			assert.Equal(t, models.GeneMetric{Gene: "g02", Count: 2},
+				result.TopResistanceGenes[1])
+		}
+		if assert.Len(t, result.SamplesByMonth, 12) {
+			byMonth := make(map[string]models.MonthMetric, 12)
+			for _, m := range result.SamplesByMonth {
+				byMonth[m.Month] = m
+			}
+			assert.Equal(t, int64(1),
+				byMonth[now.Format("2006-01")].Count)
+			assert.Equal(t, int64(1),
+				byMonth[now.AddDate(0, -2, 0).Format("2006-01")].Count)
+		}
+	})
+
+	t.Run("Success - Empty", func(t *testing.T) {
+		sampleRepo, analysisRepo, userRepo := buildRepos(nil, nil)
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo, userRepo,
+			nil)
+		result, err := svc.GetUserMetrics(ctx, userID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, models.AnalysesByStatus{},
+			result.AnalysesByStatus)
+		if assert.Len(t, result.AnalysesByType, 3) {
+			for _, entry := range result.AnalysesByType {
+				assert.Equal(t, int64(0), entry.Count)
+			}
+		}
+		assert.Equal(t, []models.SpeciesMetric{}, result.TopSpecies)
+		assert.Equal(t, []models.GeneMetric{},
+			result.TopResistanceGenes)
+		if assert.Len(t, result.SamplesByMonth, 12) {
+			for _, m := range result.SamplesByMonth {
+				assert.Equal(t, int64(0), m.Count)
+			}
+		}
+	})
+
+	t.Run("Error - Analysis Repo", func(t *testing.T) {
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		sampleRepo := &mocks.MockSampleRepository{}
+		analysisRepo := &mocks.MockAnalysisRepository{
+			GetAnalysesFunc: func(ctx context.Context, repoUserID uuid.UUID,
+				filter models.AnalysisFilter, limit, offset int) (
+				[]models.Analysis, int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
+			},
+		}
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo,
+			&mocks.MockUserRepository{}, mockLogger)
+		result, err := svc.GetUserMetrics(ctx, userID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Sample Repo", func(t *testing.T) {
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSamplesFunc: func(ctx context.Context, input string,
+				repoUserID uuid.UUID, limit, offset int) ([]models.Sample,
+				int64, error) {
+				return nil, 0, gorm.ErrInvalidTransaction
+			},
+		}
+		analysisRepo := &mocks.MockAnalysisRepository{}
+
+		svc := services.NewMetricsService(sampleRepo, analysisRepo,
+			&mocks.MockUserRepository{}, mockLogger)
+		result, err := svc.GetUserMetrics(ctx, userID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

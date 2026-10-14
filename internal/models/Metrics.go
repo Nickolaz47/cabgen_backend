@@ -74,3 +74,11 @@ func (r *AdminMetricsResponse) ToPublicResponse() PublicMetricsResponse {
 		TotalResistance: r.TotalResistance,
 	}
 }
+
+type UserMetricsResponse struct {
+	AnalysesByStatus   AnalysesByStatus     `json:"analyses_by_status"`
+	AnalysesByType     []AnalysisTypeMetric `json:"analyses_by_type"`
+	TopSpecies         []SpeciesMetric      `json:"top_species"`
+	TopResistanceGenes []GeneMetric         `json:"top_resistance_genes"`
+	SamplesByMonth     []MonthMetric        `json:"samples_by_month"`
+}

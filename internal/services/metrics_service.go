@@ -16,6 +16,8 @@ import (
 
 type MetricsService interface {
 	GetMetrics(ctx context.Context) (*models.AdminMetricsResponse, error)
+	GetUserMetrics(ctx context.Context, userID uuid.UUID) (
+		*models.UserMetricsResponse, error)
 }
 
 type metricsService struct {
@@ -79,19 +81,7 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 		SpeciesBreakdown: speciesMetrics(analyses),
 	}
 
-	for _, analysis := range analyses {
-		switch analysis.Status {
-		case models.AnalysisStatusDone:
-			metrics.AnalysesByStatus.Done++
-		case models.AnalysisStatusRunning:
-			metrics.AnalysesByStatus.Running++
-		case models.AnalysisStatusPending:
-			metrics.AnalysesByStatus.Pending++
-		case models.AnalysisStatusFailed:
-			metrics.AnalysesByStatus.Failed++
-		}
-	}
-
+	metrics.AnalysesByStatus = statusCounts(analyses)
 	metrics.AnalysesByType = analysisTypeMetrics(analyses)
 
 	species, genes := uniqueSpeciesResults(analyses)
@@ -100,6 +90,38 @@ func (s *metricsService) GetMetrics(ctx context.Context) (
 	metrics.TopResistanceGenes = sortedGeneMetrics(genes)
 	metrics.SamplesByMonth = samplesByMonth(samples)
 	metrics.QueueWait = queueWait(analyses)
+
+	return metrics, nil
+}
+
+func (s *metricsService) GetUserMetrics(ctx context.Context,
+	userID uuid.UUID) (*models.UserMetricsResponse, error) {
+	analyses, _, err := s.AnalysisRepo.GetAnalyses(ctx, userID,
+		models.AnalysisFilter{}, 0, 0)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"MetricsService", "GetUserMetrics", logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	samples, _, err := s.SampleRepo.GetSamples(ctx, "", userID, 0, 0)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"MetricsService", "GetUserMetrics", logging.DatabaseError, err,
+		)...)
+		return nil, ErrInternal
+	}
+
+	metrics := &models.UserMetricsResponse{
+		AnalysesByStatus: statusCounts(analyses),
+		AnalysesByType:   analysisTypeMetrics(analyses),
+		TopSpecies:       speciesMetrics(analyses),
+		SamplesByMonth:   samplesByMonth(samples),
+	}
+
+	_, genes := uniqueSpeciesResults(analyses)
+	metrics.TopResistanceGenes = sortedGeneMetrics(genes)
 
 	return metrics, nil
 }
@@ -128,6 +150,23 @@ func countSamplesByNetwork(samples []models.Sample) models.NetworkMetric {
 	}
 
 	return metric
+}
+
+func statusCounts(analyses []models.Analysis) models.AnalysesByStatus {
+	counts := models.AnalysesByStatus{}
+	for _, analysis := range analyses {
+		switch analysis.Status {
+		case models.AnalysisStatusDone:
+			counts.Done++
+		case models.AnalysisStatusRunning:
+			counts.Running++
+		case models.AnalysisStatusPending:
+			counts.Pending++
+		case models.AnalysisStatusFailed:
+			counts.Failed++
+		}
+	}
+	return counts
 }
 
 func uniqueCountryCodes(samples []models.Sample) map[string]struct{} {

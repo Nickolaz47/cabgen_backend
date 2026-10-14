@@ -392,6 +392,7 @@ Endpoints are organized into three access levels:
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/users/me` | Authenticated user data |
+| GET | `/api/users/me/metrics` | Metrics for the authenticated user's analyses (by status, by type with average/p95 duration, top species, all resistance genes sorted by frequency, and samples per month over the last 12 months) |
 | PUT | `/api/users/me` | Updates authenticated user data |
 | POST | `/api/users/me/update-password` | Updates the authenticated user's password |
 | POST | `/api/users/me/request-email-update` | Requests an email update and sends a confirmation link |

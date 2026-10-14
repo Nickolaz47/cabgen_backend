@@ -2,6 +2,7 @@ package container
 
 import (
 	adminHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/metrics"
+	commonMetrics "github.com/CABGenOrg/cabgen_backend/internal/handlers/common/metrics"
 	publicHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/metrics"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -22,4 +23,8 @@ func BuildMetricsHandler(svc services.MetricsService) *publicHandler.MetricsHand
 
 func BuildAdminMetricsHandler(svc services.MetricsService) *adminHandler.AdminMetricsHandler {
 	return adminHandler.NewAdminMetricsHandler(svc)
+}
+
+func BuildUserMetricsHandler(svc services.MetricsService) *commonMetrics.MetricsHandler {
+	return commonMetrics.NewMetricsHandler(svc)
 }

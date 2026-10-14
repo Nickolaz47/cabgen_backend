@@ -166,6 +166,7 @@ func main() {
 	pubCountryHandler := container.BuildPublicCountryHandler(countrySvc)
 	contactHandler := container.BuildTicketHandler(ticketSvc)
 	metricsHandler := container.BuildMetricsHandler(metricsSvc)
+	userMetricsHandler := container.BuildUserMetricsHandler(metricsSvc)
 
 	// Common handlers
 	authHandler := container.BuildCommonAuthHandler(authSvc)
@@ -222,6 +223,7 @@ func main() {
 	common.SetupSampleRoutes(commonRouter, sampleHandler)
 	common.SetupAnalysisRoutes(commonRouter, analysisHandler)
 	common.SetupSelectOptionRoutes(commonRouter, selectOptionHandler)
+	common.SetupUserMetricsRoutes(commonRouter, userMetricsHandler)
 	common.SetupCityRoutes(commonRouter, cityHandler)
 
 	// Admin routes
