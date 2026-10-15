@@ -692,7 +692,7 @@ Messages use i18n message IDs for translation.
 | `LoggerMiddleware` | Logs request details (including `request_id`) to console and file |
 | `I18nMiddleware` | Detects language from `Accept-Language` header and injects localizer into context |
 | `OriginCheckMiddleware` | Blocks mutating methods whose `Origin` differs from the allowed frontend (403) |
-| `GlobalRateLimitPerMinute` | Per-route rate limit (429): `forgot-password`/`reset-password` 3/min, `contact` 5/min |
+| `RateLimitPerMinute` | Per-route, per-IP rate limit (429): `register` 3/min, `login` 5/min, `forgot-password`/`reset-password` 3/min, `contact` 5/min |
 | `AuditMiddleware` | Builds the audit input, captures the real HTTP status and user after the handler, and asynchronously persists marked events |
 
 ## Logs

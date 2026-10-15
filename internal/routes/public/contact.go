@@ -9,6 +9,6 @@ import (
 func SetupContactRoutes(r *gin.RouterGroup, handler *contact.TicketHandler) {
 	contactRouter := r.Group("/contact")
 
-	contactRouter.POST("", middlewares.GlobalRateLimitPerMinute(5),
+	contactRouter.POST("", middlewares.RateLimitPerMinute(5),
 		handler.CreateTicket)
 }

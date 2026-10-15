@@ -693,7 +693,7 @@ O campo `Message` utiliza IDs de mensagens do sistema de i18n.
 | `LoggerMiddleware` | Registra detalhes da requisição (incluindo `request_id`) no console e em arquivo |
 | `I18nMiddleware` | Detecta o idioma pelo header `Accept-Language` e injeta o localizer no contexto |
 | `OriginCheckMiddleware` | Bloqueia métodos mutantes com `Origin` diferente do frontend permitido (403) |
-| `GlobalRateLimitPerMinute` | Limite de taxa por rota (429): `forgot-password`/`reset-password` 3/min, `contact` 5/min |
+| `RateLimitPerMinute` | Limite de taxa por rota, por IP (429): `register` 3/min, `login` 5/min, `forgot-password`/`reset-password` 3/min, `contact` 5/min |
 | `AuditMiddleware` | Monta o input de auditoria, captura o status HTTP real e o usuário após o handler e persiste assincronamente os eventos marcados |
 
 ## Logs
