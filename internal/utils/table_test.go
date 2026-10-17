@@ -227,7 +227,7 @@ func TestGenerateMetadataTemplate(t *testing.T) {
 		}
 	})
 
-	t.Run("Success - Date columns styled and validated", func(t *testing.T) {
+	t.Run("Success - Date columns styled as text with editing hint", func(t *testing.T) {
 		f, err := utils.GenerateMetadataTemplate([]utils.Column{
 			utils.NewColumn("A", "origin_code", nil),
 			utils.NewColumn("B", "collection_date", nil),
@@ -242,7 +242,7 @@ func TestGenerateMetadataTemplate(t *testing.T) {
 		style, stErr := f.GetStyle(styleID)
 		assert.NoError(t, stErr)
 		if assert.NotNil(t, style.CustomNumFmt) {
-			assert.Equal(t, "dd/mm/yyyy", *style.CustomNumFmt)
+			assert.Equal(t, "@", *style.CustomNumFmt)
 		}
 
 		validations, dvErr := f.GetDataValidations("Samples")
@@ -259,15 +259,73 @@ func TestGenerateMetadataTemplate(t *testing.T) {
 					sqref) {
 					continue
 				}
-				assert.Equal(t, "date", dv.Type)
-				assert.Equal(t, "between", dv.Operator)
-				assert.Equal(t, "DATE(1900,1,1)", dv.Formula1)
-				assert.Equal(t, "DATE(9999,12,31)", dv.Formula2)
-				if assert.NotNil(t, dv.Error) {
-					assert.Equal(t, "Please enter a valid date.",
-						*dv.Error)
+				assert.Empty(t, dv.Type)
+				assert.Empty(t, dv.Operator)
+				assert.Empty(t, dv.Formula1)
+				assert.Empty(t, dv.Formula2)
+				assert.Nil(t, dv.Error)
+				if assert.NotNil(t, dv.PromptTitle) {
+					assert.Equal(t, "Enter a date", *dv.PromptTitle)
+				}
+				if assert.NotNil(t, dv.Prompt) {
+					assert.Equal(t, "dd/mm/yyyy or yyyy-mm-dd.", *dv.Prompt)
 				}
 			}
+		}
+	})
+
+	t.Run("Success - Required headers show red asterisk", func(t *testing.T) {
+		columns := buildColumns()
+		columns[0].Required = true
+
+		f, err := utils.GenerateMetadataTemplate(columns)
+		assert.NoError(t, err)
+
+		value, cellErr := f.GetCellValue("Samples", "A1")
+		assert.NoError(t, cellErr)
+		assert.Equal(t, "origin_code *", value)
+
+		runs, rtErr := f.GetCellRichText("Samples", "A1")
+		assert.NoError(t, rtErr)
+		if assert.Len(t, runs, 2) {
+			assert.Equal(t, "origin_code", runs[0].Text)
+			assert.Equal(t, " *", runs[1].Text)
+			if assert.NotNil(t, runs[1].Font) {
+				assert.Equal(t, "FF0000", runs[1].Font.Color)
+			}
+		}
+
+		value, cellErr = f.GetCellValue("Samples", "B1")
+		assert.NoError(t, cellErr)
+		assert.Equal(t, "gender", value)
+	})
+
+	t.Run("Success - Header comments", func(t *testing.T) {
+		fWithoutComments, err := utils.GenerateMetadataTemplate(buildColumns())
+		assert.NoError(t, err)
+
+		comments, cErr := fWithoutComments.GetComments("Samples")
+		assert.NoError(t, cErr)
+		assert.Empty(t, comments)
+
+		columns := buildColumns()
+		columns[0].Description = "Sample identification code."
+		columns[1].Description = "Date the sample was collected."
+
+		f, err := utils.GenerateMetadataTemplate(columns)
+		assert.NoError(t, err)
+
+		comments, cErr = f.GetComments("Samples")
+		assert.NoError(t, cErr)
+		if assert.Len(t, comments, 2) {
+			byCell := map[string]string{}
+			for _, c := range comments {
+				byCell[c.Cell] = c.Text
+			}
+			assert.Equal(t,
+				"Sample identification code.", byCell["A1"])
+			assert.Equal(t,
+				"Date the sample was collected.", byCell["B1"])
 		}
 	})
 

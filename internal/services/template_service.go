@@ -24,6 +24,89 @@ var templateFreeColumns = map[string]string{
 	"G": "date_of_birth",
 }
 
+var templateRequiredColumns = map[string]struct{}{
+	"A": {}, "B": {}, "C": {}, "D": {}, "E": {}, "H": {}, "I": {},
+	"J": {}, "K": {}, "L": {}, "M": {}, "N": {}, "O": {},
+}
+
+var templateColumnDescriptions = map[string]map[string]string{
+	"A": {
+		"en": "Sample identification code at the originating laboratory.",
+		"es": "Código de identificación de la muestra en el laboratorio de origen.",
+		"pt": "Código de identificação da amostra no laboratório de origem.",
+	},
+	"B": {
+		"en": "Date the sample was collected (dd/mm/yyyy).",
+		"es": "Fecha de recolección de la muestra (dd/mm/aaaa).",
+		"pt": "Data da coleta da amostra (dd/mm/aaaa).",
+	},
+	"C": {
+		"en": "Number or identifier of the sequencing run.",
+		"es": "Número o identificador de la corrida de secuenciación.",
+		"pt": "Número ou identificador da corrida de sequenciamento.",
+	},
+	"D": {
+		"en": "Date of the sequencing run (dd/mm/yyyy).",
+		"es": "Fecha de la corrida de secuenciación (dd/mm/aaaa).",
+		"pt": "Data da corrida de sequenciamento (dd/mm/aaaa).",
+	},
+	"E": {
+		"en": "City where the sample was collected.",
+		"es": "Ciudad donde se recolectó la muestra.",
+		"pt": "Cidade da coleta da amostra.",
+	},
+	"F": {
+		"en": "Patient sex.",
+		"es": "Sexo del paciente.",
+		"pt": "Sexo do paciente.",
+	},
+	"G": {
+		"en": "Patient date of birth (dd/mm/yyyy).",
+		"es": "Fecha de nacimiento del paciente (dd/mm/aaaa).",
+		"pt": "Data de nascimento do paciente (dd/mm/aaaa).",
+	},
+	"H": {
+		"en": "Whether to include this sample in the genomic network. Samples included in the network are shown in the monthly surveillance Dashboard.",
+		"es": "Si desea incluir esta muestra en la red genómica. Las muestras incluidas en la red se presentan en el Dashboard mensual de vigilancia.",
+		"pt": "Se deseja incluir essa amostra na rede genômica. As amostras incluídas na rede são apresentadas no Dashboard mensal de vigilância.",
+	},
+	"I": {
+		"en": "Country where the sample was collected.",
+		"es": "País donde se recolectó la muestra.",
+		"pt": "País de coleta da amostra.",
+	},
+	"J": {
+		"en": "Sample origin.",
+		"es": "Origen de la muestra.",
+		"pt": "Origem da amostra.",
+	},
+	"K": {
+		"en": "Sample source (biological material).",
+		"es": "Fuente de la muestra (material biológico).",
+		"pt": "Fonte da amostra (material biológico).",
+	},
+	"L": {
+		"en": "Microorganism identified in the sample.",
+		"es": "Microorganismo identificado en la muestra.",
+		"pt": "Microrganismo identificado na amostra.",
+	},
+	"M": {
+		"en": "Equipment used for sequencing.",
+		"es": "Equipo utilizado en la secuenciación.",
+		"pt": "Equipamento utilizado no sequenciamento.",
+	},
+	"N": {
+		"en": "Laboratory responsible for sequencing.",
+		"es": "Laboratorio responsable de la secuenciación.",
+		"pt": "Laboratório responsável pelo sequenciamento.",
+	},
+	"O": {
+		"en": "Health service where the sample came from.",
+		"es": "Servicio de salud de origen de la muestra.",
+		"pt": "Serviço de saúde de origem da amostra.",
+	},
+}
+
 func toMap(options []models.SelectOption) map[string]string {
 	m := make(map[string]string)
 	for _, opt := range options {
@@ -175,6 +258,17 @@ func (s *templateService) BuildColumns(ctx context.Context,
 		countryColumn, originColumn, sampleSourceColumn, microorganismColumn,
 		sequencerColumn, laboratoryColumn, healthServiceColumn)
 
+	lang := translation.ParseLanguage(language)
+	for i := range columns {
+		col := &columns[i]
+		if desc, ok := templateColumnDescriptions[col.Letter]; ok {
+			col.Description = desc[lang]
+		}
+		if _, ok := templateRequiredColumns[col.Letter]; ok {
+			col.Required = true
+		}
+	}
+
 	columnHeaders := make(map[string]struct{})
 	for _, col := range columns {
 		columnHeaders[col.Header] = struct{}{}
@@ -267,15 +361,21 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 		return nil, ErrTooManyRows
 	}
 
-	// Compare submitted headers against the contract: missing or unknown = error
+	// Compare submitted headers against the contract: missing or unknown = error.
+	// Required headers may carry a trailing mandatory marker (asterisk)
+	normalizeHeader := func(h string) string {
+		h = strings.TrimSuffix(strings.TrimSpace(h), "*")
+		return strings.ToLower(strings.TrimSpace(h))
+	}
+
 	present := make(map[string]struct{}, len(rows[0]))
 	for _, h := range rows[0] {
-		present[strings.TrimSpace(strings.ToLower(h))] = struct{}{}
+		present[normalizeHeader(h)] = struct{}{}
 	}
 
 	var invalid []string
 	for header := range columnHeaders {
-		if _, ok := present[strings.TrimSpace(strings.ToLower(header))]; !ok {
+		if _, ok := present[normalizeHeader(header)]; !ok {
 			invalid = append(invalid, header)
 		}
 	}
@@ -293,11 +393,11 @@ func (s *templateService) ValidateTemplateTable(ctx context.Context,
 	// Index header name -> column position (column order in the sheet is free)
 	headerIdx := map[string]int{}
 	for i, h := range rows[0] {
-		headerIdx[strings.ToLower(strings.TrimSpace(h))] = i
+		headerIdx[normalizeHeader(h)] = i
 	}
 	columnsByHeader := make(map[string]utils.Column, len(columns))
 	for _, col := range columns {
-		key := strings.ToLower(strings.TrimSpace(col.Header))
+		key := normalizeHeader(col.Header)
 		columnsByHeader[key] = col
 	}
 

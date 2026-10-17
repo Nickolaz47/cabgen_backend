@@ -86,6 +86,8 @@ func formatTSVValue(v any) string {
 type Column struct {
 	Letter        string
 	Header        string
+	Description   string
+	Required      bool
 	LabelValues   []string
 	realValuesMap map[string]string
 }
@@ -161,8 +163,8 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 		return nil, err
 	}
 
-	dateFmt := "dd/mm/yyyy"
-	dateStyle, err := f.NewStyle(&excelize.Style{CustomNumFmt: &dateFmt})
+	textFmt := "@"
+	textStyle, err := f.NewStyle(&excelize.Style{CustomNumFmt: &textFmt})
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +172,7 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 		if !isDateHeader(col.Header) {
 			continue
 		}
-		if err := f.SetColStyle(SheetName, col.Letter, dateStyle); err != nil {
+		if err := f.SetColStyle(SheetName, col.Letter, textStyle); err != nil {
 			return nil, fmt.Errorf("failed to style date column %s: %w",
 				col.Header, err)
 		}
@@ -181,12 +183,41 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 	}
 	for _, col := range columns {
 		cell := col.Letter + "1"
-		if err := f.SetCellValue(SheetName, cell, col.Header); err != nil {
-			return nil, fmt.Errorf("failed to define header %s: %w", col.Header, err)
+
+		if col.Required {
+			runs := []excelize.RichTextRun{
+				{Text: col.Header,
+					Font: &excelize.Font{Bold: true, Color: "FFFFFF", Size: 11}},
+				{Text: " *",
+					Font: &excelize.Font{Bold: true, Color: "FF0000", Size: 11}},
+			}
+			if err := f.SetCellRichText(SheetName, cell, runs); err != nil {
+				return nil, fmt.Errorf("failed to define header %s: %w",
+					col.Header, err)
+			}
+		} else {
+			if err := f.SetCellValue(SheetName, cell, col.Header); err != nil {
+				return nil, fmt.Errorf("failed to define header %s: %w",
+					col.Header, err)
+			}
 		}
+
 		if err := f.SetCellStyle(SheetName, cell, cell, headerStyle); err != nil {
 			return nil, err
 		}
+
+		if col.Description != "" {
+			if err := f.AddComment(SheetName, excelize.Comment{
+				Cell:   cell,
+				Text:   col.Description,
+				Width:  300,
+				Height: 90,
+			}); err != nil {
+				return nil, fmt.Errorf("failed to add comment for %s: %w",
+					col.Header, err)
+			}
+		}
+
 		width := math.Min(math.Max(float64(len(col.Header))+4, 14), 40)
 		if err := f.SetColWidth(SheetName, col.Letter, col.Letter, width); err != nil {
 			return nil, err
@@ -244,19 +275,12 @@ func GenerateMetadataTemplate(columns []Column) (*excelize.File, error) {
 		}
 
 		dv := excelize.NewDataValidation(true)
-		if err := dv.SetRange("DATE(1900,1,1)", "DATE(9999,12,31)",
-			excelize.DataValidationTypeDate,
-			excelize.DataValidationOperatorBetween); err != nil {
-			return nil, err
-		}
 		dv.Sqref = fmt.Sprintf("%s2:%s%d", col.Letter, col.Letter,
 			MaxTableRows+1)
 		dv.SetInput("Enter a date", "dd/mm/yyyy or yyyy-mm-dd.")
-		dv.SetError(excelize.DataValidationErrorStyleStop,
-			"Invalid date", "Please enter a valid date.")
 
 		if err := f.AddDataValidation(SheetName, dv); err != nil {
-			return nil, fmt.Errorf("failed to add date validation for %s: %w",
+			return nil, fmt.Errorf("failed to add date hint for %s: %w",
 				col.Header, err)
 		}
 	}

@@ -234,6 +234,46 @@ func TestTemplateServiceBuildColumns(t *testing.T) {
 		}
 	})
 
+	t.Run("Success - Descriptions and required flags", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+
+		columns, _, err := svc.BuildColumns(
+			context.Background(), "pt")
+
+		assert.NoError(t, err)
+
+		required := map[string]bool{
+			"A": true, "B": true, "C": true, "D": true, "E": true,
+			"F": false, "G": false, "H": true, "I": true, "J": true,
+			"K": true, "L": true, "M": true, "N": true, "O": true,
+		}
+		for i := range columns {
+			col := columns[i]
+			assert.NotEmpty(t, col.Description, "description for %s",
+				col.Letter)
+			assert.Equal(t, required[col.Letter], col.Required,
+				"required flag for %s", col.Letter)
+		}
+
+		assert.Equal(t,
+			"Código de identificação da amostra no laboratório de origem.",
+			columnByLetter(t, columns, "A").Description)
+		assert.Equal(t,
+			"Se deseja incluir essa amostra na rede genômica. As amostras incluídas na rede são apresentadas no Dashboard mensal de vigilância.",
+			columnByLetter(t, columns, "H").Description)
+		assert.Equal(t, false, columnByLetter(t, columns, "F").Required)
+		assert.Equal(t, false, columnByLetter(t, columns, "G").Required)
+
+		enColumns, _, err := svc.BuildColumns(
+			context.Background(), "en")
+		assert.NoError(t, err)
+		assert.Equal(t,
+			"Sample identification code at the originating laboratory.",
+			columnByLetter(t, enColumns, "A").Description)
+	})
+
 	t.Run("Success - Empty lists", func(t *testing.T) {
 		citySvc := &mocks.MockCityService{
 			FindAllFunc: func(ctx context.Context, language string) (
@@ -356,9 +396,9 @@ func TestTemplateServiceCreateTemplateTable(t *testing.T) {
 			assert.Equal(t, "Samples", f.GetSheetName(0))
 
 			for cell, expected := range map[string]string{
-				"A1": "origin_code",
-				"E1": "city",
-				"O1": "health_service_id",
+				"A1": "origin_code *",
+				"E1": "city *",
+				"O1": "health_service_id *",
 			} {
 				value, cellErr := f.GetCellValue("Samples", cell)
 				assert.NoError(t, cellErr)
@@ -587,6 +627,23 @@ func TestTemplateServiceValidateTemplateTable(t *testing.T) {
 		headers := make([]string, 0, len(sampleHeaders()))
 		for _, h := range sampleHeaders() {
 			headers = append(headers, "  "+strings.ToUpper(h)+"  ")
+		}
+		f := newSamplesSheet(t, [][]string{headers, fullSampleRow()})
+
+		inputs, err := svc.ValidateTemplateTable(context.Background(), "pt",
+			f)
+
+		assert.NoError(t, err)
+		assert.Len(t, inputs, 1)
+	})
+
+	t.Run("Success - Header with required asterisk accepted", func(t *testing.T) {
+		citySvc, countrySvc, selectOpts := templateSuccessMocks()
+		svc := services.NewTemplateService(countrySvc, citySvc, selectOpts,
+			nil)
+		headers := make([]string, 0, len(sampleHeaders()))
+		for _, h := range sampleHeaders() {
+			headers = append(headers, h+" *")
 		}
 		f := newSamplesSheet(t, [][]string{headers, fullSampleRow()})
 
