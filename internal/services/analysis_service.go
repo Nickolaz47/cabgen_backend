@@ -270,14 +270,14 @@ func (s *analysisService) Create(ctx context.Context,
 		return nil, ErrAnalysisSampleLimit
 	}
 
-	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AnalysisService", "Create",
-				logging.DatabaseError, err,
-			)...)
+	id, err := uuid.NewV7()
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create", logging.GenerateIDError, err,
+		)...)
 		return nil, ErrInternal
 	}
+	analysis.ID = id
 
 	task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 	if err != nil {
@@ -285,30 +285,35 @@ func (s *analysisService) Create(ctx context.Context,
 			"AnalysisService", "Create", logging.AsynqTaskError,
 			err,
 		)...)
-	} else {
-		info, err := s.Tasks.EnqueueContext(ctx, task,
-			asynq.Queue(tasks.QueueAnalysis))
-		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AnalysisService", "Create",
-				logging.RedisDispatchError, err,
-			)...)
-		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-				"AnalysisService", "Create",
-				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-			)...)
+		return nil, ErrInternal
+	}
 
-			taskID := info.ID
-			analysis.TaskID = &taskID
-			if err := s.Repo.UpdateAnalysis(ctx, &analysis); err != nil {
-				s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.DatabaseError, err,
-				)...)
-			}
-		}
+	info, err := s.Tasks.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueAnalysis), asynq.ProcessIn(CommitGrace))
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create",
+			logging.RedisDispatchError, err,
+		)...)
+		return nil, ErrInternal
+	}
+	s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+		"AnalysisService", "Create",
+		logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+		zap.String("queue", info.Queue),
+	)...)
+
+	analysis.TaskID = &info.ID
+
+	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "Create",
+				logging.DatabaseError, err,
+			)...)
+		DeleteScheduledTask(ctx, s.Tasks, s.Logger,
+			"AnalysisService", "Create", tasks.QueueAnalysis, info.ID)
+		return nil, ErrInternal
 	}
 
 	response := analysis.ToResponse(language)
@@ -342,29 +347,10 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 
 	validations.ApplyAnalysisUpdate(analysis, &input)
 
-	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AnalysisService", "Update",
-				logging.DatabaseError, err,
-				zap.String("analysis_id", analysisID.String()),
-			)...)
-		return nil, ErrInternal
-	}
-
-	if analysis.Status == models.AnalysisStatusFailed &&
-		analysis.TaskID != nil {
-		if err := s.Tasks.CancelProcessing(*analysis.TaskID); err != nil {
-			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
-				"AnalysisService", "Update",
-				logging.RedisDispatchError, err,
-				zap.String("analysis_id", analysisID.String()),
-			)...)
-		}
-	}
-
-	if analysis.Status == models.AnalysisStatusDone ||
-		analysis.Status == models.AnalysisStatusFailed {
+	var info *asynq.TaskInfo
+	var queue string
+	switch analysis.Status {
+	case models.AnalysisStatusDone, models.AnalysisStatusFailed:
 		task, err := tasks.NewAnalysisDoneEmailTask(analysis.ID)
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -372,27 +358,28 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				err,
 				zap.String("analysis_id", analysisID.String()),
 			)...)
-		} else {
-			info, err := s.Tasks.EnqueueContext(ctx, task,
-				asynq.Queue(tasks.QueueEmail))
-			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-					"AnalysisService", "Update",
-					logging.RedisDispatchError, err,
-					zap.String("analysis_id", analysisID.String()),
-				)...)
-			} else {
-				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-					"AnalysisService", "Update",
-					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
-					zap.String("queue", info.Queue),
-					zap.String("analysis_id", analysisID.String()),
-				)...)
-			}
+			return nil, ErrInternal
 		}
-	}
 
-	if analysis.Status == models.AnalysisStatusPending {
+		info, err = s.Tasks.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AnalysisService", "Update",
+				logging.RedisDispatchError, err,
+				zap.String("analysis_id", analysisID.String()),
+			)...)
+			return nil, ErrInternal
+		}
+		s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+			"AnalysisService", "Update",
+			logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+			zap.String("queue", info.Queue),
+			zap.String("analysis_id", analysisID.String()),
+		)...)
+		queue = tasks.QueueEmail
+
+	case models.AnalysisStatusPending:
 		task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -400,32 +387,54 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				err,
 				zap.String("analysis_id", analysisID.String()),
 			)...)
-		} else {
-			info, err := s.Tasks.EnqueueContext(ctx, task,
-				asynq.Queue(tasks.QueueAnalysis))
-			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			return nil, ErrInternal
+		}
+
+		info, err = s.Tasks.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueAnalysis), asynq.ProcessIn(CommitGrace))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AnalysisService", "Update",
+				logging.RedisDispatchError, err,
+				zap.String("analysis_id", analysisID.String()),
+			)...)
+			return nil, ErrInternal
+		}
+		s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+			"AnalysisService", "Update",
+			logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+			zap.String("queue", info.Queue),
+			zap.String("analysis_id", analysisID.String()),
+		)...)
+		analysis.TaskID = &info.ID
+		queue = tasks.QueueAnalysis
+	}
+
+	if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "Update",
+				logging.DatabaseError, err,
+				zap.String("analysis_id", analysisID.String()),
+			)...)
+		if info != nil {
+			DeleteScheduledTask(ctx, s.Tasks, s.Logger,
+				"AnalysisService", "Update", queue, info.ID)
+		}
+		return nil, ErrInternal
+	}
+
+	// Cancel the previously scheduled run only after the new status is
+	// persisted; the old TaskID is not the one just created above.
+	if analysis.Status == models.AnalysisStatusFailed &&
+		info != nil && queue == tasks.QueueEmail {
+		if analysis.TaskID != nil {
+			if err := s.Tasks.CancelProcessing(*analysis.TaskID); err != nil {
+				s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 					"AnalysisService", "Update",
 					logging.RedisDispatchError, err,
 					zap.String("analysis_id", analysisID.String()),
 				)...)
-			} else {
-				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-					"AnalysisService", "Update",
-					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
-					zap.String("queue", info.Queue),
-					zap.String("analysis_id", analysisID.String()),
-				)...)
-
-				taskID := info.ID
-				analysis.TaskID = &taskID
-				if err := s.Repo.UpdateAnalysis(ctx, analysis); err != nil {
-					s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
-						"AnalysisService", "Update",
-						logging.DatabaseError, err,
-						zap.String("analysis_id", analysisID.String()),
-					)...)
-				}
 			}
 		}
 	}

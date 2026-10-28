@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
@@ -227,7 +228,14 @@ func TestAnalysisCreate(t *testing.T) {
 	input := testmodels.NewAnalysisCreateDTO(mock)
 
 	t.Run("Success", func(t *testing.T) {
-		analysisRepo := &mocks.MockAnalysisRepository{}
+		createOrder, enqueueOrder := 0, 0
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CreateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				createOrder = enqueueOrder + 1
+				return nil
+			},
+		}
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
 				ID uuid.UUID) (*models.Sample, error) {
@@ -241,7 +249,13 @@ func TestAnalysisCreate(t *testing.T) {
 			},
 		}
 
-		enqueuer := &mocks.MockTaskQueue{}
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
+				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueOrder = createOrder + 1
+				return &asynq.TaskInfo{ID: "mock-task-id"}, nil
+			},
+		}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo, enqueuer, mockLogger, t.TempDir())
@@ -258,14 +272,19 @@ func TestAnalysisCreate(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
+		expected.ID = result.ID
 		assert.Equal(t, expected, *result)
+		assert.NotEqual(t, uuid.Nil, result.ID,
+			"analysis ID must be pre-generated, not from the DB write")
+		assert.Less(t, enqueueOrder, createOrder,
+			"task must be enqueued before the analysis is created")
 		assert.Equal(t, 1, logs.Len())
 	})
 
 	t.Run("Success - Persists TaskID", func(t *testing.T) {
 		var capturedAnalysis *models.Analysis
 		analysisRepo := &mocks.MockAnalysisRepository{
-			UpdateAnalysisFunc: func(ctx context.Context,
+			CreateAnalysisFunc: func(ctx context.Context,
 				analysis *models.Analysis) error {
 				capturedAnalysis = analysis
 				return nil
@@ -293,12 +312,21 @@ func TestAnalysisCreate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.NotNil(t, capturedAnalysis)
-		assert.NotNil(t, capturedAnalysis.TaskID)
+		assert.NotNil(t, capturedAnalysis.TaskID,
+			"TaskID must be set in the same write as the analysis insert")
 		assert.Equal(t, "mock-task-id", *capturedAnalysis.TaskID)
+		assert.NotEqual(t, uuid.Nil, capturedAnalysis.ID)
 	})
 
-	t.Run("Success - Soft Fail Asynq", func(t *testing.T) {
-		analysisRepo := &mocks.MockAnalysisRepository{}
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		created := false
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CreateAnalysisFunc: func(ctx context.Context,
+				analysis *models.Analysis) error {
+				created = true
+				return nil
+			},
+		}
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(ctx context.Context,
 				ID uuid.UUID) (*models.Sample, error) {
@@ -322,18 +350,12 @@ func TestAnalysisCreate(t *testing.T) {
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo, failingEnqueuer, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input, "en")
 
-		expected := models.AnalysisResponse{
-			Type:     input.Type,
-			Status:   models.AnalysisStatusPending,
-			Sample:   mock.Sample.OriginCode,
-			SampleID: mock.Sample.ID,
-			User:     mock.User.Username,
-			UserID:   mock.User.ID,
-		}
-
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, expected, *result)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.False(t, created,
+			"analysis must not be created when enqueue fails")
+		assert.False(t, failingEnqueuer.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -582,6 +604,7 @@ func TestAnalysisCreate(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
+		expected.ID = result.ID
 		assert.Equal(t, expected, *result)
 		assert.Equal(t, 1, logs.Len())
 	})
@@ -684,14 +707,18 @@ func TestAnalysisCreate(t *testing.T) {
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		taskQueue := &mocks.MockTaskQueue{}
 
-		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo, nil, mockLogger, t.TempDir())
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo, userRepo, taskQueue, mockLogger, t.TempDir())
 		result, err := svc.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueAnalysis, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 
 	t.Run("Error - Sample Analysis Limit", func(t *testing.T) {
@@ -942,7 +969,8 @@ func TestAnalysisUpdate(t *testing.T) {
 		assert.Equal(t, 0, enqueuer.CancelCount)
 	})
 
-	t.Run("Success - Soft Fail Asynq Enqueue Error", func(t *testing.T) {
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		writeCalled := false
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(ctx context.Context,
 				analysisID uuid.UUID) (*models.Analysis, error) {
@@ -950,6 +978,7 @@ func TestAnalysisUpdate(t *testing.T) {
 			},
 			UpdateAnalysisFunc: func(ctx context.Context,
 				analysis *models.Analysis) error {
+				writeCalled = true
 				return nil
 			},
 		}
@@ -964,9 +993,13 @@ func TestAnalysisUpdate(t *testing.T) {
 		svc := services.NewAnalysisService(analysisRepo, nil, nil, failingEnqueuer, mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputFailed, "en")
 
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, models.AnalysisStatusFailed, result.Status)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.False(t, writeCalled,
+			"status must not be written when enqueue fails")
+		assert.False(t, failingEnqueuer.DeleteCalled)
+		assert.False(t, failingEnqueuer.CancelCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -1038,13 +1071,17 @@ func TestAnalysisUpdate(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAnalysisService(analysisRepo, nil, nil, nil, mockLogger, t.TempDir())
+		taskQueue := &mocks.MockTaskQueue{}
+		svc := services.NewAnalysisService(analysisRepo, nil, nil, taskQueue, mockLogger, t.TempDir())
 		result, err := svc.Update(ctx, mock.ID, updateInputFailed, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 }
 
