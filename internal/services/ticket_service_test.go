@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
@@ -156,9 +157,11 @@ func TestTicketCreate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
+		createOrder, enqueueOrder := 0, 0
 		ticketRepo := &mocks.MockTicketRepository{
 			CreateTicketFunc: func(ctx context.Context,
 				ticket *models.Ticket) error {
+				createOrder = enqueueOrder + 1
 				return nil
 			},
 		}
@@ -166,6 +169,7 @@ func TestTicketCreate(t *testing.T) {
 		asynqClient := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueOrder = createOrder + 1
 				return &asynq.TaskInfo{ID: "task-id", Queue: "email"}, nil
 			},
 		}
@@ -180,6 +184,10 @@ func TestTicketCreate(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Equal(t, input.Name, result.Name)
 		assert.Equal(t, models.TicketStatusOpen, result.Status)
+		assert.NotZero(t, result.ID,
+			"ticket ID must be pre-generated, not from the DB write")
+		assert.Less(t, enqueueOrder, createOrder,
+			"task must be enqueued before the ticket is created")
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -191,20 +199,27 @@ func TestTicketCreate(t *testing.T) {
 			},
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		asynqClient := &mocks.MockTaskQueue{}
 
-		service := services.NewTicketService(ticketRepo, nil, mockLogger)
+		service := services.NewTicketService(ticketRepo, asynqClient,
+			mockLogger)
 		result, err := service.Create(ctx, input, "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, asynqClient.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, asynqClient.DeleteQueue)
+		assert.Equal(t, "mock-task-id", asynqClient.DeleteWith)
 	})
 
-	t.Run("Error - Asynq Task Creation Soft Fail", func(t *testing.T) {
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		created := false
 		ticketRepo := &mocks.MockTicketRepository{
 			CreateTicketFunc: func(ctx context.Context,
 				ticket *models.Ticket) error {
+				created = true
 				return nil
 			},
 		}
@@ -220,8 +235,11 @@ func TestTicketCreate(t *testing.T) {
 			mockLogger)
 		result, err := service.Create(ctx, input, "en")
 
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.False(t, created, "ticket must not be created when enqueue fails")
+		assert.False(t, asynqClient.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
@@ -362,6 +380,7 @@ func TestTicketResolve(t *testing.T) {
 	)
 
 	t.Run("Success", func(t *testing.T) {
+		updateOrder, enqueueOrder := 0, 0
 		ticketRepo := &mocks.MockTicketRepository{
 			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
 				*models.Ticket, error) {
@@ -370,12 +389,14 @@ func TestTicketResolve(t *testing.T) {
 			},
 			UpdateTicketFunc: func(ctx context.Context,
 				ticket *models.Ticket) error {
+				updateOrder = enqueueOrder + 1
 				return nil
 			},
 		}
 		asynqClient := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueOrder = updateOrder + 1
 				return &asynq.TaskInfo{ID: "task-id", Queue: "email"}, nil
 			},
 		}
@@ -388,10 +409,13 @@ func TestTicketResolve(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, models.TicketStatusResolved, result.Status)
+		assert.Less(t, enqueueOrder, updateOrder,
+			"task must be enqueued before the ticket is updated")
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Success - Soft Fail Asynq", func(t *testing.T) {
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		updated := false
 		ticketRepo := &mocks.MockTicketRepository{
 			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
 				*models.Ticket, error) {
@@ -400,6 +424,7 @@ func TestTicketResolve(t *testing.T) {
 			},
 			UpdateTicketFunc: func(ctx context.Context,
 				ticket *models.Ticket) error {
+				updated = true
 				return nil
 			},
 		}
@@ -415,8 +440,11 @@ func TestTicketResolve(t *testing.T) {
 			mockLogger)
 		result, err := service.Resolve(ctx, ticket.ID)
 
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Nil(t, result)
+		assert.False(t, updated, "ticket must not be resolved when enqueue fails")
+		assert.False(t, failingEnqueuer.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -489,13 +517,17 @@ func TestTicketResolve(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		service := services.NewTicketService(ticketRepo, nil, mockLogger)
+		taskQueue := &mocks.MockTaskQueue{}
+		service := services.NewTicketService(ticketRepo, taskQueue, mockLogger)
 		result, err := service.Resolve(ctx, ticket.ID)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 }
 

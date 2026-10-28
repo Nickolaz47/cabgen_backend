@@ -99,32 +99,45 @@ func (s *ticketService) Create(ctx context.Context,
 		Language:    translation.ParseLanguage(language),
 	}
 
-	if err := s.Repo.CreateTicket(ctx, &ticket); err != nil {
+	// Pre-generated so the task can reference the ticket before insertion
+	id, err := uuid.NewV7()
+	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"TicketService", "Create", logging.DatabaseError, err,
+			"TicketService", "Create", logging.GenerateIDError, err,
 		)...)
 		return nil, ErrInternal
 	}
+	ticket.ID = id
 
 	task, err := tasks.NewAdminTicketEmailTask(ticket.ID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Create", logging.AsynqTaskError, err,
 		)...)
-	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task,
-			asynq.Queue(tasks.QueueEmail))
-		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"TicketService", "Create", logging.RedisDispatchError, err,
-			)...)
-		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-				"TicketService", "Create", logging.TaskEnqueuedSuccess,
-				zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-			)...)
-		}
+		return nil, ErrInternal
+	}
+
+	info, err := s.AsynqClient.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"TicketService", "Create", logging.RedisDispatchError, err,
+		)...)
+		return nil, ErrInternal
+	}
+	s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+		"TicketService", "Create", logging.TaskEnqueuedSuccess,
+		zap.String("task_id", info.ID),
+		zap.String("queue", info.Queue),
+	)...)
+
+	if err := s.Repo.CreateTicket(ctx, &ticket); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"TicketService", "Create", logging.DatabaseError, err,
+		)...)
+		DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+			"TicketService", "Create", tasks.QueueEmail, info.ID)
+		return nil, ErrInternal
 	}
 
 	response := ticket.ToResponse()
@@ -208,36 +221,39 @@ func (s *ticketService) Resolve(ctx context.Context, ticketID uuid.UUID) (
 
 	ticket.Status = models.TicketStatusResolved
 
-	if err := s.Repo.UpdateTicket(ctx, ticket); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"TicketService", "Resolve", logging.DatabaseError, err,
-			zap.String("ticket_id", ticketID.String()),
-		)...)
-		return nil, ErrInternal
-	}
-
 	task, err := tasks.NewFinishedTicketEmailTask(ticket.ID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"TicketService", "Resolve", logging.AsynqTaskError, err,
 			zap.String("ticket_id", ticketID.String()),
 		)...)
-	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task,
-			asynq.Queue(tasks.QueueEmail))
-		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"TicketService", "Resolve", logging.RedisDispatchError, err,
-				zap.String("ticket_id", ticketID.String()),
-			)...)
-		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-				"TicketService", "Resolve", logging.TaskEnqueuedSuccess,
-				zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-				zap.String("ticket_id", ticketID.String()),
-			)...)
-		}
+		return nil, ErrInternal
+	}
+
+	info, err := s.AsynqClient.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"TicketService", "Resolve", logging.RedisDispatchError, err,
+			zap.String("ticket_id", ticketID.String()),
+		)...)
+		return nil, ErrInternal
+	}
+	s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+		"TicketService", "Resolve", logging.TaskEnqueuedSuccess,
+		zap.String("task_id", info.ID),
+		zap.String("queue", info.Queue),
+		zap.String("ticket_id", ticketID.String()),
+	)...)
+
+	if err := s.Repo.UpdateTicket(ctx, ticket); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"TicketService", "Resolve", logging.DatabaseError, err,
+			zap.String("ticket_id", ticketID.String()),
+		)...)
+		DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+			"TicketService", "Resolve", tasks.QueueEmail, info.ID)
+		return nil, ErrInternal
 	}
 
 	response := ticket.ToResponse()
