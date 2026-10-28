@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
@@ -859,11 +860,13 @@ func TestAdminActivateUser(t *testing.T) {
 	adminName := "admin"
 
 	t.Run("Success", func(t *testing.T) {
+		updateOrder, enqueueOrder := 0, 0
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
 				return &user, nil
 			},
 			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				updateOrder = enqueueOrder + 1
 				return nil
 			},
 		}
@@ -872,7 +875,12 @@ func TestAdminActivateUser(t *testing.T) {
 		user.ActivatedBy = nil
 		user.ActivatedOn = nil
 
-		enqueuer := &mocks.MockTaskQueue{}
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueOrder = updateOrder + 1
+				return &asynq.TaskInfo{ID: "task-123"}, nil
+			},
+		}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		service := services.NewAdminUserService(userRepo, nil, nil, nil, enqueuer, mockLogger, "")
@@ -880,14 +888,19 @@ func TestAdminActivateUser(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, enqueuer.EnqueueCalled)
+		assert.Less(t, enqueueOrder, updateOrder,
+			"task must be enqueued before the user is updated")
 	})
 
-	t.Run("Success - Soft Fail Asynq", func(t *testing.T) {
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		updated := false
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (*models.User, error) {
 				return &user, nil
 			},
 			UpdateUserFunc: func(ctx context.Context, user *models.User) error {
+				updated = true
 				return nil
 			},
 		}
@@ -906,7 +919,10 @@ func TestAdminActivateUser(t *testing.T) {
 		service := services.NewAdminUserService(userRepo, nil, nil, nil, failingEnqueuer, mockLogger, "")
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
-		assert.NoError(t, err)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.False(t, updated, "user must not be activated when enqueue fails")
+		assert.False(t, failingEnqueuer.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -939,11 +955,19 @@ func TestAdminActivateUser(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		user.IsActive = false
-		service := services.NewAdminUserService(userRepo, nil, nil, nil, nil, mockLogger, "")
+		user.ActivatedBy = nil
+		user.ActivatedOn = nil
+
+		taskQueue := &mocks.MockTaskQueue{}
+		service := services.NewAdminUserService(userRepo, nil, nil, nil, taskQueue, mockLogger, "")
 		err := service.ActivateUser(context.Background(), user.ID, adminName)
 
 		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 }
 

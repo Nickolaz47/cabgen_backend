@@ -435,16 +435,7 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 	user.ActivatedBy = &adminName
 	user.ActivatedOn = &activatedOn
 
-	if err := s.Repo.UpdateUser(ctx, user); err != nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AdminUserService", "ActivateUser",
-				logging.DatabaseError, err,
-				zap.String("user_id", ID.String()),
-			)...)
-		return ErrInternal
-	}
-
+	var taskInfo *asynq.TaskInfo
 	if isFirstActivation {
 		task, err := tasks.NewWelcomeEmailTask(user.ID)
 		if err != nil {
@@ -453,24 +444,41 @@ func (s *adminUserService) ActivateUser(ctx context.Context, ID uuid.UUID,
 				err,
 				zap.String("user_id", ID.String()),
 			)...)
-		} else {
-			info, err := s.AsynqClient.EnqueueContext(ctx, task,
-				asynq.Queue(tasks.QueueEmail))
-			if err != nil {
-				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-					"AdminUserService", "ActivateUser",
-					logging.RedisDispatchError, err,
-					zap.String("user_id", ID.String()),
-				)...)
-			} else {
-				s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-					"AdminUserService", "ActivateUser",
-					logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
-					zap.String("queue", info.Queue),
-					zap.String("user_id", ID.String()),
-				)...)
-			}
+			return ErrInternal
 		}
+
+		taskInfo, err = s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AdminUserService", "ActivateUser",
+				logging.RedisDispatchError, err,
+				zap.String("user_id", ID.String()),
+			)...)
+			return ErrInternal
+		}
+
+		s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+			"AdminUserService", "ActivateUser",
+			logging.TaskEnqueuedSuccess, zap.String("task_id", taskInfo.ID),
+			zap.String("queue", taskInfo.Queue),
+			zap.String("user_id", ID.String()),
+		)...)
+	}
+
+	if err := s.Repo.UpdateUser(ctx, user); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AdminUserService", "ActivateUser",
+				logging.DatabaseError, err,
+				zap.String("user_id", ID.String()),
+			)...)
+		if taskInfo != nil {
+			DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+				"AdminUserService", "ActivateUser", tasks.QueueEmail,
+				taskInfo.ID)
+		}
+		return ErrInternal
 	}
 
 	return nil
@@ -561,7 +569,14 @@ func (s *adminUserService) Delete(ctx context.Context, ID uuid.UUID) error {
 
 	userFolder := filepath.Join(s.RootDir, "uploads", "users", user.ID.String())
 	go func() {
-		_ = os.RemoveAll(userFolder)
+		if err := os.RemoveAll(userFolder); err != nil {
+			s.Logger.Warn("Service Warning",
+				logging.ServiceLogging(ctx,
+					"AdminUserService", "Delete",
+					logging.DeleteFolderError, err,
+					zap.String("user_id", user.ID.String()),
+				)...)
+		}
 	}()
 
 	return nil

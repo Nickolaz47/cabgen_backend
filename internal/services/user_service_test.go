@@ -102,11 +102,14 @@ func TestUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, &mocks.MockTaskQueue{}, nil, t.TempDir())
+		taskQueue := &mocks.MockTaskQueue{}
+
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, taskQueue, nil, t.TempDir())
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, user.ID, unassignedID)
+		assert.True(t, taskQueue.EnqueueCalled)
 	})
 
 	t.Run("Success", func(t *testing.T) {
@@ -121,10 +124,13 @@ func TestUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, &mocks.MockTaskQueue{}, nil, t.TempDir())
+		taskQueue := &mocks.MockTaskQueue{}
+
+		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, taskQueue, nil, t.TempDir())
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
+		assert.True(t, taskQueue.EnqueueCalled)
 	})
 
 	t.Run("Error - Not Found", func(t *testing.T) {
@@ -157,13 +163,17 @@ func TestUserDelete(t *testing.T) {
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		taskQueue := &mocks.MockTaskQueue{}
 
-		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, taskQueue, mockLogger, "")
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 
 	t.Run("Error - Part of Network", func(t *testing.T) {
@@ -210,12 +220,56 @@ func TestUserDelete(t *testing.T) {
 		}
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		taskQueue := &mocks.MockTaskQueue{}
 
-		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, taskQueue, mockLogger, "")
 		err := service.Delete(context.Background(), uuid.New())
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+	})
+
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		unassigned := false
+		deleted := false
+		userRepo := &mocks.MockUserRepository{
+			GetUserByIDFunc: func(ctx context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+			DeleteUserFunc: func(ctx context.Context,
+				user *models.User) error {
+				deleted = true
+				return nil
+			},
+		}
+
+		ticketRepo := &mocks.MockTicketRepository{
+			UnassignTicketsByAdminIDFunc: func(ctx context.Context, adminID uuid.UUID) error {
+				unassigned = true
+				return nil
+			},
+		}
+
+		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		taskQueue := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
+				opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return nil, errors.New("redis down")
+			},
+		}
+
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, taskQueue, mockLogger, "")
+		err := service.Delete(context.Background(), user.ID)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.False(t, unassigned, "tickets must not be unassigned when enqueue fails")
+		assert.False(t, deleted, "user must not be deleted when enqueue fails")
+		assert.False(t, taskQueue.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
@@ -624,12 +678,20 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 
 		var enqueuedTaskType string
+		createOrder, enqueueOrder := 0, 0
 		taskEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				enqueuedTaskType = task.Type()
+				enqueueOrder = createOrder + 1
 				return &asynq.TaskInfo{ID: "task-123"}, nil
 			},
+		}
+		emailUpdateRepo.CreateRequestFunc = func(ctx context.Context,
+			req *models.EmailUpdateRequest) error {
+			createdReq = req
+			createOrder = enqueueOrder + 1
+			return nil
 		}
 
 		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, taskEnqueuer, nil, "")
@@ -642,6 +704,8 @@ func TestRequestEmailUpdate(t *testing.T) {
 		assert.Equal(t, user.Email, createdReq.OldEmail)
 		assert.Equal(t, newEmail, createdReq.NewEmail)
 		assert.NotEmpty(t, createdReq.Token)
+		assert.Less(t, enqueueOrder, createOrder,
+			"task must be enqueued before the request is created")
 		assert.WithinDuration(t, time.Now().Add(15*time.Minute),
 			createdReq.ExpiresAt, time.Second)
 		assert.Equal(t, tasks.TaskTypeEmailUpdateConfirmation, enqueuedTaskType)
@@ -665,13 +729,17 @@ func TestRequestEmailUpdate(t *testing.T) {
 			},
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		taskQueue := &mocks.MockTaskQueue{}
 
-		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, nil, mockLogger, "")
+		service := services.NewUserService(userRepo, nil, emailUpdateRepo, nil, nil, taskQueue, mockLogger, "")
 		err := service.RequestEmailUpdate(context.Background(), user.ID, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Equal(t, 1, logs.Len())
+		assert.True(t, taskQueue.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, taskQueue.DeleteQueue)
+		assert.Equal(t, "mock-task-id", taskQueue.DeleteWith)
 	})
 
 	t.Run("Error - Enqueue Internal", func(t *testing.T) {
@@ -705,6 +773,8 @@ func TestRequestEmailUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Equal(t, 1, logs.Len())
+		assert.False(t, taskEnqueuer.DeleteCalled,
+			"nothing to roll back when the enqueue itself failed")
 	})
 
 	t.Run("Error - Duplicate Task", func(t *testing.T) {

@@ -199,12 +199,38 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 	userEmail := user.Email
 	userName := user.Name
 
+	var taskInfo *asynq.TaskInfo
+	if userEmail != "" {
+		task, err := tasks.NewUserDeletedEmailTask(userEmail, userName)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"UserService", "Delete", logging.AsynqTaskError, err,
+				zap.String("user_id", user.ID.String()),
+			)...)
+			return ErrInternal
+		}
+
+		taskInfo, err = s.AsynqClient.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"UserService", "Delete", logging.RedisDispatchError, err,
+				zap.String("user_id", user.ID.String()),
+			)...)
+			return ErrInternal
+		}
+	}
+
 	if err := s.TicketRepo.UnassignTicketsByAdminID(ctx, ID); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "Delete",
 			logging.DatabaseError, err,
 			zap.String("user_id", ID.String()),
 		)...)
+		if taskInfo != nil {
+			DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+				"UserService", "Delete", tasks.QueueEmail, taskInfo.ID)
+		}
 		return ErrInternal
 	}
 
@@ -214,21 +240,22 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 			logging.DatabaseError, err,
 			zap.String("user_id", ID.String()),
 		)...)
+		if taskInfo != nil {
+			DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+				"UserService", "Delete", tasks.QueueEmail, taskInfo.ID)
+		}
 		return ErrInternal
 	}
 
 	userFolder := filepath.Join(s.RootDir, "uploads", "users", user.ID.String())
 	go func() {
-		os.RemoveAll(userFolder)
-	}()
-
-	if userEmail != "" {
-		task, err := tasks.NewUserDeletedEmailTask(userEmail, userName)
-		if err == nil {
-			_, _ = s.AsynqClient.EnqueueContext(ctx, task,
-				asynq.Queue(tasks.QueueEmail))
+		if err := os.RemoveAll(userFolder); err != nil {
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+				"UserService", "Delete", logging.DeleteFolderError, err,
+				zap.String("user_id", user.ID.String()),
+			)...)
 		}
-	}
+	}()
 
 	return nil
 }
@@ -335,24 +362,10 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 		return ErrInternal
 	}
 
-	req := models.EmailUpdateRequest{
-		UserID:    ID,
-		OldEmail:  user.Email,
-		NewEmail:  input.NewEmail,
-		Token:     token,
-		ExpiresAt: time.Now().Add(15 * time.Minute),
-	}
-
-	if err := s.EmailUpdateRepo.CreateRequest(ctx, &req); err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
-			zap.String("user_id", ID.String()),
-		)...)
-		return ErrInternal
-	}
+	expiresAt := time.Now().Add(15 * time.Minute)
 
 	task, err := tasks.NewEmailUpdateConfirmationTask(user.Email, user.Name,
-		user.Email, input.NewEmail, token, req.ExpiresAt)
+		user.Email, input.NewEmail, token, expiresAt)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
@@ -361,8 +374,9 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 		return ErrInternal
 	}
 
-	if _, err := s.AsynqClient.EnqueueContext(ctx, task,
-		asynq.Queue(tasks.QueueEmail)); err != nil {
+	info, err := s.AsynqClient.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+	if err != nil {
 		if errors.Is(err, asynq.ErrDuplicateTask) {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
@@ -371,9 +385,27 @@ func (s *userService) RequestEmailUpdate(ctx context.Context, ID uuid.UUID,
 			return ErrDuplicateTask
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"UserService", "RequestEmailUpdate", logging.AsynqTaskError, err,
+			"UserService", "RequestEmailUpdate", logging.RedisDispatchError, err,
 			zap.String("user_id", ID.String()),
 		)...)
+		return ErrInternal
+	}
+
+	req := models.EmailUpdateRequest{
+		UserID:    ID,
+		OldEmail:  user.Email,
+		NewEmail:  input.NewEmail,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	}
+
+	if err := s.EmailUpdateRepo.CreateRequest(ctx, &req); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"UserService", "RequestEmailUpdate", logging.DatabaseError, err,
+			zap.String("user_id", ID.String()),
+		)...)
+		DeleteScheduledTask(ctx, s.AsynqClient, s.Logger,
+			"UserService", "RequestEmailUpdate", tasks.QueueEmail, info.ID)
 		return ErrInternal
 	}
 
