@@ -102,7 +102,7 @@ func TestUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, &mocks.MockTaskEnqueuer{}, nil, t.TempDir())
+		service := services.NewUserService(userRepo, nil, nil, ticketRepo, nil, &mocks.MockTaskQueue{}, nil, t.TempDir())
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
@@ -121,7 +121,7 @@ func TestUserDelete(t *testing.T) {
 			},
 		}
 
-		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, &mocks.MockTaskEnqueuer{}, nil, t.TempDir())
+		service := services.NewUserService(userRepo, nil, nil, &mocks.MockTicketRepository{}, nil, &mocks.MockTaskQueue{}, nil, t.TempDir())
 		err := service.Delete(context.Background(), user.ID)
 
 		assert.NoError(t, err)
@@ -624,7 +624,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 		}
 
 		var enqueuedTaskType string
-		taskEnqueuer := &mocks.MockTaskEnqueuer{
+		taskEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				enqueuedTaskType = task.Type()
@@ -691,7 +691,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 				return nil
 			},
 		}
-		taskEnqueuer := &mocks.MockTaskEnqueuer{
+		taskEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis error")
@@ -724,7 +724,7 @@ func TestRequestEmailUpdate(t *testing.T) {
 				return nil
 			},
 		}
-		taskEnqueuer := &mocks.MockTaskEnqueuer{
+		taskEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, asynq.ErrDuplicateTask

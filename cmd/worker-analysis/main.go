@@ -78,6 +78,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// One async dependency for the runner (enqueue/delete)
+	asynqInspector, err := queue.NewAsynqInspector(config.RedisURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	taskQueue := queue.NewTaskQueue(asynqClient, asynqInspector)
+
 	// Analysis Runner Service
 	toolsConfig := pipeline.ToolsConfig{
 		FastQCPath:         config.FastQCPath,
@@ -105,7 +112,7 @@ func main() {
 		FastaniListAcineto: config.FastaniListAcineto,
 	}
 	analysisRunnerSvc := container.BuildAnalysisRunnerService(
-		mainDB.DB(), toolsConfig, asynqClient, rootDir, logging.FileLogger,
+		mainDB.DB(), toolsConfig, taskQueue, rootDir, logging.FileLogger,
 	)
 
 	// Handler

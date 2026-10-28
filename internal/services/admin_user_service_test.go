@@ -872,7 +872,7 @@ func TestAdminActivateUser(t *testing.T) {
 		user.ActivatedBy = nil
 		user.ActivatedOn = nil
 
-		enqueuer := &mocks.MockTaskEnqueuer{}
+		enqueuer := &mocks.MockTaskQueue{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		service := services.NewAdminUserService(userRepo, nil, nil, nil, enqueuer, mockLogger, "")
@@ -896,7 +896,7 @@ func TestAdminActivateUser(t *testing.T) {
 		user.ActivatedBy = nil
 		user.ActivatedOn = nil
 
-		failingEnqueuer := &mocks.MockTaskEnqueuer{
+		failingEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis dispatch error")
 			},

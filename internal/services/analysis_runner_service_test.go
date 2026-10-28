@@ -58,7 +58,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 			},
 		}
 		pl := &mocks.MockCabgenPipeline{}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(_ context.Context,
 				task *asynq.Task, _ ...asynq.Option) (*asynq.TaskInfo,
 				error) {
@@ -93,7 +93,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, nil, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, uuid.New())
 
 		assert.ErrorIs(t, err, services.ErrNotFound)
@@ -110,7 +110,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, nil, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, uuid.New())
 
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -139,7 +139,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, nil, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -181,7 +181,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		mockLogger, _ := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, rootDir)
+			&mocks.MockTaskQueue{}, mockLogger, rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -227,7 +227,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -274,7 +274,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -319,7 +319,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -364,7 +364,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -416,7 +416,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -454,7 +454,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		emailCalls := 0
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(_ context.Context, task *asynq.Task,
 				_ ...asynq.Option) (*asynq.TaskInfo, error) {
 				emailCalls++
@@ -500,7 +500,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo,
-			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, &mocks.MockTaskEnqueuer{},
+			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, &mocks.MockTaskQueue{},
 			zap.NewNop(), "/nonexistent_root_no_perms/x")
 		err := svc.Run(ctx, mock.ID)
 
@@ -548,7 +548,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -585,7 +585,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 				return nil
 			},
 		}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(_ context.Context,
 				_ *asynq.Task, _ ...asynq.Option) (*asynq.TaskInfo,
 				error) {
@@ -640,7 +640,7 @@ func TestAnalysisRunnerRun(t *testing.T) {
 					return "fastqc1.html", "fastqc2.html", nil
 				},
 			}
-			enqueuer := &mocks.MockTaskEnqueuer{
+			enqueuer := &mocks.MockTaskQueue{
 				EnqueueContextFunc: func(c context.Context,
 					task *asynq.Task, _ ...asynq.Option) (*asynq.TaskInfo,
 					error) {
@@ -753,7 +753,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -796,7 +796,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+			&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -856,7 +856,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl,
-			&mocks.MockCommander{}, &mocks.MockTaskEnqueuer{},
+			&mocks.MockCommander{}, &mocks.MockTaskQueue{},
 			zap.NewNop(), rootDir)
 		err := svc.Run(ctx, mock.ID)
 
@@ -913,7 +913,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -973,7 +973,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -1016,7 +1016,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 		svc := services.NewAnalysisRunnerService(repo,
 			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -1059,7 +1059,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -1109,7 +1109,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -1159,7 +1159,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -1213,7 +1213,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -1266,7 +1266,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			}
 
 			svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-				&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+				&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 			err := svc.Run(ctx, mock.ID)
 
 			assert.NoError(t, err)
@@ -1324,7 +1324,7 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 			}
 
 			svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-				&mocks.MockTaskEnqueuer{}, zap.NewNop(), rootDir)
+				&mocks.MockTaskQueue{}, zap.NewNop(), rootDir)
 			err := svc.Run(ctx, mock.ID)
 
 			assert.NoError(t, err)
@@ -1382,7 +1382,7 @@ func TestAnalysisRunnerComplete(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)
@@ -1421,7 +1421,7 @@ func TestAnalysisRunnerComplete(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, zap.NewNop(), t.TempDir())
+			&mocks.MockTaskQueue{}, zap.NewNop(), t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.ErrorIs(t, err, pipeline.ErrAnalysisRun)
@@ -1456,7 +1456,7 @@ func TestAnalysisRunnerPrepareFolders(t *testing.T) {
 		}
 
 		svc := services.NewAnalysisRunnerService(repo,
-			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, &mocks.MockTaskEnqueuer{},
+			&mocks.MockCabgenPipeline{}, &mocks.MockCommander{}, &mocks.MockTaskQueue{},
 			zap.NewNop(), root)
 		err := svc.Run(context.Background(), mock.ID)
 
@@ -1514,7 +1514,7 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 				return p1, p2, nil
 			},
 		}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(_ context.Context, task *asynq.Task,
 				_ ...asynq.Option) (*asynq.TaskInfo, error) {
 				return &asynq.TaskInfo{ID: "t1", Queue: "emails"}, nil
@@ -1578,7 +1578,7 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, pl, &mocks.MockCommander{},
-			&mocks.MockTaskEnqueuer{}, mockLogger, t.TempDir())
+			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, mock.ID)
 
 		assert.NoError(t, err)

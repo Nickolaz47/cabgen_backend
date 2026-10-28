@@ -74,6 +74,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// One async dependency for every service (enqueue/cancel/delete)
+	taskQueue := queue.NewTaskQueue(asynqClient, asynqInspector)
+
 	// Load translations
 	translation.LoadTranslation()
 
@@ -131,12 +134,12 @@ func main() {
 	api := r.Group("/api")
 
 	// Services
-	authSvc := container.BuildAuthService(mainDB.DB(), asynqClient,
+	authSvc := container.BuildAuthService(mainDB.DB(), taskQueue,
 		logging.FileLogger)
 
-	userSvc := container.BuildUserService(mainDB.DB(), asynqClient,
+	userSvc := container.BuildUserService(mainDB.DB(), taskQueue,
 		logging.FileLogger, rootDir)
-	admUserSvc := container.BuildAdminUserService(mainDB.DB(), asynqClient,
+	admUserSvc := container.BuildAdminUserService(mainDB.DB(), taskQueue,
 		logging.FileLogger, rootDir)
 	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
 	sequencerSvc := container.BuildSequencerService(mainDB.DB(),
@@ -151,9 +154,9 @@ func main() {
 		logging.FileLogger)
 	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
 		logging.FileLogger)
-	analysisSvc := container.BuildAnalysisService(mainDB.DB(), asynqClient,
-		asynqInspector, logging.FileLogger, rootDir)
-	ticketSvc := container.BuildTicketService(mainDB.DB(), asynqClient,
+	analysisSvc := container.BuildAnalysisService(mainDB.DB(), taskQueue,
+		logging.FileLogger, rootDir)
+	ticketSvc := container.BuildTicketService(mainDB.DB(), taskQueue,
 		logging.FileLogger)
 	templateSvc := container.BuildTemplateService(mainDB.DB(), countrySvc,
 		logging.FileLogger)

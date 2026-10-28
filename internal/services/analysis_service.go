@@ -41,32 +41,32 @@ type AnalysisService interface {
 }
 
 type analysisService struct {
-	Repo        repositories.AnalysisRepository
-	SampleRepo  repositories.SampleRepository
-	UserRepo    repositories.UserRepository
-	AsynqClient TaskEnqueuer
-	Canceller   TaskCanceller
-	Logger      *zap.Logger
-	RootDir     string
+	Repo       repositories.AnalysisRepository
+	SampleRepo repositories.SampleRepository
+	UserRepo   repositories.UserRepository
+	Tasks      TaskQueue
+
+	Logger  *zap.Logger
+	RootDir string
 }
 
 func NewAnalysisService(
 	repo repositories.AnalysisRepository,
 	sampleRepo repositories.SampleRepository,
 	userRepo repositories.UserRepository,
-	asynqClient TaskEnqueuer,
-	canceller TaskCanceller,
+	taskQueue TaskQueue,
+
 	logger *zap.Logger,
 	rootDir string,
 ) AnalysisService {
 	return &analysisService{
-		Repo:        repo,
-		SampleRepo:  sampleRepo,
-		UserRepo:    userRepo,
-		AsynqClient: asynqClient,
-		Canceller:   canceller,
-		Logger:      logger,
-		RootDir:     rootDir,
+		Repo:       repo,
+		SampleRepo: sampleRepo,
+		UserRepo:   userRepo,
+		Tasks:      taskQueue,
+
+		Logger:  logger,
+		RootDir: rootDir,
 	}
 }
 
@@ -286,7 +286,7 @@ func (s *analysisService) Create(ctx context.Context,
 			err,
 		)...)
 	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task,
+		info, err := s.Tasks.EnqueueContext(ctx, task,
 			asynq.Queue(tasks.QueueAnalysis))
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -354,7 +354,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 
 	if analysis.Status == models.AnalysisStatusFailed &&
 		analysis.TaskID != nil {
-		if err := s.Canceller.CancelProcessing(*analysis.TaskID); err != nil {
+		if err := s.Tasks.CancelProcessing(*analysis.TaskID); err != nil {
 			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
 				"AnalysisService", "Update",
 				logging.RedisDispatchError, err,
@@ -373,7 +373,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				zap.String("analysis_id", analysisID.String()),
 			)...)
 		} else {
-			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			info, err := s.Tasks.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueEmail))
 			if err != nil {
 				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -401,7 +401,7 @@ func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,
 				zap.String("analysis_id", analysisID.String()),
 			)...)
 		} else {
-			info, err := s.AsynqClient.EnqueueContext(ctx, task,
+			info, err := s.Tasks.EnqueueContext(ctx, task,
 				asynq.Queue(tasks.QueueAnalysis))
 			if err != nil {
 				s.Logger.Error("Service Error", logging.ServiceLogging(ctx,

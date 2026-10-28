@@ -5,16 +5,15 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/public/contact"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
-	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func BuildTicketService(db *gorm.DB, asynqClient *asynq.Client,
+func BuildTicketService(db *gorm.DB, taskQueue services.TaskQueue,
 	logger *zap.Logger) services.TicketService {
 	ticketRepo := repositories.NewTicketRepo(db)
 	ticketService := services.NewTicketService(
-		ticketRepo, asynqClient, logger,
+		ticketRepo, taskQueue, logger,
 	)
 
 	return ticketService

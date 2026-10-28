@@ -5,20 +5,19 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/analysis"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
-	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func BuildAnalysisService(db *gorm.DB, asynqClient *asynq.Client,
-	inspector *asynq.Inspector, logger *zap.Logger,
+func BuildAnalysisService(db *gorm.DB,
+	taskQueue services.TaskQueue, logger *zap.Logger,
 	rootDir string) services.AnalysisService {
 	analysisRepo := repositories.NewAnalysisRepository(db)
 	sampleRepo := repositories.NewSampleRepo(db)
 	userRepo := repositories.NewUserRepo(db)
 	analysisService := services.NewAnalysisService(
 		analysisRepo, sampleRepo,
-		userRepo, asynqClient, inspector, logger, rootDir,
+		userRepo, taskQueue, logger, rootDir,
 	)
 
 	return analysisService

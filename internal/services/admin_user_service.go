@@ -46,7 +46,7 @@ type adminUserService struct {
 	CountryRepo repositories.CountryRepository
 	TicketRepo  repositories.TicketRepository
 	Hasher      security.PasswordHasher
-	AsynqClient TaskEnqueuer
+	AsynqClient TaskQueue
 	Logger      *zap.Logger
 	RootDir     string
 }
@@ -56,7 +56,7 @@ func NewAdminUserService(
 	countryRepo repositories.CountryRepository,
 	ticketRepo repositories.TicketRepository,
 	hasher security.PasswordHasher,
-	asynqClient TaskEnqueuer,
+	asynqClient TaskQueue,
 	logger *zap.Logger,
 	rootDir string,
 ) AdminUserService {

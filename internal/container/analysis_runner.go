@@ -4,13 +4,12 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
-	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 func BuildAnalysisRunnerService(db *gorm.DB, config pipeline.ToolsConfig,
-	asynqClient *asynq.Client, rootDir string,
+	taskQueue services.TaskQueue, rootDir string,
 	logger *zap.Logger) services.AnalysisRunnerService {
 	analysisRepo := repositories.NewAnalysisRepository(db)
 	cmdr := &pipeline.RealCommander{}
@@ -18,6 +17,6 @@ func BuildAnalysisRunnerService(db *gorm.DB, config pipeline.ToolsConfig,
 	pipeline := pipeline.NewCabgenPipeline(runner, config, logger)
 
 	return services.NewAnalysisRunnerService(
-		analysisRepo, pipeline, cmdr, asynqClient, logger, rootDir,
+		analysisRepo, pipeline, cmdr, taskQueue, logger, rootDir,
 	)
 }

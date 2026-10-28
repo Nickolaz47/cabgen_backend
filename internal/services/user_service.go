@@ -36,7 +36,7 @@ type userService struct {
 	EmailUpdateRepo repositories.EmailUpdateRepository
 	TicketRepo      repositories.TicketRepository
 	Hasher          security.PasswordHasher
-	AsynqClient     TaskEnqueuer
+	AsynqClient     TaskQueue
 	Logger          *zap.Logger
 	RootDir         string
 }
@@ -47,7 +47,7 @@ func NewUserService(
 	emailUpdateRepo repositories.EmailUpdateRepository,
 	ticketRepo repositories.TicketRepository,
 	hasher security.PasswordHasher,
-	asynqClient TaskEnqueuer,
+	asynqClient TaskQueue,
 	logger *zap.Logger,
 	rootDir string,
 ) UserService {
@@ -219,7 +219,7 @@ func (s *userService) Delete(ctx context.Context, ID uuid.UUID) error {
 
 	userFolder := filepath.Join(s.RootDir, "uploads", "users", user.ID.String())
 	go func() {
-		_ = os.RemoveAll(userFolder)
+		os.RemoveAll(userFolder)
 	}()
 
 	if userEmail != "" {

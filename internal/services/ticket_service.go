@@ -30,13 +30,13 @@ type TicketService interface {
 
 type ticketService struct {
 	Repo        repositories.TicketRepository
-	AsynqClient TaskEnqueuer
+	AsynqClient TaskQueue
 	Logger      *zap.Logger
 }
 
 func NewTicketService(
 	repo repositories.TicketRepository,
-	asynqClient TaskEnqueuer,
+	asynqClient TaskQueue,
 	logger *zap.Logger,
 ) TicketService {
 	return &ticketService{

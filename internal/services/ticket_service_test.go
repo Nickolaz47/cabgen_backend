@@ -163,7 +163,7 @@ func TestTicketCreate(t *testing.T) {
 			},
 		}
 
-		asynqClient := &mocks.MockTaskEnqueuer{
+		asynqClient := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return &asynq.TaskInfo{ID: "task-id", Queue: "email"}, nil
@@ -208,7 +208,7 @@ func TestTicketCreate(t *testing.T) {
 				return nil
 			},
 		}
-		asynqClient := &mocks.MockTaskEnqueuer{
+		asynqClient := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis connection refused")
@@ -373,7 +373,7 @@ func TestTicketResolve(t *testing.T) {
 				return nil
 			},
 		}
-		asynqClient := &mocks.MockTaskEnqueuer{
+		asynqClient := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return &asynq.TaskInfo{ID: "task-id", Queue: "email"}, nil
@@ -403,7 +403,7 @@ func TestTicketResolve(t *testing.T) {
 				return nil
 			},
 		}
-		failingEnqueuer := &mocks.MockTaskEnqueuer{
+		failingEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis timeout")

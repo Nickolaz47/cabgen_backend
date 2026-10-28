@@ -6,12 +6,11 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/security"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
-	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func BuildUserService(db *gorm.DB, asynqClient *asynq.Client,
+func BuildUserService(db *gorm.DB, taskQueue services.TaskQueue,
 	logger *zap.Logger, rootDir string) services.UserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
@@ -20,19 +19,19 @@ func BuildUserService(db *gorm.DB, asynqClient *asynq.Client,
 	hasher := security.NewPasswordHasher()
 	userService := services.NewUserService(
 		userRepo, countryRepo, emailUpdateRepo, ticketRepo, hasher,
-		asynqClient, logger, rootDir)
+		taskQueue, logger, rootDir)
 
 	return userService
 }
 
-func BuildAdminUserService(db *gorm.DB, asynqClient *asynq.Client,
+func BuildAdminUserService(db *gorm.DB, taskQueue services.TaskQueue,
 	logger *zap.Logger, rootDir string) services.AdminUserService {
 	userRepo := repositories.NewUserRepo(db)
 	countryRepo := repositories.NewCountryRepo(db)
 	ticketRepo := repositories.NewTicketRepo(db)
 	hasher := security.NewPasswordHasher()
 	adminUserService := services.NewAdminUserService(
-		userRepo, countryRepo, ticketRepo, hasher, asynqClient, logger,
+		userRepo, countryRepo, ticketRepo, hasher, taskQueue, logger,
 		rootDir)
 
 	return adminUserService

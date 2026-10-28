@@ -48,7 +48,7 @@ type analysisRunnerService struct {
 	Repo        repositories.AnalysisRepository
 	Pipeline    pipeline.CabgenPipeline
 	Commander   pipeline.Commander
-	AsynqClient TaskEnqueuer
+	AsynqClient TaskQueue
 	Logger      *zap.Logger
 	RootDir     string
 }
@@ -57,7 +57,7 @@ func NewAnalysisRunnerService(
 	repo repositories.AnalysisRepository,
 	pipeline pipeline.CabgenPipeline,
 	commander pipeline.Commander,
-	asynqClient TaskEnqueuer,
+	asynqClient TaskQueue,
 	logger *zap.Logger, rootDir string) AnalysisRunnerService {
 	return &analysisRunnerService{
 		Repo:        repo,

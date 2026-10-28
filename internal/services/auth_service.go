@@ -37,7 +37,7 @@ type authService struct {
 	PasswordResetRepo repositories.PasswordResetRepository
 	Hasher            security.PasswordHasher
 	TokenProvider     auth.TokenProvider
-	AsynqClient       TaskEnqueuer
+	Tasks             TaskQueue
 	Logger            *zap.Logger
 }
 
@@ -47,7 +47,7 @@ func NewAuthService(
 	passwordResetRepo repositories.PasswordResetRepository,
 	hasher security.PasswordHasher,
 	tokenProvider auth.TokenProvider,
-	asynqClient TaskEnqueuer,
+	taskQueue TaskQueue,
 	logger *zap.Logger,
 ) AuthService {
 	return &authService{
@@ -56,7 +56,7 @@ func NewAuthService(
 		PasswordResetRepo: passwordResetRepo,
 		Hasher:            hasher,
 		TokenProvider:     tokenProvider,
-		AsynqClient:       asynqClient,
+		Tasks:             taskQueue,
 		Logger:            logger,
 	}
 }
@@ -153,36 +153,48 @@ func (s *authService) Register(
 		Institution:     input.Institution,
 		CreatedBy:       input.Username,
 	}
-
-	if err := s.UserRepo.CreateUser(ctx, &user); err != nil {
+	// Pre-generated so the task can reference the user before insertion
+	id, err := uuid.NewV7()
+	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AuthService", "Register", logging.DatabaseError, err,
+			"AuthService", "Register", logging.GenerateIDError, err,
 		)...)
 		return nil, ErrInternal
 	}
-
-	user.Country = *country
+	user.ID = id
 
 	task, err := tasks.NewAdminAlertEmailTask(user.ID)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Register", logging.AsynqTaskError, err,
 		)...)
-	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task, asynq.Queue(tasks.QueueEmail))
-		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AuthService", "Register", logging.RedisDispatchError, err,
-			)...)
-		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-				"AuthService", "Register", logging.TaskEnqueuedSuccess,
-				zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-			)...)
-		}
+		return nil, ErrInternal
 	}
 
+	info, err := s.Tasks.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AuthService", "Register", logging.RedisDispatchError, err,
+		)...)
+		return nil, ErrInternal
+	}
+	s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+		"AuthService", "Register", logging.TaskEnqueuedSuccess,
+		zap.String("task_id", info.ID),
+		zap.String("queue", info.Queue),
+	)...)
+
+	if err := s.UserRepo.CreateUser(ctx, &user); err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AuthService", "Register", logging.DatabaseError, err,
+		)...)
+		DeleteScheduledTask(ctx, s.Tasks, s.Logger,
+			"AuthService", "Register", tasks.QueueEmail, info.ID)
+		return nil, ErrInternal
+	}
+
+	user.Country = *country
 	response := user.ToResponse(language)
 	return &response, nil
 }
@@ -331,6 +343,41 @@ func (s *authService) ForgotPassword(ctx context.Context,
 		return ErrInternal
 	}
 
+	// Enqueue first: enqueue failure leaves no partially created state
+	tokenStr, err := security.GenerateSecureToken()
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AuthService", "ForgotPassword", logging.HasherError, err,
+		)...)
+		return ErrInternal
+	}
+
+	expiresAt := time.Now().Add(15 * time.Minute)
+	task, err := tasks.NewPasswordResetEmailTask(user.Email, user.Name,
+		tokenStr, expiresAt)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AuthService", "ForgotPassword", logging.AsynqTaskError,
+			err,
+		)...)
+		return ErrInternal
+	}
+
+	info, err := s.Tasks.EnqueueContext(ctx, task,
+		asynq.Queue(tasks.QueueEmail), asynq.ProcessIn(CommitGrace))
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AuthService", "ForgotPassword",
+			logging.RedisDispatchError, err,
+		)...)
+		return ErrInternal
+	}
+	s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+		"AuthService", "ForgotPassword",
+		logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
+		zap.String("queue", info.Queue),
+	)...)
+
 	if err = s.PasswordResetRepo.DeleteTokensByEmail(ctx,
 		user.Email); err != nil {
 		err = fmt.Errorf("%s: %v", user.Email, err)
@@ -340,49 +387,20 @@ func (s *authService) ForgotPassword(ctx context.Context,
 		)...)
 	}
 
-	tokenStr, err := security.GenerateSecureToken()
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AuthService", "ForgotPassword", logging.HasherError, err,
-		)...)
-		return ErrInternal
-	}
-
 	reset := models.PasswordReset{
 		Email:     user.Email,
 		Token:     tokenStr,
-		ExpiresAt: time.Now().Add(15 * time.Minute),
+		ExpiresAt: expiresAt,
 	}
 
+	// DB write; on failure roll back the scheduled task
 	if err := s.PasswordResetRepo.CreateToken(ctx, &reset); err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "ForgotPassword", logging.DatabaseError, err,
 		)...)
+		DeleteScheduledTask(ctx, s.Tasks, s.Logger,
+			"AuthService", "ForgotPassword", tasks.QueueEmail, info.ID)
 		return ErrInternal
-	}
-
-	task, err := tasks.NewPasswordResetEmailTask(user.Email, user.Name,
-		tokenStr, reset.ExpiresAt)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AuthService", "ForgotPassword", logging.AsynqTaskError,
-			err,
-		)...)
-	} else {
-		info, err := s.AsynqClient.EnqueueContext(ctx, task,
-			asynq.Queue(tasks.QueueEmail))
-		if err != nil {
-			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AuthService", "ForgotPassword",
-				logging.RedisDispatchError, err,
-			)...)
-		} else {
-			s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-				"AuthService", "ForgotPassword",
-				logging.TaskEnqueuedSuccess, zap.String("task_id", info.ID),
-				zap.String("queue", info.Queue),
-			)...)
-		}
 	}
 
 	return nil

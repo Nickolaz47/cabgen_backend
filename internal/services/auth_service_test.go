@@ -48,11 +48,10 @@ func TestRegister(t *testing.T) {
 		}
 
 		hasher := &mocks.MockHasher{}
-		enqueuer := &mocks.MockTaskEnqueuer{}
+		enqueuer := &mocks.MockTaskQueue{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewAuthService(
-			userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
+		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
 
 		expected := models.UserResponse{
 			Name:        input.Name,
@@ -99,11 +98,10 @@ func TestRegister(t *testing.T) {
 		}
 
 		hasher := &mocks.MockHasher{}
-		enqueuer := &mocks.MockTaskEnqueuer{}
+		enqueuer := &mocks.MockTaskQueue{}
 		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewAuthService(
-			userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
+		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
 
 		_, err := svc.Register(ctx, input, lang)
 
@@ -308,17 +306,20 @@ func TestRegister(t *testing.T) {
 		}
 
 		hasher := &mocks.MockHasher{}
+		enqueuer := &mocks.MockTaskQueue{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil, enqueuer, mockLogger)
 		_, err := svc.Register(ctx, input, lang)
 
 		assert.Equal(t, services.ErrInternal, err)
+		assert.True(t, enqueuer.DeleteCalled)
+		assert.Equal(t, tasks.QueueEmail, enqueuer.DeleteQueue)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Success - Soft Fail Asynq", func(t *testing.T) {
+	t.Run("Error - Enqueue Soft Fail", func(t *testing.T) {
+		created := false
 		userRepo := &mocks.MockUserRepository{
 			ExistsByEmailFunc: func(ctx context.Context, email *string,
 				ID uuid.UUID) (*models.User, error) {
@@ -329,6 +330,7 @@ func TestRegister(t *testing.T) {
 				return nil, gorm.ErrRecordNotFound
 			},
 			CreateUserFunc: func(ctx context.Context, user *models.User) error {
+				created = true
 				return nil
 			},
 		}
@@ -342,7 +344,7 @@ func TestRegister(t *testing.T) {
 
 		hasher := &mocks.MockHasher{}
 
-		failingEnqueuer := &mocks.MockTaskEnqueuer{
+		failingEnqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task,
 				opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis timeout")
@@ -351,26 +353,14 @@ func TestRegister(t *testing.T) {
 
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil,
-			failingEnqueuer, mockLogger)
-
-		expected := models.UserResponse{
-			Name:        input.Name,
-			Username:    input.Username,
-			Email:       input.Email,
-			CountryCode: input.CountryCode,
-			Country:     validCountry.Names[lang],
-			Language:    "en",
-			UserRole:    models.Collaborator,
-			Interest:    input.Interest,
-			Role:        input.Role,
-			Institution: input.Institution,
-		}
+		svc := services.NewAuthService(userRepo, countryRepo, nil, hasher, nil, failingEnqueuer, mockLogger)
 
 		result, err := svc.Register(ctx, input, lang)
 
-		assert.NoError(t, err)
-		assert.Equal(t, &expected, result)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
+		assert.False(t, created, "user must not be created when enqueue fails")
+		assert.False(t, failingEnqueuer.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
@@ -395,8 +385,7 @@ func TestLogin(t *testing.T) {
 		hasher := &mocks.MockHasher{}
 		provider := &mocks.MockTokenProvider{}
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, nil)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, nil)
 		result, err := svc.Login(ctx, input)
 
 		assert.NoError(t, err)
@@ -415,8 +404,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -437,8 +425,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -461,8 +448,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -487,8 +473,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -523,8 +508,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -550,8 +534,7 @@ func TestLogin(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -582,8 +565,7 @@ func TestLogin(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider,
-			nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
 		result, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
@@ -628,8 +610,7 @@ func TestRefresh(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil,
-			mockLogger)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil, mockLogger)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
@@ -651,8 +632,7 @@ func TestRefresh(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil,
-			mockLogger)
+		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil, mockLogger)
 		result, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
@@ -690,7 +670,7 @@ func TestForgotPassword(t *testing.T) {
 				return nil
 			},
 		}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				assert.Equal(t, tasks.TaskTypePasswordResetEmail, task.Type())
 				return &asynq.TaskInfo{ID: "task-123"}, nil
@@ -750,7 +730,7 @@ func TestForgotPassword(t *testing.T) {
 				return nil
 			},
 		}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return &asynq.TaskInfo{ID: "task-123"}, nil
 			},
@@ -764,7 +744,7 @@ func TestForgotPassword(t *testing.T) {
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - CreateToken Internal", func(t *testing.T) {
+	t.Run("Error - CreateToken Internal rolls back task", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			GetUserByEmailFunc: func(ctx context.Context, email string) (*models.User, error) {
 				return &mockUser, nil
@@ -778,17 +758,25 @@ func TestForgotPassword(t *testing.T) {
 				return gorm.ErrInvalidTransaction
 			},
 		}
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+				return &asynq.TaskInfo{ID: "task-123"}, nil
+			},
+		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewAuthService(userRepo, nil, resetRepo, nil, nil, nil, mockLogger)
+		svc := services.NewAuthService(userRepo, nil, resetRepo, nil, nil, enqueuer, mockLogger)
 		err := svc.ForgotPassword(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.True(t, enqueuer.DeleteCalled)
+		assert.Equal(t, "task-123", enqueuer.DeleteWith)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Success - Enqueue Soft Fail", func(t *testing.T) {
+	t.Run("Error - Enqueue Soft Fail", func(t *testing.T) {
+		tokenCreated := false
 		userRepo := &mocks.MockUserRepository{
 			GetUserByEmailFunc: func(ctx context.Context, email string) (*models.User, error) {
 				return &mockUser, nil
@@ -799,10 +787,11 @@ func TestForgotPassword(t *testing.T) {
 				return nil
 			},
 			CreateTokenFunc: func(ctx context.Context, reset *models.PasswordReset) error {
+				tokenCreated = true
 				return nil
 			},
 		}
-		enqueuer := &mocks.MockTaskEnqueuer{
+		enqueuer := &mocks.MockTaskQueue{
 			EnqueueContextFunc: func(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 				return nil, errors.New("redis error")
 			},
@@ -812,7 +801,11 @@ func TestForgotPassword(t *testing.T) {
 		svc := services.NewAuthService(userRepo, nil, resetRepo, nil, nil, enqueuer, mockLogger)
 		err := svc.ForgotPassword(ctx, input)
 
-		assert.NoError(t, err)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.False(t, tokenCreated,
+			"token must not be created when enqueue fails")
+		assert.False(t, enqueuer.DeleteCalled)
 		assert.Equal(t, 1, logs.Len())
 	})
 }
