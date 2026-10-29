@@ -41,14 +41,14 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Fetch New User", func(t *testing.T) {
+	t.Run("Skip - New User Not Found", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
 				*models.User, error) {
@@ -56,13 +56,12 @@ func TestSendAdminAlertEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "Failed to fetch new user:")
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -79,7 +78,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -102,7 +101,7 @@ func TestSendAdminAlertEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAdminAlertEmail(ctx, userID)
 
 		assert.NoError(t, err)
@@ -125,15 +124,14 @@ func TestSendWelcomeEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - User Not Found", func(t *testing.T) {
+	t.Run("Skip - User Not Found", func(t *testing.T) {
 		userRepo := &mocks.MockUserRepository{
 			GetUserByIDFunc: func(ctx context.Context, ID uuid.UUID) (
 				*models.User, error) {
@@ -141,14 +139,12 @@ func TestSendWelcomeEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "Failed to fetch user:")
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -164,8 +160,7 @@ func TestSendWelcomeEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendWelcomeEmail(ctx, userID)
 
 		assert.Error(t, err)
@@ -190,8 +185,7 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
@@ -209,15 +203,14 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Analysis Not Found", func(t *testing.T) {
+	t.Run("Skip - Analysis Not Found", func(t *testing.T) {
 		analysisRepo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(ctx context.Context, id uuid.UUID) (
 				*models.Analysis, error) {
@@ -225,14 +218,12 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "Failed to fetch analysis:")
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -248,8 +239,7 @@ func TestSendAnalysisDoneEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, analysisRepo, nil, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, analysisRepo, nil, nil, nil, sender, mockLogger)
 		err := svc.SendAnalysisDoneEmail(ctx, analysisID)
 
 		assert.Error(t, err)
@@ -284,15 +274,14 @@ func TestSendAdminTicketEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, ticketRepo,
-			sender, mockLogger)
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminTicketEmail(ctx, ticketID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Fetch Ticket", func(t *testing.T) {
+	t.Run("Skip - Ticket Not Found", func(t *testing.T) {
 		ticketRepo := &mocks.MockTicketRepository{
 			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
 				*models.Ticket, error) {
@@ -301,14 +290,12 @@ func TestSendAdminTicketEmail(t *testing.T) {
 		}
 		userRepo := &mocks.MockUserRepository{}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminTicketEmail(ctx, ticketID)
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "Failed to fetch ticket:")
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -327,8 +314,7 @@ func TestSendAdminTicketEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminTicketEmail(ctx, ticketID)
 
 		assert.Error(t, err)
@@ -353,8 +339,7 @@ func TestSendAdminTicketEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(userRepo, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(userRepo, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendAdminTicketEmail(ctx, ticketID)
 
 		assert.NoError(t, err)
@@ -382,15 +367,14 @@ func TestSendFinishedTicketEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendFinishedTicketEmail(ctx, ticketID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
-	t.Run("Error - Fetch Ticket", func(t *testing.T) {
+	t.Run("Skip - Ticket Not Found", func(t *testing.T) {
 		ticketRepo := &mocks.MockTicketRepository{
 			GetTicketByIDFunc: func(ctx context.Context, id uuid.UUID) (
 				*models.Ticket, error) {
@@ -398,14 +382,12 @@ func TestSendFinishedTicketEmail(t *testing.T) {
 			},
 		}
 		sender := &mocks.MockEmailSender{}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendFinishedTicketEmail(ctx, ticketID)
 
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "Failed to fetch ticket:")
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
@@ -421,8 +403,7 @@ func TestSendFinishedTicketEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, nil, ticketRepo, sender,
-			mockLogger)
+		svc := services.NewEmailService(nil, nil, ticketRepo, nil, nil, sender, mockLogger)
 		err := svc.SendFinishedTicketEmail(ctx, ticketID)
 
 		assert.Error(t, err)
@@ -438,10 +419,28 @@ func TestSendPasswordResetEmail(t *testing.T) {
 	token := "resettoken123"
 
 	t.Run("Success", func(t *testing.T) {
+		resetRepo := &mocks.MockPasswordResetRepository{}
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, resetRepo, nil, sender, mockLogger)
+		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Skip - Token Not Found", func(t *testing.T) {
+		resetRepo := &mocks.MockPasswordResetRepository{
+			GetByTokenFunc: func(ctx context.Context,
+				token string) (*models.PasswordReset, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, resetRepo, nil, sender, mockLogger)
 		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
 
 		assert.NoError(t, err)
@@ -449,12 +448,13 @@ func TestSendPasswordResetEmail(t *testing.T) {
 	})
 
 	t.Run("Error - Send Email Failure", func(t *testing.T) {
+		resetRepo := &mocks.MockPasswordResetRepository{}
 		sender := &mocks.MockEmailSender{
 			ShouldFail: true,
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, resetRepo, nil, sender, mockLogger)
 		err := svc.SendPasswordResetEmail(ctx, userEmail, userName, token)
 
 		assert.Error(t, err)
@@ -472,11 +472,29 @@ func TestSendUserDeletedEmail(t *testing.T) {
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Skip - User Still Exists", func(t *testing.T) {
+		userRepo := &mocks.MockUserRepository{
+			GetUserByEmailFunc: func(ctx context.Context,
+				email string) (*models.User, error) {
+				return &models.User{ID: uuid.New()}, nil
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(userRepo, nil, nil, nil, nil, sender, mockLogger)
+		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len(),
+			"skip must log a warning, no email sent")
 	})
 
 	t.Run("Error - Send Email Failure", func(t *testing.T) {
@@ -485,7 +503,7 @@ func TestSendUserDeletedEmail(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, nil, nil, sender, mockLogger)
 		err := svc.SendUserDeletedEmail(ctx, userEmail, userName)
 
 		assert.Error(t, err)
@@ -503,10 +521,29 @@ func TestSendEmailUpdateConfirmation(t *testing.T) {
 	token := "updatetoken123"
 
 	t.Run("Success", func(t *testing.T) {
+		updateRepo := &mocks.MockEmailUpdateRepository{}
 		sender := &mocks.MockEmailSender{}
 		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, nil, updateRepo, sender, mockLogger)
+		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
+			oldEmail, newEmail, token)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Skip - Request Not Found", func(t *testing.T) {
+		updateRepo := &mocks.MockEmailUpdateRepository{
+			GetByTokenFunc: func(ctx context.Context,
+				token string) (*models.EmailUpdateRequest, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		sender := &mocks.MockEmailSender{}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewEmailService(nil, nil, nil, nil, updateRepo, sender, mockLogger)
 		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
 			oldEmail, newEmail, token)
 
@@ -520,7 +557,7 @@ func TestSendEmailUpdateConfirmation(t *testing.T) {
 		}
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
-		svc := services.NewEmailService(nil, nil, nil, sender, mockLogger)
+		svc := services.NewEmailService(nil, nil, nil, nil, &mocks.MockEmailUpdateRepository{}, sender, mockLogger)
 		err := svc.SendEmailUpdateConfirmation(ctx, userEmail, userName,
 			oldEmail, newEmail, token)
 

@@ -13,7 +13,10 @@ func BuildEmailService(db *gorm.DB, logger *zap.Logger) services.EmailService {
 	analysisRepo := repositories.NewAnalysisRepository(db)
 	ticketRepo := repositories.NewTicketRepo(db)
 	emailSvc := services.NewEmailService(
-		userRepo, analysisRepo, ticketRepo, email.CreateDefaultSender(), logger,
+		userRepo, analysisRepo, ticketRepo,
+		repositories.NewPasswordResetRepo(db),
+		repositories.NewEmailUpdateRepo(db),
+		email.CreateDefaultSender(), logger,
 	)
 
 	return emailSvc

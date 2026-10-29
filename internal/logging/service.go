@@ -35,6 +35,7 @@ const (
 	AsynqTaskError                  = "ASYNQ_TASK_ERROR"
 	RedisDispatchError              = "REDIS_DISPATCH_ERROR"
 	TaskCancelError                 = "TASK_CANCEL_ERROR"
+	OrphanTaskSkip                  = "ORPHAN_TASK_SKIP"
 	TicketStatusError               = "TICKET_STATUS_ERROR"
 	DeleteActiveTicketError         = "DELETE_ACTIVE_TICKET_ERROR"
 	DeletePasswordResetTokenError   = "DELETE_PASSWORD_RESET_TOKEN_ERROR"

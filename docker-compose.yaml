@@ -116,6 +116,8 @@ services:
   redis:
     image: redis:8-alpine
     restart: unless-stopped
+    # AOF everysec: tasks de e-mail/análise sobrevivem a queda de até 1s
+    command: redis-server --appendonly yes --appendfsync everysec
     volumes:
       - redis-data:/data
     healthcheck:

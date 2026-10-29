@@ -559,11 +559,12 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 	analysisID uuid.UUID) error {
 	analysis, err := s.Repo.GetAnalysisByID(ctx, analysisID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AnalysisRunnerService", "Run",
-			logging.DatabaseNotFoundError, err,
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"AnalysisRunnerService", "Run", logging.OrphanTaskSkip,
+			fmt.Errorf("analysis %s no longer exists", analysisID),
+			zap.String("analysis_id", analysisID.String()),
 		)...)
-		return ErrNotFound
+		return nil
 	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
@@ -571,6 +572,16 @@ func (s *analysisRunnerService) Run(ctx context.Context,
 			logging.DatabaseError, err,
 		)...)
 		return ErrInternal
+	}
+
+	if analysis.Status != models.AnalysisStatusPending {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"AnalysisRunnerService", "Run", logging.OrphanTaskSkip,
+			fmt.Errorf("analysis %s is no longer pending", analysisID),
+			zap.String("analysis_id", analysisID.String()),
+			zap.String("status", string(analysis.Status)),
+		)...)
+		return nil
 	}
 
 	s.getVersions(ctx)

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type EmailService interface {
@@ -30,25 +32,31 @@ type EmailService interface {
 }
 
 type emailService struct {
-	UserRepo     repositories.UserRepository
-	AnalysisRepo repositories.AnalysisRepository
-	TicketRepo   repositories.TicketRepository
-	EmailSender  email.EmailSender
-	Logger       *zap.Logger
+	UserRepo          repositories.UserRepository
+	AnalysisRepo      repositories.AnalysisRepository
+	TicketRepo        repositories.TicketRepository
+	PasswordResetRepo repositories.PasswordResetRepository
+	EmailUpdateRepo   repositories.EmailUpdateRepository
+	EmailSender       email.EmailSender
+	Logger            *zap.Logger
 }
 
 func NewEmailService(
 	userRepo repositories.UserRepository,
 	analysisRepo repositories.AnalysisRepository,
 	ticketRepo repositories.TicketRepository,
+	passwordResetRepo repositories.PasswordResetRepository,
+	emailUpdateRepo repositories.EmailUpdateRepository,
 	emailSender email.EmailSender,
 	logger *zap.Logger) EmailService {
 	return &emailService{
-		UserRepo:     userRepo,
-		AnalysisRepo: analysisRepo,
-		TicketRepo:   ticketRepo,
-		EmailSender:  emailSender,
-		Logger:       logger,
+		UserRepo:          userRepo,
+		AnalysisRepo:      analysisRepo,
+		TicketRepo:        ticketRepo,
+		PasswordResetRepo: passwordResetRepo,
+		EmailUpdateRepo:   emailUpdateRepo,
+		EmailSender:       emailSender,
+		Logger:            logger,
 	}
 }
 
@@ -98,6 +106,14 @@ func escapeData(data map[string]any) map[string]any {
 func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 	newUserID uuid.UUID) error {
 	newUser, err := s.UserRepo.GetUserByID(ctx, newUserID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendAdminAlertEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("new user %s no longer exists", newUserID),
+			zap.String("user_id", newUserID.String()),
+		)...)
+		return nil
+	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminAlertEmail", logging.DatabaseError, err,
@@ -156,6 +172,14 @@ func (s *emailService) SendAdminAlertEmail(ctx context.Context,
 func (s *emailService) SendWelcomeEmail(ctx context.Context,
 	userID uuid.UUID) error {
 	user, err := s.UserRepo.GetUserByID(ctx, userID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendWelcomeEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("user %s no longer exists", userID),
+			zap.String("user_id", userID.String()),
+		)...)
+		return nil
+	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendWelcomeEmail", logging.DatabaseError, err,
@@ -196,11 +220,30 @@ func (s *emailService) SendWelcomeEmail(ctx context.Context,
 func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 	analysisID uuid.UUID) error {
 	analysis, err := s.AnalysisRepo.GetAnalysisByID(ctx, analysisID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendAnalysisDoneEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("analysis %s no longer exists", analysisID),
+			zap.String("analysis_id", analysisID.String()),
+		)...)
+		return nil
+	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAnalysisDoneEmail", logging.DatabaseError, err,
 		)...)
 		return fmt.Errorf("Failed to fetch analysis: %v", err)
+	}
+
+	if analysis.Status == models.AnalysisStatusPending ||
+		analysis.Status == models.AnalysisStatusRunning {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendAnalysisDoneEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("analysis %s is not in a final status", analysisID),
+			zap.String("analysis_id", analysisID.String()),
+			zap.String("status", string(analysis.Status)),
+		)...)
+		return nil
 	}
 
 	localizer := s.getLocalizer(analysis.User.Language)
@@ -246,6 +289,14 @@ func (s *emailService) SendAnalysisDoneEmail(ctx context.Context,
 func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 	ticketID uuid.UUID) error {
 	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendAdminTicketEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("ticket %s no longer exists", ticketID),
+			zap.String("ticket_id", ticketID.String()),
+		)...)
+		return nil
+	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendAdminTicketEmail", logging.DatabaseError, err,
@@ -311,6 +362,14 @@ func (s *emailService) SendAdminTicketEmail(ctx context.Context,
 func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 	ticketID uuid.UUID) error {
 	ticket, err := s.TicketRepo.GetTicketByID(ctx, ticketID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendFinishedTicketEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("ticket %s no longer exists", ticketID),
+			zap.String("ticket_id", ticketID.String()),
+		)...)
+		return nil
+	}
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"EmailService", "SendFinishedTicketEmail", logging.DatabaseError,
@@ -356,6 +415,20 @@ func (s *emailService) SendFinishedTicketEmail(ctx context.Context,
 
 func (s *emailService) SendPasswordResetEmail(ctx context.Context, userEmail,
 	userName, token string) error {
+	if _, err := s.PasswordResetRepo.GetByToken(ctx, token); errors.Is(err,
+		gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendPasswordResetEmail", logging.OrphanTaskSkip,
+			fmt.Errorf("password reset token %s does not exist", token),
+		)...)
+		return nil
+	} else if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"EmailService", "SendPasswordResetEmail", logging.DatabaseError,
+			err)...)
+		return fmt.Errorf("Failed to check reset token: %v", err)
+	}
+
 	frontendURL := config.FrontendURL
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, token)
 
@@ -400,8 +473,19 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 	userName string) error {
 	language := "en"
 	if s.UserRepo != nil {
-		if user, err := s.UserRepo.GetUserByEmail(ctx, userEmail); err == nil {
-			language = user.Language
+		user, err := s.UserRepo.GetUserByEmail(ctx, userEmail)
+		if err == nil {
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+				"EmailService", "SendUserDeletedEmail", logging.OrphanTaskSkip,
+				fmt.Errorf("user %s was not deleted", user.ID),
+				zap.String("user_id", user.ID.String()),
+			)...)
+			return nil
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+				"EmailService", "SendUserDeletedEmail",
+				logging.DatabaseError, err)...)
 		}
 	}
 
@@ -436,6 +520,21 @@ func (s *emailService) SendUserDeletedEmail(ctx context.Context, userEmail,
 
 func (s *emailService) SendEmailUpdateConfirmation(ctx context.Context,
 	userEmail, userName, oldEmail, newEmail, token string) error {
+	if _, err := s.EmailUpdateRepo.GetByToken(ctx, token); errors.Is(err,
+		gorm.ErrRecordNotFound) {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"EmailService", "SendEmailUpdateConfirmation",
+			logging.OrphanTaskSkip,
+			fmt.Errorf("email update request %s does not exist", token),
+		)...)
+		return nil
+	} else if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"EmailService", "SendEmailUpdateConfirmation",
+			logging.DatabaseError, err)...)
+		return fmt.Errorf("Failed to check email update request: %v", err)
+	}
+
 	frontendURL := config.FrontendURL
 	confirmLink := fmt.Sprintf("%s/confirm-email-update?token=%s",
 		frontendURL, token)

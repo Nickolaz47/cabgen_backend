@@ -83,20 +83,40 @@ func TestAnalysisRunnerRun(t *testing.T) {
 		assert.Empty(t, updated.Step)
 	})
 
-	t.Run("Error - Not Found", func(t *testing.T) {
+	t.Run("Skip - Not Found", func(t *testing.T) {
 		repo := &mocks.MockAnalysisRepository{
 			GetAnalysisByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Analysis, error) {
 				return nil, gorm.ErrRecordNotFound
 			},
 		}
-		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
 
 		svc := services.NewAnalysisRunnerService(repo, nil, &mocks.MockCommander{},
 			&mocks.MockTaskQueue{}, mockLogger, t.TempDir())
 		err := svc.Run(ctx, uuid.New())
 
-		assert.ErrorIs(t, err, services.ErrNotFound)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, logs.Len(),
+			"orphan task must be skipped with a warning")
+	})
+
+	t.Run("Skip - Not Pending", func(t *testing.T) {
+		analysis := testmodels.CreateMockAnalysis()
+		analysis.Status = models.AnalysisStatusRunning
+		repo := &mocks.MockAnalysisRepository{
+			GetAnalysisByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Analysis, error) {
+				return &analysis, nil
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAnalysisRunnerService(repo, &mocks.MockCabgenPipeline{},
+			&mocks.MockCommander{}, &mocks.MockTaskQueue{}, mockLogger, t.TempDir())
+		err := svc.Run(ctx, analysis.ID)
+
+		assert.NoError(t, err)
 		assert.Equal(t, 1, logs.Len())
 	})
 
