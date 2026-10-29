@@ -265,7 +265,10 @@ func sortedGeneMetrics(counts map[string]int64) []models.GeneMetric {
 }
 
 func samplesByMonth(samples []models.Sample) []models.MonthMetric {
-	start := time.Now().AddDate(0, -11, 0)
+	now := time.Now()
+	
+	start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0,
+		now.Location()).AddDate(0, -11, 0)
 
 	counts := make(map[string]int64)
 	for _, sample := range samples {
