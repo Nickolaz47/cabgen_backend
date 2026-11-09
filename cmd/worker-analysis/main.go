@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
@@ -29,7 +29,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Fail fast: refuse to start without all DB paths configured
+	// Fail fast: refuse to start without all DB paths configured.
+	// In dev, only log — mounts may be empty on purpose.
+	inDev := config.Environment == "dev" || config.Environment == ""
 	dbPaths := []struct{ name, path string }{
 		{"RESFINDER_DB_PATH", config.ResfinderDBPath},
 		{"KRAKEN_DB_PATH", config.KrakenDBPath},
@@ -48,13 +50,26 @@ func main() {
 		{"FASTANI_LIST_ENTERO", config.FastaniListEntero},
 		{"FASTANI_LIST_ACINETO", config.FastaniListAcineto},
 	}
+
+	missing := 0
 	for _, db := range dbPaths {
-		if db.path == "" {
-			log.Fatalf("%s is not configured; refusing to start", db.name)
+		err := utils.ValidateDBPath(db.path)
+		if err == nil {
+			continue
 		}
-		if _, err := os.Stat(db.path); err != nil {
-			log.Fatalf("%s: path %s not accessible: %v", db.name, db.path, err)
+		missing++
+		msg := fmt.Sprintf("%s: %v", db.name, err)
+		if inDev {
+			log.Printf("WARNING: %s", msg)
+			continue
 		}
+		log.Fatal(msg)
+	}
+	
+	if inDev && missing > 0 {
+		log.Printf("WARNING: started in dev with %d of %d DB paths invalid; "+
+			"analyses using them will fail",
+			missing, len(dbPaths))
 	}
 
 	// Setup database

@@ -146,3 +146,47 @@ func TestResolveSampleFilePath(t *testing.T) {
 		assert.Empty(t, path)
 	})
 }
+
+func TestValidateDBPath(t *testing.T) {
+	tmp := t.TempDir()
+	nonEmptyDir := filepath.Join(tmp, "non-empty")
+
+	assert.NoError(t, os.Mkdir(nonEmptyDir, 0o755))
+	assert.NoError(t, os.WriteFile(filepath.Join(nonEmptyDir, "db.txt"),
+		[]byte("data"), 0o644))
+
+	emptyFile := filepath.Join(tmp, "empty.txt")
+	assert.NoError(t, os.WriteFile(emptyFile, nil, 0o644))
+
+	fullFile := filepath.Join(tmp, "full.txt")
+	assert.NoError(t, os.WriteFile(fullFile, []byte("refs"), 0o644))
+
+	emptyDir := filepath.Join(tmp, "empty-dir")
+	assert.NoError(t, os.Mkdir(emptyDir, 0o755))
+
+	tests := []struct {
+		name    string
+		path    string
+		wantErr string
+	}{
+		{name: "Not configured", path: "", wantErr: "not configured"},
+		{name: "Not found", path: filepath.Join(tmp, "missing"),
+			wantErr: "not accessible"},
+		{name: "Empty dir", path: emptyDir, wantErr: "is empty"},
+		{name: "Non-empty dir", path: nonEmptyDir, wantErr: ""},
+		{name: "Empty file", path: emptyFile, wantErr: "is empty"},
+		{name: "Non-empty file", path: fullFile, wantErr: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateDBPath(tt.path)
+
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}

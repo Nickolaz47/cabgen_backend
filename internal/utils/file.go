@@ -64,3 +64,34 @@ func CleanupFiles(paths []string) error {
 	}
 	return errors.Join(errs...)
 }
+
+func ValidateDBPath(path string) error {
+	if path == "" {
+		return errors.New("path is not configured")
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("path %q not accessible: %w", path, err)
+	}
+
+	if info.IsDir() {
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			return fmt.Errorf("cannot read dir %q: %w", path, err)
+		}
+
+		if len(entries) == 0 {
+			return fmt.Errorf("dir %q is empty (incomplete/corrupted DB?)",
+				path)
+		}
+
+		return nil
+	}
+
+	if info.Size() == 0 {
+		return fmt.Errorf("file %q is empty", path)
+	}
+
+	return nil
+}
