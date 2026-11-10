@@ -1,9 +1,18 @@
 services:
   api:
     userns_mode: keep-id
+    volumes:
+      - ./uploads:/app/uploads:z
+      - ./logs:/app/logs:z
 
   worker-email:
     userns_mode: keep-id
+    volumes:
+      - ./logs:/app/logs:z
 
   worker-analysis:
     userns_mode: keep-id
+    volumes:
+      - ./databases:/app/databases:z
+      - ./uploads:/app/uploads:z
+      - ./logs:/app/logs:z
