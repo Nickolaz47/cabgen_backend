@@ -35,8 +35,14 @@ func (s *SMTPEmailSender) Send(message *gomail.Message) error {
 }
 
 func CreateDefaultSender() *SMTPEmailSender {
+	// Fiocruz SMTP: login de autenticação ≠ conta que envia (From);
+	// fallback mantém deploys antigos onde são o mesmo endereço.
+	username := config.SenderLogin
+	if username == "" {
+		username = config.SenderEmail
+	}
 	return &SMTPEmailSender{
-		Username: config.SenderEmail,
+		Username: username,
 		Password: config.SenderPassword,
 		Host:     config.SMTPHost,
 		Port:     config.SMTPPort,

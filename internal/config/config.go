@@ -18,6 +18,7 @@ var (
 	Environment              = ""
 	APIHost                  = ""
 	SenderEmail              = ""
+	SenderLogin              = ""
 	SenderPassword           = ""
 	SMTPHost                 = ""
 	SMTPPort                 = 0
@@ -121,6 +122,7 @@ func LoadEnvVariables(envFile string) error {
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")
 	APIHost = os.Getenv("API_HOST")
 	SenderEmail = os.Getenv("SENDER_EMAIL")
+	SenderLogin = os.Getenv("SENDER_LOGIN")
 	SenderPassword = os.Getenv("SENDER_PASSWORD")
 	SMTPHost = os.Getenv("SMTP_HOST")
 	RedisURL = os.Getenv("REDIS_URL")

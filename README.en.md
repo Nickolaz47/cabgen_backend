@@ -122,6 +122,7 @@ ADMIN_PASSWORD=
 
 # Email configuration
 SENDER_EMAIL=
+SENDER_LOGIN=          # SMTP authentication user (falls back to SENDER_EMAIL if empty)
 SENDER_PASSWORD=
 SMTP_HOST=
 SMTP_PORT=

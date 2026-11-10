@@ -108,3 +108,19 @@ func TestCreateDefaultSender(t *testing.T) {
 	assert.Equal(t, expectedSMTPHost, result.Host)
 	assert.Equal(t, expectedSMTPPort, result.Port)
 }
+
+func TestCreateDefaultSender_Login(t *testing.T) {
+	origSenderEmail := config.SenderEmail
+	origSenderLogin := config.SenderLogin
+	defer func() {
+		config.SenderEmail = origSenderEmail
+		config.SenderLogin = origSenderLogin
+	}()
+
+	config.SenderEmail = "cabgen@fiocruz.br"
+	config.SenderLogin = "svc-account@fiocruz.br"
+	assert.Equal(t, "svc-account@fiocruz.br", CreateDefaultSender().Username)
+
+	config.SenderLogin = ""
+	assert.Equal(t, "cabgen@fiocruz.br", CreateDefaultSender().Username)
+}

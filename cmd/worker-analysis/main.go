@@ -65,7 +65,7 @@ func main() {
 		}
 		log.Fatal(msg)
 	}
-	
+
 	if inDev && missing > 0 {
 		log.Printf("WARNING: started in dev with %d of %d DB paths invalid; "+
 			"analyses using them will fail",
