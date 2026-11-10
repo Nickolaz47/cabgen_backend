@@ -9,6 +9,7 @@ const (
 	RegisterUsernameAlreadyExistsError        = "public.auth.register.usernameAlreadyExists.error"
 	RegisterEmailAlreadyExistsError           = "public.auth.register.emailAlreadyExists.error"
 	GenericInternalServerError                = "generic.internalServer.error"
+	AdminOnlyMessage                          = "platform.adminOnly.message"
 	InvalidURLID                              = "generic.invalidId.error"
 	InvalidQueryParamError                    = "generic.invalidQueryParam.error"
 	TooManyRequestsError                      = "generic.tooManyRequests.error"

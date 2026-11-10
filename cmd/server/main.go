@@ -127,6 +127,7 @@ func main() {
 		middlewares.LoggerMiddleware(logging.ConsoleLogger, logging.FileLogger),
 		middlewares.I18nMiddleware(),
 		middlewares.OriginCheckMiddleware(),
+		middlewares.PlatformAccessMiddleware(),
 		middlewares.AuditMiddleware(auditSvc),
 		gin.Recovery(),
 	)
@@ -212,7 +213,7 @@ func main() {
 	adminAuditHandler := container.BuildAdminAuditHandler(auditSvc)
 
 	// Public routes
-	publicRouter := api.Group("")
+	publicRouter := api.Group("", middlewares.AdminOnlyPublicBlockMiddleware())
 	public.SetupCountryRoutes(publicRouter, pubCountryHandler)
 	public.SetupHealthRoute(publicRouter, healthHandler)
 	public.SetupPublicAuthRoutes(publicRouter, pubAuthHandler)
@@ -220,7 +221,8 @@ func main() {
 	public.SetupMetricsRoutes(publicRouter, metricsHandler)
 
 	// Common routes
-	commonRouter := api.Group("", middlewares.AuthMiddleware())
+	commonRouter := api.Group("", middlewares.AuthMiddleware(),
+		middlewares.AdminOnlyMiddleware())
 	common.SetupCommonAuthRoutes(commonRouter, authHandler)
 	common.SetupUserRoutes(commonRouter, userHandler)
 	common.SetupSampleRoutes(commonRouter, sampleHandler)
@@ -231,7 +233,7 @@ func main() {
 
 	// Admin routes
 	adminRouter := api.Group("/admin", middlewares.AuthMiddleware(),
-		middlewares.AdminMiddleware())
+		middlewares.AdminMiddleware(), middlewares.AdminOnlyMiddleware())
 	admin.SetupAdminUserRoutes(adminRouter, adminUserHandler)
 	admin.SetupAdminSequencerRoutes(adminRouter, adminSequencerHandler)
 	admin.SetupAdminLaboratoryRoutes(adminRouter, adminLaboratoryHandler)

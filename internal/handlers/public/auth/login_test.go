@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	handlerAuth "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
@@ -46,11 +47,11 @@ func TestLogin(t *testing.T) {
 			nil, nil,
 		)
 		svc := &mocks.MockAuthService{
-			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, error) {
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
 				return &models.Cookies{
 					AccessCookie:  accessCookie,
 					RefreshCookie: refreshCookie,
-				}, nil
+				}, models.Admin, nil
 			},
 		}
 		handler := handlerAuth.NewAuthHandler(svc)
@@ -96,8 +97,8 @@ func TestLogin(t *testing.T) {
 			testutils.ToJSON(mockLogin), nil, nil,
 		)
 		svc := &mocks.MockAuthService{
-			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, error) {
-				return nil, services.ErrInvalidCredentials
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
+				return nil, "", services.ErrInvalidCredentials
 			},
 		}
 		handler := handlerAuth.NewAuthHandler(svc)
@@ -117,8 +118,8 @@ func TestLogin(t *testing.T) {
 			testutils.ToJSON(mockLogin), nil, nil,
 		)
 		svc := &mocks.MockAuthService{
-			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, error) {
-				return nil, services.ErrDisabledUser
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
+				return nil, "", services.ErrDisabledUser
 			},
 		}
 		handler := handlerAuth.NewAuthHandler(svc)
@@ -138,8 +139,8 @@ func TestLogin(t *testing.T) {
 			testutils.ToJSON(mockLogin), nil, nil,
 		)
 		svc := &mocks.MockAuthService{
-			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, error) {
-				return nil, services.ErrInternal
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
+				return nil, "", services.ErrInternal
 			},
 		}
 		handler := handlerAuth.NewAuthHandler(svc)
@@ -152,5 +153,55 @@ func TestLogin(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, expected, w.Body.String())
+	})
+
+	t.Run("AdminOnly - allows admin", func(t *testing.T) {
+		origStatus := config.PlatformStatus
+		config.PlatformStatus = models.PlatformStatusAdminOnly
+		defer func() { config.PlatformStatus = origStatus }()
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/login",
+			testutils.ToJSON(mockLogin), nil, nil,
+		)
+		svc := &mocks.MockAuthService{
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
+				return &models.Cookies{
+					AccessCookie:  &http.Cookie{Name: auth.Access, Value: "token", Path: "/"},
+					RefreshCookie: &http.Cookie{Name: auth.Refresh, Value: "refresh", Path: "/"},
+				}, models.Admin, nil
+			},
+		}
+		handler := handlerAuth.NewAuthHandler(svc)
+		handler.Login(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Body.String(), "Login successful")
+	})
+
+	t.Run("AdminOnly - blocks non-admin", func(t *testing.T) {
+		origStatus := config.PlatformStatus
+		config.PlatformStatus = models.PlatformStatusAdminOnly
+		defer func() { config.PlatformStatus = origStatus }()
+
+		c, w := testutils.SetupGinContext(
+			http.MethodPost, "/api/auth/login",
+			testutils.ToJSON(mockLogin), nil, nil,
+		)
+		svc := &mocks.MockAuthService{
+			LoginFunc: func(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
+				return &models.Cookies{
+					AccessCookie:  &http.Cookie{Name: auth.Access, Value: "token", Path: "/"},
+					RefreshCookie: &http.Cookie{Name: auth.Refresh, Value: "refresh", Path: "/"},
+				}, models.Collaborator, nil
+			},
+		}
+		handler := handlerAuth.NewAuthHandler(svc)
+		handler.Login(c)
+
+		assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+		assert.Contains(t, w.Body.String(), "Currently, only administrators")
+		cookies := w.Result().Cookies()
+		assert.Empty(t, cookies, "non-admin login must not set cookies")
 	})
 }

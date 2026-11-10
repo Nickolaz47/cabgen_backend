@@ -783,3 +783,5 @@ other = """
 <hr>
 <p>Atenciosamente,<br><strong>Equipe CABGen</strong></p>
 </div>"""
+[platform.adminOnly.message]
+other = "No momento, apenas administradores têm acesso a este recurso."

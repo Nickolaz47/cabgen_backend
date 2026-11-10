@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/responses"
@@ -65,7 +66,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	cookies, err := h.Service.Login(c.Request.Context(), login)
+	cookies, role, err := h.Service.Login(c.Request.Context(), login)
 	if err != nil {
 		validations.SetAuditEvent(c, models.AuditEventLoginFailed,
 			map[string]string{"auth_identity": login.Username})
@@ -74,6 +75,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			code,
 			responses.APIResponse{
 				Error: responses.GetResponse(localizer, errMsg),
+			})
+		return
+	}
+
+	if config.PlatformStatus == models.PlatformStatusAdminOnly &&
+		role != models.Admin {
+		c.JSON(http.StatusServiceUnavailable,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer,
+					responses.AdminOnlyMessage),
 			})
 		return
 	}
@@ -100,7 +111,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	accessCookie, err := h.Service.Refresh(c.Request.Context(), tokenStr)
+	accessCookie, role, err := h.Service.Refresh(c.Request.Context(), tokenStr)
 	if err != nil {
 		validations.SetAuditEvent(c, models.AuditEventRefreshTokenFailed, nil)
 		code, errMsg := handlererrors.HandleAuthError(err)
@@ -112,11 +123,26 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
+	if config.PlatformStatus == models.PlatformStatusAdminOnly &&
+		role != models.Admin {
+		clearAuthCookies(c)
+		c.JSON(http.StatusServiceUnavailable,
+			responses.APIResponse{
+				Error: responses.GetResponse(localizer, responses.AdminOnlyMessage),
+			})
+		return
+	}
+
 	http.SetCookie(c.Writer, accessCookie)
 
 	c.JSON(http.StatusOK,
 		responses.APIResponse{Message: responses.GetResponse(localizer,
 			responses.TokenRenewed)})
+}
+
+func clearAuthCookies(c *gin.Context) {
+	http.SetCookie(c.Writer, auth.DeleteCookie(auth.Access, "/"))
+	http.SetCookie(c.Writer, auth.DeleteCookie(auth.Refresh, "/api/auth/refresh"))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/CABGenOrg/cabgen_backend/internal/auth"
 	authHandler "github.com/CABGenOrg/cabgen_backend/internal/handlers/public/auth"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils/mocks"
@@ -42,11 +43,10 @@ func TestRefresh(t *testing.T) {
 		c.Request.AddCookie(refreshCookie)
 
 		svc := &mocks.MockAuthService{
-			RefreshFunc: func(
-				ctx context.Context, tokenStr string) (*http.Cookie, error) {
+			RefreshFunc: func(ctx context.Context, tokenStr string) (*http.Cookie, models.UserRole, error) {
 				newCookie := accessCookie
 				newCookie.Expires = time.Now().Add(15 * time.Minute)
-				return newCookie, nil
+				return newCookie, models.Admin, nil
 			},
 		}
 		handler := authHandler.NewAuthHandler(svc)
@@ -97,8 +97,8 @@ func TestRefresh(t *testing.T) {
 		)
 
 		svc := &mocks.MockAuthService{
-			RefreshFunc: func(ctx context.Context, tokenStr string) (*http.Cookie, error) {
-				return nil, services.ErrUnauthorized
+			RefreshFunc: func(ctx context.Context, tokenStr string) (*http.Cookie, models.UserRole, error) {
+				return nil, "", services.ErrUnauthorized
 			},
 		}
 		handler := authHandler.NewAuthHandler(svc)
@@ -123,8 +123,8 @@ func TestRefresh(t *testing.T) {
 		c.Request.AddCookie(refreshCookie)
 
 		svc := &mocks.MockAuthService{
-			RefreshFunc: func(ctx context.Context, tokenStr string) (*http.Cookie, error) {
-				return nil, services.ErrInternal
+			RefreshFunc: func(ctx context.Context, tokenStr string) (*http.Cookie, models.UserRole, error) {
+				return nil, "", services.ErrInternal
 			},
 		}
 		handler := authHandler.NewAuthHandler(svc)

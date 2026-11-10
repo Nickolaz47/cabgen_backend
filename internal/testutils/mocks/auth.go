@@ -66,9 +66,9 @@ type MockAuthService struct {
 		input models.UserRegisterInput,
 		language string) (*models.UserResponse, error)
 	LoginFunc func(ctx context.Context,
-		input models.LoginInput) (*models.Cookies, error)
+		input models.LoginInput) (*models.Cookies, models.UserRole, error)
 	RefreshFunc func(ctx context.Context,
-		tokenStr string) (*http.Cookie, error)
+		tokenStr string) (*http.Cookie, models.UserRole, error)
 	ForgotPasswordFunc func(ctx context.Context,
 		input models.ForgotPasswordInput) error
 	ResetPasswordFunc func(ctx context.Context,
@@ -86,19 +86,19 @@ func (s *MockAuthService) Register(
 }
 
 func (s *MockAuthService) Login(ctx context.Context,
-	input models.LoginInput) (*models.Cookies, error) {
+	input models.LoginInput) (*models.Cookies, models.UserRole, error) {
 	if s.LoginFunc != nil {
 		return s.LoginFunc(ctx, input)
 	}
-	return nil, nil
+	return nil, "", nil
 }
 
 func (s *MockAuthService) Refresh(ctx context.Context,
-	tokenStr string) (*http.Cookie, error) {
+	tokenStr string) (*http.Cookie, models.UserRole, error) {
 	if s.RefreshFunc != nil {
 		return s.RefreshFunc(ctx, tokenStr)
 	}
-	return nil, nil
+	return nil, "", nil
 }
 
 func (s *MockAuthService) ForgotPassword(ctx context.Context,

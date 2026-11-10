@@ -386,7 +386,7 @@ func TestLogin(t *testing.T) {
 		provider := &mocks.MockTokenProvider{}
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, nil)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, result)
@@ -405,7 +405,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
@@ -426,7 +426,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -449,7 +449,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrDisabledUser)
@@ -474,7 +474,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.WarnLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInvalidCredentials)
@@ -509,7 +509,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -535,7 +535,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -566,7 +566,7 @@ func TestLogin(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(userRepo, nil, nil, hasher, provider, nil, mockLogger)
-		result, err := svc.Login(ctx, input)
+		result, _, err := svc.Login(ctx, input)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)
@@ -595,7 +595,7 @@ func TestRefresh(t *testing.T) {
 		}
 
 		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil, nil)
-		result, err := svc.Refresh(ctx, tokenStr)
+		result, _, err := svc.Refresh(ctx, tokenStr)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, result)
@@ -611,7 +611,7 @@ func TestRefresh(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil, mockLogger)
-		result, err := svc.Refresh(ctx, tokenStr)
+		result, _, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrUnauthorized)
@@ -633,7 +633,7 @@ func TestRefresh(t *testing.T) {
 		mockLogger, logs := testutils.NewMockLogger(zap.ErrorLevel)
 
 		svc := services.NewAuthService(nil, nil, nil, nil, provider, nil, mockLogger)
-		result, err := svc.Refresh(ctx, tokenStr)
+		result, _, err := svc.Refresh(ctx, tokenStr)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrInternal)

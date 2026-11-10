@@ -120,6 +120,9 @@ APP_ROOT=              # Sobrescreve o diretório raiz do projeto (auto-detectad
 # Usuário administrador padrão
 ADMIN_PASSWORD=
 
+# Plataforma
+PLATFORM_STATUS=       # ok | platformInTesting | maintenance | adminOnly | analysisDisabled
+
 # Configuração de email
 SENDER_EMAIL=
 SENDER_LOGIN=          # usuário de autenticação no SMTP (se vazio, usa SENDER_EMAIL)
@@ -816,6 +819,6 @@ Os workers rodam em containers separados junto com a API. Veja `docker-compose.y
 - [x] Adicionar cidade como select no cadastro da amostra;
 - [x] Mostrar no resultado as versões de cada programa;
 - [x] Permitir o download de vários resultados;
-- [ ] Migrar os dados do MongoDB para o Postgresql;
+- [x] Migrar os dados do MongoDB para o Postgresql;
 - [x] Integrar com a pipeline;
 - [x] Integrar com o frontend;

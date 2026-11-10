@@ -120,6 +120,9 @@ APP_ROOT=              # Overrides the project root directory (auto-detected if 
 # Default administrator
 ADMIN_PASSWORD=
 
+# Platform
+PLATFORM_STATUS=       # ok | platformInTesting | maintenance | adminOnly | analysisDisabled
+
 # Email configuration
 SENDER_EMAIL=
 SENDER_LOGIN=          # SMTP authentication user (falls back to SENDER_EMAIL if empty)

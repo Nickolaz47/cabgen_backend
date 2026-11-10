@@ -2,12 +2,13 @@ package common
 
 import (
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/common/analysis"
+	"github.com/CABGenOrg/cabgen_backend/internal/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupAnalysisRoutes(r *gin.RouterGroup,
 	handler *analysis.AnalysisHandler) {
-	analysisRouter := r.Group("/analyses")
+	analysisRouter := r.Group("/analyses", middlewares.AnalysisDisabledMiddleware())
 
 	analysisRouter.GET("", handler.GetAnalyses)
 	analysisRouter.GET("/:analysisId", handler.GetAnalysisByID)

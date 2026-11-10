@@ -25,8 +25,8 @@ import (
 type AuthService interface {
 	Register(ctx context.Context, input models.UserRegisterInput,
 		language string) (*models.UserResponse, error)
-	Login(ctx context.Context, input models.LoginInput) (*models.Cookies, error)
-	Refresh(ctx context.Context, tokenStr string) (*http.Cookie, error)
+	Login(ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error)
+	Refresh(ctx context.Context, tokenStr string) (*http.Cookie, models.UserRole, error)
 	ForgotPassword(ctx context.Context, input models.ForgotPasswordInput) error
 	ResetPassword(ctx context.Context, input models.ResetPasswordInput) error
 }
@@ -200,7 +200,7 @@ func (s *authService) Register(
 }
 
 func (s *authService) Login(
-	ctx context.Context, input models.LoginInput) (*models.Cookies, error) {
+	ctx context.Context, input models.LoginInput) (*models.Cookies, models.UserRole, error) {
 	existingUser, err := s.UserRepo.GetUserByUsername(ctx, input.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -208,12 +208,12 @@ func (s *authService) Login(
 				"AuthService", "Login", logging.UsernameNotFoundError, err,
 				zap.String("auth_identity", input.Username),
 			)...)
-			return nil, ErrInvalidCredentials
+			return nil, "", ErrInvalidCredentials
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.DatabaseError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	if !existingUser.IsActive {
@@ -221,7 +221,7 @@ func (s *authService) Login(
 			"AuthService", "Login", logging.DisabledUserError, err,
 			zap.String("auth_identity", input.Username),
 		)...)
-		return nil, ErrDisabledUser
+		return nil, "", ErrDisabledUser
 	}
 
 	if err = s.Hasher.CheckPassword(existingUser.Password,
@@ -231,12 +231,12 @@ func (s *authService) Login(
 				"AuthService", "Login", logging.WrongPasswordError, err,
 				zap.String("auth_identity", input.Username),
 			)...)
-			return nil, ErrInvalidCredentials
+			return nil, "", ErrInvalidCredentials
 		}
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.HasherError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	accessKey, err := auth.GetSecretKey(auth.Access)
@@ -244,7 +244,7 @@ func (s *authService) Login(
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GetSecretKeyError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	refreshKey, err := auth.GetSecretKey(auth.Refresh)
@@ -252,7 +252,7 @@ func (s *authService) Login(
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GetSecretKeyError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	accessToken, err := s.TokenProvider.GenerateToken(
@@ -261,7 +261,7 @@ func (s *authService) Login(
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GenerateTokenError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	refreshToken, err := s.TokenProvider.GenerateToken(
@@ -270,7 +270,7 @@ func (s *authService) Login(
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Login", logging.GenerateTokenError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	return &models.Cookies{
@@ -283,16 +283,16 @@ func (s *authService) Login(
 			"/api/auth/refresh", auth.RefreshCookieExpiration,
 			http.SameSiteStrictMode,
 		),
-	}, nil
+	}, existingUser.UserRole, nil
 }
 
-func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cookie, error) {
+func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cookie, models.UserRole, error) {
 	refreshSecret, err := auth.GetSecretKey(auth.Refresh)
 	if err != nil {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GetSecretKeyError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	userToken, err := s.TokenProvider.ValidateToken(tokenStr, refreshSecret)
@@ -300,7 +300,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.ValidateTokenError, err,
 		)...)
-		return nil, ErrUnauthorized
+		return nil, "", ErrUnauthorized
 	}
 
 	accessSecret, err := auth.GetSecretKey(auth.Access)
@@ -308,7 +308,7 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GetSecretKeyError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	accessToken, err := s.TokenProvider.GenerateToken(
@@ -317,13 +317,13 @@ func (s *authService) Refresh(ctx context.Context, tokenStr string) (*http.Cooki
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AuthService", "Refresh", logging.GenerateTokenError, err,
 		)...)
-		return nil, ErrInternal
+		return nil, "", ErrInternal
 	}
 
 	return auth.CreateCookie(
 		auth.Access, accessToken,
 		"/", auth.AccessCookieExpiration, http.SameSiteLaxMode,
-	), nil
+	), userToken.UserRole, nil
 }
 
 func (s *authService) ForgotPassword(ctx context.Context,

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/joho/godotenv"
 )
 
@@ -24,6 +25,7 @@ var (
 	SMTPPort                 = 0
 	RedisURL                 = ""
 	FrontendURL              = ""
+	PlatformStatus           = models.PlatformStatusOk
 	FastQCPath               = ""
 	AbricatePath             = ""
 	MlstPath                 = ""
@@ -127,6 +129,7 @@ func LoadEnvVariables(envFile string) error {
 	SMTPHost = os.Getenv("SMTP_HOST")
 	RedisURL = os.Getenv("REDIS_URL")
 	FrontendURL = os.Getenv("FRONTEND_URL")
+	PlatformStatus = models.ParsePlatformStatus(os.Getenv("PLATFORM_STATUS"))
 
 	if Environment != "dev" && Environment != "" {
 		for name, secret := range map[string]string{
