@@ -7,6 +7,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
+	"github.com/CABGenOrg/cabgen_backend/internal/queue"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/workers"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
@@ -73,7 +74,5 @@ func main() {
 		zap.Int("concurrency", 10),
 	)
 
-	if err := srv.Run(mux); err != nil {
-		logging.FileLogger.Fatal("Email worker execution failed.", zap.Error(err))
-	}
+	queue.RunServerWithGracefulShutdown(srv, mux, logging.FileLogger)
 }

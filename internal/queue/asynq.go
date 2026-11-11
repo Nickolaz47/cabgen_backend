@@ -1,9 +1,13 @@
 package queue
 
 import (
+	"context"
 	"errors"
+	"os/signal"
+	"syscall"
 
 	"github.com/hibiken/asynq"
+	"go.uber.org/zap"
 )
 
 func NewAsynqClient(redisAddr string) (*asynq.Client, error) {
@@ -36,4 +40,29 @@ func NewAsynqInspector(redisAddr string) (*asynq.Inspector, error) {
 	}
 
 	return asynq.NewInspector(opt), nil
+}
+
+func RunServerWithGracefulShutdown(srv *asynq.Server, mux *asynq.ServeMux,
+	logger *zap.Logger) {
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
+	errCh := make(chan error, 1)
+	go func() { errCh <- srv.Run(mux) }()
+
+	select {
+	case <-ctx.Done():
+		logger.Info("Shutdown signal received, gracefully stopping worker...")
+		srv.Shutdown()
+	case err := <-errCh:
+		if err != nil {
+			logger.Fatal("Worker execution failed.", zap.Error(err))
+		}
+		return
+	}
+
+	if err := <-errCh; err != nil {
+		logger.Fatal("Worker execution failed.", zap.Error(err))
+	}
 }

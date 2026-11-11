@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
 	"github.com/CABGenOrg/cabgen_backend/internal/container"
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/logging"
+	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/pipeline"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue"
 	"github.com/CABGenOrg/cabgen_backend/internal/queue/tasks"
@@ -15,6 +18,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -138,6 +142,8 @@ func main() {
 	mux := asynq.NewServeMux()
 	mux.Handle(tasks.TaskTypeAnalysisProcess, analysisHandler)
 
+	recoverOrphanedAnalyses(mainDB.DB(), logging.FileLogger)
+
 	// Redis
 	redisOpt := asynq.RedisClientOpt{Addr: config.RedisURL}
 	srv := asynq.NewServer(
@@ -155,8 +161,37 @@ func main() {
 		zap.String("redis_addr", config.RedisURL),
 		zap.Int("concurrency", config.AnalysisConcurrency))
 
-	if err := srv.Run(mux); err != nil {
-		logging.FileLogger.Fatal("Analysis worker execution failed.",
+	queue.RunServerWithGracefulShutdown(srv, mux, logging.FileLogger)
+}
+
+func recoverOrphanedAnalyses(db *gorm.DB, logger *zap.Logger) {
+	ctx := context.Background()
+	cutoff := time.Now().Add(-30 * time.Minute)
+
+	var analyses []models.Analysis
+	if err := db.WithContext(ctx).
+		Where("status = ? AND started_at < ?",
+			models.AnalysisStatusRunning, cutoff).
+		Find(&analyses).Error; err != nil {
+		logger.Error("Failed to find orphaned analyses",
 			zap.Error(err))
+		return
+	}
+
+	for i := range analyses {
+		analysis := &analyses[i]
+		analysis.Status = models.AnalysisStatusPending
+		analysis.StartedAt = nil
+		analysis.Step = ""
+
+		if err := db.WithContext(ctx).Save(analysis).Error; err != nil {
+			logger.Error("Failed to recover orphaned analysis",
+				zap.String("analysis_id", analysis.ID.String()),
+				zap.Error(err))
+			continue
+		}
+
+		logger.Info("Recovered orphaned analysis",
+			zap.String("analysis_id", analysis.ID.String()))
 	}
 }

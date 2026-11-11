@@ -15,6 +15,7 @@ services:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     restart: unless-stopped
+    stop_grace_period: 16m
     deploy:
       resources:
         limits:
@@ -54,6 +55,7 @@ services:
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
+    stop_grace_period: 5m
     deploy:
       resources:
         limits:
@@ -85,6 +87,7 @@ services:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     restart: unless-stopped
+    stop_grace_period: 3h15m
     deploy:
       resources:
         limits:

@@ -1,7 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"log"
+	"net/http"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -19,6 +25,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -248,5 +255,38 @@ func main() {
 	admin.SetupAdminMetricsRoutes(adminRouter, adminMetricsHandler)
 	admin.SetupAdminAuditRoutes(adminRouter, adminAuditHandler)
 
-	r.Run()
+	srv := &http.Server{
+		Addr:              fmt.Sprintf(":%d", config.Port),
+		Handler:           r,
+		ReadTimeout:       15 * time.Minute,
+		WriteTimeout:      15 * time.Minute,
+		IdleTimeout:       5 * time.Minute,
+		ReadHeaderTimeout: 1 * time.Minute,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			logging.FileLogger.Fatal("API execution failed.",
+				zap.Error(err))
+		}
+	}()
+
+	logging.FileLogger.Info("Starting CABGen API...",
+		zap.String("addr", srv.Addr))
+
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+	<-ctx.Done()
+
+	logging.FileLogger.Info("Shutdown signal received, gracefully stopping API...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(),
+		15*time.Minute)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logging.FileLogger.Error("API graceful shutdown failed.",
+			zap.Error(err))
+	}
 }
