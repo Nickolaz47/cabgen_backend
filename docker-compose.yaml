@@ -19,8 +19,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
-          memory: 2G
+          cpus: '${API_CPU:-2.0}'
+          memory: '${API_RAM:-2G}'
     networks:
       - proxy-network
       - default
@@ -59,8 +59,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 256M
+          cpus: '${EMAIL_CPU:-0.5}'
+          memory: '${EMAIL_RAM:-256M}'
 
   worker-analysis:
     user: "${UID:-1000}:${GID:-1000}"
@@ -113,8 +113,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '${DB_CPU:-1.0}'
+          memory: '${DB_RAM:-1G}'
 
   redis:
     image: redis:8-alpine
@@ -130,8 +130,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 2G
+          cpus: '${REDIS_CPU:-1.0}'
+          memory: '${REDIS_RAM:-2G}'
 
 volumes:
   postgres-data:
