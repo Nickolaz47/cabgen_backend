@@ -30,6 +30,7 @@ const (
 	CreateFolderError               = "CREATE_FOLDER_ERROR"
 	DeleteFolderError               = "DELETE_FOLDER_ERROR"
 	DeleteFileError                 = "DELETE_FILE_ERROR"
+	CopyFileError                   = "COPY_FILE_ERROR"
 	MissingFileError                = "MISSING_FILE_ERROR"
 	ExceededDownloadLimitError      = "EXCEEDED_DOWNLOAD_LIMIT"
 	AsynqTaskError                  = "ASYNQ_TASK_ERROR"

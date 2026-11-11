@@ -37,7 +37,6 @@ type AnalysisRunnerFolders struct {
 	QCDir       string
 	AssemblyDir string
 	AMRDir      string
-	ReportDir   string
 }
 
 type AnalysisRunnerService interface {
@@ -77,9 +76,8 @@ func (s *analysisRunnerService) prepareFolders(ctx context.Context,
 	qcDir := filepath.Join(rootDir, "qc")
 	assemblyDir := filepath.Join(rootDir, "assembly")
 	amrDir := filepath.Join(rootDir, "amr")
-	reportDir := filepath.Join(rootDir, "report")
 
-	for _, dir := range []string{qcDir, assemblyDir, amrDir, reportDir} {
+	for _, dir := range []string{qcDir, assemblyDir, amrDir} {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 				"AnalysisRunnerService", "prepareFolders",
@@ -91,7 +89,6 @@ func (s *analysisRunnerService) prepareFolders(ctx context.Context,
 
 	return &AnalysisRunnerFolders{
 		QCDir: qcDir, AssemblyDir: assemblyDir, AMRDir: amrDir,
-		ReportDir: reportDir,
 	}, nil
 }
 
@@ -531,18 +528,9 @@ func (s *analysisRunnerService) zipAnalysisResults(ctx context.Context,
 		analysis.UserID.String(), "samples", analysis.SampleID.String(),
 		"analyses", analysis.ID.String())
 
-	reportDir := filepath.Join(analysisFolder, "report")
-	if err := os.MkdirAll(reportDir, 0755); err != nil {
-		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
-			"AnalysisRunnerService", "zipAnalysisResults",
-			logging.CreateFolderError, err,
-		)...)
-		return
-	}
-
 	zipName := utils.SanitizeFilename(analysis.Sample.OriginCode) + "_" +
 		string(analysis.Type) + "_results.zip"
-	zipPath := filepath.Join(reportDir, zipName)
+	zipPath := filepath.Join(analysisFolder, zipName)
 	if err := utils.ZipSubdirectories(analysisFolder,
 		[]string{"qc", "assembly", "amr"}, zipPath); err != nil {
 		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
@@ -553,6 +541,59 @@ func (s *analysisRunnerService) zipAnalysisResults(ctx context.Context,
 	}
 
 	analysis.ResultsZipPath = &zipPath
+
+	assemblySafeToDelete := s.persistAssemblyForReuse(ctx, analysis,
+		analysisFolder)
+
+	if err := os.RemoveAll(filepath.Join(analysisFolder, "amr")); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"AnalysisRunnerService", "zipAnalysisResults",
+			logging.DeleteFolderError, err,
+			zap.String("analysis_id", analysis.ID.String()),
+		)...)
+	}
+
+	if assemblySafeToDelete {
+		if err := os.RemoveAll(filepath.Join(analysisFolder, "assembly")); err != nil {
+			s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+				"AnalysisRunnerService", "zipAnalysisResults",
+				logging.DeleteFolderError, err,
+				zap.String("analysis_id", analysis.ID.String()),
+			)...)
+		}
+	}
+}
+
+func (s *analysisRunnerService) persistAssemblyForReuse(ctx context.Context,
+	analysis *models.Analysis, analysisFolder string) bool {
+	if analysis.Sample.Fasta == nil {
+		return true
+	}
+
+	sampleDir := filepath.Join(s.RootDir, "uploads", "users",
+		analysis.UserID.String(), "samples", analysis.SampleID.String())
+	samplePath := filepath.Join(sampleDir, *analysis.Sample.Fasta)
+	if _, err := os.Stat(samplePath); err == nil {
+		return true
+	}
+
+	assemblyPath := filepath.Join(analysisFolder, "assembly",
+		*analysis.Sample.Fasta)
+	if _, err := os.Stat(assemblyPath); err != nil {
+		return true
+	}
+
+	if err := utils.CopyFile(assemblyPath, samplePath); err != nil {
+		s.Logger.Warn("Service Warning", logging.ServiceLogging(ctx,
+			"AnalysisRunnerService", "persistAssemblyForReuse",
+			logging.CopyFileError, err,
+			zap.String("analysis_id", analysis.ID.String()),
+			zap.String("sample_id", analysis.SampleID.String()),
+		)...)
+		return false
+	}
+
+	return true
 }
 
 func (s *analysisRunnerService) Run(ctx context.Context,

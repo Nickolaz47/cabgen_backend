@@ -821,13 +821,17 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		assemblyDir := filepath.Join(rootDir, "uploads", "users",
+		analysisDir := filepath.Join(rootDir, "uploads", "users",
 			mock.UserID.String(), "samples", mock.SampleID.String(),
-			"analyses", mock.ID.String(), "assembly")
-		copiedFasta := filepath.Join(assemblyDir, "user_genome.fasta")
-		assert.FileExists(t, copiedFasta)
+			"analyses", mock.ID.String())
+		assert.NoDirExists(t, filepath.Join(analysisDir, "assembly"))
 
-		content, err := os.ReadFile(copiedFasta)
+		sampleFasta := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"user_genome.fasta")
+		assert.FileExists(t, sampleFasta)
+
+		content, err := os.ReadFile(sampleFasta)
 		assert.NoError(t, err)
 		assert.Equal(t, fastaContent, string(content))
 	})
@@ -882,7 +886,15 @@ func TestAnalysisRunnerGenome(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		content, err := os.ReadFile(fastaInAssembly)
+		sampleFasta := filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"assembly.fasta")
+		assert.FileExists(t, sampleFasta)
+		assert.NoDirExists(t, filepath.Join(rootDir, "uploads", "users",
+			mock.UserID.String(), "samples", mock.SampleID.String(),
+			"analyses", mock.ID.String(), "assembly"))
+
+		content, err := os.ReadFile(sampleFasta)
 		assert.NoError(t, err)
 		assert.Equal(t, fastaContent, string(content))
 	})
@@ -1481,13 +1493,17 @@ func TestAnalysisRunnerPrepareFolders(t *testing.T) {
 		err := svc.Run(context.Background(), mock.ID)
 
 		assert.NoError(t, err)
-		for _, sub := range []string{"qc", "assembly", "amr", "report"} {
-			assert.DirExists(t,
-				filepath.Join(root, "uploads", "users",
-					mock.UserID.String(), "samples",
-					mock.SampleID.String(), "analyses",
-					mock.ID.String(), sub))
-		}
+		analysisDir := filepath.Join(root, "uploads", "users",
+			mock.UserID.String(), "samples",
+			mock.SampleID.String(), "analyses",
+			mock.ID.String())
+
+		assert.DirExists(t, filepath.Join(analysisDir, "qc"))
+		assert.NoDirExists(t, filepath.Join(analysisDir, "assembly"))
+		assert.NoDirExists(t, filepath.Join(analysisDir, "amr"))
+		assert.NoDirExists(t, filepath.Join(analysisDir, "report"))
+		assert.FileExists(t, filepath.Join(analysisDir,
+			mock.Sample.OriginCode+"_FASTQC_results.zip"))
 	})
 }
 
@@ -1551,12 +1567,15 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 		assert.Equal(t, models.AnalysisStatusDone, updated.Status)
 		assert.NotNil(t, updated.ResultsZipPath)
 
-		expectedZip := filepath.Join(rootDir, "uploads", "users",
+		analysisDir := filepath.Join(rootDir, "uploads", "users",
 			mock.UserID.String(), "samples", mock.SampleID.String(),
-			"analyses", mock.ID.String(), "report",
+			"analyses", mock.ID.String())
+		expectedZip := filepath.Join(analysisDir,
 			mock.Sample.OriginCode+"_FASTQC_results.zip")
 		assert.Equal(t, expectedZip, *updated.ResultsZipPath)
 		assert.FileExists(t, expectedZip)
+		assert.NoDirExists(t, filepath.Join(analysisDir, "assembly"))
+		assert.NoDirExists(t, filepath.Join(analysisDir, "amr"))
 
 		zr, err := zip.OpenReader(expectedZip)
 		assert.NoError(t, err)
@@ -1570,8 +1589,6 @@ func TestAnalysisRunnerZipResults(t *testing.T) {
 			"qc", "reads1_fastqc.html"))
 		assert.Contains(t, names, filepath.Join(mock.ID.String(),
 			"qc", "reads2_fastqc.html"))
-		assert.NotContains(t, names, filepath.Join(mock.ID.String(),
-			"report", mock.Sample.OriginCode+"_FASTQC_results.zip"))
 	})
 
 	t.Run("Warning - Zip Failure Does Not Fail Analysis", func(t *testing.T) {
