@@ -23,7 +23,6 @@ func SetupLoggers(logPath string) error {
 		Compress:   true,
 	}
 
-	// Only dev environment
 	consoleEncoderConfig := zap.NewDevelopmentEncoderConfig()
 	consoleEncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(
 		"2006-01-02 15:04:05")
@@ -32,7 +31,6 @@ func SetupLoggers(logPath string) error {
 	consoleEncoderConfig.CallerKey = "caller"
 	consoleEncoder := zapcore.NewConsoleEncoder(consoleEncoderConfig)
 
-	// Dev and prod environments
 	jsonEncoderConfig := zap.NewProductionEncoderConfig()
 	jsonEncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	jsonEncoderConfig.TimeKey = "timestamp"

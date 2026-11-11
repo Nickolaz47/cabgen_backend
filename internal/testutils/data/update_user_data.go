@@ -16,14 +16,12 @@ var baseValidUpdateBody = map[string]any{
 }
 
 var UpdateUserTests = []Body{
-	// Name
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidUpdateBody); b["name"] = "Ni"; return b }()), `{"error":"Name must be at least 3 characters long."}`},
 	{"Name too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidUpdateBody)
 		b["name"] = strings.Repeat("nicolas", 15)
 		return b
 	}()), `{"error":"Name must be at most 100 characters long."}`},
-	// Username
 	{"Username too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidUpdateBody)
 		b["username"] = "ni"
@@ -34,7 +32,6 @@ var UpdateUserTests = []Body{
 		b["username"] = strings.Repeat("nick", 26)
 		return b
 	}()), `{"error":"Username must be at most 100 characters long."}`},
-	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidUpdateBody)
 		b["interest"] = string(make([]byte, 256))

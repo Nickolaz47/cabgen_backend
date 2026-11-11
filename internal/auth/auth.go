@@ -121,7 +121,6 @@ func (t *tokenProvider) GenerateToken(user models.UserToken, secret []byte, expi
 }
 
 func (t *tokenProvider) ValidateToken(tokenStr string, secret []byte) (*models.UserToken, error) {
-	// Parses the token using MapClaims
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -136,7 +135,6 @@ func (t *tokenProvider) ValidateToken(tokenStr string, secret []byte) (*models.U
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
 
-	// Validates and converts claims to UserToken
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		data, err := json.Marshal(claims)
 		if err != nil {

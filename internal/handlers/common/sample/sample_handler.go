@@ -591,7 +591,6 @@ func (h *SampleHandler) UploadFiles(c *gin.Context) {
 			content = gzipped
 		}
 
-		// Do the streaming from net to disk
 		n, err := io.Copy(out, io.LimitReader(content, budget+1))
 		out.Close()
 

@@ -16,14 +16,12 @@ var baseValidAdminUpdateBody = map[string]any{
 }
 
 var AdminUpdateUserTests = []Body{
-	// Name
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidAdminUpdateBody); b["name"] = "Ni"; return b }()), `{"error":"Name must be at least 3 characters long."}`},
 	{"Name too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["name"] = strings.Repeat("nicolas", 15)
 		return b
 	}()), `{"error":"Name must be at most 100 characters long."}`},
-	// Username
 	{"Username too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["username"] = "ni"
@@ -34,13 +32,11 @@ var AdminUpdateUserTests = []Body{
 		b["username"] = strings.Repeat("nick", 26)
 		return b
 	}()), `{"error":"Username must be at most 100 characters long."}`},
-	// Email
 	{"Email invalid", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminCreateUserBody)
 		b["email"] = "invalid-email"
 		return b
 	}()), `{"error":"Invalid email format."}`},
-	// Password
 	{"Password too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminCreateUserBody)
 		b["password"] = "123"
@@ -51,13 +47,11 @@ var AdminUpdateUserTests = []Body{
 		b["password"] = strings.Repeat("1234", 10)
 		return b
 	}()), `{"error":"Password must be at most 32 characters long."}`},
-	// User Role
 	{"Invalid user role", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminCreateUserBody)
 		b["user_role"] = "Tester"
 		return b
 	}()), `{"error":"The user role is invalid. Choose between Collaborator or Admin."}`},
-	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidAdminUpdateBody)
 		b["interest"] = string(make([]byte, 256))

@@ -21,14 +21,11 @@ var baseValidRegisterBody = map[string]any{
 }
 
 var RegisterTests = []Body{
-	// IsPartOfNetwork
 	{"Is part of network required", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
 		delete(b, "is_part_of_network")
 		return b
 	}()), `{"error":"Informing whether you are part of the network is required."}`},
-
-	// Name
 	{"Name required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["name"] = ""; return b }()), `{"error":"Name is required."}`},
 	{"Name too short", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["name"] = "Ed"; return b }()), `{"error":"Name must be at least 3 characters long."}`},
 	{"Name too long", testutils.ToJSON(func() map[string]any {
@@ -36,8 +33,6 @@ var RegisterTests = []Body{
 		b["name"] = strings.Repeat("eddie", 21)
 		return b
 	}()), `{"error":"Name must be at most 100 characters long."}`},
-
-	// Username
 	{"Username required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["username"] = ""; return b }()), `{"error":"Username is required."}`},
 	{"Username too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
@@ -49,8 +44,6 @@ var RegisterTests = []Body{
 		b["username"] = strings.Repeat("eddy", 26)
 		return b
 	}()), `{"error":"Username must be at most 100 characters long."}`},
-
-	// Email
 	{"Email required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["email"] = ""; return b }()), `{"error":"Email is required."}`},
 	{"Email invalid", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
@@ -67,8 +60,6 @@ var RegisterTests = []Body{
 		b["confirm_email"] = "other@mail.com"
 		return b
 	}()), `{"error":"Emails must match."}`},
-
-	// Password
 	{"Password required", testutils.ToJSON(func() map[string]any { b := testutils.CopyMap(baseValidRegisterBody); b["password"] = ""; return b }()), `{"error":"Password is required."}`},
 	{"Password too short", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
@@ -90,8 +81,6 @@ var RegisterTests = []Body{
 		b["confirm_password"] = "different123"
 		return b
 	}()), `{"error":"Passwords must match."}`},
-
-	// Country code
 	{"Country code required", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
 		b["country_code"] = ""
@@ -102,8 +91,6 @@ var RegisterTests = []Body{
 		b["country_code"] = "BR"
 		return b
 	}()), `{"error":"The country code must be 3 characters long."}`},
-
-	// Optional fields max
 	{"Interest too long", testutils.ToJSON(func() map[string]any {
 		b := testutils.CopyMap(baseValidRegisterBody)
 		b["interest"] = string(make([]byte, 256))
