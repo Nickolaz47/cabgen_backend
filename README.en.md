@@ -424,6 +424,7 @@ Endpoints are organized into three access levels:
 | GET | `/api/analyses/:analysisId` | Returns a specific analysis |
 | GET | `/api/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | POST | `/api/analyses` | Creates and starts a new analysis |
+| POST | `/api/analyses/batch` | Creates and starts analyses in batch for the authenticated user's samples (max. 100 IDs per request) |
 | POST | `/api/analyses/download/tsv` | Downloads batch TSV |
 | DELETE | `/api/analyses/:analysisId` | Deletes an analysis |
 
@@ -556,6 +557,7 @@ Administrative endpoints follow the full CRUD pattern for **Users**, **Origins**
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Downloads the analysis ZIP file |
 | GET | `/api/admin/analyses/:analysisId/:fastqcReport` | Renders the analysis FastQC (HTML) report |
 | POST | `/api/admin/analyses` | Creates and starts a new analysis |
+| POST | `/api/admin/analyses/batch` | Creates and starts analyses in batch for a user's samples (max. 100 IDs per request) |
 | POST | `/api/admin/analyses/download/tsv` | Downloads batch TSV |
 | POST | `/api/admin/analyses/download/dashboard` | Downloads the dashboard TSV for in-network samples; 404 when there are no analyses |
 | PUT | `/api/admin/analyses/:analysisId` | Updates analysis status/results |

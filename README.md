@@ -425,6 +425,7 @@ Os endpoints estão organizados em três níveis de acesso:
 | GET | `/api/analyses/:analysisId` | Retorna uma análise específica |
 | GET | `/api/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
 | POST | `/api/analyses` | Cria e inicia uma nova análise |
+| POST | `/api/analyses/batch` | Cria e inicia análises em lote para as amostras do usuário autenticado (máx. 100 IDs por requisição) |
 | POST | `/api/analyses/download/tsv` | Faz o download em lote (TSV) |
 | DELETE | `/api/analyses/:analysisId` | Deleta uma análise |
 
@@ -557,6 +558,7 @@ Os endpoints administrativos seguem o padrão CRUD completo para **Usuários**, 
 | GET | `/api/admin/analyses/:analysisId/download/zip` | Faz o download do arquivo ZIP da análise |
 | GET | `/api/admin/analyses/:analysisId/:fastqcReport` | Renderiza o relatório FastQC (HTML) de uma análise |
 | POST | `/api/admin/analyses` | Cria e inicia uma nova análise |
+| POST | `/api/admin/analyses/batch` | Cria e inicia análises em lote para as amostras de um usuário (máx. 100 IDs por requisição) |
 | POST | `/api/admin/analyses/download/tsv` | Faz o download em lote (TSV) |
 | POST | `/api/admin/analyses/download/dashboard` | Faz o download do dashboard das amostras da rede (TSV); 404 quando não há análises |
 | PUT | `/api/admin/analyses/:analysisId` | Atualiza o status/resultados da análise |
