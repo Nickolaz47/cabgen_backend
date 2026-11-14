@@ -21,6 +21,8 @@ type MockAnalysisRepository struct {
 		*models.Analysis, error)
 	CreateAnalysisFunc func(ctx context.Context,
 		analysis *models.Analysis) error
+	CreateBatchAnalysesFunc func(ctx context.Context,
+		analyses []models.Analysis) error
 	UpdateAnalysisFunc func(ctx context.Context,
 		analysis *models.Analysis) error
 	UpdateSampleFunc func(ctx context.Context,
@@ -78,6 +80,15 @@ func (r *MockAnalysisRepository) CreateAnalysis(ctx context.Context,
 	analysis *models.Analysis) error {
 	if r.CreateAnalysisFunc != nil {
 		return r.CreateAnalysisFunc(ctx, analysis)
+	}
+
+	return nil
+}
+
+func (r *MockAnalysisRepository) CreateBatchAnalyses(ctx context.Context,
+	analyses []models.Analysis) error {
+	if r.CreateBatchAnalysesFunc != nil {
+		return r.CreateBatchAnalysesFunc(ctx, analyses)
 	}
 
 	return nil

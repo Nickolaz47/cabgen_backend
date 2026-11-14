@@ -294,6 +294,11 @@ type AnalysisCreateInput struct {
 	SampleID uuid.UUID    `json:"sample_id" binding:"required"`
 }
 
+type AnalysisCreateBatchInput struct {
+	Type      AnalysisType `json:"type" binding:"required"`
+	SampleIDs []uuid.UUID  `json:"sample_ids" binding:"required,min=1"`
+}
+
 type AnalysisCreateDTO struct {
 	Type     AnalysisType
 	SampleID uuid.UUID

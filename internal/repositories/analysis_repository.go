@@ -20,6 +20,7 @@ type AnalysisRepository interface {
 	GetAnalysisByID(ctx context.Context, analysisID uuid.UUID) (
 		*models.Analysis, error)
 	CreateAnalysis(ctx context.Context, analysis *models.Analysis) error
+	CreateBatchAnalyses(ctx context.Context, analyses []models.Analysis) error
 	UpdateAnalysis(ctx context.Context, analysis *models.Analysis) error
 	UpdateSample(ctx context.Context, sample *models.Sample) error
 	DeleteAnalysis(ctx context.Context, analysis *models.Analysis) error
@@ -191,6 +192,11 @@ func (r *analysisRepo) GetAnalysisByID(ctx context.Context,
 func (r *analysisRepo) CreateAnalysis(ctx context.Context,
 	analysis *models.Analysis) error {
 	return r.DB.WithContext(ctx).Create(analysis).Error
+}
+
+func (r *analysisRepo) CreateBatchAnalyses(ctx context.Context,
+	analyses []models.Analysis) error {
+	return r.DB.WithContext(ctx).Create(&analyses).Error
 }
 
 func (r *analysisRepo) UpdateAnalysis(ctx context.Context,

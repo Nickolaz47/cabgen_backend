@@ -293,6 +293,51 @@ func TestCreateAnalysis(t *testing.T) {
 	})
 }
 
+func TestCreateBatchAnalyses(t *testing.T) {
+	ctx := context.Background()
+
+	db := testutils.NewMockDB()
+	repo := repositories.NewAnalysisRepository(db)
+
+	t.Run("Success", func(t *testing.T) {
+		sample := testmodels.CreateMockSample()
+		db.Create(&sample)
+
+		a1 := testmodels.CreateMockAnalysis()
+		a2 := testmodels.CreateMockAnalysis()
+		// Avoid GORM trying to upsert the same sample/user rows twice.
+		a1.Sample = models.Sample{}
+		a1.User = models.User{}
+		a1.SampleID = sample.ID
+		a1.UserID = sample.UserID
+		a2.Sample = models.Sample{}
+		a2.User = models.User{}
+		a2.SampleID = sample.ID
+		a2.UserID = sample.UserID
+		analyses := []models.Analysis{a1, a2}
+
+		err := repo.CreateBatchAnalyses(ctx, analyses)
+		assert.NoError(t, err)
+
+		var results []models.Analysis
+		err = db.Where("id IN ?", []uuid.UUID{a1.ID, a2.ID}).
+			Find(&results).Error
+		assert.NoError(t, err)
+		assert.Len(t, results, 2)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		assert.NoError(t, err)
+
+		mockAnalysisRepo := repositories.NewAnalysisRepository(mockDB)
+		err = mockAnalysisRepo.CreateBatchAnalyses(ctx,
+			[]models.Analysis{{}})
+
+		assert.Error(t, err)
+	})
+}
+
 func TestUpdateAnalysis(t *testing.T) {
 	ctx := context.Background()
 
