@@ -29,6 +29,9 @@ type AnalysisService interface {
 		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
 	Create(ctx context.Context, input models.AnalysisCreateDTO,
 		language string) (*models.AnalysisResponse, error)
+	CreateAnalyses(ctx context.Context,
+		input models.AnalysisCreateBatchDTO, language string) (
+		[]models.AnalysisResponse, error)
 	Update(ctx context.Context, analysisID uuid.UUID,
 		input models.AdminAnalysisUpdateInput, language string) (
 		*models.AnalysisResponse, error)
@@ -79,6 +82,130 @@ func (s *analysisService) getAnalysisFolderPath(
 		"samples", sampleID.String(),
 		"analyses", analysisID.String(),
 	)
+}
+
+func (s *analysisService) rollbackScheduledTasks(
+	ctx context.Context, scheduled []*asynq.TaskInfo) {
+	for _, info := range scheduled {
+		DeleteScheduledTask(ctx, s.Tasks, s.Logger,
+			"AnalysisService", "CreateAnalyses",
+			tasks.QueueAnalysis, info.ID)
+	}
+}
+
+func (s *analysisService) validateAnalysisCreation(ctx context.Context,
+	analysisType models.AnalysisType, sampleID, userID uuid.UUID) (
+	*models.Analysis, *models.Sample, *models.User, error) {
+	sample, err := s.SampleRepo.GetSampleByID(ctx, sampleID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(ctx,
+					"AnalysisService", "Create",
+					logging.ExternalRepositoryNotFoundError, err,
+				)...)
+			return nil, nil, nil, ErrSampleNotFound
+		}
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "Create",
+				logging.ExternalRepositoryError, err,
+			)...)
+		return nil, nil, nil, ErrInternal
+	}
+
+	if sample.Fastq1 == nil && sample.Fastq2 == nil &&
+		sample.Fasta == nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "Create",
+				logging.MissingFileError, ErrMissingFiles,
+			)...)
+		return nil, nil, nil, ErrMissingFiles
+	}
+
+	switch analysisType {
+	case models.AnalysisTypeFastQC, models.AnalysisTypeComplete:
+		if sample.Fastq1 == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(ctx,
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFastq1,
+				)...)
+			return nil, nil, nil, ErrMissingFastq1
+		}
+		if sample.Fastq2 == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(ctx,
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFastq2,
+				)...)
+			return nil, nil, nil, ErrMissingFastq2
+		}
+	case models.AnalysisTypeGenome:
+		if (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
+			sample.Fasta == nil {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(ctx,
+					"AnalysisService", "Create",
+					logging.MissingFileError, ErrMissingFiles,
+				)...)
+			return nil, nil, nil, ErrMissingFiles
+		}
+	}
+
+	user, err := s.UserRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.Logger.Error("Service Error",
+				logging.ServiceLogging(ctx,
+					"AnalysisService", "Create",
+					logging.ExternalRepositoryNotFoundError, err,
+				)...)
+			return nil, nil, nil, ErrUserNotFound
+		}
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "Create",
+				logging.ExternalRepositoryError, err,
+			)...)
+		return nil, nil, nil, ErrInternal
+	}
+
+	analysisToCreate := models.Analysis{
+		Type:     analysisType,
+		Status:   models.AnalysisStatusPending,
+		SampleID: sample.ID,
+		UserID:   userID,
+	}
+
+	count, err := s.Repo.CountAnalysesBySample(ctx, analysisToCreate.SampleID)
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create",
+			logging.DatabaseError, err,
+		)...)
+		return nil, nil, nil, ErrInternal
+	}
+
+	if count >= MaxAnalysesPerSample {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create",
+			logging.AnalysisSampleLimitError, ErrAnalysisSampleLimit,
+		)...)
+		return nil, nil, nil, ErrAnalysisSampleLimit
+	}
+
+	id, err := uuid.NewV7()
+	if err != nil {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "Create", logging.GenerateIDError, err,
+		)...)
+		return nil, nil, nil, ErrInternal
+	}
+	analysisToCreate.ID = id
+
+	return &analysisToCreate, sample, user, nil
 }
 
 func (s *analysisService) FindAll(ctx context.Context, userID uuid.UUID,
@@ -167,117 +294,11 @@ func (s *analysisService) FindByID(ctx context.Context, analysisID,
 func (s *analysisService) Create(ctx context.Context,
 	input models.AnalysisCreateDTO, language string) (
 	*models.AnalysisResponse, error) {
-	sample, err := s.SampleRepo.GetSampleByID(ctx, input.SampleID)
+	analysis, sample, user, err := s.validateAnalysisCreation(ctx,
+		input.Type, input.SampleID, input.UserID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error",
-				logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.ExternalRepositoryNotFoundError, err,
-				)...)
-			return nil, ErrSampleNotFound
-		}
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AnalysisService", "Create",
-				logging.ExternalRepositoryError, err,
-			)...)
-		return nil, ErrInternal
+		return nil, err
 	}
-
-	if sample.Fastq1 == nil && sample.Fastq2 == nil &&
-		sample.Fasta == nil {
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AnalysisService", "Create",
-				logging.MissingFileError, ErrMissingFiles,
-			)...)
-		return nil, ErrMissingFiles
-	}
-
-	switch input.Type {
-	case models.AnalysisTypeFastQC, models.AnalysisTypeComplete:
-		if sample.Fastq1 == nil {
-			s.Logger.Error("Service Error",
-				logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.MissingFileError, ErrMissingFastq1,
-				)...)
-			return nil, ErrMissingFastq1
-		}
-		if sample.Fastq2 == nil {
-			s.Logger.Error("Service Error",
-				logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.MissingFileError, ErrMissingFastq2,
-				)...)
-			return nil, ErrMissingFastq2
-		}
-	case models.AnalysisTypeGenome:
-		if (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
-			sample.Fasta == nil {
-			s.Logger.Error("Service Error",
-				logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.MissingFileError, ErrMissingFiles,
-				)...)
-			return nil, ErrMissingFiles
-		}
-	}
-
-	user, err := s.UserRepo.GetUserByID(ctx, input.UserID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.Logger.Error("Service Error",
-				logging.ServiceLogging(ctx,
-					"AnalysisService", "Create",
-					logging.ExternalRepositoryNotFoundError, err,
-				)...)
-			return nil, ErrUserNotFound
-		}
-		s.Logger.Error("Service Error",
-			logging.ServiceLogging(ctx,
-				"AnalysisService", "Create",
-				logging.ExternalRepositoryError, err,
-			)...)
-		return nil, ErrInternal
-	}
-
-	analysis := models.Analysis{
-		Type:     input.Type,
-		Status:   models.AnalysisStatusPending,
-		SampleID: sample.ID,
-		UserID:   input.UserID,
-	}
-
-	analysis.Sample = *sample
-	analysis.User = *user
-
-	count, err := s.Repo.CountAnalysesBySample(ctx, input.SampleID)
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AnalysisService", "Create",
-			logging.DatabaseError, err,
-		)...)
-		return nil, ErrInternal
-	}
-
-	if count >= MaxAnalysesPerSample {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AnalysisService", "Create",
-			logging.AnalysisSampleLimitError, ErrAnalysisSampleLimit,
-		)...)
-		return nil, ErrAnalysisSampleLimit
-	}
-
-	id, err := uuid.NewV7()
-	if err != nil {
-		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AnalysisService", "Create", logging.GenerateIDError, err,
-		)...)
-		return nil, ErrInternal
-	}
-	analysis.ID = id
 
 	task, err := tasks.NewAnalysisProcessTask(analysis.ID)
 	if err != nil {
@@ -305,7 +326,7 @@ func (s *analysisService) Create(ctx context.Context,
 
 	analysis.TaskID = &info.ID
 
-	if err := s.Repo.CreateAnalysis(ctx, &analysis); err != nil {
+	if err := s.Repo.CreateAnalysis(ctx, analysis); err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
@@ -316,8 +337,105 @@ func (s *analysisService) Create(ctx context.Context,
 		return nil, ErrInternal
 	}
 
+	analysis.Sample = *sample
+	analysis.User = *user
+
 	response := analysis.ToResponse(language)
 	return &response, nil
+}
+
+func (s *analysisService) CreateAnalyses(ctx context.Context,
+	input models.AnalysisCreateBatchDTO, language string) (
+	[]models.AnalysisResponse, error) {
+	if len(input.SampleIDs) > models.MaxAnalysesCreateBatch {
+		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+			"AnalysisService", "CreateAnalyses",
+			logging.ExceededAnalysisBatchError, ErrExceededAnalysisBatch,
+		)...)
+		return nil, ErrExceededAnalysisBatch
+	}
+
+	seenSampleIDs := make(map[uuid.UUID]struct{}, len(input.SampleIDs))
+	for _, sampleID := range input.SampleIDs {
+		if _, exists := seenSampleIDs[sampleID]; exists {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AnalysisService", "CreateAnalyses",
+				logging.AnalysisRunError, ErrDuplicateSample,
+				zap.String("sample_id", sampleID.String()),
+			)...)
+			return nil, ErrDuplicateSample
+		}
+		seenSampleIDs[sampleID] = struct{}{}
+	}
+
+	analysesToCreate := make([]models.Analysis, len(input.SampleIDs))
+	samplesByID := make(map[uuid.UUID]*models.Sample, len(input.SampleIDs))
+	userByID := make(map[uuid.UUID]*models.User, 1)
+	for i, sampleID := range input.SampleIDs {
+		analysis, sample, user, err := s.validateAnalysisCreation(ctx,
+			input.Type, sampleID, input.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		analysesToCreate[i] = *analysis
+		samplesByID[sample.ID] = sample
+		userByID[user.ID] = user
+	}
+
+	scheduled := make([]*asynq.TaskInfo, 0, len(analysesToCreate))
+	for i := range analysesToCreate {
+		task, err := tasks.NewAnalysisProcessTask(analysesToCreate[i].ID)
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AnalysisService", "CreateAnalyses",
+				logging.AsynqTaskError, err,
+				zap.String("analysis_id", analysesToCreate[i].ID.String()),
+			)...)
+			s.rollbackScheduledTasks(ctx, scheduled)
+			return nil, ErrInternal
+		}
+
+		info, err := s.Tasks.EnqueueContext(ctx, task,
+			asynq.Queue(tasks.QueueAnalysis), asynq.ProcessIn(CommitGrace))
+		if err != nil {
+			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
+				"AnalysisService", "CreateAnalyses",
+				logging.RedisDispatchError, err,
+				zap.String("analysis_id", analysesToCreate[i].ID.String()),
+			)...)
+			s.rollbackScheduledTasks(ctx, scheduled)
+			return nil, ErrInternal
+		}
+		s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
+			"AnalysisService", "CreateAnalyses",
+			logging.TaskEnqueuedSuccess,
+			zap.String("task_id", info.ID),
+			zap.String("queue", info.Queue),
+			zap.String("analysis_id", analysesToCreate[i].ID.String()),
+		)...)
+		analysesToCreate[i].TaskID = &info.ID
+		scheduled = append(scheduled, info)
+	}
+
+	if err := s.Repo.CreateBatchAnalyses(ctx, analysesToCreate); err != nil {
+		s.Logger.Error("Service Error",
+			logging.ServiceLogging(ctx,
+				"AnalysisService", "CreateAnalyses",
+				logging.DatabaseError, err,
+			)...)
+		s.rollbackScheduledTasks(ctx, scheduled)
+		return nil, ErrInternal
+	}
+
+	responses := make([]models.AnalysisResponse, len(analysesToCreate))
+	for i := range analysesToCreate {
+		analysesToCreate[i].Sample = *samplesByID[analysesToCreate[i].SampleID]
+		analysesToCreate[i].User = *userByID[analysesToCreate[i].UserID]
+		responses[i] = analysesToCreate[i].ToResponse(language)
+	}
+
+	return responses, nil
 }
 
 func (s *analysisService) Update(ctx context.Context, analysisID uuid.UUID,

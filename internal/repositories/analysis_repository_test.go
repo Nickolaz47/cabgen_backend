@@ -271,6 +271,8 @@ func TestCreateAnalysis(t *testing.T) {
 	analysis := testmodels.CreateMockAnalysis()
 
 	t.Run("Success", func(t *testing.T) {
+		db.Create(&analysis.Sample)
+
 		err := repo.CreateAnalysis(ctx, &analysis)
 		assert.NoError(t, err)
 

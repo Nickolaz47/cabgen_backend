@@ -33,6 +33,7 @@ const (
 	CopyFileError                   = "COPY_FILE_ERROR"
 	MissingFileError                = "MISSING_FILE_ERROR"
 	ExceededDownloadLimitError      = "EXCEEDED_DOWNLOAD_LIMIT"
+	ExceededAnalysisBatchError      = "EXCEEDED_ANALYSIS_BATCH"
 	AsynqTaskError                  = "ASYNQ_TASK_ERROR"
 	RedisDispatchError              = "REDIS_DISPATCH_ERROR"
 	TaskCancelError                 = "TASK_CANCEL_ERROR"

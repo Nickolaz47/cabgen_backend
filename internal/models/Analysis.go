@@ -10,6 +10,7 @@ import (
 )
 
 const AnalysesByBatch = 50
+const MaxAnalysesCreateBatch = 100
 
 var errorMessageTranslations = map[error]map[string]string{
 	pipeline.ErrFileNotFound: {
@@ -294,11 +295,6 @@ type AnalysisCreateInput struct {
 	SampleID uuid.UUID    `json:"sample_id" binding:"required"`
 }
 
-type AnalysisCreateBatchInput struct {
-	Type      AnalysisType `json:"type" binding:"required"`
-	SampleIDs []uuid.UUID  `json:"sample_ids" binding:"required,min=1"`
-}
-
 type AnalysisCreateDTO struct {
 	Type     AnalysisType
 	SampleID uuid.UUID
@@ -311,6 +307,32 @@ func AnalysisCreateInputToDTO(i AnalysisCreateInput,
 		Type:     i.Type,
 		SampleID: i.SampleID,
 		UserID:   userID,
+	}
+}
+
+type AdminAnalysisCreateBatchInput struct {
+	Type      AnalysisType `json:"type" binding:"required"`
+	SampleIDs []uuid.UUID  `json:"sample_ids" binding:"required,min=1"`
+	UserID    uuid.UUID    `json:"user_id" binding:"required"`
+}
+
+type AnalysisCreateBatchInput struct {
+	Type      AnalysisType `json:"type" binding:"required"`
+	SampleIDs []uuid.UUID  `json:"sample_ids" binding:"required,min=1"`
+}
+
+type AnalysisCreateBatchDTO struct {
+	Type      AnalysisType
+	UserID    uuid.UUID
+	SampleIDs []uuid.UUID
+}
+
+func AnalysisCreateBatchInputToDTO(i AnalysisCreateBatchInput,
+	userID uuid.UUID) AnalysisCreateBatchDTO {
+	return AnalysisCreateBatchDTO{
+		Type:      i.Type,
+		SampleIDs: i.SampleIDs,
+		UserID:    userID,
 	}
 }
 

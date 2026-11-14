@@ -50,6 +50,8 @@ var ErrEmailSame = errors.New("new email is the same as current email")
 var ErrDuplicateTask = errors.New("duplicate task already pending")
 var ErrInvalidStatusTransition = errors.New("invalid status transition")
 var ErrAnalysisSampleLimit = errors.New("sample already has 2 analyses")
+var ErrExceededAnalysisBatch = errors.New("exceeded analysis batch size")
+var ErrDuplicateSample = errors.New("duplicate sample ids")
 
 // Template table errors
 var ErrInvalidTable = errors.New("invalid template table")

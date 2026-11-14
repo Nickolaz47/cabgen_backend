@@ -3,8 +3,10 @@ package services_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -779,6 +781,287 @@ func TestAnalysisCreate(t *testing.T) {
 		assert.ErrorIs(t, err, services.ErrInternal)
 		assert.Nil(t, result)
 		assert.Equal(t, 1, logs.Len())
+	})
+}
+
+func TestAnalysisCreateAnalyses(t *testing.T) {
+	ctx := context.Background()
+
+	firstSample := testmodels.CreateMockSample()
+	secondSample := testmodels.CreateMockSample()
+	user := testmodels.NewLoginUser()
+
+	sampleByID := map[uuid.UUID]*models.Sample{
+		firstSample.ID:  &firstSample,
+		secondSample.ID: &secondSample,
+	}
+
+	newSampleRepo := func() *mocks.MockSampleRepository {
+		return &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(_ context.Context,
+				ID uuid.UUID) (*models.Sample, error) {
+				return sampleByID[ID], nil
+			},
+		}
+	}
+	newUserRepo := func() *mocks.MockUserRepository {
+		return &mocks.MockUserRepository{
+			GetUserByIDFunc: func(_ context.Context,
+				ID uuid.UUID) (*models.User, error) {
+				return &user, nil
+			},
+		}
+	}
+
+	newInput := func(sampleIDs ...uuid.UUID) models.AnalysisCreateBatchDTO {
+		return models.AnalysisCreateBatchDTO{
+			Type:      models.AnalysisTypeComplete,
+			UserID:    user.ID,
+			SampleIDs: sampleIDs,
+		}
+	}
+
+	t.Run("Success", func(t *testing.T) {
+		var batchCreated []models.Analysis
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(_ context.Context,
+				_ uuid.UUID) (int64, error) {
+				return 0, nil
+			},
+			CreateBatchAnalysesFunc: func(_ context.Context,
+				analyses []models.Analysis) error {
+				captured := make([]models.Analysis, len(analyses))
+				copy(captured, analyses)
+				batchCreated = captured
+				return nil
+			},
+		}
+		enqueueCalls := 0
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(_ context.Context, _ *asynq.Task,
+				_ ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueCalls++
+				return &asynq.TaskInfo{
+					ID:    fmt.Sprintf("task-%d", enqueueCalls),
+					Queue: tasks.QueueAnalysis,
+				}, nil
+			},
+		}
+		mockLogger, _ := testutils.NewMockLogger(zap.InfoLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+			secondSample.ID), "en")
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 2)
+		assert.Len(t, batchCreated, 2)
+		assert.Equal(t, 2, enqueuer.EnqueueCount)
+
+		for i, analysis := range batchCreated {
+			assert.NotEqual(t, uuid.Nil, analysis.ID)
+			assert.Equal(t, models.AnalysisStatusPending, analysis.Status)
+			assert.NotNil(t, analysis.TaskID)
+			assert.Equal(t, "task-"+strconv.Itoa(i+1), *analysis.TaskID)
+			assert.Zero(t, analysis.Sample,
+				"sample association must not be upserted")
+			assert.Zero(t, analysis.User,
+				"user association must not be upserted")
+		}
+
+		for i, response := range result {
+			expectedSample := []*models.Sample{&firstSample, &secondSample}[i]
+			assert.Equal(t, expectedSample.OriginCode, response.Sample)
+			assert.Equal(t, expectedSample.ID, response.SampleID)
+			assert.Equal(t, user.Username, response.User)
+			assert.Equal(t, user.ID, response.UserID)
+		}
+	})
+
+	t.Run("Error - Batch Too Large", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		enqueuer := &mocks.MockTaskQueue{}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+
+		sampleIDs := make([]uuid.UUID, models.MaxAnalysesCreateBatch+1)
+		for i := range sampleIDs {
+			sampleIDs[i] = uuid.New()
+		}
+		result, err := svc.CreateAnalyses(ctx, newInput(sampleIDs...), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrExceededAnalysisBatch)
+		assert.Empty(t, result)
+		assert.False(t, enqueuer.EnqueueCalled)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Duplicate Sample IDs", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		enqueuer := &mocks.MockTaskQueue{}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx,
+			newInput(firstSample.ID, firstSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrDuplicateSample)
+		assert.Empty(t, result)
+		assert.False(t, enqueuer.EnqueueCalled)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Sample Not Found", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		enqueuer := &mocks.MockTaskQueue{}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrSampleNotFound)
+		assert.Empty(t, result)
+		assert.False(t, enqueuer.EnqueueCalled)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Missing Files", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{}
+		sampleRepo := &mocks.MockSampleRepository{
+			GetSampleByIDFunc: func(_ context.Context,
+				_ uuid.UUID) (*models.Sample, error) {
+				return &models.Sample{}, nil
+			},
+		}
+		enqueuer := &mocks.MockTaskQueue{}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrMissingFiles)
+		assert.Empty(t, result)
+		assert.False(t, enqueuer.EnqueueCalled)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Sample Limit", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(_ context.Context,
+				_ uuid.UUID) (int64, error) {
+				return services.MaxAnalysesPerSample, nil
+			},
+		}
+		enqueuer := &mocks.MockTaskQueue{}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrAnalysisSampleLimit)
+		assert.Empty(t, result)
+		assert.False(t, enqueuer.EnqueueCalled)
+		assert.Equal(t, 1, logs.Len())
+	})
+
+	t.Run("Error - Enqueue Fail", func(t *testing.T) {
+		batchCreated := false
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(_ context.Context,
+				_ uuid.UUID) (int64, error) {
+				return 0, nil
+			},
+			CreateBatchAnalysesFunc: func(_ context.Context,
+				_ []models.Analysis) error {
+				batchCreated = true
+				return nil
+			},
+		}
+		enqueueCalls := 0
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(_ context.Context, _ *asynq.Task,
+				_ ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueCalls++
+				if enqueueCalls == 2 {
+					return nil, errors.New("redis timeout")
+				}
+				return &asynq.TaskInfo{
+					ID:    fmt.Sprintf("task-%d", enqueueCalls),
+					Queue: tasks.QueueAnalysis,
+				}, nil
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+			secondSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
+		assert.False(t, batchCreated)
+		assert.True(t, enqueuer.DeleteCalled)
+		assert.Equal(t, 1, enqueuer.DeleteCallCount)
+		assert.Equal(t, tasks.QueueAnalysis, enqueuer.DeleteQueue)
+		assert.GreaterOrEqual(t, logs.Len(), 1)
+	})
+
+	t.Run("Error - Create Batch Fail", func(t *testing.T) {
+		analysisRepo := &mocks.MockAnalysisRepository{
+			CountAnalysesBySampleFunc: func(_ context.Context,
+				_ uuid.UUID) (int64, error) {
+				return 0, nil
+			},
+			CreateBatchAnalysesFunc: func(_ context.Context,
+				_ []models.Analysis) error {
+				return gorm.ErrInvalidTransaction
+			},
+		}
+		enqueueCalls := 0
+		enqueuer := &mocks.MockTaskQueue{
+			EnqueueContextFunc: func(_ context.Context, _ *asynq.Task,
+				_ ...asynq.Option) (*asynq.TaskInfo, error) {
+				enqueueCalls++
+				return &asynq.TaskInfo{
+					ID:    fmt.Sprintf("task-%d", enqueueCalls),
+					Queue: tasks.QueueAnalysis,
+				}, nil
+			},
+		}
+		mockLogger, logs := testutils.NewMockLogger(zapcore.ErrorLevel)
+
+		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
+			newUserRepo(), enqueuer, mockLogger, t.TempDir())
+		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+			secondSample.ID), "en")
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, services.ErrInternal)
+		assert.Empty(t, result)
+		assert.True(t, enqueuer.DeleteCalled)
+		assert.Equal(t, 2, enqueuer.DeleteCallCount)
+		assert.Equal(t, tasks.QueueAnalysis, enqueuer.DeleteQueue)
+		assert.GreaterOrEqual(t, logs.Len(), 1)
 	})
 }
 

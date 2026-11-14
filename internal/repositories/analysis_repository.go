@@ -6,6 +6,7 @@ import (
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AnalysisRepository interface {
@@ -191,12 +192,16 @@ func (r *analysisRepo) GetAnalysisByID(ctx context.Context,
 
 func (r *analysisRepo) CreateAnalysis(ctx context.Context,
 	analysis *models.Analysis) error {
-	return r.DB.WithContext(ctx).Create(analysis).Error
+	return r.DB.WithContext(ctx).
+		Omit(clause.Associations).
+		Create(analysis).Error
 }
 
 func (r *analysisRepo) CreateBatchAnalyses(ctx context.Context,
 	analyses []models.Analysis) error {
-	return r.DB.WithContext(ctx).Create(&analyses).Error
+	return r.DB.WithContext(ctx).
+		Omit(clause.Associations).
+		Create(&analyses).Error
 }
 
 func (r *analysisRepo) UpdateAnalysis(ctx context.Context,

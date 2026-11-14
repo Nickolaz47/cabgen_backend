@@ -131,6 +131,9 @@ type MockAnalysisService struct {
 		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
 	CreateFunc func(ctx context.Context, input models.AnalysisCreateDTO,
 		language string) (*models.AnalysisResponse, error)
+	CreateAnalysesFunc func(ctx context.Context,
+		input models.AnalysisCreateBatchDTO, language string) (
+		[]models.AnalysisResponse, error)
 	UpdateFunc func(ctx context.Context, analysisID uuid.UUID,
 		input models.AdminAnalysisUpdateInput, language string) (
 		*models.AnalysisResponse, error)
@@ -178,6 +181,16 @@ func (s *MockAnalysisService) Create(ctx context.Context,
 	*models.AnalysisResponse, error) {
 	if s.CreateFunc != nil {
 		return s.CreateFunc(ctx, input, language)
+	}
+
+	return nil, nil
+}
+
+func (s *MockAnalysisService) CreateAnalyses(ctx context.Context,
+	input models.AnalysisCreateBatchDTO, language string) (
+	[]models.AnalysisResponse, error) {
+	if s.CreateAnalysesFunc != nil {
+		return s.CreateAnalysesFunc(ctx, input, language)
 	}
 
 	return nil, nil
