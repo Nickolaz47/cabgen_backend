@@ -323,8 +323,8 @@ type AnalysisCreateBatchInput struct {
 
 type AnalysisCreateBatchDTO struct {
 	Type      AnalysisType
-	UserID    uuid.UUID
 	SampleIDs []uuid.UUID
+	UserID    uuid.UUID
 }
 
 func AnalysisCreateBatchInputToDTO(i AnalysisCreateBatchInput,

@@ -11,10 +11,12 @@ import (
 )
 
 var exemptedFromSanitize = map[string]bool{
-	"AdminAnalysisCreateInput": true,
-	"AnalysisCreateInput":      true,
-	"AnalysisTSVDownloadInput": true,
-	"UpdatePasswordInput":      true,
+	"AdminAnalysisCreateInput":      true,
+	"AnalysisCreateInput":           true,
+	"AdminAnalysisCreateBatchInput": true,
+	"AnalysisCreateBatchInput":      true,
+	"AnalysisTSVDownloadInput":      true,
+	"UpdatePasswordInput":           true,
 }
 
 func readValidationsSource(t *testing.T) string {

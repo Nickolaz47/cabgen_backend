@@ -29,6 +29,8 @@ const (
 	AuditEventAnalysesDownloadZipFailed            = "analyses.downloadZip_failed"
 	AuditEventAnalysesCreate                       = "analyses.create"
 	AuditEventAnalysesCreateFailed                 = "analyses.create_failed"
+	AuditEventAnalysesCreateBatch                  = "analyses.createBatch"
+	AuditEventAnalysesCreateBatchFailed            = "analyses.createBatch_failed"
 	AuditEventAnalysesDownloadBatchTSV             = "analyses.downloadBatchTsv"
 	AuditEventAnalysesDownloadBatchTSVFailed       = "analyses.downloadBatchTsv_failed"
 	AuditEventAnalysesDelete                       = "analyses.delete"
@@ -75,6 +77,8 @@ const (
 	AuditEventAdminAnalysesDownloadZipFailed       = "admin.analyses.downloadZip_failed"
 	AuditEventAdminAnalysesCreate                  = "admin.analyses.create"
 	AuditEventAdminAnalysesCreateFailed            = "admin.analyses.create_failed"
+	AuditEventAdminAnalysesCreateBatch             = "admin.analyses.createBatch"
+	AuditEventAdminAnalysesCreateBatchFailed       = "admin.analyses.createBatch_failed"
 	AuditEventAdminAnalysesDownloadBatchTSV        = "admin.analyses.downloadBatchTsv"
 	AuditEventAdminAnalysesDownloadBatchTSVFailed  = "admin.analyses.downloadBatchTsv_failed"
 	AuditEventAdminAnalysesUpdate                  = "admin.analyses.update"
@@ -236,6 +240,8 @@ var AuditEvents = []string{
 	AuditEventAnalysesDownloadZipFailed,
 	AuditEventAnalysesCreate,
 	AuditEventAnalysesCreateFailed,
+	AuditEventAnalysesCreateBatch,
+	AuditEventAnalysesCreateBatchFailed,
 	AuditEventAnalysesDownloadBatchTSV,
 	AuditEventAnalysesDownloadBatchTSVFailed,
 	AuditEventAnalysesDelete,
@@ -282,6 +288,8 @@ var AuditEvents = []string{
 	AuditEventAdminAnalysesDownloadZipFailed,
 	AuditEventAdminAnalysesCreate,
 	AuditEventAdminAnalysesCreateFailed,
+	AuditEventAdminAnalysesCreateBatch,
+	AuditEventAdminAnalysesCreateBatchFailed,
 	AuditEventAdminAnalysesDownloadBatchTSV,
 	AuditEventAdminAnalysesDownloadBatchTSVFailed,
 	AuditEventAdminAnalysesDownloadDashboard,

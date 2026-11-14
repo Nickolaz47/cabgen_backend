@@ -29,6 +29,7 @@ type Model interface {
 		models.SampleUpdateInput | models.SampleAttachmentInput |
 		models.AnalysisCreateInput | models.AdminAnalysisCreateInput |
 		models.AdminAnalysisUpdateInput | models.AnalysisTSVDownloadInput |
+		models.AnalysisCreateBatchInput | models.AdminAnalysisCreateBatchInput |
 		models.CreateTicketInput | models.ForgotPasswordInput |
 		models.ResetPasswordInput | models.UpdatePasswordInput |
 		models.RequestEmailUpdateInput | models.ConfirmEmailUpdateInput

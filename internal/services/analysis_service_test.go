@@ -784,7 +784,7 @@ func TestAnalysisCreate(t *testing.T) {
 	})
 }
 
-func TestAnalysisCreateAnalyses(t *testing.T) {
+func TestAnalysisCreateBatch(t *testing.T) {
 	ctx := context.Background()
 
 	firstSample := testmodels.CreateMockSample()
@@ -851,7 +851,7 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID,
 			secondSample.ID), "en")
 
 		assert.NoError(t, err)
@@ -891,7 +891,7 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 		for i := range sampleIDs {
 			sampleIDs[i] = uuid.New()
 		}
-		result, err := svc.CreateAnalyses(ctx, newInput(sampleIDs...), "en")
+		result, err := svc.CreateBatch(ctx, newInput(sampleIDs...), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrExceededAnalysisBatch)
@@ -907,11 +907,14 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx,
+		result, err := svc.CreateBatch(ctx,
 			newInput(firstSample.ID, firstSample.ID), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrDuplicateSample)
+		var batchErr *services.AnalysisBatchSampleError
+		assert.ErrorAs(t, err, &batchErr)
+		assert.Equal(t, firstSample.ID, batchErr.SampleID)
 		assert.Empty(t, result)
 		assert.False(t, enqueuer.EnqueueCalled)
 		assert.Equal(t, 1, logs.Len())
@@ -930,7 +933,7 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrSampleNotFound)
@@ -944,7 +947,11 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 		sampleRepo := &mocks.MockSampleRepository{
 			GetSampleByIDFunc: func(_ context.Context,
 				_ uuid.UUID) (*models.Sample, error) {
-				return &models.Sample{}, nil
+				sample := firstSample
+				sample.Fastq1 = nil
+				sample.Fastq2 = nil
+				sample.Fasta = nil
+				return &sample, nil
 			},
 		}
 		enqueuer := &mocks.MockTaskQueue{}
@@ -952,10 +959,14 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, sampleRepo,
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrMissingFiles)
+		var batchErr *services.AnalysisBatchSampleError
+		assert.ErrorAs(t, err, &batchErr)
+		assert.Equal(t, firstSample.ID, batchErr.SampleID)
+		assert.Equal(t, firstSample.OriginCode, batchErr.SampleName)
 		assert.Empty(t, result)
 		assert.False(t, enqueuer.EnqueueCalled)
 		assert.Equal(t, 1, logs.Len())
@@ -973,10 +984,14 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID), "en")
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID), "en")
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, services.ErrAnalysisSampleLimit)
+		var batchErr *services.AnalysisBatchSampleError
+		assert.ErrorAs(t, err, &batchErr)
+		assert.Equal(t, firstSample.ID, batchErr.SampleID)
+		assert.Equal(t, firstSample.OriginCode, batchErr.SampleName)
 		assert.Empty(t, result)
 		assert.False(t, enqueuer.EnqueueCalled)
 		assert.Equal(t, 1, logs.Len())
@@ -1013,7 +1028,7 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID,
 			secondSample.ID), "en")
 
 		assert.Error(t, err)
@@ -1052,7 +1067,7 @@ func TestAnalysisCreateAnalyses(t *testing.T) {
 
 		svc := services.NewAnalysisService(analysisRepo, newSampleRepo(),
 			newUserRepo(), enqueuer, mockLogger, t.TempDir())
-		result, err := svc.CreateAnalyses(ctx, newInput(firstSample.ID,
+		result, err := svc.CreateBatch(ctx, newInput(firstSample.ID,
 			secondSample.ID), "en")
 
 		assert.Error(t, err)

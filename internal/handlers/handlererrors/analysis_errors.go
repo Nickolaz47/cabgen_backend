@@ -40,9 +40,51 @@ func HandleAnalysisError(err error) (int, string) {
 		return http.StatusBadRequest, responses.AnalysisInvalidStatus
 	case errors.Is(err, services.ErrAnalysisSampleLimit):
 		return http.StatusBadRequest, responses.AnalysisSampleLimitError
+	case errors.Is(err, services.ErrExceededAnalysisBatch):
+		return http.StatusBadRequest, responses.AnalysisExceededBatchError
+	case errors.Is(err, services.ErrDuplicateSample):
+		return http.StatusBadRequest, responses.AnalysisDuplicateSampleError
 	default:
 		return http.StatusInternalServerError,
 			responses.GenericInternalServerError
+	}
+}
+
+func HandleAnalysisBatchError(err error) (int, string, map[string]any) {
+	var batchErr *services.AnalysisBatchSampleError
+	if !errors.As(err, &batchErr) {
+		status, messageID := HandleAnalysisError(err)
+		return status, messageID, nil
+	}
+
+	data := map[string]any{
+		"SampleID":   batchErr.SampleID.String(),
+		"SampleName": batchErr.SampleName,
+	}
+
+	switch {
+	case errors.Is(batchErr.Err, services.ErrSampleNotFound):
+		return http.StatusNotFound,
+			responses.AnalysisBatchSampleNotFound, data
+	case errors.Is(batchErr.Err, services.ErrMissingFiles):
+		return http.StatusBadRequest,
+			responses.AnalysisBatchMissingFiles, data
+	case errors.Is(batchErr.Err, services.ErrMissingFastq1):
+		return http.StatusBadRequest,
+			responses.AnalysisBatchMissingFastq1, data
+	case errors.Is(batchErr.Err, services.ErrMissingFastq2):
+		return http.StatusBadRequest,
+			responses.AnalysisBatchMissingFastq2, data
+	case errors.Is(batchErr.Err, services.ErrAnalysisSampleLimit):
+		data["Param"] = services.MaxAnalysesPerSample
+		return http.StatusBadRequest,
+			responses.AnalysisBatchSampleLimit, data
+	case errors.Is(batchErr.Err, services.ErrDuplicateSample):
+		return http.StatusBadRequest,
+			responses.AnalysisBatchDuplicateSample, data
+	default:
+		status, messageID := HandleAnalysisError(batchErr.Err)
+		return status, messageID, data
 	}
 }
 

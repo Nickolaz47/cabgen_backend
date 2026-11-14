@@ -433,6 +433,18 @@ other = "The date of birth must be in the RFC3339 format."
 [validation.UserID.required]
 other = "The user ID is required."
 
+[validation.SampleIDs.required]
+other = "The sample IDs are required."
+
+[validation.SampleIDs.min]
+other = "At least {{.Param}} sample ID is required."
+
+[validation.AdminAnalysisCreateBatchInput.Type.required]
+other = "The analysis type is required."
+
+[validation.AnalysisCreateBatchInput.Type.required]
+other = "The analysis type is required."
+
 [validation.OriginID.required]
 other = "The origin ID is required."
 
@@ -532,6 +544,33 @@ other = "The sample ID is required."
 
 [analysis.create.success]
 other = "Analysis created successfully."
+
+[analysis.createBatch.success]
+other = "Analyses created successfully."
+
+[analysis.exceededBatch.error]
+other = "The batch exceeds the maximum number of analyses."
+
+[analysis.duplicateSample.error]
+other = "Duplicate sample IDs in the batch."
+
+[analysis.batch.sampleNotFound.error]
+other = "The sample {{.SampleID}} was not found."
+
+[analysis.batch.missingFiles.error]
+other = "The sample {{.SampleName}} ({{.SampleID}}) has no input files."
+
+[analysis.batch.missingFastq1.error]
+other = "The sample {{.SampleName}} ({{.SampleID}}) is missing the FASTQ R1 file."
+
+[analysis.batch.missingFastq2.error]
+other = "The sample {{.SampleName}} ({{.SampleID}}) is missing the FASTQ R2 file."
+
+[analysis.batch.sampleLimit.error]
+other = "The sample {{.SampleName}} ({{.SampleID}}) has already reached the maximum of {{.Param}} analysis(es)."
+
+[analysis.batch.duplicateSample.error]
+other = "Duplicate sample ID in the batch: {{.SampleID}}."
 
 [analysis.invalidType.error]
 other = "This analysis type is invalid."

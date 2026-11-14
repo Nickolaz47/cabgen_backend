@@ -433,6 +433,18 @@ other = "A data de nascimento deve ter o formato RFC3339."
 [validation.UserID.required]
 other = "O ID do usuário é obrigatório."
 
+[validation.SampleIDs.required]
+other = "Os IDs das amostras são obrigatórios."
+
+[validation.SampleIDs.min]
+other = "É necessário pelo menos {{.Param}} ID de amostra."
+
+[validation.AdminAnalysisCreateBatchInput.Type.required]
+other = "O tipo de análise é obrigatório."
+
+[validation.AnalysisCreateBatchInput.Type.required]
+other = "O tipo de análise é obrigatório."
+
 [validation.OriginID.required]
 other = "O ID da origem é obrigatório."
 
@@ -532,6 +544,33 @@ other = "O id da amostra é obrigatório."
 
 [analysis.create.success]
 other = "Análise criada com sucesso."
+
+[analysis.createBatch.success]
+other = "Análises criadas com sucesso."
+
+[analysis.exceededBatch.error]
+other = "O lote excede o número máximo de análises."
+
+[analysis.duplicateSample.error]
+other = "Há IDs de amostra duplicados no lote."
+
+[analysis.batch.sampleNotFound.error]
+other = "A amostra {{.SampleID}} não foi encontrada."
+
+[analysis.batch.missingFiles.error]
+other = "A amostra {{.SampleName}} ({{.SampleID}}) não possui arquivos de entrada."
+
+[analysis.batch.missingFastq1.error]
+other = "A amostra {{.SampleName}} ({{.SampleID}}) está sem o arquivo FASTQ R1."
+
+[analysis.batch.missingFastq2.error]
+other = "A amostra {{.SampleName}} ({{.SampleID}}) está sem o arquivo FASTQ R2."
+
+[analysis.batch.sampleLimit.error]
+other = "A amostra {{.SampleName}} ({{.SampleID}}) já atingiu o máximo de {{.Param}} análise(s)."
+
+[analysis.batch.duplicateSample.error]
+other = "ID de amostra duplicado no lote: {{.SampleID}}."
 
 [analysis.invalidType.error]
 other = "Esse tipo de análise é inválido."

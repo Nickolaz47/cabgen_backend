@@ -19,6 +19,18 @@ import (
 
 const MaxAnalysesPerSample = 2
 
+// AnalysisBatchSampleError carries the sample that caused a batch creation
+// failure, while keeping errors.Is compatible with the original sentinel.
+type AnalysisBatchSampleError struct {
+	SampleID   uuid.UUID
+	SampleName string
+	Err        error
+}
+
+func (e *AnalysisBatchSampleError) Error() string { return e.Err.Error() }
+
+func (e *AnalysisBatchSampleError) Unwrap() error { return e.Err }
+
 type AnalysisService interface {
 	FindAll(ctx context.Context, userID uuid.UUID, filter models.AnalysisFilter,
 		offset int, language string) (
@@ -29,7 +41,7 @@ type AnalysisService interface {
 		userID uuid.UUID, language string) ([]models.AnalysisResponse, error)
 	Create(ctx context.Context, input models.AnalysisCreateDTO,
 		language string) (*models.AnalysisResponse, error)
-	CreateAnalyses(ctx context.Context,
+	CreateBatch(ctx context.Context,
 		input models.AnalysisCreateBatchDTO, language string) (
 		[]models.AnalysisResponse, error)
 	Update(ctx context.Context, analysisID uuid.UUID,
@@ -88,8 +100,25 @@ func (s *analysisService) rollbackScheduledTasks(
 	ctx context.Context, scheduled []*asynq.TaskInfo) {
 	for _, info := range scheduled {
 		DeleteScheduledTask(ctx, s.Tasks, s.Logger,
-			"AnalysisService", "CreateAnalyses",
+			"AnalysisService", "CreateBatch",
 			tasks.QueueAnalysis, info.ID)
+	}
+}
+
+func sampleDisplayName(sample *models.Sample) string {
+	if sample == nil {
+		return ""
+	}
+
+	return sample.OriginCode
+}
+
+func wrapBatchSampleError(err error, sampleID uuid.UUID,
+	sample *models.Sample) error {
+	return &AnalysisBatchSampleError{
+		SampleID:   sampleID,
+		SampleName: sampleDisplayName(sample),
+		Err:        err,
 	}
 }
 
@@ -121,7 +150,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 				"AnalysisService", "Create",
 				logging.MissingFileError, ErrMissingFiles,
 			)...)
-		return nil, nil, nil, ErrMissingFiles
+		return nil, sample, nil, ErrMissingFiles
 	}
 
 	switch analysisType {
@@ -132,7 +161,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFastq1,
 				)...)
-			return nil, nil, nil, ErrMissingFastq1
+			return nil, sample, nil, ErrMissingFastq1
 		}
 		if sample.Fastq2 == nil {
 			s.Logger.Error("Service Error",
@@ -140,7 +169,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFastq2,
 				)...)
-			return nil, nil, nil, ErrMissingFastq2
+			return nil, sample, nil, ErrMissingFastq2
 		}
 	case models.AnalysisTypeGenome:
 		if (sample.Fastq1 == nil || sample.Fastq2 == nil) &&
@@ -150,7 +179,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 					"AnalysisService", "Create",
 					logging.MissingFileError, ErrMissingFiles,
 				)...)
-			return nil, nil, nil, ErrMissingFiles
+			return nil, sample, nil, ErrMissingFiles
 		}
 	}
 
@@ -162,14 +191,14 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 					"AnalysisService", "Create",
 					logging.ExternalRepositoryNotFoundError, err,
 				)...)
-			return nil, nil, nil, ErrUserNotFound
+			return nil, sample, nil, ErrUserNotFound
 		}
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(ctx,
 				"AnalysisService", "Create",
 				logging.ExternalRepositoryError, err,
 			)...)
-		return nil, nil, nil, ErrInternal
+		return nil, sample, nil, ErrInternal
 	}
 
 	analysisToCreate := models.Analysis{
@@ -185,7 +214,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 			"AnalysisService", "Create",
 			logging.DatabaseError, err,
 		)...)
-		return nil, nil, nil, ErrInternal
+		return nil, sample, nil, ErrInternal
 	}
 
 	if count >= MaxAnalysesPerSample {
@@ -193,7 +222,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 			"AnalysisService", "Create",
 			logging.AnalysisSampleLimitError, ErrAnalysisSampleLimit,
 		)...)
-		return nil, nil, nil, ErrAnalysisSampleLimit
+		return nil, sample, nil, ErrAnalysisSampleLimit
 	}
 
 	id, err := uuid.NewV7()
@@ -201,7 +230,7 @@ func (s *analysisService) validateAnalysisCreation(ctx context.Context,
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
 			"AnalysisService", "Create", logging.GenerateIDError, err,
 		)...)
-		return nil, nil, nil, ErrInternal
+		return nil, sample, nil, ErrInternal
 	}
 	analysisToCreate.ID = id
 
@@ -344,12 +373,12 @@ func (s *analysisService) Create(ctx context.Context,
 	return &response, nil
 }
 
-func (s *analysisService) CreateAnalyses(ctx context.Context,
+func (s *analysisService) CreateBatch(ctx context.Context,
 	input models.AnalysisCreateBatchDTO, language string) (
 	[]models.AnalysisResponse, error) {
 	if len(input.SampleIDs) > models.MaxAnalysesCreateBatch {
 		s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-			"AnalysisService", "CreateAnalyses",
+			"AnalysisService", "CreateBatch",
 			logging.ExceededAnalysisBatchError, ErrExceededAnalysisBatch,
 		)...)
 		return nil, ErrExceededAnalysisBatch
@@ -359,11 +388,12 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 	for _, sampleID := range input.SampleIDs {
 		if _, exists := seenSampleIDs[sampleID]; exists {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AnalysisService", "CreateAnalyses",
+				"AnalysisService", "CreateBatch",
 				logging.AnalysisRunError, ErrDuplicateSample,
 				zap.String("sample_id", sampleID.String()),
 			)...)
-			return nil, ErrDuplicateSample
+			return nil, wrapBatchSampleError(ErrDuplicateSample, sampleID,
+				nil)
 		}
 		seenSampleIDs[sampleID] = struct{}{}
 	}
@@ -375,7 +405,7 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 		analysis, sample, user, err := s.validateAnalysisCreation(ctx,
 			input.Type, sampleID, input.UserID)
 		if err != nil {
-			return nil, err
+			return nil, wrapBatchSampleError(err, sampleID, sample)
 		}
 
 		analysesToCreate[i] = *analysis
@@ -388,7 +418,7 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 		task, err := tasks.NewAnalysisProcessTask(analysesToCreate[i].ID)
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AnalysisService", "CreateAnalyses",
+				"AnalysisService", "CreateBatch",
 				logging.AsynqTaskError, err,
 				zap.String("analysis_id", analysesToCreate[i].ID.String()),
 			)...)
@@ -400,7 +430,7 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 			asynq.Queue(tasks.QueueAnalysis), asynq.ProcessIn(CommitGrace))
 		if err != nil {
 			s.Logger.Error("Service Error", logging.ServiceLogging(ctx,
-				"AnalysisService", "CreateAnalyses",
+				"AnalysisService", "CreateBatch",
 				logging.RedisDispatchError, err,
 				zap.String("analysis_id", analysesToCreate[i].ID.String()),
 			)...)
@@ -408,7 +438,7 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 			return nil, ErrInternal
 		}
 		s.Logger.Info("Redis Task Info", logging.ServiceInfoLogging(ctx,
-			"AnalysisService", "CreateAnalyses",
+			"AnalysisService", "CreateBatch",
 			logging.TaskEnqueuedSuccess,
 			zap.String("task_id", info.ID),
 			zap.String("queue", info.Queue),
@@ -421,7 +451,7 @@ func (s *analysisService) CreateAnalyses(ctx context.Context,
 	if err := s.Repo.CreateBatchAnalyses(ctx, analysesToCreate); err != nil {
 		s.Logger.Error("Service Error",
 			logging.ServiceLogging(ctx,
-				"AnalysisService", "CreateAnalyses",
+				"AnalysisService", "CreateBatch",
 				logging.DatabaseError, err,
 			)...)
 		s.rollbackScheduledTasks(ctx, scheduled)

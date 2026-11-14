@@ -3,6 +3,7 @@ package analysis
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/handlers/handlererrors"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
@@ -206,6 +207,83 @@ func (h *AdminAnalysisHandler) CreateAnalysis(c *gin.Context) {
 		Data: analysis,
 		Message: responses.GetResponse(localizer,
 			responses.AnalysisCreationSuccess),
+	})
+}
+
+func (h *AdminAnalysisHandler) CreateAnalyses(c *gin.Context) {
+	localizer := translation.GetLocalizerFromContext(c)
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateBatch, nil)
+	language := translation.GetLanguageFromContext(c)
+
+	var newAnalyses models.AdminAnalysisCreateBatchInput
+	if errMsg, valid := validations.Validate(c, localizer, &newAnalyses); !valid {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesCreateBatchFailed, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{Error: errMsg})
+		return
+	}
+
+	if !newAnalyses.Type.IsValid() {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesCreateBatchFailed, nil)
+		c.JSON(http.StatusBadRequest, responses.APIResponse{
+			Error: responses.GetResponse(localizer,
+				responses.AnalysisInvalidType),
+		})
+		return
+	}
+
+	sampleIDs := make([]string, len(newAnalyses.SampleIDs))
+	for i, sampleID := range newAnalyses.SampleIDs {
+		sampleIDs[i] = sampleID.String()
+	}
+
+	payload := models.AnalysisCreateBatchDTO{
+		Type:      newAnalyses.Type,
+		SampleIDs: newAnalyses.SampleIDs,
+		UserID:    newAnalyses.UserID,
+	}
+	analyses, err := h.Service.CreateBatch(c.Request.Context(), payload,
+		language)
+	if err != nil {
+		validations.SetAuditEvent(c,
+			models.AuditEventAdminAnalysesCreateBatchFailed,
+			map[string]string{
+				"user_id":       newAnalyses.UserID.String(),
+				"analysis_type": string(newAnalyses.Type),
+				"sample_ids":    strings.Join(sampleIDs, ","),
+			})
+		code, errMsg, data := handlererrors.HandleAnalysisBatchError(err)
+		if data == nil {
+			c.JSON(code, responses.APIResponse{
+				Error: responses.GetResponse(localizer, errMsg),
+			})
+			return
+		}
+
+		c.JSON(code, responses.APIResponse{
+			Error: responses.GetResponseWithData(localizer, errMsg, data),
+		})
+		return
+	}
+
+	analysisIDs := make([]string, len(analyses))
+	for i, analysis := range analyses {
+		analysisIDs[i] = analysis.ID.String()
+	}
+
+	validations.SetAuditEvent(c, models.AuditEventAdminAnalysesCreateBatch,
+		map[string]string{
+			"user_id":       newAnalyses.UserID.String(),
+			"analysis_type": string(newAnalyses.Type),
+			"sample_ids":    strings.Join(sampleIDs, ","),
+			"analysis_ids":  strings.Join(analysisIDs, ","),
+		})
+
+	c.JSON(http.StatusCreated, responses.APIResponse{
+		Data: analyses,
+		Message: responses.GetResponse(localizer,
+			responses.AnalysisCreateBatchSuccess),
 	})
 }
 

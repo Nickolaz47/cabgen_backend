@@ -15,6 +15,7 @@ func SetupAdminAnalysisRoutes(r *gin.RouterGroup,
 	analysisRouter.GET("/:analysisId/:fastqcReport", handler.GetAnalysisFastQCByID)
 	analysisRouter.GET("/:analysisId/download/zip", handler.DownloadZip)
 	analysisRouter.POST("", handler.CreateAnalysis)
+	analysisRouter.POST("/batch", handler.CreateAnalyses)
 	analysisRouter.POST("/download/tsv", handler.DownloadBatchTSV)
 	analysisRouter.POST("/download/dashboard", handler.DownloadDashboardTSV)
 	analysisRouter.PUT("/:analysisId", handler.UpdateAnalysis)
