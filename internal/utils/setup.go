@@ -18,9 +18,12 @@ import (
 func createAdminUser(ctx context.Context, db *gorm.DB) error {
 	hasher := security.NewPasswordHasher()
 
-	var adminUser models.User
-	if err := db.WithContext(ctx).Where(
-		"username = ?", "admin").First(&adminUser).Error; err == nil {
+	var adminCount int64
+	if err := db.WithContext(ctx).Model(&models.User{}).
+		Where("user_role = ?", models.Admin).Count(&adminCount).Error; err != nil {
+		return fmt.Errorf("cannot check for existing admin: %w", err)
+	}
+	if adminCount > 0 {
 		return nil
 	}
 
