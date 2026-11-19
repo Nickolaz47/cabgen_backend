@@ -25,10 +25,15 @@ type Database interface {
 	DB() *gorm.DB
 	Migrate(models ...any) error
 	Close() error
+
+	Queries() *sqlc.Queries
+	SQLDB() *sql.DB
+	WithTx(ctx context.Context, fn func(q *sqlc.Queries) error) error
 }
 
 type database struct {
 	gormDB  *gorm.DB
+	sqlDB   *sql.DB
 	pool    *pgxpool.Pool
 	queries *sqlc.Queries
 }
@@ -45,6 +50,7 @@ func NewDatabase(ctx context.Context, driver, dsn string) (Database, error) {
 	)
 
 	var (
+		sqlDB   *sql.DB
 		db      *gorm.DB
 		pool    *pgxpool.Pool
 		queries *sqlc.Queries
@@ -75,7 +81,7 @@ func NewDatabase(ctx context.Context, driver, dsn string) (Database, error) {
 			return nil, err
 		}
 
-		sqlDB := stdlib.OpenDBFromPool(pool)
+		sqlDB = stdlib.OpenDBFromPool(pool)
 
 		db, err = gorm.Open(postgres.New(postgres.Config{
 			Conn: sqlDB,
@@ -98,41 +104,57 @@ func NewDatabase(ctx context.Context, driver, dsn string) (Database, error) {
 	}
 
 	return &database{
+		sqlDB:   sqlDB,
 		gormDB:  db,
 		pool:    pool,
 		queries: queries,
 	}, nil
 }
 
-func (g *database) DB() *gorm.DB {
-	return g.gormDB
+func (d *database) DB() *gorm.DB {
+	return d.gormDB
 }
 
-func (g *database) Queries() *sqlc.Queries {
-	return g.queries
+func (d *database) SQLDB() *sql.DB {
+	return d.sqlDB
 }
 
-func (g *database) SQLDB() (*sql.DB, error) {
-	return g.gormDB.DB()
+func (d *database) Queries() *sqlc.Queries {
+	return d.queries
 }
 
-func (g *database) Migrate(models ...any) error {
+func (d *database) Migrate(models ...any) error {
 	if len(models) == 0 {
 		return fmt.Errorf("no models provided for migration")
 	}
 
-	return g.gormDB.AutoMigrate(models...)
+	return d.gormDB.AutoMigrate(models...)
 }
 
-func (g *database) Close() error {
-	if g.pool != nil {
-		defer g.pool.Close()
+func (d *database) Close() error {
+	if d.pool != nil {
+		defer d.pool.Close()
 	}
 
-	sqlDB, err := g.gormDB.DB()
+	sqlDB, err := d.gormDB.DB()
 	if err != nil {
 		return err
 	}
 
 	return sqlDB.Close()
+}
+
+func (d *database) WithTx(ctx context.Context,
+	fn func(q *sqlc.Queries) error) error {
+	tx, err := d.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	if err := fn(d.queries.WithTx(tx)); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }

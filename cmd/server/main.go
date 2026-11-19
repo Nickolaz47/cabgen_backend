@@ -153,7 +153,7 @@ func main() {
 		logging.FileLogger, rootDir)
 	admUserSvc := container.BuildAdminUserService(mainDB.DB(), taskQueue,
 		logging.FileLogger, rootDir)
-	labSvc := container.BuildLaboratoryService(mainDB.DB(), logging.FileLogger)
+	labSvc := container.BuildLaboratoryService(mainDB, logging.FileLogger)
 	sequencerSvc := container.BuildSequencerService(mainDB.DB(),
 		logging.FileLogger)
 	originSvc := container.BuildOriginService(mainDB.DB(), logging.FileLogger)
@@ -164,13 +164,13 @@ func main() {
 		logging.FileLogger)
 	healthServiceSvc := container.BuildHealthServiceService(mainDB.DB(),
 		logging.FileLogger)
-	sampleSvc := container.BuildSampleService(mainDB.DB(), rootDir,
+	sampleSvc := container.BuildSampleService(mainDB, rootDir,
 		logging.FileLogger)
 	analysisSvc := container.BuildAnalysisService(mainDB.DB(), taskQueue,
 		logging.FileLogger, rootDir)
 	ticketSvc := container.BuildTicketService(mainDB.DB(), taskQueue,
 		logging.FileLogger)
-	templateSvc := container.BuildTemplateService(mainDB.DB(), countrySvc,
+	templateSvc := container.BuildTemplateService(mainDB, countrySvc,
 		logging.FileLogger)
 	metricsSvc := container.BuildMetricsService(mainDB.DB(),
 		logging.FileLogger)
@@ -189,7 +189,7 @@ func main() {
 	sampleHandler := container.BuildSampleHandler(sampleSvc, templateSvc)
 	analysisHandler := container.BuildAnalysisHandler(analysisSvc)
 
-	labRepo := repositories.NewLaboratoryRepo(mainDB.DB())
+	labRepo := repositories.NewLaboratoryRepo(mainDB)
 	seqRepo := repositories.NewSequencerRepo(mainDB.DB())
 	hsRepo := repositories.NewHealthServiceRepo(mainDB.DB())
 	originRepo := repositories.NewOriginRepo(mainDB.DB())

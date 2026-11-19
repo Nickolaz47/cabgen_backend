@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"log"
 	"maps"
@@ -9,17 +10,62 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/translation"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
+	"github.com/pressly/goose/v3"
+	"github.com/testcontainers/testcontainers-go"
+	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
 	"gorm.io/gorm"
 )
+
+func NewMockPostgresDB(ctx context.Context, migrationsDir string) (
+	db.Database, func(), error) {
+	container, err := tcpostgres.Run(ctx,
+		"postgres:18-alpine",
+		tcpostgres.WithDatabase("test"),
+		tcpostgres.WithUsername("test"),
+		tcpostgres.WithPassword("test"),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(60*time.Second),
+		),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	connStr, err := container.ConnectionString(ctx, "sslmode=disable")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	db, err := db.NewDatabase(ctx, "postgres", connStr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := goose.Up(db.SQLDB(), migrationsDir); err != nil {
+		return nil, nil, err
+	}
+
+	cleanup := func() {
+		db.Close()
+		container.Terminate(context.Background())
+	}
+
+	return db, cleanup, nil
+}
 
 func NewMockDB() *gorm.DB {
 	db, err := gorm.Open(

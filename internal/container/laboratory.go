@@ -1,14 +1,14 @@
 package container
 
 import (
+	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	adminLaboratory "github.com/CABGenOrg/cabgen_backend/internal/handlers/admin/laboratory"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/services"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
-func BuildLaboratoryService(db *gorm.DB,
+func BuildLaboratoryService(db db.Database,
 	logger *zap.Logger) services.LaboratoryService {
 	labRepo := repositories.NewLaboratoryRepo(db)
 	labService := services.NewLaboratoryService(labRepo, logger)

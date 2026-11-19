@@ -3,9 +3,10 @@ package repositories
 import (
 	"context"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/db"
+	"github.com/CABGenOrg/cabgen_backend/internal/db/sqlc"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type LaboratoryRepository interface {
@@ -20,75 +21,126 @@ type LaboratoryRepository interface {
 }
 
 type laboratoryRepo struct {
-	DB *gorm.DB
+	DB db.Database
 }
 
-func NewLaboratoryRepo(db *gorm.DB) LaboratoryRepository {
+func NewLaboratoryRepo(db db.Database) LaboratoryRepository {
 	return &laboratoryRepo{DB: db}
 }
 
-func (r *laboratoryRepo) GetLaboratories(ctx context.Context) ([]models.Laboratory, error) {
-	var labs []models.Laboratory
+func (r *laboratoryRepo) GetLaboratories(
+	ctx context.Context) ([]models.Laboratory, error) {
+	queries := r.DB.Queries()
 
-	if err := r.DB.WithContext(ctx).Find(&labs).Error; err != nil {
+	sqlcLabs, err := queries.GetLaboratories(ctx)
+	if err != nil {
 		return nil, err
+	}
+
+	labs := make([]models.Laboratory, len(sqlcLabs))
+	for i, sl := range sqlcLabs {
+		labs[i] = r.toDomain(sl)
 	}
 
 	return labs, nil
 }
 
-func (r *laboratoryRepo) GetActiveLaboratories(ctx context.Context) ([]models.Laboratory, error) {
-	var labs []models.Laboratory
-	if err := r.DB.WithContext(ctx).Where("is_active = true").Find(&labs).Error; err != nil {
+func (r *laboratoryRepo) GetActiveLaboratories(
+	ctx context.Context) ([]models.Laboratory, error) {
+	queries := r.DB.Queries()
+
+	sqlcLabs, err := queries.GetActiveLaboratories(ctx)
+	if err != nil {
 		return nil, err
+	}
+
+	labs := make([]models.Laboratory, len(sqlcLabs))
+	for i, sl := range sqlcLabs {
+		labs[i] = r.toDomain(sl)
 	}
 
 	return labs, nil
 }
 
-func (r *laboratoryRepo) GetLaboratoryByID(ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
-	var lab models.Laboratory
-	if err := r.DB.WithContext(ctx).Where("id = ?", ID).First(&lab).Error; err != nil {
+func (r *laboratoryRepo) GetLaboratoryByID(
+	ctx context.Context, ID uuid.UUID) (*models.Laboratory, error) {
+	queries := r.DB.Queries()
+
+	sqlcLab, err := queries.GetLaboratoryByID(ctx, ID)
+	if err != nil {
 		return nil, err
 	}
 
+	lab := r.toDomain(sqlcLab)
 	return &lab, nil
 }
 
-func (r *laboratoryRepo) GetLaboratoriesByNameOrAbbreviation(ctx context.Context, input string) ([]models.Laboratory, error) {
-	var labs []models.Laboratory
-	inputQuery := "%" + input + "%"
-	if err := r.DB.WithContext(ctx).Where("LOWER(name) LIKE LOWER(?) OR LOWER(abbreviation) LIKE LOWER(?)", inputQuery, inputQuery).Find(&labs).Error; err != nil {
+func (r *laboratoryRepo) GetLaboratoriesByNameOrAbbreviation(
+	ctx context.Context, input string) ([]models.Laboratory, error) {
+	queries := r.DB.Queries()
+
+	sqlcLabs, err := queries.GetLaboratoriesByNameOrAbbreviation(ctx, input)
+	if err != nil {
 		return nil, err
+	}
+
+	labs := make([]models.Laboratory, len(sqlcLabs))
+	for i, sl := range sqlcLabs {
+		labs[i] = r.toDomain(sl)
 	}
 
 	return labs, nil
 }
 
-func (r *laboratoryRepo) GetLaboratoryDuplicate(ctx context.Context, name string, ID uuid.UUID) (*models.Laboratory, error) {
-	var lab models.Laboratory
+func (r *laboratoryRepo) GetLaboratoryDuplicate(ctx context.Context,
+	name string, ID uuid.UUID) (*models.Laboratory, error) {
+	queries := r.DB.Queries()
 
-	query := r.DB.WithContext(ctx).Where("LOWER(name) = LOWER(?)", name)
-
-	if ID != uuid.Nil {
-		query = query.Where("id != ?", ID)
-	}
-
-	if err := query.First(&lab).Error; err != nil {
+	sqlcLab, err := queries.GetLaboratoryDuplicate(ctx,
+		sqlc.GetLaboratoryDuplicateParams{Name: name, ExcludeID: ID})
+	if err != nil {
 		return nil, err
 	}
 
+	lab := r.toDomain(sqlcLab)
 	return &lab, nil
 }
 
-func (r *laboratoryRepo) CreateLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	return r.DB.WithContext(ctx).Create(lab).Error
+func (r *laboratoryRepo) CreateLaboratory(ctx context.Context,
+	lab *models.Laboratory) error {
+	queries := r.DB.Queries()
+
+	_, err := queries.CreateLaboratory(ctx, sqlc.CreateLaboratoryParams{
+		Name: lab.Name, Abbreviation: lab.Abbreviation, IsActive: lab.IsActive,
+	})
+
+	return err
 }
 
-func (r *laboratoryRepo) UpdateLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	return r.DB.WithContext(ctx).Save(lab).Error
+func (r *laboratoryRepo) UpdateLaboratory(ctx context.Context,
+	lab *models.Laboratory) error {
+	queries := r.DB.Queries()
+
+	_, err := queries.UpdateLaboratory(ctx, sqlc.UpdateLaboratoryParams{
+		ID:   lab.ID,
+		Name: lab.Name, Abbreviation: lab.Abbreviation, IsActive: lab.IsActive,
+	})
+
+	return err
 }
 
-func (r *laboratoryRepo) DeleteLaboratory(ctx context.Context, lab *models.Laboratory) error {
-	return r.DB.WithContext(ctx).Delete(lab).Error
+func (r *laboratoryRepo) DeleteLaboratory(ctx context.Context,
+	lab *models.Laboratory) error {
+	queries := r.DB.Queries()
+
+	return queries.DeleteLaboratory(ctx, lab.ID)
+}
+
+func (r *laboratoryRepo) toDomain(sqlcModel sqlc.Laboratory) models.Laboratory {
+	return models.Laboratory{
+		ID:           sqlcModel.ID,
+		Name:         sqlcModel.Name,
+		Abbreviation: sqlcModel.Abbreviation,
+		IsActive:     sqlcModel.IsActive,
+	}
 }

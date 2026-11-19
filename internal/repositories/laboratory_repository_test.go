@@ -4,45 +4,90 @@ import (
 	"context"
 	"testing"
 
+	"github.com/CABGenOrg/cabgen_backend/internal/db"
 	"github.com/CABGenOrg/cabgen_backend/internal/models"
 	"github.com/CABGenOrg/cabgen_backend/internal/repositories"
 	"github.com/CABGenOrg/cabgen_backend/internal/testutils"
-	testmodels "github.com/CABGenOrg/cabgen_backend/internal/testutils/models"
-	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
+const laboratoriesMigrationsDir = "../db/migrations"
+
+func newLaboratoryTestDB(t *testing.T) db.Database {
+	t.Helper()
+
+	database, cleanup, err := testutils.NewMockPostgresDB(
+		context.Background(), laboratoriesMigrationsDir)
+	if err != nil {
+		t.Fatalf("failed to start test database: %v", err)
+	}
+	t.Cleanup(cleanup)
+
+	return database
+}
+
+func seedLaboratory(t *testing.T, database db.Database, ID uuid.UUID,
+	name, abbreviation string, isActive bool) {
+	t.Helper()
+
+	_, err := database.SQLDB().ExecContext(context.Background(),
+		`INSERT INTO laboratories (id, name, abbreviation, is_active)
+         VALUES ($1, $2, $3, $4)`,
+		ID, name, abbreviation, isActive)
+	if err != nil {
+		t.Fatalf("failed to seed laboratory: %v", err)
+	}
+}
+
+func dropLaboratoriesTable(t *testing.T, database db.Database) {
+	t.Helper()
+
+	_, err := database.SQLDB().ExecContext(context.Background(),
+		"DROP TABLE IF EXISTS laboratories CASCADE")
+	if err != nil {
+		t.Fatalf("failed to drop laboratories table: %v", err)
+	}
+}
+
+func assertLaboratory(t *testing.T, expected, actual models.Laboratory) {
+	t.Helper()
+
+	assert.Equal(t, expected.ID, actual.ID)
+	assert.Equal(t, expected.Name, actual.Name)
+	assert.Equal(t, expected.Abbreviation, actual.Abbreviation)
+	assert.Equal(t, expected.IsActive, actual.IsActive)
+}
+
 func TestNewLaboratoryRepo(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
 	assert.NotEmpty(t, labRepo)
 }
 
 func TestGetLaboratories(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
-	db.Create(&lab)
+	labID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
 
 	t.Run("Success", func(t *testing.T) {
-		labs, err := labRepo.GetLaboratories(context.Background())
-
-		expected := []models.Laboratory{lab}
+		labs, err := labRepo.GetLaboratories(ctx)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, labs)
+		assert.Len(t, labs, 1)
+		assertLaboratory(t, models.Laboratory{
+			ID: labID, Name: "Laboratory 1", Abbreviation: "L1", IsActive: true,
+		}, labs[0])
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		labs, err := mockLabRepo.GetLaboratories(context.Background())
+		labs, err := labRepo.GetLaboratories(ctx)
 
 		assert.Empty(t, labs)
 		assert.Error(t, err)
@@ -50,29 +95,29 @@ func TestGetLaboratories(t *testing.T) {
 }
 
 func TestGetActiveLaboratories(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
-	lab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 2", "L2", false)
-	db.Create(&lab)
-	db.Create(&lab2)
+	labID := uuid.New()
+	inactiveID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
+	seedLaboratory(t, database, inactiveID, "Laboratory 2", "L2", false)
 
 	t.Run("Success", func(t *testing.T) {
-		labs, err := labRepo.GetActiveLaboratories(context.Background())
-
-		expected := []models.Laboratory{lab}
+		labs, err := labRepo.GetActiveLaboratories(ctx)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, labs)
+		assert.Len(t, labs, 1)
+		assertLaboratory(t, models.Laboratory{
+			ID: labID, Name: "Laboratory 1", Abbreviation: "L1", IsActive: true,
+		}, labs[0])
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		labs, err := mockLabRepo.GetActiveLaboratories(context.Background())
+		labs, err := labRepo.GetActiveLaboratories(ctx)
 
 		assert.Empty(t, labs)
 		assert.Error(t, err)
@@ -80,64 +125,80 @@ func TestGetActiveLaboratories(t *testing.T) {
 }
 
 func TestGetLaboratoryByID(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
-	db.Create(&lab)
+	labID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
 
 	t.Run("Success", func(t *testing.T) {
-		resultLab, err := labRepo.GetLaboratoryByID(context.Background(), lab.ID)
+		resultLab, err := labRepo.GetLaboratoryByID(ctx, labID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, lab, *resultLab)
+		assertLaboratory(t, models.Laboratory{
+			ID: labID, Name: "Laboratory 1", Abbreviation: "L1", IsActive: true,
+		}, *resultLab)
 	})
 
-	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+	t.Run("Error - Record not found", func(t *testing.T) {
+		lab, err := labRepo.GetLaboratoryByID(ctx, uuid.New())
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		lab, err := mockLabRepo.GetLaboratoryByID(context.Background(), uuid.New())
+		assert.Nil(t, lab)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "no rows in result set")
+	})
 
-		assert.Empty(t, lab)
+	t.Run("Error - DB error", func(t *testing.T) {
+		dropLaboratoriesTable(t, database)
+
+		lab, err := labRepo.GetLaboratoryByID(ctx, labID)
+
+		assert.Nil(t, lab)
 		assert.Error(t, err)
 	})
 }
 
 func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
-	lab2 := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Para", "LACEN/PA", true)
-	db.Create(&lab)
-	db.Create(&lab2)
+	labID := uuid.New()
+	lab2ID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory Alpha", "LAB-1", true)
+	seedLaboratory(t, database, lab2ID, "Laboratory Beta", "LAB-2", true)
 
 	t.Run("Success - Name", func(t *testing.T) {
-		labs, err := labRepo.GetLaboratoriesByNameOrAbbreviation(context.Background(), "janeiro")
-
-		expected := []models.Laboratory{lab}
+		labs, err := labRepo.GetLaboratoriesByNameOrAbbreviation(ctx, "beta")
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, labs)
+		assert.Len(t, labs, 1)
+		assertLaboratory(t, models.Laboratory{
+			ID: lab2ID, Name: "Laboratory Beta", Abbreviation: "LAB-2",
+			IsActive: true,
+		}, labs[0])
 	})
 
 	t.Run("Success - Abbreviation", func(t *testing.T) {
-		labs, err := labRepo.GetLaboratoriesByNameOrAbbreviation(context.Background(), "lacen")
-
-		expected := []models.Laboratory{lab, lab2}
+		labs, err := labRepo.GetLaboratoriesByNameOrAbbreviation(ctx, "lab")
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, labs)
+		assert.Len(t, labs, 2)
+		assertLaboratory(t, models.Laboratory{
+			ID: labID, Name: "Laboratory Alpha", Abbreviation: "LAB-1",
+			IsActive: true,
+		}, labs[0])
+		assertLaboratory(t, models.Laboratory{
+			ID: lab2ID, Name: "Laboratory Beta", Abbreviation: "LAB-2",
+			IsActive: true,
+		}, labs[1])
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		labs, err := mockLabRepo.GetLaboratoriesByNameOrAbbreviation(context.Background(), "Lab")
+		labs, err := labRepo.GetLaboratoriesByNameOrAbbreviation(ctx, "lab")
 
 		assert.Empty(t, labs)
 		assert.Error(t, err)
@@ -145,142 +206,155 @@ func TestGetLaboratoriesByNameOrAbbreviation(t *testing.T) {
 }
 
 func TestGetLaboratoryDuplicate(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	mockLab := testmodels.NewLaboratory(uuid.NewString(), "Laboratorio Central do Rio de Janeiro", "LACEN/RJ", true)
-	db.Create(&mockLab)
+	labID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
+	expectedLab := models.Laboratory{
+		ID: labID, Name: "Laboratory 1", Abbreviation: "L1", IsActive: true,
+	}
 
 	t.Run("Success - With ID", func(t *testing.T) {
-		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.New())
+		lab, err := labRepo.GetLaboratoryDuplicate(ctx, "Laboratory 1",
+			uuid.New())
 
 		assert.NoError(t, err)
-		assert.Equal(t, &mockLab, lab)
+		assertLaboratory(t, expectedLab, *lab)
 	})
 
 	t.Run("Success - Without ID", func(t *testing.T) {
-		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.UUID{})
+		lab, err := labRepo.GetLaboratoryDuplicate(ctx, "Laboratory 1",
+			uuid.UUID{})
 
 		assert.NoError(t, err)
-		assert.Equal(t, &mockLab, lab)
+		assertLaboratory(t, expectedLab, *lab)
+	})
+
+	t.Run("Success - Own ID excluded", func(t *testing.T) {
+		lab, err := labRepo.GetLaboratoryDuplicate(ctx, "Laboratory 1", labID)
+
+		assert.Nil(t, lab)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "no rows in result set")
 	})
 
 	t.Run("Error - Record not found", func(t *testing.T) {
-		name := "Laboratorio Central do Rio Grande do Sul"
-		lab, err := labRepo.GetLaboratoryDuplicate(context.Background(), name, uuid.UUID{})
+		lab, err := labRepo.GetLaboratoryDuplicate(ctx,
+			"Laboratory 2", uuid.UUID{})
 
+		assert.Nil(t, lab)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "record not found")
-		assert.Empty(t, lab)
+		assert.ErrorContains(t, err, "no rows in result set")
 	})
 
-	t.Run("DB error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+	t.Run("Error - DB error", func(t *testing.T) {
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		lab, err := mockLabRepo.GetLaboratoryDuplicate(context.Background(), mockLab.Name, uuid.New())
+		lab, err := labRepo.GetLaboratoryDuplicate(ctx, "Laboratory 1",
+			uuid.New())
 
-		assert.Empty(t, lab)
+		assert.Nil(t, lab)
 		assert.Error(t, err)
 	})
 }
 
 func TestCreateLaboratory(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
-
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
 	t.Run("Success", func(t *testing.T) {
-		err := labRepo.CreateLaboratory(context.Background(), &lab)
+		lab := models.Laboratory{
+			Name: "Laboratory 1", Abbreviation: "L1", IsActive: true,
+		}
+
+		err := labRepo.CreateLaboratory(ctx, &lab)
 		assert.NoError(t, err)
 
-		var result models.Laboratory
-		err = db.Where("id = ?", lab.ID).First(&result).Error
+		labs, err := labRepo.GetLaboratories(ctx)
 
 		assert.NoError(t, err)
-		assert.Equal(t, lab, result)
+		assert.Len(t, labs, 1)
+		assert.Equal(t, "Laboratory 1", labs[0].Name)
+		assert.Equal(t, "L1", labs[0].Abbreviation)
+		assert.True(t, labs[0].IsActive)
+		assert.NotEqual(t, uuid.Nil, labs[0].ID,
+			"ID should be generated by the database")
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		err = mockLabRepo.CreateLaboratory(context.Background(), &lab)
+		lab := models.Laboratory{Name: "Laboratory 2", Abbreviation: "L2"}
+		err := labRepo.CreateLaboratory(ctx, &lab)
 
 		assert.Error(t, err)
 	})
 }
 
 func TestUpdateLaboratory(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
+	labID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
 
 	t.Run("Success", func(t *testing.T) {
 		labToUpdate := models.Laboratory{
-			ID:           lab.ID,
-			Name:         lab.Name,
-			Abbreviation: "Lab1",
-			IsActive:     lab.IsActive,
+			ID:           labID,
+			Name:         "Laboratory 1 Updated",
+			Abbreviation: "L1U",
+			IsActive:     false,
 		}
 
-		err := labRepo.UpdateLaboratory(context.Background(), &labToUpdate)
+		err := labRepo.UpdateLaboratory(ctx, &labToUpdate)
 		assert.NoError(t, err)
 
-		var result models.Laboratory
-		err = db.Where("id = ?", lab.ID).First(&result).Error
-
-		expected := models.Laboratory{
-			ID:           lab.ID,
-			Name:         lab.Name,
-			Abbreviation: labToUpdate.Abbreviation,
-			IsActive:     lab.IsActive,
-		}
+		result, err := labRepo.GetLaboratoryByID(ctx, labID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, result)
+		assertLaboratory(t, labToUpdate, *result)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		err = mockLabRepo.UpdateLaboratory(context.Background(), &lab)
+		lab := models.Laboratory{ID: labID, Name: "Laboratory 1"}
+		err := labRepo.UpdateLaboratory(ctx, &lab)
 
 		assert.Error(t, err)
 	})
 }
 
 func TestDeleteLaboratory(t *testing.T) {
-	db := testutils.NewMockDB()
-	labRepo := repositories.NewLaboratoryRepo(db)
+	ctx := context.Background()
+	database := newLaboratoryTestDB(t)
+	labRepo := repositories.NewLaboratoryRepo(database)
 
-	lab := testmodels.NewLaboratory(uuid.NewString(), "Laboratory 1", "L1", true)
+	labID := uuid.New()
+	seedLaboratory(t, database, labID, "Laboratory 1", "L1", true)
 
 	t.Run("Success", func(t *testing.T) {
-		err := labRepo.DeleteLaboratory(context.Background(), &lab)
+		lab := models.Laboratory{ID: labID, Name: "Laboratory 1"}
 
+		err := labRepo.DeleteLaboratory(ctx, &lab)
 		assert.NoError(t, err)
 
-		var result models.Laboratory
-		err = db.Where("id = ?", lab.ID).First(&result).Error
+		result, err := labRepo.GetLaboratoryByID(ctx, labID)
 
+		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "record not found")
-		assert.Empty(t, result)
+		assert.ErrorContains(t, err, "no rows in result set")
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		assert.NoError(t, err)
+		dropLaboratoriesTable(t, database)
 
-		mockLabRepo := repositories.NewLaboratoryRepo(mockDB)
-		err = mockLabRepo.DeleteLaboratory(context.Background(), &lab)
+		lab := models.Laboratory{ID: labID, Name: "Laboratory 1"}
+		err := labRepo.DeleteLaboratory(ctx, &lab)
 
 		assert.Error(t, err)
 	})
