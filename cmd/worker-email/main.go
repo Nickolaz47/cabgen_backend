@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/CABGenOrg/cabgen_backend/internal/config"
@@ -25,7 +26,7 @@ func main() {
 	mainDriver := "postgres"
 	mainDSN := config.DatabaseConnectionString
 
-	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
+	mainDB, err := db.NewDatabase(context.Background(), mainDriver, mainDSN)
 	if err != nil {
 		log.Fatal(err)
 	}

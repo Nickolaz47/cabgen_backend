@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -9,19 +10,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewGormDatabase(t *testing.T) {
+func TestNewDatabase(t *testing.T) {
 	t.Run("Success with sqlite", func(t *testing.T) {
-		database, err := db.NewGormDatabase("sqlite", ":memory:")
+		database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, database)
 	})
 
 	t.Run("Unknown driver", func(t *testing.T) {
-		database, err := db.NewGormDatabase("unknown", "dsn")
+		database, err := db.NewDatabase(context.Background(), "unknown", "dsn")
 
 		assert.Error(t, err)
-		assert.Empty(t, database)
+		assert.Nil(t, database)
 		assert.Contains(t, err.Error(), "unknown driver")
 	})
 
@@ -36,7 +37,7 @@ func TestNewGormDatabase(t *testing.T) {
 		db.MaxConnectionRetries = 3
 		db.ConnectionRetryDelay = time.Millisecond
 
-		database, err := db.NewGormDatabase("postgres",
+		database, err := db.NewDatabase(context.Background(), "postgres",
 			"host=localhost user=x password=x dbname=x port=1")
 
 		assert.Error(t, err)
@@ -45,17 +46,17 @@ func TestNewGormDatabase(t *testing.T) {
 }
 
 func TestDB(t *testing.T) {
-	database, err := db.NewGormDatabase("sqlite", ":memory:")
+	database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 	assert.NoError(t, err)
 
-	db := database.DB()
-	assert.NotEmpty(t, db)
+	dbHandle := database.DB()
+	assert.NotEmpty(t, dbHandle)
 }
 
 func TestMigrate(t *testing.T) {
 	models := []any{testmodels.User{}}
 	t.Run("Success", func(t *testing.T) {
-		database, err := db.NewGormDatabase("sqlite", ":memory:")
+		database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 		assert.NoError(t, err)
 
 		err = database.Migrate(models...)
@@ -63,7 +64,7 @@ func TestMigrate(t *testing.T) {
 	})
 
 	t.Run("Error - No models", func(t *testing.T) {
-		database, err := db.NewGormDatabase("sqlite", ":memory:")
+		database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 		assert.NoError(t, err)
 
 		err = database.Migrate()
@@ -72,7 +73,7 @@ func TestMigrate(t *testing.T) {
 	})
 
 	t.Run("Error - Internal", func(t *testing.T) {
-		database, err := db.NewGormDatabase("sqlite", ":memory:")
+		database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 		assert.NoError(t, err)
 
 		database.Close()
@@ -83,7 +84,7 @@ func TestMigrate(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	database, err := db.NewGormDatabase("sqlite", ":memory:")
+	database, err := db.NewDatabase(context.Background(), "sqlite", ":memory:")
 	assert.NoError(t, err)
 
 	err = database.Close()

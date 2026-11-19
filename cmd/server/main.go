@@ -29,6 +29,10 @@ import (
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
 	// Root dir
 	rootDir, err := utils.GetProjectRoot()
 	if err != nil {
@@ -60,7 +64,7 @@ func main() {
 		&models.Audit{},
 	}
 
-	mainDB, err := db.NewGormDatabase(mainDriver, mainDSN)
+	mainDB, err := db.NewDatabase(ctx, mainDriver, mainDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -275,9 +279,6 @@ func main() {
 	logging.FileLogger.Info("Starting CABGen API...",
 		zap.String("addr", srv.Addr))
 
-	ctx, stop := signal.NotifyContext(context.Background(),
-		syscall.SIGTERM, syscall.SIGINT)
-	defer stop()
 	<-ctx.Done()
 
 	logging.FileLogger.Info("Shutdown signal received, gracefully stopping API...")

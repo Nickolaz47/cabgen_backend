@@ -1,12 +1,14 @@
 package container
 
 import (
+	"context"
+
 	"github.com/CABGenOrg/cabgen_backend/internal/db"
 )
 
-func SetupDatabase(driver, dns string,
-	modelsToMigrate []any) (*db.GormDatabase, error) {
-	database, err := db.NewGormDatabase(driver, dns)
+func SetupDatabase(ctx context.Context, driver, dns string,
+	modelsToMigrate []any) (db.Database, error) {
+	database, err := db.NewDatabase(ctx, driver, dns)
 	if err != nil {
 		return nil, err
 	}
